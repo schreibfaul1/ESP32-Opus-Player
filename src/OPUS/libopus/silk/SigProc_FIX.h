@@ -43,14 +43,6 @@ extern "C"
 #include "macros.h"
 #include "../celt/cpu_support.h"
 
-#if defined(OPUS_X86_MAY_HAVE_SSE4_1)
-#include "x86/SigProc_FIX_sse.h"
-#endif
-
-#if (defined(OPUS_ARM_ASM) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR))
-#include "arm/biquad_alt_arm.h"
-#include "arm/LPC_inv_pred_gain_arm.h"
-#endif
 
 /********************************************************************/
 /*                    SIGNAL PROCESSING FUNCTIONS                   */

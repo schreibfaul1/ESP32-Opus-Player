@@ -46,10 +46,6 @@
 #include "celt_lpc.h"
 #include "vq.h"
 
-#ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "unknown"
-#endif
-
 #if defined(MIPSr1_ASM)
 #include "mips/celt_mipsr1.h"
 #endif
@@ -84,81 +80,7 @@ int resampling_factor(int32_t rate)
     return ret;
 }
 
-#if !defined(OVERRIDE_COMB_FILTER_CONST) || defined(NON_STATIC_COMB_FILTER_CONST_C)
-/* This version should be faster on ARM */
-#ifdef OPUS_ARM_ASM
-#ifndef NON_STATIC_COMB_FILTER_CONST_C
-static
-#endif
-    void
-    comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
-                        int16_t g10, int16_t g11, int16_t g12)
-{
-    int32_t x0, x1, x2, x3, x4;
-    int i;
-    x4 = SHL32(x[-T - 2], 1);
-    x3 = SHL32(x[-T - 1], 1);
-    x2 = SHL32(x[-T], 1);
-    x1 = SHL32(x[-T + 1], 1);
-    for (i = 0; i < N - 4; i += 5)
-    {
-        int32_t t;
-        x0 = SHL32(x[i - T + 2], 1);
-        t = MAC16_32_Q16(x[i], g10, x2);
-        t = MAC16_32_Q16(t, g11, ADD32(x1, x3));
-        t = MAC16_32_Q16(t, g12, ADD32(x0, x4));
-        t = SATURATE(t, SIG_SAT);
-        y[i] = t;
-        x4 = SHL32(x[i - T + 3], 1);
-        t = MAC16_32_Q16(x[i + 1], g10, x1);
-        t = MAC16_32_Q16(t, g11, ADD32(x0, x2));
-        t = MAC16_32_Q16(t, g12, ADD32(x4, x3));
-        t = SATURATE(t, SIG_SAT);
-        y[i + 1] = t;
-        x3 = SHL32(x[i - T + 4], 1);
-        t = MAC16_32_Q16(x[i + 2], g10, x0);
-        t = MAC16_32_Q16(t, g11, ADD32(x4, x1));
-        t = MAC16_32_Q16(t, g12, ADD32(x3, x2));
-        t = SATURATE(t, SIG_SAT);
-        y[i + 2] = t;
-        x2 = SHL32(x[i - T + 5], 1);
-        t = MAC16_32_Q16(x[i + 3], g10, x4);
-        t = MAC16_32_Q16(t, g11, ADD32(x3, x0));
-        t = MAC16_32_Q16(t, g12, ADD32(x2, x1));
-        t = SATURATE(t, SIG_SAT);
-        y[i + 3] = t;
-        x1 = SHL32(x[i - T + 6], 1);
-        t = MAC16_32_Q16(x[i + 4], g10, x3);
-        t = MAC16_32_Q16(t, g11, ADD32(x2, x4));
-        t = MAC16_32_Q16(t, g12, ADD32(x1, x0));
-        t = SATURATE(t, SIG_SAT);
-        y[i + 4] = t;
-    }
-#ifdef CUSTOM_MODES
-    for (; i < N; i++)
-    {
-        int32_t t;
-        x0 = SHL32(x[i - T + 2], 1);
-        t = MAC16_32_Q16(x[i], g10, x2);
-        t = MAC16_32_Q16(t, g11, ADD32(x1, x3));
-        t = MAC16_32_Q16(t, g12, ADD32(x0, x4));
-        t = SATURATE(t, SIG_SAT);
-        y[i] = t;
-        x4 = x3;
-        x3 = x2;
-        x2 = x1;
-        x1 = x0;
-    }
-#endif
-}
-#else
-#ifndef NON_STATIC_COMB_FILTER_CONST_C
-static
-#endif
-    void
-    comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
-                        int16_t g10, int16_t g11, int16_t g12)
-{
+void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12) {
     int32_t x0, x1, x2, x3, x4;
     int i;
     x4 = x[-T - 2];
@@ -176,14 +98,10 @@ static
         x1 = x0;
     }
 }
-#endif
-#endif
 
-#ifndef OVERRIDE_comb_filter
-void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N,
-                 int16_t g0, int16_t g1, int tapset0, int tapset1,
-                 const int16_t *window, int overlap, int arch)
-{
+
+void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int16_t g1, int tapset0, int tapset1,
+                 const int16_t *window, int overlap, int arch) {
     int i;
     /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
     int16_t g00, g01, g02, g10, g11, g12;
@@ -240,7 +158,6 @@ void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N,
     /* Compute the part with the constant filter. */
     comb_filter_const(y + i, x + i, T1, N - i, g10, g11, g12, arch);
 }
-#endif /* OVERRIDE_comb_filter */
 
 /* TF change table. Positive values mean better frequency resolution (longer
    effective window), whereas negative values mean better time resolution
@@ -280,15 +197,6 @@ const char *opus_strerror(int error)
         return "unknown error";
     else
         return error_strings[-error];
-}
-
-const char *opus_get_version_string(void)
-{
-    return "libopus " PACKAGE_VERSION
-           /* Applications may rely on the presence of this substring in the version
-              string to determine if they have a fixed-point or floating-point build
-              at runtime. */
-           "-fixed";
 }
 
 int hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int N, int prev)
