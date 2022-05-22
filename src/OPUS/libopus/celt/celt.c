@@ -29,10 +29,11 @@
 
 #define CELT_C
 
+
+#include "celt.h"
 #include "os_support.h"
 #include "mdct.h"
 #include <math.h>
-#include "celt.h"
 #include "pitch.h"
 #include "bands.h"
 #include "modes.h"
@@ -45,6 +46,7 @@
 #include <stdarg.h>
 #include "celt_lpc.h"
 #include "vq.h"
+#include <pgmspace.h>
 
 #if defined(MIPSr1_ASM)
 #include "mips/celt_mipsr1.h"
@@ -5401,3 +5403,897 @@ bad_request:
     va_end(ap);
     return OPUS_UNIMPLEMENTED;
 }
+
+void _celt_lpc(
+    int16_t *_lpc,     /* out: [0...p-1] LPC coefficients      */
+    const int32_t *ac, /* in:  [0...p] autocorrelation values  */
+    int p)
+{
+    int i, j;
+    int32_t r;
+    int32_t error = ac[0];
+    int32_t lpc[LPC_ORDER];
+    OPUS_CLEAR(lpc, p);
+    if (ac[0] != 0)
+    {
+        for (i = 0; i < p; i++)
+        {
+            /* Sum up this iteration's reflection coefficient */
+            int32_t rr = 0;
+            for (j = 0; j < i; j++)
+                rr += MULT32_32_Q31(lpc[j], ac[i - j]);
+            rr += SHR32(ac[i + 1], 3);
+            r = -frac_div32(SHL32(rr, 3), error);
+            /*  Update LPC coefficients and total error */
+            lpc[i] = SHR32(r, 3);
+            for (j = 0; j < (i + 1) >> 1; j++)
+            {
+                int32_t tmp1, tmp2;
+                tmp1 = lpc[j];
+                tmp2 = lpc[i - 1 - j];
+                lpc[j] = tmp1 + MULT32_32_Q31(r, tmp2);
+                lpc[i - 1 - j] = tmp2 + MULT32_32_Q31(r, tmp1);
+            }
+
+            error = error - MULT32_32_Q31(MULT32_32_Q31(r, r), error);
+            /* Bail out once we get 30 dB gain */
+            if (error < SHR32(ac[0], 10))
+                break;
+        }
+    }
+    for (i = 0; i < p; i++)
+        _lpc[i] = ROUND16(lpc[i], 16);
+}
+
+void celt_fir_c(
+    const int16_t *x,
+    const int16_t *num,
+    int16_t *y,
+    int N,
+    int ord,
+    int arch)
+{
+    int i, j;
+    VARDECL(int16_t, rnum);
+    SAVE_STACK;
+    celt_assert(x != y);
+    ALLOC(rnum, ord, int16_t);
+    for (i = 0; i < ord; i++)
+        rnum[i] = num[ord - i - 1];
+    for (i = 0; i < N - 3; i += 4)
+    {
+        int32_t sum[4];
+        sum[0] = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+        sum[1] = SHL32(EXTEND32(x[i + 1]), SIG_SHIFT);
+        sum[2] = SHL32(EXTEND32(x[i + 2]), SIG_SHIFT);
+        sum[3] = SHL32(EXTEND32(x[i + 3]), SIG_SHIFT);
+        xcorr_kernel(rnum, x + i - ord, sum, ord, arch);
+        y[i] = ROUND16(sum[0], SIG_SHIFT);
+        y[i + 1] = ROUND16(sum[1], SIG_SHIFT);
+        y[i + 2] = ROUND16(sum[2], SIG_SHIFT);
+        y[i + 3] = ROUND16(sum[3], SIG_SHIFT);
+    }
+    for (; i < N; i++)
+    {
+        int32_t sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+        for (j = 0; j < ord; j++)
+            sum = MAC16_16(sum, rnum[j], x[i + j - ord]);
+        y[i] = ROUND16(sum, SIG_SHIFT);
+    }
+}
+
+void celt_iir(const int32_t *_x,
+              const int16_t *den,
+              int32_t *_y,
+              int N,
+              int ord,
+              int16_t *mem,
+              int arch)
+{
+
+    int i, j;
+    VARDECL(int16_t, rden);
+    VARDECL(int16_t, y);
+    SAVE_STACK;
+
+    celt_assert((ord & 3) == 0);
+    ALLOC(rden, ord, int16_t);
+    ALLOC(y, N + ord, int16_t);
+    for (i = 0; i < ord; i++)
+        rden[i] = den[ord - i - 1];
+    for (i = 0; i < ord; i++)
+        y[i] = -mem[ord - i - 1];
+    for (; i < N + ord; i++)
+        y[i] = 0;
+    for (i = 0; i < N - 3; i += 4)
+    {
+        /* Unroll by 4 as if it were an FIR filter */
+        int32_t sum[4];
+        sum[0] = _x[i];
+        sum[1] = _x[i + 1];
+        sum[2] = _x[i + 2];
+        sum[3] = _x[i + 3];
+        xcorr_kernel(rden, y + i, sum, ord, arch);
+
+        /* Patch up the result to compensate for the fact that this is an IIR */
+        y[i + ord] = -SROUND16(sum[0], SIG_SHIFT);
+        _y[i] = sum[0];
+        sum[1] = MAC16_16(sum[1], y[i + ord], den[0]);
+        y[i + ord + 1] = -SROUND16(sum[1], SIG_SHIFT);
+        _y[i + 1] = sum[1];
+        sum[2] = MAC16_16(sum[2], y[i + ord + 1], den[0]);
+        sum[2] = MAC16_16(sum[2], y[i + ord], den[1]);
+        y[i + ord + 2] = -SROUND16(sum[2], SIG_SHIFT);
+        _y[i + 2] = sum[2];
+
+        sum[3] = MAC16_16(sum[3], y[i + ord + 2], den[0]);
+        sum[3] = MAC16_16(sum[3], y[i + ord + 1], den[1]);
+        sum[3] = MAC16_16(sum[3], y[i + ord], den[2]);
+        y[i + ord + 3] = -SROUND16(sum[3], SIG_SHIFT);
+        _y[i + 3] = sum[3];
+    }
+    for (; i < N; i++)
+    {
+        int32_t sum = _x[i];
+        for (j = 0; j < ord; j++)
+            sum -= MULT16_16(rden[j], y[i + j]);
+        y[i + ord] = SROUND16(sum, SIG_SHIFT);
+        _y[i] = sum;
+    }
+    for (i = 0; i < ord; i++)
+        mem[i] = _y[N - i - 1];
+
+}
+
+int _celt_autocorr(
+    const int16_t *x, /*  in: [0...n-1] samples x   */
+    int32_t *ac,      /* out: [0...lag-1] ac values */
+    const int16_t *window,
+    int overlap,
+    int lag,
+    int n,
+    int arch)
+{
+    int32_t d;
+    int i, k;
+    int fastN = n - lag;
+    int shift;
+    const int16_t *xptr;
+    VARDECL(int16_t, xx);
+    SAVE_STACK;
+    ALLOC(xx, n, int16_t);
+    celt_assert(n > 0);
+    celt_assert(overlap >= 0);
+    if (overlap == 0)
+    {
+        xptr = x;
+    }
+    else
+    {
+        for (i = 0; i < n; i++)
+            xx[i] = x[i];
+        for (i = 0; i < overlap; i++)
+        {
+            xx[i] = MULT16_16_Q15(x[i], window[i]);
+            xx[n - i - 1] = MULT16_16_Q15(x[n - i - 1], window[i]);
+        }
+        xptr = xx;
+    }
+    shift = 0;
+    {
+        int32_t ac0;
+        ac0 = 1 + (n << 7);
+        if (n & 1)
+            ac0 += SHR32(MULT16_16(xptr[0], xptr[0]), 9);
+        for (i = (n & 1); i < n; i += 2)
+        {
+            ac0 += SHR32(MULT16_16(xptr[i], xptr[i]), 9);
+            ac0 += SHR32(MULT16_16(xptr[i + 1], xptr[i + 1]), 9);
+        }
+
+        shift = celt_ilog2(ac0) - 30 + 10;
+        shift = (shift) / 2;
+        if (shift > 0)
+        {
+            for (i = 0; i < n; i++)
+                xx[i] = PSHR32(xptr[i], shift);
+            xptr = xx;
+        }
+        else
+            shift = 0;
+    }
+    celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1, arch);
+    for (k = 0; k <= lag; k++)
+    {
+        for (i = k + fastN, d = 0; i < n; i++)
+            d = MAC16_16(d, xptr[i], xptr[i - k]);
+        ac[k] += d;
+    }
+    shift = 2 * shift;
+    if (shift <= 0)
+        ac[0] += SHL32((int32_t)1, -shift);
+    if (ac[0] < 268435456)
+    {
+        int shift2 = 29 - EC_ILOG(ac[0]);
+        for (i = 0; i <= lag; i++)
+            ac[i] = SHL32(ac[i], shift2);
+        shift -= shift2;
+    }
+    else if (ac[0] >= 536870912)
+    {
+        int shift2 = 1;
+        if (ac[0] >= 1073741824)
+            shift2++;
+        for (i = 0; i <= lag; i++)
+            ac[i] = SHR32(ac[i], shift2);
+        shift += shift2;
+    }
+
+    return shift;
+}
+
+/*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
+#define CELT_PVQ_U(_n, _k) (CELT_PVQ_U_ROW[IMIN(_n, _k)][IMAX(_n, _k)])
+/*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
+   with K pulses allocated to it.*/
+#define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
+
+/*For each V(N,K) supported, we will access element U(min(N,K+1),max(N,K+1)).
+  Thus, the number of entries in row I is the larger of the maximum number of
+   pulses we will ever allocate for a given N=I (K=128, or however many fit in
+   32 bits, whichever is smaller), plus one, and the maximum N for which
+   K=I-1 pulses fit in 32 bits.
+  The largest band size in an Opus Custom mode is 208.
+  Otherwise, we can limit things to the set of N which can be achieved by
+   splitting a band from a standard Opus mode: 176, 144, 96, 88, 72, 64, 48,
+   44, 36, 32, 24, 22, 18, 16, 8, 4, 2).*/
+
+static const uint32_t CELT_PVQ_U_DATA[1272] PROGMEM = {
+
+    /*N=0, K=0...176:*/
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+    /*N=1, K=1...176:*/
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+    /*N=2, K=2...176:*/
+    3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41,
+    43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79,
+    81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105, 107, 109, 111, 113,
+    115, 117, 119, 121, 123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143,
+    145, 147, 149, 151, 153, 155, 157, 159, 161, 163, 165, 167, 169, 171, 173,
+    175, 177, 179, 181, 183, 185, 187, 189, 191, 193, 195, 197, 199, 201, 203,
+    205, 207, 209, 211, 213, 215, 217, 219, 221, 223, 225, 227, 229, 231, 233,
+    235, 237, 239, 241, 243, 245, 247, 249, 251, 253, 255, 257, 259, 261, 263,
+    265, 267, 269, 271, 273, 275, 277, 279, 281, 283, 285, 287, 289, 291, 293,
+    295, 297, 299, 301, 303, 305, 307, 309, 311, 313, 315, 317, 319, 321, 323,
+    325, 327, 329, 331, 333, 335, 337, 339, 341, 343, 345, 347, 349, 351,
+
+    /*N=3, K=3...176:*/
+    13, 25, 41, 61, 85, 113, 145, 181, 221, 265, 313, 365, 421, 481, 545, 613,
+    685, 761, 841, 925, 1013, 1105, 1201, 1301, 1405, 1513, 1625, 1741, 1861,
+    1985, 2113, 2245, 2381, 2521, 2665, 2813, 2965, 3121, 3281, 3445, 3613, 3785,
+    3961, 4141, 4325, 4513, 4705, 4901, 5101, 5305, 5513, 5725, 5941, 6161, 6385,
+    6613, 6845, 7081, 7321, 7565, 7813, 8065, 8321, 8581, 8845, 9113, 9385, 9661,
+    9941, 10225, 10513, 10805, 11101, 11401, 11705, 12013, 12325, 12641, 12961,
+    13285, 13613, 13945, 14281, 14621, 14965, 15313, 15665, 16021, 16381, 16745,
+    17113, 17485, 17861, 18241, 18625, 19013, 19405, 19801, 20201, 20605, 21013,
+    21425, 21841, 22261, 22685, 23113, 23545, 23981, 24421, 24865, 25313, 25765,
+    26221, 26681, 27145, 27613, 28085, 28561, 29041, 29525, 30013, 30505, 31001,
+    31501, 32005, 32513, 33025, 33541, 34061, 34585, 35113, 35645, 36181, 36721,
+    37265, 37813, 38365, 38921, 39481, 40045, 40613, 41185, 41761, 42341, 42925,
+    43513, 44105, 44701, 45301, 45905, 46513, 47125, 47741, 48361, 48985, 49613,
+    50245, 50881, 51521, 52165, 52813, 53465, 54121, 54781, 55445, 56113, 56785,
+    57461, 58141, 58825, 59513, 60205, 60901, 61601,
+
+    /*N=4, K=4...176:*/
+    63, 129, 231, 377, 575, 833, 1159, 1561, 2047, 2625, 3303, 4089, 4991, 6017,
+    7175, 8473, 9919, 11521, 13287, 15225, 17343, 19649, 22151, 24857, 27775,
+    30913, 34279, 37881, 41727, 45825, 50183, 54809, 59711, 64897, 70375, 76153,
+    82239, 88641, 95367, 102425, 109823, 117569, 125671, 134137, 142975, 152193,
+    161799, 171801, 182207, 193025, 204263, 215929, 228031, 240577, 253575,
+    267033, 280959, 295361, 310247, 325625, 341503, 357889, 374791, 392217,
+    410175, 428673, 447719, 467321, 487487, 508225, 529543, 551449, 573951,
+    597057, 620775, 645113, 670079, 695681, 721927, 748825, 776383, 804609,
+    833511, 863097, 893375, 924353, 956039, 988441, 1021567, 1055425, 1090023,
+    1125369, 1161471, 1198337, 1235975, 1274393, 1313599, 1353601, 1394407,
+    1436025, 1478463, 1521729, 1565831, 1610777, 1656575, 1703233, 1750759,
+    1799161, 1848447, 1898625, 1949703, 2001689, 2054591, 2108417, 2163175,
+    2218873, 2275519, 2333121, 2391687, 2451225, 2511743, 2573249, 2635751,
+    2699257, 2763775, 2829313, 2895879, 2963481, 3032127, 3101825, 3172583,
+    3244409, 3317311, 3391297, 3466375, 3542553, 3619839, 3698241, 3777767,
+    3858425, 3940223, 4023169, 4107271, 4192537, 4278975, 4366593, 4455399,
+    4545401, 4636607, 4729025, 4822663, 4917529, 5013631, 5110977, 5209575,
+    5309433, 5410559, 5512961, 5616647, 5721625, 5827903, 5935489, 6044391,
+    6154617, 6266175, 6379073, 6493319, 6608921, 6725887, 6844225, 6963943,
+    7085049, 7207551,
+
+    /*N=5, K=5...176:*/
+    321, 681, 1289, 2241, 3649, 5641, 8361, 11969, 16641, 22569, 29961, 39041,
+    50049, 63241, 78889, 97281, 118721, 143529, 172041, 204609, 241601, 283401,
+    330409, 383041, 441729, 506921, 579081, 658689, 746241, 842249, 947241,
+    1061761, 1186369, 1321641, 1468169, 1626561, 1797441, 1981449, 2179241,
+    2391489, 2618881, 2862121, 3121929, 3399041, 3694209, 4008201, 4341801,
+    4695809, 5071041, 5468329, 5888521, 6332481, 6801089, 7295241, 7815849,
+    8363841, 8940161, 9545769, 10181641, 10848769, 11548161, 12280841, 13047849,
+    13850241, 14689089, 15565481, 16480521, 17435329, 18431041, 19468809,
+    20549801, 21675201, 22846209, 24064041, 25329929, 26645121, 28010881,
+    29428489, 30899241, 32424449, 34005441, 35643561, 37340169, 39096641,
+    40914369, 42794761, 44739241, 46749249, 48826241, 50971689, 53187081,
+    55473921, 57833729, 60268041, 62778409, 65366401, 68033601, 70781609,
+    73612041, 76526529, 79526721, 82614281, 85790889, 89058241, 92418049,
+    95872041, 99421961, 103069569, 106816641, 110664969, 114616361, 118672641,
+    122835649, 127107241, 131489289, 135983681, 140592321, 145317129, 150160041,
+    155123009, 160208001, 165417001, 170752009, 176215041, 181808129, 187533321,
+    193392681, 199388289, 205522241, 211796649, 218213641, 224775361, 231483969,
+    238341641, 245350569, 252512961, 259831041, 267307049, 274943241, 282741889,
+    290705281, 298835721, 307135529, 315607041, 324252609, 333074601, 342075401,
+    351257409, 360623041, 370174729, 379914921, 389846081, 399970689, 410291241,
+    420810249, 431530241, 442453761, 453583369, 464921641, 476471169, 488234561,
+    500214441, 512413449, 524834241, 537479489, 550351881, 563454121, 576788929,
+    590359041, 604167209, 618216201, 632508801,
+
+    /*N=6, K=6...96:*/
+    1683, 3653, 7183, 13073, 22363, 36365, 56695, 85305, 124515, 177045, 246047,
+    335137, 448427, 590557, 766727, 982729, 1244979, 1560549, 1937199, 2383409,
+    2908411, 3522221, 4235671, 5060441, 6009091, 7095093, 8332863, 9737793,
+    11326283, 13115773, 15124775, 17372905, 19880915, 22670725, 25765455,
+    29189457, 32968347, 37129037, 41699767, 46710137, 52191139, 58175189,
+    64696159, 71789409, 79491819, 87841821, 96879431, 106646281, 117185651,
+    128542501, 140763503, 153897073, 167993403, 183104493, 199284183, 216588185,
+    235074115, 254801525, 275831935, 298228865, 322057867, 347386557, 374284647,
+    402823977, 433078547, 465124549, 499040399, 534906769, 572806619, 612825229,
+    655050231, 699571641, 746481891, 795875861, 847850911, 902506913, 959946283,
+    1020274013, 1083597703, 1150027593, 1219676595, 1292660325, 1369097135,
+    1449108145, 1532817275, 1620351277, 1711839767, 1807415257, 1907213187,
+    2011371957, 2120032959,
+
+    /*N=7, K=7...54*/
+    8989, 19825, 40081, 75517, 134245, 227305, 369305, 579125, 880685, 1303777,
+    1884961, 2668525, 3707509, 5064793, 6814249, 9041957, 11847485, 15345233,
+    19665841, 24957661, 31388293, 39146185, 48442297, 59511829, 72616013,
+    88043969, 106114625, 127178701, 151620757, 179861305, 212358985, 249612805,
+    292164445, 340600625, 395555537, 457713341, 527810725, 606639529, 695049433,
+    793950709, 904317037, 1027188385, 1163673953, 1314955181, 1482288821,
+    1667010073, 1870535785, 2094367717,
+
+    /*N=8, K=8...37*/
+    48639, 108545, 224143, 433905, 795455, 1392065, 2340495, 3800305, 5984767,
+    9173505, 13726991, 20103025, 28875327, 40754369, 56610575, 77500017,
+    104692735, 139703809, 184327311, 240673265, 311207743, 398796225, 506750351,
+    638878193, 799538175, 993696769, 1226990095, 1505789553, 1837271615,
+    2229491905U,
+
+    /*N=9, K=9...28:*/
+    265729, 598417, 1256465, 2485825, 4673345, 8405905, 14546705, 24331777,
+    39490049, 62390545, 96220561, 145198913, 214828609, 312193553, 446304145,
+    628496897, 872893441, 1196924561, 1621925137, 2173806145U,
+
+    /*N=10, K=10...24:*/
+    1462563, 3317445, 7059735, 14218905, 27298155, 50250765, 89129247, 152951073,
+    254831667, 413442773, 654862247, 1014889769, 1541911931, 2300409629U,
+    3375210671U,
+    /*N=11, K=11...19:*/
+    8097453, 18474633, 39753273, 81270333, 158819253, 298199265, 540279585,
+    948062325, 1616336765,
+
+    /*N=12, K=12...18:*/
+    45046719, 103274625, 224298231, 464387817, 921406335, 1759885185,
+    3248227095U,
+    /*N=13, K=13...16:*/
+    251595969, 579168825, 1267854873, 2653649025U,
+    /*N=14, K=14:*/
+    1409933619};
+
+static const uint32_t *const CELT_PVQ_U_ROW[15] PROGMEM = {
+    CELT_PVQ_U_DATA + 0, CELT_PVQ_U_DATA + 176, CELT_PVQ_U_DATA + 351,
+    CELT_PVQ_U_DATA + 525, CELT_PVQ_U_DATA + 698, CELT_PVQ_U_DATA + 870,
+    CELT_PVQ_U_DATA + 1041, CELT_PVQ_U_DATA + 1131, CELT_PVQ_U_DATA + 1178,
+    CELT_PVQ_U_DATA + 1207, CELT_PVQ_U_DATA + 1226, CELT_PVQ_U_DATA + 1240,
+    CELT_PVQ_U_DATA + 1248, CELT_PVQ_U_DATA + 1254, CELT_PVQ_U_DATA + 1257};
+
+static uint32_t icwrs(int _n, const int *_y)
+{
+    uint32_t i;
+    int j;
+    int k;
+    celt_assert(_n >= 2);
+    j = _n - 1;
+    i = _y[j] < 0;
+    k = abs(_y[j]);
+    do
+    {
+        j--;
+        i += CELT_PVQ_U(_n - j, k);
+        k += abs(_y[j]);
+        if (_y[j] < 0)
+            i += CELT_PVQ_U(_n - j, k + 1);
+    } while (j > 0);
+    return i;
+}
+
+void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc)
+{
+    celt_assert(_k > 0);
+    ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
+}
+
+static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y)
+{
+    uint32_t p;
+    int s;
+    int k0;
+    int16_t val;
+    int32_t yy = 0;
+    celt_assert(_k > 0);
+    celt_assert(_n > 1);
+    while (_n > 2)
+    {
+        uint32_t q;
+        /*Lots of pulses case:*/
+        if (_k >= _n)
+        {
+            const uint32_t *row;
+            row = CELT_PVQ_U_ROW[_n];
+            /*Are the pulses in this dimension negative?*/
+            p = row[_k + 1];
+            s = -(_i >= p);
+            _i -= p & s;
+            /*Count how many pulses were placed in this dimension.*/
+            k0 = _k;
+            q = row[_n];
+            if (q > _i)
+            {
+                celt_sig_assert(p > q);
+                _k = _n;
+                do
+                    p = CELT_PVQ_U_ROW[--_k][_n];
+                while (p > _i);
+            }
+            else
+                for (p = row[_k]; p > _i; p = row[_k])
+                    _k--;
+            _i -= p;
+            val = (k0 - _k + s) ^ s;
+            *_y++ = val;
+            yy = MAC16_16(yy, val, val);
+        }
+        /*Lots of dimensions case:*/
+        else
+        {
+            /*Are there any pulses in this dimension at all?*/
+            p = CELT_PVQ_U_ROW[_k][_n];
+            q = CELT_PVQ_U_ROW[_k + 1][_n];
+            if (p <= _i && _i < q)
+            {
+                _i -= p;
+                *_y++ = 0;
+            }
+            else
+            {
+                /*Are the pulses in this dimension negative?*/
+                s = -(_i >= q);
+                _i -= q & s;
+                /*Count how many pulses were placed in this dimension.*/
+                k0 = _k;
+                do
+                    p = CELT_PVQ_U_ROW[--_k][_n];
+                while (p > _i);
+                _i -= p;
+                val = (k0 - _k + s) ^ s;
+                *_y++ = val;
+                yy = MAC16_16(yy, val, val);
+            }
+        }
+        _n--;
+    }
+    /*_n==2*/
+    p = 2 * _k + 1;
+    s = -(_i >= p);
+    _i -= p & s;
+    k0 = _k;
+    _k = (_i + 1) >> 1;
+    if (_k)
+        _i -= 2 * _k - 1;
+    val = (k0 - _k + s) ^ s;
+    *_y++ = val;
+    yy = MAC16_16(yy, val, val);
+    /*_n==1*/
+    s = -(int)_i;
+    val = (_k + s) ^ s;
+    *_y = val;
+    yy = MAC16_16(yy, val, val);
+    return yy;
+}
+
+int32_t decode_pulses(int *_y, int _n, int _k, ec_dec *_dec)
+{
+    return cwrsi(_n, _k, ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
+}
+
+/* This is a faster version of ec_tell_frac() that takes advantage
+   of the low (1/8 bit) resolution to use just a linear function
+   followed by a lookup to determine the exact transition thresholds. */
+uint32_t ec_tell_frac(ec_ctx *_this){
+    static const unsigned correction[8] =
+        {35733, 38967, 42495, 46340,
+         50535, 55109, 60097, 65535};
+    uint32_t nbits;
+    uint32_t r;
+    int l;
+    unsigned b;
+    nbits = _this->nbits_total << BITRES;
+    l = EC_ILOG(_this->rng);
+    r = _this->rng >> (l - 16);
+    b = (r >> 12) - 8;
+    b += r > correction[b];
+    l = (l << 3) + b;
+    return nbits - l;
+}
+
+static int ec_read_byte(ec_dec *_this)
+{
+    return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0;
+}
+
+static int ec_read_byte_from_end(ec_dec *_this)
+{
+    return _this->end_offs < _this->storage ? _this->buf[_this->storage - ++(_this->end_offs)] : 0;
+}
+
+/*Normalizes the contents of val and rng so that rng lies entirely in the
+   high-order symbol.*/
+static void ec_dec_normalize(ec_dec *_this)
+{
+    /*If the range is too small, rescale it and input some bits.*/
+    while (_this->rng <= EC_CODE_BOT)
+    {
+        int sym;
+        _this->nbits_total += EC_SYM_BITS;
+        _this->rng <<= EC_SYM_BITS;
+        /*Use up the remaining bits from our last symbol.*/
+        sym = _this->rem;
+        /*Read the next value from the input.*/
+        _this->rem = ec_read_byte(_this);
+        /*Take the rest of the bits we need from this new symbol.*/
+        sym = (sym << EC_SYM_BITS | _this->rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
+        /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
+        _this->val = ((_this->val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
+    }
+}
+
+void ec_dec_init(ec_dec *_this, unsigned char *_buf, uint32_t _storage)
+{
+    _this->buf = _buf;
+    _this->storage = _storage;
+    _this->end_offs = 0;
+    _this->end_window = 0;
+    _this->nend_bits = 0;
+    /*This is the offset from which ec_tell() will subtract partial bits.
+      The final value after the ec_dec_normalize() call will be the same as in
+       the encoder, but we have to compensate for the bits that are added there.*/
+    _this->nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
+    _this->offs = 0;
+    _this->rng = 1U << EC_CODE_EXTRA;
+    _this->rem = ec_read_byte(_this);
+    _this->val = _this->rng - 1 - (_this->rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+    _this->error = 0;
+    /*Normalize the interval.*/
+    ec_dec_normalize(_this);
+}
+
+unsigned ec_decode(ec_dec *_this, unsigned _ft)
+{
+    unsigned s;
+    _this->ext = celt_udiv(_this->rng, _ft);
+    s = (unsigned)(_this->val / _this->ext);
+    return _ft - EC_MINI(s + 1, _ft);
+}
+
+unsigned ec_decode_bin(ec_dec *_this, unsigned _bits)
+{
+    unsigned s;
+    _this->ext = _this->rng >> _bits;
+    s = (unsigned)(_this->val / _this->ext);
+    return (1U << _bits) - EC_MINI(s + 1U, 1U << _bits);
+}
+
+void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft)
+{
+    uint32_t s;
+    s = IMUL32(_this->ext, _ft - _fh);
+    _this->val -= s;
+    _this->rng = _fl > 0 ? IMUL32(_this->ext, _fh - _fl) : _this->rng - s;
+    ec_dec_normalize(_this);
+}
+
+/*The probability of having a "one" is 1/(1<<_logp).*/
+int ec_dec_bit_logp(ec_dec *_this, unsigned _logp)
+{
+    uint32_t r;
+    uint32_t d;
+    uint32_t s;
+    int ret;
+    r = _this->rng;
+    d = _this->val;
+    s = r >> _logp;
+    ret = d < s;
+    if (!ret)
+        _this->val = d - s;
+    _this->rng = ret ? s : r - s;
+    ec_dec_normalize(_this);
+    return ret;
+}
+
+int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb)
+{
+    uint32_t r;
+    uint32_t d;
+    uint32_t s;
+    uint32_t t;
+    int ret;
+    s = _this->rng;
+    d = _this->val;
+    r = s >> _ftb;
+    ret = -1;
+    do
+    {
+        t = s;
+        s = IMUL32(r, _icdf[++ret]);
+    } while (d < s);
+    _this->val = d - s;
+    _this->rng = t - s;
+    ec_dec_normalize(_this);
+    return ret;
+}
+
+uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft)
+{
+    unsigned ft;
+    unsigned s;
+    int ftb;
+    /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
+    celt_assert(_ft > 1);
+    _ft--;
+    ftb = EC_ILOG(_ft);
+    if (ftb > EC_UINT_BITS)
+    {
+        uint32_t t;
+        ftb -= EC_UINT_BITS;
+        ft = (unsigned)(_ft >> ftb) + 1;
+        s = ec_decode(_this, ft);
+        ec_dec_update(_this, s, s + 1, ft);
+        t = (uint32_t)s << ftb | ec_dec_bits(_this, ftb);
+        if (t <= _ft)
+            return t;
+        _this->error = 1;
+        return _ft;
+    }
+    else
+    {
+        _ft++;
+        s = ec_decode(_this, (unsigned)_ft);
+        ec_dec_update(_this, s, s + 1, (unsigned)_ft);
+        return s;
+    }
+}
+
+uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits)
+{
+    ec_window window;
+    int available;
+    uint32_t ret;
+    window = _this->end_window;
+    available = _this->nend_bits;
+    if ((unsigned)available < _bits)
+    {
+        do
+        {
+            window |= (ec_window)ec_read_byte_from_end(_this) << available;
+            available += EC_SYM_BITS;
+        } while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
+    }
+    ret = (uint32_t)window & (((uint32_t)1 << _bits) - 1U);
+    window >>= _bits;
+    available -= _bits;
+    _this->end_window = window;
+    _this->nend_bits = available;
+    _this->nbits_total += _bits;
+    return ret;
+}
+
+static int ec_write_byte(ec_enc *_this, unsigned _value)
+{
+    if (_this->offs + _this->end_offs >= _this->storage)
+        return -1;
+    _this->buf[_this->offs++] = (unsigned char)_value;
+    return 0;
+}
+
+static int ec_write_byte_at_end(ec_enc *_this, unsigned _value)
+{
+    if (_this->offs + _this->end_offs >= _this->storage)
+        return -1;
+    _this->buf[_this->storage - ++(_this->end_offs)] = (unsigned char)_value;
+    return 0;
+}
+
+/*Outputs a symbol, with a carry bit.
+  If there is a potential to propagate a carry over several symbols, they are
+   buffered until it can be determined whether or not an actual carry will
+   occur.
+  If the counter for the buffered symbols overflows, then the stream becomes
+   undecodable.
+  This gives a theoretical limit of a few billion symbols in a single packet on
+   32-bit systems.
+  The alternative is to truncate the range in order to force a carry, but
+   requires similar carry tracking in the decoder, needlessly slowing it down.*/
+static void ec_enc_carry_out(ec_enc *_this, int _c)
+{
+    if (_c != EC_SYM_MAX)
+    {
+        /*No further carry propagation possible, flush buffer.*/
+        int carry;
+        carry = _c >> EC_SYM_BITS;
+        /*Don't output a byte on the first write.
+          This compare should be taken care of by branch-prediction thereafter.*/
+        if (_this->rem >= 0)
+            _this->error |= ec_write_byte(_this, _this->rem + carry);
+        if (_this->ext > 0)
+        {
+            unsigned sym;
+            sym = (EC_SYM_MAX + carry) & EC_SYM_MAX;
+            do
+                _this->error |= ec_write_byte(_this, sym);
+            while (--(_this->ext) > 0);
+        }
+        _this->rem = _c & EC_SYM_MAX;
+    }
+    else
+        _this->ext++;
+}
+
+static OPUS_INLINE void ec_enc_normalize(ec_enc *_this)
+{
+    /*If the range is too small, output some bits and rescale it.*/
+    while (_this->rng <= EC_CODE_BOT)
+    {
+        ec_enc_carry_out(_this, (int)(_this->val >> EC_CODE_SHIFT));
+        /*Move the next-to-high-order symbol into the high-order position.*/
+        _this->val = (_this->val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+        _this->rng <<= EC_SYM_BITS;
+        _this->nbits_total += EC_SYM_BITS;
+    }
+}
+
+void ec_enc_init(ec_enc *_this, unsigned char *_buf, uint32_t _size)
+{
+    _this->buf = _buf;
+    _this->end_offs = 0;
+    _this->end_window = 0;
+    _this->nend_bits = 0;
+    /*This is the offset from which ec_tell() will subtract partial bits.*/
+    _this->nbits_total = EC_CODE_BITS + 1;
+    _this->offs = 0;
+    _this->rng = EC_CODE_TOP;
+    _this->rem = -1;
+    _this->val = 0;
+    _this->ext = 0;
+    _this->storage = _size;
+    _this->error = 0;
+}
+
+void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft)
+{
+    uint32_t r;
+    r = celt_udiv(_this->rng, _ft);
+    if (_fl > 0)
+    {
+        _this->val += _this->rng - IMUL32(r, (_ft - _fl));
+        _this->rng = IMUL32(r, (_fh - _fl));
+    }
+    else
+        _this->rng -= IMUL32(r, (_ft - _fh));
+    ec_enc_normalize(_this);
+}
+
+void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits)
+{
+    uint32_t r;
+    r = _this->rng >> _bits;
+    if (_fl > 0)
+    {
+        _this->val += _this->rng - IMUL32(r, ((1U << _bits) - _fl));
+        _this->rng = IMUL32(r, (_fh - _fl));
+    }
+    else
+        _this->rng -= IMUL32(r, ((1U << _bits) - _fh));
+    ec_enc_normalize(_this);
+}
+
+/*The probability of having a "one" is 1/(1<<_logp).*/
+void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp)
+{
+    uint32_t r;
+    uint32_t s;
+    uint32_t l;
+    r = _this->rng;
+    l = _this->val;
+    s = r >> _logp;
+    r -= s;
+    if (_val)
+        _this->val = l + r;
+    _this->rng = _val ? s : r;
+    ec_enc_normalize(_this);
+}
+
+void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb)
+{
+    uint32_t r;
+    r = _this->rng >> _ftb;
+    if (_s > 0)
+    {
+        _this->val += _this->rng - IMUL32(r, _icdf[_s - 1]);
+        _this->rng = IMUL32(r, _icdf[_s - 1] - _icdf[_s]);
+    }
+    else
+        _this->rng -= IMUL32(r, _icdf[_s]);
+    ec_enc_normalize(_this);
+}
+
+void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft)
+{
+    unsigned ft;
+    unsigned fl;
+    int ftb;
+    /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
+    celt_assert(_ft > 1);
+    _ft--;
+    ftb = EC_ILOG(_ft);
+    if (ftb > EC_UINT_BITS)
+    {
+        ftb -= EC_UINT_BITS;
+        ft = (_ft >> ftb) + 1;
+        fl = (unsigned)(_fl >> ftb);
+        ec_encode(_this, fl, fl + 1, ft);
+        ec_enc_bits(_this, _fl & (((uint32_t)1 << ftb) - 1U), ftb);
+    }
+    else
+        ec_encode(_this, _fl, _fl + 1, _ft + 1);
+}
+
+void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits)
+{
+    ec_window window;
+    int used;
+    window = _this->end_window;
+    used = _this->nend_bits;
+    celt_assert(_bits > 0);
+    if (used + _bits > EC_WINDOW_SIZE)
+    {
+        do
+        {
+            _this->error |= ec_write_byte_at_end(_this, (unsigned)window & EC_SYM_MAX);
+            window >>= EC_SYM_BITS;
+            used -= EC_SYM_BITS;
+        } while (used >= EC_SYM_BITS);
+    }
+    window |= (ec_window)_fl << used;
+    used += _bits;
+    _this->end_window = window;
+    _this->nend_bits = used;
+    _this->nbits_total += _bits;
+}
+

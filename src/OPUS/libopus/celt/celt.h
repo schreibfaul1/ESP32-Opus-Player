@@ -49,6 +49,8 @@ extern "C" {
 #define CELTDecoder OpusCustomDecoder
 #define CELTMode OpusCustomMode
 
+
+
 #define LEAK_BANDS 19
 
 typedef struct {
@@ -137,6 +139,23 @@ typedef struct {
 /* The minimum pitch lag to allow in the pitch-based PLC. This corresponds to a
    pitch of 480 Hz. */
 #define PLC_PITCH_LAG_MIN (100)
+
+/*The number of bits to output at a time.*/
+# define EC_SYM_BITS   (8)
+/*The total number of bits in each of the state registers.*/
+# define EC_CODE_BITS  (32)
+/*The maximum symbol value.*/
+# define EC_SYM_MAX    ((1U<<EC_SYM_BITS)-1)
+/*Bits to shift by to move a symbol into the high-order position.*/
+# define EC_CODE_SHIFT (EC_CODE_BITS-EC_SYM_BITS-1)
+/*Carry bit of the high-order range symbol.*/
+# define EC_CODE_TOP   (((uint32_t)1U)<<(EC_CODE_BITS-1))
+/*Low-order bit of the high-order range symbol.*/
+# define EC_CODE_BOT   (EC_CODE_TOP>>EC_SYM_BITS)
+/*The number of bits available for the last, partial symbol in the code field.*/
+# define EC_CODE_EXTRA ((EC_CODE_BITS-2)%EC_SYM_BITS+1)
+
+
 
 /* Encoder stuff */
 

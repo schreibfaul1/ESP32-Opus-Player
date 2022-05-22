@@ -56,6 +56,7 @@
 #define celt_sig_assert(cond)
 
 
+
 #define IMUL32(a,b) ((a)*(b))
 
 #define MIN16(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 16-bit value.   */
