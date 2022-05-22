@@ -32,6 +32,7 @@
 */
 
 #include "mathops.h"
+#include "fixed_generic.h"
 
 /*Compute floor(sqrt(_val)) with exact arithmetic.
   _val must be greater than 0.

@@ -74,6 +74,20 @@ typedef struct {
    int offset;
 } SILKInfo;
 
+#define ABS16(x) ((x) < 0 ? (-(x)) : (x))
+#define ABS32(x) ((x) < 0 ? (-(x)) : (x))
+
+#define IMUL32(a,b) ((a)*(b))
+
+#define MIN16(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 16-bit value.   */
+#define MAX16(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 16-bit value.   */
+#define MIN32(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 32-bit value.   */
+#define MAX32(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 32-bit value.   */
+#define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
+#define IMAX(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum int value.   */
+#define UADD32(a,b) ((a)+(b))
+#define USUB32(a,b) ((a)-(b))
+
 #define __celt_check_mode_ptr_ptr(ptr) ((ptr) + ((ptr) - (const CELTMode**)(ptr)))
 
 #define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
@@ -191,53 +205,12 @@ static const unsigned char spread_icdf[4] = {25, 23, 2, 0};
 
 static const unsigned char tapset_icdf[3]={2,1,0};
 
-#ifdef CUSTOM_MODES
-static const unsigned char toOpusTable[20] = {
-      0xE0, 0xE8, 0xF0, 0xF8,
-      0xC0, 0xC8, 0xD0, 0xD8,
-      0xA0, 0xA8, 0xB0, 0xB8,
-      0x00, 0x00, 0x00, 0x00,
-      0x80, 0x88, 0x90, 0x98,
-};
-
-static const unsigned char fromOpusTable[16] = {
-      0x80, 0x88, 0x90, 0x98,
-      0x40, 0x48, 0x50, 0x58,
-      0x20, 0x28, 0x30, 0x38,
-      0x00, 0x08, 0x10, 0x18
-};
-
-static OPUS_INLINE int toOpus(unsigned char c)
-{
-   int ret=0;
-   if (c<0xA0)
-      ret = toOpusTable[c>>3];
-   if (ret == 0)
-      return -1;
-   else
-      return ret|(c&0x7);
-}
-
-static OPUS_INLINE int fromOpus(unsigned char c)
-{
-   if (c<0x80)
-      return -1;
-   else
-      return fromOpusTable[(c>>3)-16] | (c&0x7);
-}
-#endif /* CUSTOM_MODES */
-
 #define COMBFILTER_MAXPERIOD 1024
 #define COMBFILTER_MINPERIOD 15
 
 extern const signed char tf_select_table[4][8];
 
-#if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
-void validate_celt_decoder(CELTDecoder *st);
-#define VALIDATE_CELT_DECODER(st) validate_celt_decoder(st)
-#else
 #define VALIDATE_CELT_DECODER(st)
-#endif
 
 int resampling_factor(int32_t rate);
 
@@ -260,12 +233,6 @@ void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
 
 void init_caps(const CELTMode *m,int *cap,int LM,int C);
 
-#ifdef RESYNTH
-void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef, int32_t *mem);
-void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t * out_syn[],
-      int16_t *oldBandE, int start, int effEnd, int C, int CC, int isTransient,
-      int LM, int downsample, int silence);
-#endif
 
 #ifdef __cplusplus
 }

@@ -33,6 +33,8 @@
 #ifndef FIXED_GENERIC_H
 #define FIXED_GENERIC_H
 
+#include "celt.h"
+
 /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
 #define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(uint16_t)(b))
 

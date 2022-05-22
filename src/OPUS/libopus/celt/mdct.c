@@ -39,6 +39,8 @@
    and scaling in many places.
 */
 
+#include "celt.h"
+#include "fixed_generic.h"
 #include "mdct.h"
 #include "kiss_fft.h"
 #include "_kiss_fft_guts.h"

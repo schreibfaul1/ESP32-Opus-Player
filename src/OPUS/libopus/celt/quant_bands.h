@@ -30,6 +30,7 @@
 #define QUANT_BANDS
 
 #include "arch.h"
+#include "celt.h"
 #include "modes.h"
 #include "entenc.h"
 #include "entdec.h"

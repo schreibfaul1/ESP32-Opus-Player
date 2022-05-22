@@ -57,17 +57,6 @@
 
 
 
-#define IMUL32(a,b) ((a)*(b))
-
-#define MIN16(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 16-bit value.   */
-#define MAX16(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 16-bit value.   */
-#define MIN32(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 32-bit value.   */
-#define MAX32(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 32-bit value.   */
-#define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
-#define IMAX(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum int value.   */
-#define UADD32(a,b) ((a)+(b))
-#define USUB32(a,b) ((a)-(b))
-
 /* Set this if int64_t is a native type of the CPU. */
 /* Assume that all LP64 architectures have fast 64-bit types; also x86_64
    (which can be ILP32 for x32) and Win64 (which is LLP64). */
@@ -97,14 +86,13 @@
 #define SCALEIN(a)      (a)
 #define SCALEOUT(a)     (a)
 
-#define ABS16(x) ((x) < 0 ? (-(x)) : (x))
-#define ABS32(x) ((x) < 0 ? (-(x)) : (x))
+
 
 static OPUS_INLINE int16_t SAT16(int32_t x) {
    return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
 }
 
-#include "fixed_generic.h"
+//#include "fixed_generic.h"
 #define GLOBAL_STACK_SIZE 120000
 
 

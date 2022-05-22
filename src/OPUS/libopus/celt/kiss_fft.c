@@ -32,6 +32,8 @@
 
 #include "_kiss_fft_guts.h"
 #include "arch.h"
+#include "fixed_generic.h"
+#include "celt.h"
 #include "os_support.h"
 #include "mathops.h"
 #include "stack_alloc.h"

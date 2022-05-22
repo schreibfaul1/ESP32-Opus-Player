@@ -36,6 +36,7 @@
 
 #include "modes.h"
 #include "cpu_support.h"
+#include "fixed_generic.h"
 
 void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
       int len, int C, int arch);
