@@ -3,17 +3,17 @@
 
 
 #include <Arduino.h>
-#include "SD.h"
+#include "SD_MMC.h"
 #include "FS.h"
 #include "driver/i2s.h"
 #include "OPUS/opusfile/opusfile.h"
 
 
 // Digital I/O used
-#define SD_CS          5
-#define SPI_MOSI      23
-#define SPI_MISO      19
-#define SPI_SCK       18
+#define SD_CS         13
+#define SPI_MOSI      15
+#define SPI_MISO       2
+#define SPI_SCK       14
 #define I2S_DOUT      25
 #define I2S_BCLK      27
 #define I2S_LRC       26
@@ -41,6 +41,9 @@ OpusFileCallbacks cb;
 TaskHandle_t opus_task;
 File file;
 
+// prototypes
+bool playSample(int16_t sample[2]);
+
 //---------------------------------------------------------------------------------------------------------------------
 //        I 2 S   S t u f f
 //---------------------------------------------------------------------------------------------------------------------
@@ -50,8 +53,8 @@ void setupI2S(){
     m_i2s_config.sample_rate          = 16000;
     m_i2s_config.bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT;
     m_i2s_config.channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
-//    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
+//    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S | I2S_COMM_FORMAT_STAND_I2S);
+    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
     m_i2s_config.intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1; // high interrupt priority
     m_i2s_config.dma_buf_count        = 8;      // max buffers
     m_i2s_config.dma_buf_len          = 1024;   // max value
@@ -262,20 +265,21 @@ void setup() {
     I2Sstart(m_i2s_num);
     Serial.begin(115200);
     delay(1000);
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-    SD.begin(SD_CS);
-    file = SD.open("/opus/sample1.opus");
+    // SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+    pinMode(2, INPUT_PULLUP);
+    SD_MMC.begin("/sdcard", true);
+    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     cb = { OPUS_read, NULL, NULL, NULL };
     of = op_open_callbacks(NULL, &cb, NULL, 0, NULL);
 
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */
-            4096 * 4,  /* Stack size in words */
+            4096 * 6,  /* Stack size in words */
             NULL,  /* Task input parameter */
-            1 | portPRIVILEGE_BIT,  /* Priority of the task */
+            2,  /* Priority of the task */
             &opus_task,  /* Task handle. */
-            0 /* Core where the task should run */
+            1 /* Core where the task should run */
     );
 }
 
@@ -283,4 +287,3 @@ void loop() {
     ;
 }
 //---------------------------------------------------------------------------------------------------------------------
-
