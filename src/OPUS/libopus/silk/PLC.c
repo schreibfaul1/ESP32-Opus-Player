@@ -184,7 +184,7 @@ static OPUS_INLINE void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32
     /* Find the subframe with lowest energy of the last two and use that as random noise generator */
     silk_sum_sqr_shift( energy1, shift1, exc_buf,                  subfr_length );
     silk_sum_sqr_shift( energy2, shift2, &exc_buf[ subfr_length ], subfr_length );
-    //;
+    
 }
 
 static OPUS_INLINE void silk_PLC_conceal(
@@ -381,7 +381,7 @@ static OPUS_INLINE void silk_PLC_conceal(
     for( i = 0; i < MAX_NB_SUBFR; i++ ) {
         psDecCtrl->pitchL[ i ] = lag;
     }
-    //;
+    
 }
 
 /* Glues concealed frames with new good received frames */

@@ -313,7 +313,7 @@ void pitch_search(const int16_t * __restrict__ x_lp, int16_t * __restrict__ y,
    }
    *pitch = 2*best_pitch[0]-offset;
 
-   //;
+   
 }
 
 static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy)
@@ -449,6 +449,6 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod,
 
    if (*T0_<minperiod0)
       *T0_=minperiod0;
-   //;
+   
    return pg;
 }

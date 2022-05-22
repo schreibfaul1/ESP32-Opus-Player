@@ -231,7 +231,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    F2_5 = F5>>1;
    if (frame_size < F2_5)
    {
-      //;
+      
       return OPUS_BUFFER_TOO_SMALL;
    }
    /* Limit frame_size to avoid excessive stack allocations. */
@@ -259,7 +259,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
          /* If we haven't got any packet yet, all we can do is return zeros */
          for (i=0;i<audiosize*st->channels;i++)
             pcm[i] = 0;
-         //;
+         
          return audiosize;
       }
 
@@ -271,13 +271,13 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
             int ret = opus_decode_frame(st, NULL, 0, pcm, IMIN(audiosize, F20), 0);
             if (ret<0)
             {
-               //;
+               
                return ret;
             }
             pcm += ret*st->channels;
             audiosize -= ret;
          } while (audiosize > 0);
-         //;
+         
          return frame_size;
       } else if (audiosize < F20)
       {
@@ -317,7 +317,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    if (audiosize > frame_size)
    {
       /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
-      //;
+      
       return OPUS_BAD_ARG;
    } else {
       frame_size = audiosize;
@@ -377,7 +377,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
               for (i=0;i<frame_size*st->channels;i++)
                  pcm_ptr[i] = 0;
            } else {
-             //;
+             
              return OPUS_INTERNAL_ERROR;
            }
         }
@@ -582,7 +582,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
          OPUS_PRINT_INT(audiosize);
    }
 
-   //;
+   
    return celt_ret < 0 ? celt_ret : audiosize;
 
 }

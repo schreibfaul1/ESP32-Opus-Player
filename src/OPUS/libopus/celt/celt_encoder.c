@@ -348,7 +348,7 @@ static int transient_analysis(const int32_t * __restrict__ in, int len, int C,
    /* *tf_estimate = 1 + MIN16(1, sqrt(MAX16(0, tf_max-30))/20); */
    *tf_estimate = celt_sqrt(MAX32(0, SHL32(MULT16_16(QCONST16(0.0069,14),MIN16(163,tf_max)),14)-QCONST32(0.139,28)));
    /*printf("%d %f\n", tf_max, mask_metric);*/
-   //;
+   
 
    /*printf("%d %f %d\n", is_transient, (float)*tf_estimate, tf_max);*/
    return is_transient;
@@ -657,7 +657,7 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
          tf_res[i] = path0[i+1];
    }
    /*printf("%d %f\n", *tf_sum, tf_estimate);*/
-   //;
+   
 
    return tf_select;
 }
@@ -1057,7 +1057,7 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
          importance[i] = 13;
    }
    *tot_boost_ = tot_boost;
-   //;
+   
    return maxDepth;
 }
 
@@ -1182,7 +1182,7 @@ static int run_prefilter(CELTEncoder *st, int32_t *in, int32_t *prefilter_mem, i
       }
    } while (++c<CC);
 
-   //;
+   
    *gain = gain1;
    *pitch = pitch_index;
    *qgain = qg;
@@ -1366,7 +1366,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    tf_estimate = 0;
    if (nbCompressedBytes<2 || pcm==NULL)
    {
-      //;
+      
       return OPUS_BAD_ARG;
    }
 
@@ -1376,7 +1376,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
          break;
    if (LM>mode->maxLM)
    {
-      //;
+      
       return OPUS_BAD_ARG;
    }
    M=1<<LM;
@@ -2093,7 +2093,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    ec_enc_done(enc);
 
 
-   //;
+   
    if (ec_get_error(enc))
       return OPUS_INTERNAL_ERROR;
    else

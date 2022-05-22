@@ -187,5 +187,5 @@ void silk_resampler_private_down_FIR(
 
     /* Copy last part of filtered signal to the state for the next call */
     silk_memcpy( S->sFIR.i32, &buf[ nSamplesIn ], S->FIR_Order * sizeof( int32_t ) );
-    //;
+    
 }

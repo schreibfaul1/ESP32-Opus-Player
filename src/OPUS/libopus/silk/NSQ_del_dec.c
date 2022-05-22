@@ -301,7 +301,7 @@ void silk_NSQ_del_dec_c(
     /* Save quantized speech signal */
     silk_memmove( NSQ->xq,           &NSQ->xq[           psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( int16_t ) );
     silk_memmove( NSQ->sLTP_shp_Q14, &NSQ->sLTP_shp_Q14[ psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( int32_t ) );
-    //;
+    
 }
 
 /******************************************/
@@ -637,7 +637,7 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
         psDD = &psDelDec[ k ];
         silk_memcpy( psDD->sLPC_Q14, &psDD->sLPC_Q14[ length ], NSQ_LPC_BUF_LENGTH * sizeof( int32_t ) );
     }
-    //;
+    
 }
 #endif /* OVERRIDE_silk_noise_shape_quantizer_del_dec */
 

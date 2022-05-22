@@ -135,5 +135,5 @@ void silk_find_pitch_lags_FIX(
         psEnc->sCmn.indices.contourIndex = 0;
         psEnc->LTPCorr_Q15 = 0;
     }
-    //;
+    
 }

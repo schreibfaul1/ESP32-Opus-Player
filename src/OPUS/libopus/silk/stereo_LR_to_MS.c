@@ -221,5 +221,5 @@ void silk_stereo_LR_to_MS(
     state->pred_prev_Q13[ 0 ] = (int16_t)pred_Q13[ 0 ];
     state->pred_prev_Q13[ 1 ] = (int16_t)pred_Q13[ 1 ];
     state->width_prev_Q14     = (int16_t)width_Q14;
-    //;
+    
 }
