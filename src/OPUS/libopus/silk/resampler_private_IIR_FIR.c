@@ -99,5 +99,5 @@ void silk_resampler_private_IIR_FIR(
 
     /* Copy last part of filtered signal to the state for the next call */
     silk_memcpy( S->sFIR.i16, &buf[ nSamplesIn << 1 ], RESAMPLER_ORDER_FIR_12 * sizeof( int16_t ) );
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }

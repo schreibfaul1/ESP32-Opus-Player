@@ -137,5 +137,5 @@ void silk_find_pred_coefs_FIX(
 
     /* Copy to prediction struct for use in next frame for interpolation */
     silk_memcpy( psEnc->sCmn.prev_NLSFq_Q15, NLSF_Q15, sizeof( psEnc->sCmn.prev_NLSFq_Q15 ) );
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }

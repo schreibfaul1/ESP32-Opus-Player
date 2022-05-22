@@ -326,7 +326,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
       *delayedIntra = ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]),*delayedIntra),
             new_distortion);
 
-   RESTORE_STACK;
+   //RESTORE_STACK;
 }
 
 void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant, ec_enc *enc, int C)

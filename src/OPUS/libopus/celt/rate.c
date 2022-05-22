@@ -521,7 +521,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
       bits[j] = 0;
       fine_priority[j] = ebits[j]<1;
    }
-   RESTORE_STACK;
+   //RESTORE_STACK;
    return codedBands;
 }
 
@@ -634,7 +634,7 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
    codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
          total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
          pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
-   RESTORE_STACK;
+   //RESTORE_STACK;
    return codedBands;
 }
 

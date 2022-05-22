@@ -229,5 +229,5 @@ void silk_decode_core(
 
     /* Save LPC state */
     silk_memcpy( psDec->sLPC_Q14_buf, sLPC_Q14, MAX_LPC_ORDER * sizeof( int32_t ) );
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }

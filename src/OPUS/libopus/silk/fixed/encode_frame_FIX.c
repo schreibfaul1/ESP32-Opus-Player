@@ -365,7 +365,7 @@ int32_t silk_encode_frame_FIX(
     if( psEnc->sCmn.prefillFlag ) {
         /* No payload */
         *pnBytesOut = 0;
-        RESTORE_STACK;
+        //RESTORE_STACK;
         return ret;
     }
 
@@ -380,7 +380,7 @@ int32_t silk_encode_frame_FIX(
     /* Payload size */
     *pnBytesOut = silk_RSHIFT( ec_tell( psRangeEnc ) + 7, 3 );
 
-    RESTORE_STACK;
+    //RESTORE_STACK;
     return ret;
 }
 

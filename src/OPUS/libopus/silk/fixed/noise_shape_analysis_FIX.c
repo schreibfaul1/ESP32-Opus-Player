@@ -398,6 +398,6 @@ void silk_noise_shape_analysis_FIX(
         psEncCtrl->HarmShapeGain_Q14[ k ] = ( int32_t )silk_RSHIFT_ROUND( psShapeSt->HarmShapeGain_smth_Q16, 2 );
         psEncCtrl->Tilt_Q14[ k ]          = ( int32_t )silk_RSHIFT_ROUND( psShapeSt->Tilt_smth_Q16,          2 );
     }
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }
 #endif /* OVERRIDE_silk_noise_shape_analysis_FIX */

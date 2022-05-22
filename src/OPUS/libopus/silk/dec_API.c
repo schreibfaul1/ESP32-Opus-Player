@@ -141,13 +141,13 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                 channel_state[ n ].nb_subfr = 4;
             } else {
                 celt_assert( 0 );
-                RESTORE_STACK;
+                //RESTORE_STACK;
                 return SILK_DEC_INVALID_FRAME_SIZE;
             }
             fs_kHz_dec = ( decControl->internalSampleRate >> 10 ) + 1;
             if( fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16 ) {
                 celt_assert( 0 );
-                RESTORE_STACK;
+                //RESTORE_STACK;
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
             ret += silk_decoder_set_fs( &channel_state[ n ], fs_kHz_dec, decControl->API_sampleRate );
@@ -164,7 +164,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     if( decControl->API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || decControl->API_sampleRate < 8000 ) {
         ret = SILK_DEC_INVALID_SAMPLING_FREQUENCY;
-        RESTORE_STACK;
+        //RESTORE_STACK;
         return( ret );
     }
 
@@ -377,7 +377,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     } else {
        psDec->prev_decode_only_middle = decode_only_middle;
     }
-    RESTORE_STACK;
+    //RESTORE_STACK;
     return ret;
 }
 

@@ -176,5 +176,5 @@ void silk_CNG(
     } else {
         silk_memset( psCNG->CNG_synth_state, 0, psDec->LPC_order *  sizeof( int32_t ) );
     }
-    RESTORE_STACK;
+    //;
 }

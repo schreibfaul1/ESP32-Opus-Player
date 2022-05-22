@@ -121,6 +121,6 @@ int32_t silk_decode_frame(
     /* Set output frame length */
     *pN = L;
 
-    RESTORE_STACK;
+    //RESTORE_STACK;
     return ret;
 }

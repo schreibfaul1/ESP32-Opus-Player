@@ -681,7 +681,7 @@ void get_required_bits(int16_t *_bits,int _n,int _maxk,int _frac){
     ncwrs_urow(_n,_maxk,u);
     for(k=1;k<=_maxk;k++)
       _bits[k]=log2_frac(u[k]+u[k+1],_frac);
-    RESTORE_STACK;
+    //RESTORE_STACK;
   }
 }
 #endif /* CUSTOM_MODES */
@@ -695,7 +695,7 @@ void encode_pulses(const int *_y,int _n,int _k,ec_enc *_enc){
   ALLOC(u,_k+2U,uint32_t);
   i=icwrs(_n,_k,&nc,_y,u);
   ec_enc_uint(_enc,i,nc);
-  RESTORE_STACK;
+  //RESTORE_STACK;
 }
 
 int32_t decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
@@ -705,7 +705,7 @@ int32_t decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
   celt_assert(_k>0);
   ALLOC(u,_k+2U,uint32_t);
   ret = cwrsi(_n,_k,ec_dec_uint(_dec,ncwrs_urow(_n,_k,u)),_y,u);
-  RESTORE_STACK;
+  //RESTORE_STACK;
   return ret;
 }
 

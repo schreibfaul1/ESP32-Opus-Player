@@ -114,7 +114,7 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
   expected_matrix_size = nb_input_streams * channels * sizeof(int16_t);
   if (expected_matrix_size != demixing_matrix_size)
   {
-    RESTORE_STACK;
+    //RESTORE_STACK;
     return OPUS_BAD_ARG;
   }
 
@@ -132,7 +132,7 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
     mapping_matrix_get_size(channels, nb_input_streams);
   if (!st->demixing_matrix_size_in_bytes)
   {
-    RESTORE_STACK;
+    //RESTORE_STACK;
     return OPUS_BAD_ARG;
   }
 
@@ -145,7 +145,7 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
 
   ret = opus_multistream_decoder_init(
     get_multistream_decoder(st), Fs, channels, streams, coupled_streams, mapping);
-  RESTORE_STACK;
+  //RESTORE_STACK;
   return ret;
 }
 

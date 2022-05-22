@@ -98,5 +98,5 @@ void silk_resampler_down2_3(
     /* Copy last part of filtered signal to the state for the next call */
     silk_memcpy( S, &buf[ nSamplesIn ], ORDER_FIR * sizeof( int32_t ) );
     free(buf);
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }

@@ -198,5 +198,5 @@ void silk_encode_pulses(
     /* Encode signs */
     /****************/
     silk_encode_signs( psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses );
-    RESTORE_STACK;
+    //RESTORE_STACK;
 }

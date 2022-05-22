@@ -288,7 +288,7 @@ int32_t silk_VAD_GetSA_Q8_c(                                   /* O    Return va
         psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16 * 128, 4 ) );
     }
 
-    RESTORE_STACK;
+    //;
     return( ret );
 }
 
