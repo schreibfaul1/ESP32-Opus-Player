@@ -75,7 +75,7 @@ void silk_quant_LTP_gains(
         rate_dist_Q7 = 0;
         sum_log_gain_tmp_Q7 = *sum_log_gain_Q7;
         for( j = 0; j < nb_subfr; j++ ) {
-            max_gain_Q7 = silk_log2lin( ( SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB / 6.0, 7 ) - sum_log_gain_tmp_Q7 )
+            max_gain_Q7 = silk_log2lin( ( SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB / 6.0L, 7 ) - sum_log_gain_tmp_Q7 )
                                         + SILK_FIX_CONST( 7, 7 ) ) - gain_safety;
             silk_VQ_WMat_EC(
                 &temp_idx[ j ],         /* O    index of best codebook vector                           */

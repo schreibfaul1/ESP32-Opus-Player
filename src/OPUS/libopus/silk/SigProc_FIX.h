@@ -540,7 +540,7 @@ static OPUS_INLINE int32_t silk_ROR32( int32_t a32, int32_t rot )
 #define silk_max(a, b)                      (((a) > (b)) ? (a) : (b))
 
 /* Macro to convert floating-point constants to fixed-point */
-#define SILK_FIX_CONST( C, Q )              ((int32_t)((C) * ((int64_t)1 << (Q)) + 0.5))
+#define SILK_FIX_CONST( C, Q )              ((int32_t)((C) * ((int64_t)1 << (Q)) + 0.5L))
 
 /* silk_min() versions with typecast in the function call */
 static OPUS_INLINE int32_t silk_min_int(int32_t a, int32_t b)
