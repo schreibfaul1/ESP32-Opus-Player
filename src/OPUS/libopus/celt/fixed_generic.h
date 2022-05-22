@@ -166,7 +166,7 @@
 #include "mips/fixed_generic_mipsr1.h"
 #endif
 
-static OPUS_INLINE int16_t SIG2WORD16_generic(celt_sig x)
+static OPUS_INLINE int16_t SIG2WORD16_generic(int32_t x)
 {
    x = PSHR32(x, SIG_SHIFT);
    x = MAX32(x, -32768);

@@ -123,7 +123,7 @@ static void celt_fir5(int16_t *x,
 }
 
 
-void pitch_downsample(celt_sig * __restrict__ x[], int16_t * __restrict__ x_lp,
+void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
       int len, int C, int arch)
 {
    int i;

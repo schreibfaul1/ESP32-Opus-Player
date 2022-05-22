@@ -93,9 +93,9 @@ struct OpusCustomDecoder {
    int postfilter_tapset;
    int postfilter_tapset_old;
 
-   celt_sig preemph_memD[2];
+   int32_t preemph_memD[2];
 
-   celt_sig _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
+   int32_t _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
    /* int16_t lpc[],  Size = channels*LPC_ORDER */
    /* int16_t oldEBands[], Size = 2*mode->nbEBands */
    /* int16_t oldLogE[], Size = 2*mode->nbEBands */
@@ -108,7 +108,7 @@ int opus_custom_decoder_get_size(const CELTMode *mode, int channels)
 {
    static int size;
    size = sizeof(struct CELTDecoder)
-            + (channels*(DECODE_BUFFER_SIZE+mode->overlap)-1)*sizeof(celt_sig)
+            + (channels*(DECODE_BUFFER_SIZE+mode->overlap)-1)*sizeof(int32_t)
             + channels*LPC_ORDER*sizeof(int16_t)
             + 4*2*mode->nbEBands*sizeof(int16_t);
    return size;
@@ -169,12 +169,12 @@ int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels)
 /* Special case for stereo with no downsampling and no accumulation. This is
    quite common and we can make it faster by processing both channels in the
    same loop, reducing overhead due to the dependency loop in the IIR filter. */
-static void deemphasis_stereo_simple(celt_sig *in[], int16_t *pcm, int N, const int16_t coef0,
-      celt_sig *mem)
+static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const int16_t coef0,
+      int32_t *mem)
 {
-   celt_sig * __restrict__ x0;
-   celt_sig * __restrict__ x1;
-   celt_sig m0, m1;
+   int32_t * __restrict__ x0;
+   int32_t * __restrict__ x1;
+   int32_t m0, m1;
    int j;
    x0=in[0];
    x1=in[1];
@@ -182,7 +182,7 @@ static void deemphasis_stereo_simple(celt_sig *in[], int16_t *pcm, int N, const 
    m1 = mem[1];
    for (j=0;j<N;j++)
    {
-      celt_sig tmp0, tmp1;
+      int32_t tmp0, tmp1;
       /* Add VERY_SMALL to x[] first to reduce dependency chain. */
       tmp0 = x0[j] + VERY_SMALL + m0;
       tmp1 = x1[j] + VERY_SMALL + m1;
@@ -199,14 +199,14 @@ static void deemphasis_stereo_simple(celt_sig *in[], int16_t *pcm, int N, const 
 
 static
 
-void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
-      celt_sig *mem, int accum)
+void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
+      int32_t *mem, int accum)
 {
    int c;
    int Nd;
    int apply_downsampling=0;
    int16_t coef0;
-   VARDECL(celt_sig, scratch);
+   VARDECL(int32_t, scratch);
    SAVE_STACK;
 
    /* Short version for common case. */
@@ -216,14 +216,14 @@ void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, cons
       return;
    }
 
-   ALLOC(scratch, N, celt_sig);
+   ALLOC(scratch, N, int32_t);
    coef0 = coef[0];
    Nd = N/downsample;
    c=0; do {
       int j;
-      celt_sig * __restrict__ x;
+      int32_t * __restrict__ x;
       int16_t  * __restrict__ y;
-      celt_sig m = mem[c];
+      int32_t m = mem[c];
       x =in[c];
       y = pcm+c;
 
@@ -232,7 +232,7 @@ void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, cons
          /* Shortcut for the standard (non-custom modes) case */
          for (j=0;j<N;j++)
          {
-            celt_sig tmp = x[j] + VERY_SMALL + m;
+            int32_t tmp = x[j] + VERY_SMALL + m;
             m = MULT16_32_Q15(coef0, tmp);
             scratch[j] = tmp;
          }
@@ -244,7 +244,7 @@ void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, cons
          {
             for (j=0;j<N;j++)
             {
-               celt_sig tmp = x[j] + m + VERY_SMALL;
+               int32_t tmp = x[j] + m + VERY_SMALL;
                m = MULT16_32_Q15(coef0, tmp);
                y[j*C] = SAT16(ADD32(y[j*C], SCALEOUT(SIG2WORD16(tmp))));
             }
@@ -253,7 +253,7 @@ void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, cons
          {
             for (j=0;j<N;j++)
             {
-               celt_sig tmp = x[j] + VERY_SMALL + m;
+               int32_t tmp = x[j] + VERY_SMALL + m;
                m = MULT16_32_Q15(coef0, tmp);
                y[j*C] = SCALEOUT(SIG2WORD16(tmp));
             }
@@ -283,7 +283,7 @@ void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, cons
 
 static
 
-void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
+void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t * out_syn[],
                     int16_t *oldBandE, int start, int effEnd, int C, int CC,
                     int isTransient, int LM, int downsample,
                     int silence, int arch)
@@ -296,13 +296,13 @@ void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
    int shift;
    int nbEBands;
    int overlap;
-   VARDECL(celt_sig, freq);
+   VARDECL(int32_t, freq);
    SAVE_STACK;
 
    overlap = mode->overlap;
    nbEBands = mode->nbEBands;
    N = mode->shortMdctSize<<LM;
-   ALLOC(freq, N, celt_sig); /**< Interleaved signal MDCTs */
+   ALLOC(freq, N, int32_t); /**< Interleaved signal MDCTs */
    M = 1<<LM;
 
    if (isTransient)
@@ -319,7 +319,7 @@ void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
    if (CC==2&&C==1)
    {
       /* Copying a mono streams to two channels */
-      celt_sig *freq2;
+      int32_t *freq2;
       denormalise_bands(mode, X, freq, oldBandE, start, effEnd, M,
             downsample, silence);
       /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
@@ -332,7 +332,7 @@ void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
    } else if (CC==1&&C==2)
    {
       /* Downmixing a stereo stream to mono */
-      celt_sig *freq2;
+      int32_t *freq2;
       freq2 = out_syn[0]+overlap/2;
       denormalise_bands(mode, X, freq, oldBandE, start, effEnd, M,
             downsample, silence);
@@ -400,7 +400,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
    }
 }
 
-static int celt_plc_pitch_search(celt_sig *decode_mem[2], int C, int arch)
+static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch)
 {
    int pitch_index;
    VARDECL( int16_t, lp_pitch_buf );
@@ -422,8 +422,8 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
    int c;
    int i;
    const int C = st->channels;
-   celt_sig *decode_mem[2];
-   celt_sig *out_syn[2];
+   int32_t *decode_mem[2];
+   int32_t *out_syn[2];
    int16_t *lpc;
    int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
    const OpusCustomMode *mode;
@@ -457,7 +457,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
    {
       /* Noise-based PLC/CNG */
 
-      VARDECL(celt_norm, X);
+      VARDECL(int16_t, X);
 
       uint32_t seed;
       int end;
@@ -467,7 +467,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
       effEnd = IMAX(start, IMIN(end, mode->effEBands));
 
 
-      ALLOC(X, C*N, celt_norm);   /**< Interleaved normalised MDCTs */
+      ALLOC(X, C*N, int16_t);   /**< Interleaved normalised MDCTs */
 
 
       /* Energy decay */
@@ -490,7 +490,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             for (j=0;j<blen;j++)
             {
                seed = celt_lcg_rand(seed);
-               X[boffs+j] = (celt_norm)((int32_t)seed>>20);
+               X[boffs+j] = (int16_t)((int32_t)seed>>20);
             }
             renormalise_vector(X+boffs, blen, Q15ONE, st->arch);
          }
@@ -535,7 +535,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
          int16_t decay;
          int16_t attenuation;
          int32_t S1=0;
-         celt_sig *buf;
+         int32_t *buf;
          int extrapolation_offset;
          int extrapolation_len;
          int j;
@@ -729,7 +729,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    int32_t bits;
    ec_dec _dec;
 
-   VARDECL(celt_norm, X);
+   VARDECL(int16_t, X);
 
    VARDECL(int, fine_quant);
    VARDECL(int, pulses);
@@ -738,8 +738,8 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    VARDECL(int, fine_priority);
    VARDECL(int, tf_res);
    VARDECL(unsigned char, collapse_masks);
-   celt_sig *decode_mem[2];
-   celt_sig *out_syn[2];
+   int32_t *decode_mem[2];
+   int32_t *out_syn[2];
    int16_t *lpc;
    int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
 
@@ -958,7 +958,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    ALLOC(collapse_masks, C*nbEBands, unsigned char);
 
 
-   ALLOC(X, C*N, celt_norm);   /**< Interleaved normalised MDCTs */
+   ALLOC(X, C*N, int16_t);   /**< Interleaved normalised MDCTs */
 
 
    quant_all_bands(0, mode, start, end, X, C==2 ? X+N : NULL, collapse_masks,

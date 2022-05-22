@@ -39,10 +39,10 @@ extern const signed char eMeans[25];
 
 
 void amp2Log2(const CELTMode *m, int effEnd, int end,
-      celt_ener *bandE, int16_t *bandLogE, int C);
+      int32_t *bandE, int16_t *bandLogE, int C);
 
 void log2Amp(const CELTMode *m, int start, int end,
-      celt_ener *eBands, const int16_t *oldEBands, int C);
+      int32_t *eBands, const int16_t *oldEBands, int C);
 
 void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
       const int16_t *eBands, int16_t *oldEBands, uint32_t budget,

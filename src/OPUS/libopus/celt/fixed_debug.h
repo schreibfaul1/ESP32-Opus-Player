@@ -775,7 +775,7 @@ static OPUS_INLINE int DIV32_(opus_int64 a, opus_int64 b, char *file, int line)
    return res;
 }
 
-static OPUS_INLINE int16_t SIG2WORD16_generic(celt_sig x)
+static OPUS_INLINE int16_t SIG2WORD16_generic(int32_t x)
 {
    x = PSHR32(x, SIG_SHIFT);
    x = MAX32(x, -32768);

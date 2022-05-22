@@ -37,9 +37,9 @@
 #include "entdec.h"
 #include "modes.h"
 
-void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
+void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
 
-int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
+int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
 
 #if !defined(OVERRIDE_OP_PVQ_SEARCH)
 #define op_pvq_search(x, iy, K, N, arch) \
@@ -55,7 +55,7 @@ int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
  * @param enc Entropy encoder state
  * @ret A mask indicating which blocks in the band received pulses
 */
-unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
+unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc,
       int16_t gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
@@ -65,11 +65,11 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
  * @param dec Entropy decoder state
  * @ret A mask indicating which blocks in the band received pulses
  */
-unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
+unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B,
       ec_dec *dec, int16_t gain);
 
-void renormalise_vector(celt_norm *X, int N, int16_t gain, int arch);
+void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
 
-int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
+int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
 
 #endif /* VQ_H */

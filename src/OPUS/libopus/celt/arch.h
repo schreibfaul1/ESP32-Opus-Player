@@ -75,10 +75,6 @@
 
 #define PRINT_MIPS(file)
 
-typedef int32_t celt_sig;
-typedef int16_t celt_norm;
-typedef int32_t celt_ener;
-
 #define celt_isnan(x) 0
 
 #define Q15ONE 32767

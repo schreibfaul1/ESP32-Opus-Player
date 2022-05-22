@@ -40,16 +40,16 @@
 #endif
 
 #ifndef OVERRIDE_vq_exp_rotation1
-static void exp_rotation1(celt_norm *X, int len, int stride, int16_t c, int16_t s)
+static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s)
 {
    int i;
    int16_t ms;
-   celt_norm *Xptr;
+   int16_t *Xptr;
    Xptr = X;
    ms = NEG16(s);
    for (i=0;i<len-stride;i++)
    {
-      celt_norm x1, x2;
+      int16_t x1, x2;
       x1 = Xptr[0];
       x2 = Xptr[stride];
       Xptr[stride] = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x2),  s, x1), 15));
@@ -58,7 +58,7 @@ static void exp_rotation1(celt_norm *X, int len, int stride, int16_t c, int16_t 
    Xptr = &X[len-2*stride-1];
    for (i=len-2*stride-1;i>=0;i--)
    {
-      celt_norm x1, x2;
+      int16_t x1, x2;
       x1 = Xptr[0];
       x2 = Xptr[stride];
       Xptr[stride] = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x2),  s, x1), 15));
@@ -67,7 +67,7 @@ static void exp_rotation1(celt_norm *X, int len, int stride, int16_t c, int16_t 
 }
 #endif /* OVERRIDE_vq_exp_rotation1 */
 
-void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
+void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread)
 {
    static const int SPREAD_FACTOR[3]={15,10,5};
    int i;
@@ -114,7 +114,7 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 
 /** Takes the pitch vector and the decoded residual vector, computes the gain
     that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-static void normalise_residual(int * __restrict__ iy, celt_norm * __restrict__ X,
+static void normalise_residual(int * __restrict__ iy, int16_t * __restrict__ X,
       int N, int32_t Ryy, int16_t gain)
 {
    int i;
@@ -154,9 +154,9 @@ static unsigned extract_collapse_mask(int *iy, int N, int B)
    return collapse_mask;
 }
 
-int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
+int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch)
 {
-   VARDECL(celt_norm, y);
+   VARDECL(int16_t, y);
    VARDECL(int, signx);
    int i, j;
    int pulsesLeft;
@@ -166,7 +166,7 @@ int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
    SAVE_STACK;
 
    (void)arch;
-   ALLOC(y, N, celt_norm);
+   ALLOC(y, N, int16_t);
    ALLOC(signx, N, int);
 
    /* Get rid of the sign */
@@ -204,7 +204,7 @@ int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
       j=0; do {
          /* It's really important to round *towards zero* here */
          iy[j] = MULT16_16_Q15(X[j],rcp);
-         y[j] = (celt_norm)iy[j];
+         y[j] = (int16_t)iy[j];
          yy = MAC16_16(yy, y[j],y[j]);
          xy = MAC16_16(xy, X[j],y[j]);
          y[j] *= 2;
@@ -297,7 +297,7 @@ int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
    return yy;
 }
 
-unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
+unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc,
       int16_t gain, int resynth, int arch)
 {
    VARDECL(int, iy);
@@ -330,7 +330,7 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
 
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
-unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
+unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B,
       ec_dec *dec, int16_t gain)
 {
    int32_t Ryy;
@@ -350,14 +350,14 @@ unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
 }
 
 #ifndef OVERRIDE_renormalise_vector
-void renormalise_vector(celt_norm *X, int N, int16_t gain, int arch)
+void renormalise_vector(int16_t *X, int N, int16_t gain, int arch)
 {
    int i;
    int k;
    int32_t E;
    int16_t g;
    int32_t t;
-   celt_norm *xptr;
+   int16_t *xptr;
    E = EPSILON + celt_inner_prod(X, X, N, arch);
    k = celt_ilog2(E)>>1;
    t = VSHR32(E, 2*(k-7));
@@ -373,7 +373,7 @@ void renormalise_vector(celt_norm *X, int N, int16_t gain, int arch)
 }
 #endif /* OVERRIDE_renormalise_vector */
 
-int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch)
+int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch)
 {
    int i;
    int itheta;
@@ -385,7 +385,7 @@ int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int
    {
       for (i=0;i<N;i++)
       {
-         celt_norm m, s;
+         int16_t m, s;
          m = ADD16(SHR16(X[i],1),SHR16(Y[i],1));
          s = SUB16(SHR16(X[i],1),SHR16(Y[i],1));
          Emid = MAC16_16(Emid, m, m);

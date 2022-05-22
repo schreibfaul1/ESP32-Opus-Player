@@ -37,7 +37,7 @@
 #include "modes.h"
 #include "cpu_support.h"
 
-void pitch_downsample(celt_sig * __restrict__ x[], int16_t * __restrict__ x_lp,
+void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
       int len, int C, int arch);
 
 void pitch_search(const int16_t * __restrict__ x_lp, int16_t * __restrict__ y,

@@ -491,7 +491,7 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *old
 }
 
 void amp2Log2(const CELTMode *m, int effEnd, int end,
-      celt_ener *bandE, int16_t *bandLogE, int C)
+      int32_t *bandE, int16_t *bandLogE, int C)
 {
    int c, i;
    c=0;

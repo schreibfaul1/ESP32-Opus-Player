@@ -108,8 +108,8 @@ struct OpusCustomEncoder {
 
 
 
-   celt_sig in_mem[1]; /* Size = channels*mode->overlap */
-   /* celt_sig prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
+   int32_t in_mem[1]; /* Size = channels*mode->overlap */
+   /* int32_t prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
    /* int16_t oldBandE[],     Size = channels*mode->nbEBands */
    /* int16_t oldLogE[],      Size = channels*mode->nbEBands */
    /* int16_t oldLogE2[],     Size = channels*mode->nbEBands */
@@ -119,8 +119,8 @@ struct OpusCustomEncoder {
 int opus_custom_encoder_get_size(const CELTMode *mode, int channels)
 {
    int size = sizeof(struct CELTEncoder)
-         + (channels*mode->overlap-1)*sizeof(celt_sig)    /* celt_sig in_mem[channels*mode->overlap]; */
-         + channels*COMBFILTER_MAXPERIOD*sizeof(celt_sig) /* celt_sig prefilter_mem[channels*COMBFILTER_MAXPERIOD]; */
+         + (channels*mode->overlap-1)*sizeof(int32_t)    /* int32_t in_mem[channels*mode->overlap]; */
+         + channels*COMBFILTER_MAXPERIOD*sizeof(int32_t) /* int32_t prefilter_mem[channels*COMBFILTER_MAXPERIOD]; */
          + 4*channels*mode->nbEBands*sizeof(int16_t);  /* int16_t oldBandE[channels*mode->nbEBands]; */
                                                           /* int16_t oldLogE[channels*mode->nbEBands]; */
                                                           /* int16_t oldLogE2[channels*mode->nbEBands]; */
@@ -394,8 +394,8 @@ static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands,
 
 /** Apply window and compute the MDCT for all sub-frames and
     all channels in a frame */
-static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * __restrict__ in,
-                          celt_sig * __restrict__ out, int C, int CC, int LM, int upsample,
+static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t * __restrict__ in,
+                          int32_t * __restrict__ out, int C, int CC, int LM, int upsample,
                           int arch)
 {
    const int overlap = mode->overlap;
@@ -440,12 +440,12 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * __re
 }
 
 
-void celt_preemphasis(const int16_t * __restrict__ pcmp, celt_sig * __restrict__ inp,
-                        int N, int CC, int upsample, const int16_t *coef, celt_sig *mem, int clip)
+void celt_preemphasis(const int16_t * __restrict__ pcmp, int32_t * __restrict__ inp,
+                        int N, int CC, int upsample, const int16_t *coef, int32_t *mem, int clip)
 {
    int i;
    int16_t coef0;
-   celt_sig m;
+   int32_t m;
    int Nu;
 
    coef0 = coef[0];
@@ -493,7 +493,7 @@ void celt_preemphasis(const int16_t * __restrict__ pcmp, celt_sig * __restrict__
 
 
 
-static int32_t l1_metric(const celt_norm *tmp, int N, int LM, int16_t bias)
+static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias)
 {
    int i;
    int32_t L1;
@@ -507,7 +507,7 @@ static int32_t l1_metric(const celt_norm *tmp, int N, int LM, int16_t bias)
 }
 
 static int tf_analysis(const CELTMode *m, int len, int isTransient,
-      int *tf_res, int lambda, celt_norm *X, int N0, int LM,
+      int *tf_res, int lambda, int16_t *X, int N0, int LM,
       int16_t tf_estimate, int tf_chan, int *importance)
 {
    int i;
@@ -516,8 +516,8 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
    int cost1;
    VARDECL(int, path0);
    VARDECL(int, path1);
-   VARDECL(celt_norm, tmp);
-   VARDECL(celt_norm, tmp_1);
+   VARDECL(int16_t, tmp);
+   VARDECL(int16_t, tmp_1);
    int sel;
    int selcost[2];
    int tf_select=0;
@@ -528,8 +528,8 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
    /*printf("%f ", bias);*/
 
    ALLOC(metric, len, int);
-   ALLOC(tmp, (m->eBands[len]-m->eBands[len-1])<<LM, celt_norm);
-   ALLOC(tmp_1, (m->eBands[len]-m->eBands[len-1])<<LM, celt_norm);
+   ALLOC(tmp, (m->eBands[len]-m->eBands[len-1])<<LM, int16_t);
+   ALLOC(tmp_1, (m->eBands[len]-m->eBands[len-1])<<LM, int16_t);
    ALLOC(path0, len, int);
    ALLOC(path1, len, int);
 
@@ -703,7 +703,7 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
 }
 
 
-static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
+static int alloc_trim_analysis(const CELTMode *m, const int16_t *X,
       const int16_t *bandLogE, int end, int LM, int C, int N0,
       AnalysisInfo *analysis, int16_t *stereo_saving, int16_t tf_estimate,
       int intensity, int16_t surround_trim, int32_t equiv_rate, int arch)
@@ -785,7 +785,7 @@ static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
    return trim_index;
 }
 
-static int stereo_analysis(const CELTMode *m, const celt_norm *X,
+static int stereo_analysis(const CELTMode *m, const int16_t *X,
       int LM, int N0)
 {
    int i;
@@ -1062,12 +1062,12 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
 }
 
 
-static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem, int CC, int N,
+static int run_prefilter(CELTEncoder *st, int32_t *in, int32_t *prefilter_mem, int CC, int N,
       int prefilter_tapset, int *pitch, int16_t *gain, int *qgain, int enabled, int nbAvailableBytes, AnalysisInfo *analysis)
 {
    int c;
-   VARDECL(celt_sig, _pre);
-   celt_sig *pre[2];
+   VARDECL(int32_t, _pre);
+   int32_t *pre[2];
    const CELTMode *mode;
    int pitch_index;
    int16_t gain1;
@@ -1079,7 +1079,7 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
 
    mode = st->mode;
    overlap = mode->overlap;
-   ALLOC(_pre, CC*(N+COMBFILTER_MAXPERIOD), celt_sig);
+   ALLOC(_pre, CC*(N+COMBFILTER_MAXPERIOD), int32_t);
 
    pre[0] = _pre;
    pre[1] = _pre + (N+COMBFILTER_MAXPERIOD);
@@ -1287,10 +1287,10 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    int i, c, N;
    int32_t bits;
    ec_enc _enc;
-   VARDECL(celt_sig, in);
-   VARDECL(celt_sig, freq);
-   VARDECL(celt_norm, X);
-   VARDECL(celt_ener, bandE);
+   VARDECL(int32_t, in);
+   VARDECL(int32_t, freq);
+   VARDECL(int16_t, X);
+   VARDECL(int32_t, bandE);
    VARDECL(int16_t, bandLogE);
    VARDECL(int16_t, bandLogE2);
    VARDECL(int, fine_quant);
@@ -1303,7 +1303,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    VARDECL(int, fine_priority);
    VARDECL(int, tf_res);
    VARDECL(unsigned char, collapse_masks);
-   celt_sig *prefilter_mem;
+   int32_t *prefilter_mem;
    int16_t *oldBandE, *oldLogE, *oldLogE2, *energyError;
    int shortBlocks=0;
    int isTransient=0;
@@ -1465,7 +1465,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    if (effEnd > mode->effEBands)
       effEnd = mode->effEBands;
 
-   ALLOC(in, CC*(N+overlap), celt_sig);
+   ALLOC(in, CC*(N+overlap), int32_t);
 
    sample_max=MAX32(st->overlap_max, celt_maxabs16(pcm, C*(N-overlap)/st->upsample));
    st->overlap_max=celt_maxabs16(pcm+C*(N-overlap)/st->upsample, C*overlap/st->upsample);
@@ -1552,8 +1552,8 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
       transient_got_disabled=1;
    }
 
-   ALLOC(freq, CC*N, celt_sig); /**< Interleaved signal MDCTs */
-   ALLOC(bandE,nbEBands*CC, celt_ener);
+   ALLOC(freq, CC*N, int32_t); /**< Interleaved signal MDCTs */
+   ALLOC(bandE,nbEBands*CC, int32_t);
    ALLOC(bandLogE,nbEBands*CC, int16_t);
 
    secondMdct = shortBlocks && st->complexity>=8;
@@ -1709,7 +1709,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
    if (LM>0 && ec_tell(enc)+3<=total_bits)
       ec_enc_bit_logp(enc, isTransient, 3);
 
-   ALLOC(X, C*N, celt_norm);         /**< Interleaved normalised MDCTs */
+   ALLOC(X, C*N, int16_t);         /**< Interleaved normalised MDCTs */
 
    /* Band normalisation */
    normalise_bands(mode, freq, X, bandE, effEnd, C, M);

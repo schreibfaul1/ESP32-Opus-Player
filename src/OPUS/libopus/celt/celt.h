@@ -217,8 +217,8 @@ void validate_celt_decoder(CELTDecoder *st);
 
 int resampling_factor(int32_t rate);
 
-void celt_preemphasis(const int16_t * __restrict__ pcmp, celt_sig * __restrict__ inp,
-                        int N, int CC, int upsample, const int16_t *coef, celt_sig *mem, int clip);
+void celt_preemphasis(const int16_t * __restrict__ pcmp, int32_t * __restrict__ inp,
+                        int N, int CC, int upsample, const int16_t *coef, int32_t *mem, int clip);
 
 void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N,
       int16_t g0, int16_t g1, int tapset0, int tapset1,
@@ -237,8 +237,8 @@ void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
 void init_caps(const CELTMode *m,int *cap,int LM,int C);
 
 #ifdef RESYNTH
-void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef, celt_sig *mem);
-void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
+void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef, int32_t *mem);
+void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t * out_syn[],
       int16_t *oldBandE, int start, int effEnd, int C, int CC, int isTransient,
       int LM, int downsample, int silence);
 #endif
