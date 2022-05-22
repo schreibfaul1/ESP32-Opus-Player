@@ -115,6 +115,6 @@ int32_t silk_NLSF_encode(                                    /* O    Returns RD 
     silk_NLSF_decode( pNLSF_Q15, NLSFIndices, psNLSF_CB );
 
     ret = RD_Q25[ 0 ];
-    //RESTORE_STACK;
+    //;
     return ret;
 }

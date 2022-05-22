@@ -143,5 +143,5 @@ void silk_find_LPC_FIX(
     }
 
     celt_assert( psEncC->indices.NLSFInterpCoef_Q2 == 4 || ( psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR ) );
-    //RESTORE_STACK;
+    //;
 }

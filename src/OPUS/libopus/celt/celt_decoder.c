@@ -277,7 +277,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const
          }
       }
    } while (++c<C);
-   //RESTORE_STACK;
+   //;
 }
 
 
@@ -358,7 +358,7 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t * out_syn[],
       for (i=0;i<N;i++)
          out_syn[c][i] = SATURATE(out_syn[c][i], SIG_SAT);
    } while (++c<CC);
-   //RESTORE_STACK;
+   //;
 }
 
 static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec)
@@ -412,7 +412,7 @@ static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch)
          DECODE_BUFFER_SIZE-PLC_PITCH_LAG_MAX,
          PLC_PITCH_LAG_MAX-PLC_PITCH_LAG_MIN, &pitch_index, arch);
    pitch_index = PLC_PITCH_LAG_MAX-pitch_index;
-   //RESTORE_STACK;
+   //;
    free(lp_pitch_buf);
    return pitch_index;
 }
@@ -718,7 +718,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
 
    st->loss_count = loss_count+1;
 
-   //RESTORE_STACK;
+   //;
 }
 
 int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data,
@@ -815,7 +815,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    {
       celt_decode_lost(st, N, LM);
       deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
-      //RESTORE_STACK;
+      //;
       return frame_size/st->downsample;
    }
 
@@ -1051,7 +1051,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
 
    deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
    st->loss_count = 0;
-   //RESTORE_STACK;
+   //;
    if (ec_tell(dec) > 8*len)
       return OPUS_INTERNAL_ERROR;
    if(ec_get_error(dec))

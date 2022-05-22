@@ -74,7 +74,7 @@
 #define VARDECL(type, var)
 #define ALLOC(var, size, type) type var[size]
 #define SAVE_STACK
-//#define RESTORE_STACK
+//#define 
 #define ALLOC_STACK
 /* C99 does not allow VLAs of size zero */
 #define ALLOC_NONE 1

@@ -50,7 +50,7 @@
 
 #define celt_assert(cond)
 #define celt_assert2(cond, message)
-#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/*RESTORE_STACK*/; return OPUS_INTERNAL_ERROR;} } while (0)
+#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/**/; return OPUS_INTERNAL_ERROR;} } while (0)
 
 
 #define celt_sig_assert(cond)

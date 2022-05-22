@@ -293,7 +293,7 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch)
          but has the same performance otherwise. */
       iy[j] = (iy[j]^-signx[j]) + signx[j];
    } while (++j<N);
-   //RESTORE_STACK;
+   //;
    return yy;
 }
 
@@ -345,7 +345,7 @@ unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B,
    normalise_residual(iy, X, N, Ryy, gain);
    exp_rotation(X, N, -1, B, K, spread);
    collapse_mask = extract_collapse_mask(iy, N, B);
-   //RESTORE_STACK;
+   //;
    return collapse_mask;
 }
 

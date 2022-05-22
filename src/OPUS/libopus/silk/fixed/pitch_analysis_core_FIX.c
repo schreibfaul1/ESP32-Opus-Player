@@ -256,7 +256,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         *LTPCorr_Q15  = 0;
         *lagIndex     = 0;
         *contourIndex = 0;
-        //RESTORE_STACK;
+        //;
         return 1;
     }
 
@@ -442,7 +442,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         *LTPCorr_Q15  = 0;
         *lagIndex     = 0;
         *contourIndex = 0;
-        //RESTORE_STACK;
+        //;
         return 1;
     }
 
@@ -548,7 +548,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
     }
     celt_assert( *lagIndex >= 0 );
     /* return as voiced */
-    //RESTORE_STACK;
+    //;
     return 0;
 }
 
@@ -630,7 +630,7 @@ static void silk_P_Ana_calc_corr_st3(
         }
         target_ptr += sf_length;
     }
-    //RESTORE_STACK;
+    //;
 }
 
 /********************************************************************/
@@ -713,5 +713,5 @@ static void silk_P_Ana_calc_energy_st3(
         }
         target_ptr += sf_length;
     }
-    //RESTORE_STACK;
+    //;
 }

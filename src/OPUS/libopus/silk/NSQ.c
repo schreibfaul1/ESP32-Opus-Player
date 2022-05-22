@@ -166,7 +166,7 @@ void silk_NSQ_c
     /* Save quantized speech and noise shaping signals */
     silk_memmove( NSQ->xq,           &NSQ->xq[           psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( int16_t ) );
     silk_memmove( NSQ->sLTP_shp_Q14, &NSQ->sLTP_shp_Q14[ psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( int32_t ) );
-    //RESTORE_STACK;
+    //;
 }
 
 /***********************************/

@@ -165,7 +165,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          yp2 -= 2*stride;
       }
    }
-   //RESTORE_STACK;
+   //;
 }
 #endif /* OVERRIDE_clt_mdct_forward */
 

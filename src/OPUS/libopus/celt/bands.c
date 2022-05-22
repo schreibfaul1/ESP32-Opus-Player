@@ -545,7 +545,7 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard)
             tmp[i*N0+j] = X[j*stride+i];
    }
    OPUS_COPY(X, tmp, N);
-   //RESTORE_STACK;
+   //;
 }
 
 static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard)
@@ -568,7 +568,7 @@ static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard)
             tmp[j*stride+i] = X[i*N0+j];
    }
    OPUS_COPY(X, tmp, N);
-   //RESTORE_STACK;
+   //;
 }
 
 void haar1(int16_t *X, int N0, int stride)
@@ -1597,6 +1597,6 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
    }
    *seed = ctx.seed;
 
-   //RESTORE_STACK;
+   //;
 }
 

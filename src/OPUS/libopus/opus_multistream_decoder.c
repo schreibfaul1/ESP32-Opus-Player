@@ -200,7 +200,7 @@ int opus_multistream_decode_native(
    VALIDATE_MS_DECODER(st);
    if (frame_size <= 0)
    {
-      //RESTORE_STACK;
+      //;
       return OPUS_BAD_ARG;
    }
    /* Limit frame_size to avoid excessive stack allocations. */
@@ -215,12 +215,12 @@ int opus_multistream_decode_native(
       do_plc = 1;
    if (len < 0)
    {
-      //RESTORE_STACK;
+      //;
       return OPUS_BAD_ARG;
    }
    if (!do_plc && len < 2*st->layout.nb_streams-1)
    {
-      //RESTORE_STACK;
+      //;
       return OPUS_INVALID_PACKET;
    }
    if (!do_plc)
@@ -228,11 +228,11 @@ int opus_multistream_decode_native(
       int ret = opus_multistream_packet_validate(data, len, st->layout.nb_streams, Fs);
       if (ret < 0)
       {
-         //RESTORE_STACK;
+         //;
          return ret;
       } else if (ret > frame_size)
       {
-         //RESTORE_STACK;
+         //;
          return OPUS_BUFFER_TOO_SMALL;
       }
    }
@@ -247,7 +247,7 @@ int opus_multistream_decode_native(
 
       if (!do_plc && len<=0)
       {
-         //RESTORE_STACK;
+         //;
          return OPUS_INTERNAL_ERROR;
       }
       packet_offset = 0;
@@ -256,7 +256,7 @@ int opus_multistream_decode_native(
       len -= packet_offset;
       if (ret <= 0)
       {
-         //RESTORE_STACK;
+         //;
          return ret;
       }
       frame_size = ret;
@@ -300,7 +300,7 @@ int opus_multistream_decode_native(
             NULL, 0, frame_size, user_data);
       }
    }
-   //RESTORE_STACK;
+   //;
    return frame_size;
 }
 
