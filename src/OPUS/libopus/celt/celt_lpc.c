@@ -32,21 +32,21 @@
 #include "pitch.h"
 
 void _celt_lpc(
-      opus_val16       *_lpc, /* out: [0...p-1] LPC coefficients      */
-const opus_val32 *ac,  /* in:  [0...p] autocorrelation values  */
+      int16_t       *_lpc, /* out: [0...p-1] LPC coefficients      */
+const int32_t *ac,  /* in:  [0...p] autocorrelation values  */
 int          p
 )
 {
    int i, j;
-   opus_val32 r;
-   opus_val32 error = ac[0];
-   opus_val32 lpc[LPC_ORDER];
+   int32_t r;
+   int32_t error = ac[0];
+   int32_t lpc[LPC_ORDER];
    OPUS_CLEAR(lpc, p);
    if (ac[0] != 0)
    {
       for (i = 0; i < p; i++) {
          /* Sum up this iteration's reflection coefficient */
-         opus_val32 rr = 0;
+         int32_t rr = 0;
          for (j = 0; j < i; j++)
             rr += MULT32_32_Q31(lpc[j],ac[i - j]);
          rr += SHR32(ac[i + 1],3);
@@ -55,7 +55,7 @@ int          p
          lpc[i] = SHR32(r,3);
          for (j = 0; j < (i+1)>>1; j++)
          {
-            opus_val32 tmp1, tmp2;
+            int32_t tmp1, tmp2;
             tmp1 = lpc[j];
             tmp2 = lpc[i-1-j];
             lpc[j]     = tmp1 + MULT32_32_Q31(r,tmp2);
@@ -74,23 +74,23 @@ int          p
 
 
 void celt_fir_c(
-         const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16 *y,
+         const int16_t *x,
+         const int16_t *num,
+         int16_t *y,
          int N,
          int ord,
          int arch)
 {
    int i,j;
-   VARDECL(opus_val16, rnum);
+   VARDECL(int16_t, rnum);
    SAVE_STACK;
    celt_assert(x != y);
-   ALLOC(rnum, ord, opus_val16);
+   ALLOC(rnum, ord, int16_t);
    for(i=0;i<ord;i++)
       rnum[i] = num[ord-i-1];
    for (i=0;i<N-3;i+=4)
    {
-      opus_val32 sum[4];
+      int32_t sum[4];
       sum[0] = SHL32(EXTEND32(x[i  ]), SIG_SHIFT);
       sum[1] = SHL32(EXTEND32(x[i+1]), SIG_SHIFT);
       sum[2] = SHL32(EXTEND32(x[i+2]), SIG_SHIFT);
@@ -103,7 +103,7 @@ void celt_fir_c(
    }
    for (;i<N;i++)
    {
-      opus_val32 sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+      int32_t sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
       for (j=0;j<ord;j++)
          sum = MAC16_16(sum,rnum[j],x[i+j-ord]);
       y[i] = ROUND16(sum, SIG_SHIFT);
@@ -111,12 +111,12 @@ void celt_fir_c(
    RESTORE_STACK;
 }
 
-void celt_iir(const opus_val32 *_x,
-         const opus_val16 *den,
-         opus_val32 *_y,
+void celt_iir(const int32_t *_x,
+         const int16_t *den,
+         int32_t *_y,
          int N,
          int ord,
-         opus_val16 *mem,
+         int16_t *mem,
          int arch)
 {
 #ifdef SMALL_FOOTPRINT
@@ -124,7 +124,7 @@ void celt_iir(const opus_val32 *_x,
    (void)arch;
    for (i=0;i<N;i++)
    {
-      opus_val32 sum = _x[i];
+      int32_t sum = _x[i];
       for (j=0;j<ord;j++)
       {
          sum -= MULT16_16(den[j],mem[j]);
@@ -138,13 +138,13 @@ void celt_iir(const opus_val32 *_x,
    }
 #else
    int i,j;
-   VARDECL(opus_val16, rden);
-   VARDECL(opus_val16, y);
+   VARDECL(int16_t, rden);
+   VARDECL(int16_t, y);
    SAVE_STACK;
 
    celt_assert((ord&3)==0);
-   ALLOC(rden, ord, opus_val16);
-   ALLOC(y, N+ord, opus_val16);
+   ALLOC(rden, ord, int16_t);
+   ALLOC(y, N+ord, int16_t);
    for(i=0;i<ord;i++)
       rden[i] = den[ord-i-1];
    for(i=0;i<ord;i++)
@@ -154,7 +154,7 @@ void celt_iir(const opus_val32 *_x,
    for (i=0;i<N-3;i+=4)
    {
       /* Unroll by 4 as if it were an FIR filter */
-      opus_val32 sum[4];
+      int32_t sum[4];
       sum[0]=_x[i];
       sum[1]=_x[i+1];
       sum[2]=_x[i+2];
@@ -180,7 +180,7 @@ void celt_iir(const opus_val32 *_x,
    }
    for (;i<N;i++)
    {
-      opus_val32 sum = _x[i];
+      int32_t sum = _x[i];
       for (j=0;j<ord;j++)
          sum -= MULT16_16(rden[j],y[i+j]);
       y[i+ord] = SROUND16(sum,SIG_SHIFT);
@@ -193,23 +193,23 @@ void celt_iir(const opus_val32 *_x,
 }
 
 int _celt_autocorr(
-                   const opus_val16 *x,   /*  in: [0...n-1] samples x   */
-                   opus_val32       *ac,  /* out: [0...lag-1] ac values */
-                   const opus_val16       *window,
+                   const int16_t *x,   /*  in: [0...n-1] samples x   */
+                   int32_t       *ac,  /* out: [0...lag-1] ac values */
+                   const int16_t       *window,
                    int          overlap,
                    int          lag,
                    int          n,
                    int          arch
                   )
 {
-   opus_val32 d;
+   int32_t d;
    int i, k;
    int fastN=n-lag;
    int shift;
-   const opus_val16 *xptr;
-   VARDECL(opus_val16, xx);
+   const int16_t *xptr;
+   VARDECL(int16_t, xx);
    SAVE_STACK;
-   ALLOC(xx, n, opus_val16);
+   ALLOC(xx, n, int16_t);
    celt_assert(n>0);
    celt_assert(overlap>=0);
    if (overlap == 0)
@@ -227,7 +227,7 @@ int _celt_autocorr(
    }
    shift=0;
    {
-      opus_val32 ac0;
+      int32_t ac0;
       ac0 = 1+(n<<7);
       if (n&1) ac0 += SHR32(MULT16_16(xptr[0],xptr[0]),9);
       for(i=(n&1);i<n;i+=2)

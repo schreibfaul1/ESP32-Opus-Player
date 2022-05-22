@@ -61,10 +61,10 @@ unsigned isqrt32(uint32_t _val){
   return g;
 }
 
-opus_val32 frac_div32(opus_val32 a, opus_val32 b)
+int32_t frac_div32(int32_t a, int32_t b)
 {
-   opus_val16 rcp;
-   opus_val32 result, rem;
+   int16_t rcp;
+   int32_t result, rem;
    int shift = celt_ilog2(b)-29;
    a = VSHR32(a,shift);
    b = VSHR32(b,shift);
@@ -82,12 +82,12 @@ opus_val32 frac_div32(opus_val32 a, opus_val32 b)
 }
 
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
-opus_val16 celt_rsqrt_norm(opus_val32 x)
+int16_t celt_rsqrt_norm(int32_t x)
 {
-   opus_val16 n;
-   opus_val16 r;
-   opus_val16 r2;
-   opus_val16 y;
+   int16_t n;
+   int16_t r;
+   int16_t r2;
+   int16_t y;
    /* Range of n is [-16384,32767] ([-0.5,1) in Q15). */
    n = x-32768;
    /* Get a rough initial guess for the root.
@@ -110,12 +110,12 @@ opus_val16 celt_rsqrt_norm(opus_val32 x)
 }
 
 /** Sqrt approximation (QX input, QX/2 output) */
-opus_val32 celt_sqrt(opus_val32 x)
+int32_t celt_sqrt(int32_t x)
 {
    int k;
-   opus_val16 n;
-   opus_val32 rt;
-   static const opus_val16 C[5] = {23175, 11561, -3011, 1699, -664};
+   int16_t n;
+   int32_t rt;
+   static const int16_t C[5] = {23175, 11561, -3011, 1699, -664};
    if (x==0)
       return 0;
    else if (x>=1073741824)
@@ -134,9 +134,9 @@ opus_val32 celt_sqrt(opus_val32 x)
 #define L3 8277
 #define L4 -626
 
-static OPUS_INLINE opus_val16 _celt_cos_pi_2(opus_val16 x)
+static OPUS_INLINE int16_t _celt_cos_pi_2(int16_t x)
 {
-   opus_val16 x2;
+   int16_t x2;
 
    x2 = MULT16_16_P15(x,x);
    return ADD16(1,MIN16(32766,ADD32(SUB16(L1,x2), MULT16_16_P15(x2, ADD32(L2, MULT16_16_P15(x2, ADD32(L3, MULT16_16_P15(L4, x2
@@ -148,7 +148,7 @@ static OPUS_INLINE opus_val16 _celt_cos_pi_2(opus_val16 x)
 #undef L3
 #undef L4
 
-opus_val16 celt_cos_norm(opus_val32 x)
+int16_t celt_cos_norm(int32_t x)
 {
    x = x&0x0001ffff;
    if (x>SHL32(EXTEND32(1), 16))
@@ -172,11 +172,11 @@ opus_val16 celt_cos_norm(opus_val32 x)
 }
 
 /** Reciprocal approximation (Q15 input, Q16 output) */
-opus_val32 celt_rcp(opus_val32 x)
+int32_t celt_rcp(int32_t x)
 {
    int i;
-   opus_val16 n;
-   opus_val16 r;
+   int16_t n;
+   int16_t r;
    celt_sig_assert(x>0);
    i = celt_ilog2(x);
    /* n is Q15 with range [0,1). */

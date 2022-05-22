@@ -40,10 +40,10 @@
 #endif
 
 #ifndef OVERRIDE_vq_exp_rotation1
-static void exp_rotation1(celt_norm *X, int len, int stride, opus_val16 c, opus_val16 s)
+static void exp_rotation1(celt_norm *X, int len, int stride, int16_t c, int16_t s)
 {
    int i;
-   opus_val16 ms;
+   int16_t ms;
    celt_norm *Xptr;
    Xptr = X;
    ms = NEG16(s);
@@ -71,8 +71,8 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 {
    static const int SPREAD_FACTOR[3]={15,10,5};
    int i;
-   opus_val16 c, s;
-   opus_val16 gain, theta;
+   int16_t c, s;
+   int16_t gain, theta;
    int stride2=0;
    int factor;
 
@@ -80,7 +80,7 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
       return;
    factor = SPREAD_FACTOR[spread-1];
 
-   gain = celt_div((opus_val32)MULT16_16(Q15_ONE,len),(opus_val32)(len+factor*K));
+   gain = celt_div((int32_t)MULT16_16(Q15_ONE,len),(int32_t)(len+factor*K));
    theta = HALF16(MULT16_16_Q15(gain,gain));
 
    c = celt_cos_norm(EXTEND32(theta));
@@ -115,12 +115,12 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 /** Takes the pitch vector and the decoded residual vector, computes the gain
     that will give ||p+g*y||=1 and mixes the residual with the pitch. */
 static void normalise_residual(int * __restrict__ iy, celt_norm * __restrict__ X,
-      int N, opus_val32 Ryy, opus_val16 gain)
+      int N, int32_t Ryy, int16_t gain)
 {
    int i;
    int k;
-   opus_val32 t;
-   opus_val16 g;
+   int32_t t;
+   int16_t g;
 
    k = celt_ilog2(Ryy)>>1;
    t = VSHR32(Ryy, 2*(k-7));
@@ -154,15 +154,15 @@ static unsigned extract_collapse_mask(int *iy, int N, int B)
    return collapse_mask;
 }
 
-opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
+int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 {
    VARDECL(celt_norm, y);
    VARDECL(int, signx);
    int i, j;
    int pulsesLeft;
-   opus_val32 sum;
-   opus_val32 xy;
-   opus_val16 yy;
+   int32_t sum;
+   int32_t xy;
+   int16_t yy;
    SAVE_STACK;
 
    (void)arch;
@@ -186,7 +186,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
    /* Do a pre-search by projecting on the pyramid */
    if (K > (N>>1))
    {
-      opus_val16 rcp;
+      int16_t rcp;
       j=0; do {
          sum += X[j];
       }  while (++j<N);
@@ -217,7 +217,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
       we fill the first bin with pulses. */
    if (pulsesLeft > N+3)
    {
-      opus_val16 tmp = (opus_val16)pulsesLeft;
+      int16_t tmp = (int16_t)pulsesLeft;
       yy = MAC16_16(yy, tmp, tmp);
       yy = MAC16_16(yy, tmp, y[0]);
       iy[0] += pulsesLeft;
@@ -226,10 +226,10 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 
    for (i=0;i<pulsesLeft;i++)
    {
-      opus_val16 Rxy, Ryy;
+      int16_t Rxy, Ryy;
       int best_id;
-      opus_val32 best_num;
-      opus_val16 best_den;
+      int32_t best_num;
+      int16_t best_den;
       int rshift;
       rshift = 1+celt_ilog2(K-pulsesLeft+i+1);
       best_id = 0;
@@ -298,10 +298,10 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 }
 
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
-      opus_val16 gain, int resynth, int arch)
+      int16_t gain, int resynth, int arch)
 {
    VARDECL(int, iy);
-   opus_val16 yy;
+   int16_t yy;
    unsigned collapse_mask;
    SAVE_STACK;
 
@@ -331,9 +331,9 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
-      ec_dec *dec, opus_val16 gain)
+      ec_dec *dec, int16_t gain)
 {
-   opus_val32 Ryy;
+   int32_t Ryy;
    unsigned collapse_mask;
    VARDECL(int, iy);
    SAVE_STACK;
@@ -350,13 +350,13 @@ unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
 }
 
 #ifndef OVERRIDE_renormalise_vector
-void renormalise_vector(celt_norm *X, int N, opus_val16 gain, int arch)
+void renormalise_vector(celt_norm *X, int N, int16_t gain, int arch)
 {
    int i;
    int k;
-   opus_val32 E;
-   opus_val16 g;
-   opus_val32 t;
+   int32_t E;
+   int16_t g;
+   int32_t t;
    celt_norm *xptr;
    E = EPSILON + celt_inner_prod(X, X, N, arch);
    k = celt_ilog2(E)>>1;
@@ -377,8 +377,8 @@ int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int
 {
    int i;
    int itheta;
-   opus_val16 mid, side;
-   opus_val32 Emid, Eside;
+   int16_t mid, side;
+   int32_t Emid, Eside;
 
    Emid = Eside = EPSILON;
    if (stereo)

@@ -39,7 +39,7 @@
 #include "quant_bands.h"
 #include "pitch.h"
 
-int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev)
+int hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int N, int prev)
 {
    int i;
    for (i=0;i<N;i++)
@@ -97,8 +97,8 @@ void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *band
       for (i=0;i<end;i++)
       {
          int j;
-         opus_val32 maxval=0;
-         opus_val32 sum = 0;
+         int32_t maxval=0;
+         int32_t sum = 0;
 
          maxval = celt_maxabs32(&X[c*N+(eBands[i]<<LM)], (eBands[i+1]-eBands[i])<<LM);
          if (maxval > 0)
@@ -136,9 +136,9 @@ void normalise_bands(const CELTMode *m, const celt_sig * __restrict__ freq, celt
    N = M*m->shortMdctSize;
    c=0; do {
       i=0; do {
-         opus_val16 g;
+         int16_t g;
          int j,shift;
-         opus_val16 E;
+         int16_t E;
          shift = celt_zlog2(bandE[i+c*m->nbEBands])-13;
          E = VSHR32(bandE[i+c*m->nbEBands], shift);
          g = EXTRACT16(celt_rcp(SHL32(E,3)));
@@ -153,7 +153,7 @@ void normalise_bands(const CELTMode *m, const celt_sig * __restrict__ freq, celt
 
 /* De-normalise the energy to produce the synthesis from the unit-energy bands */
 void denormalise_bands(const CELTMode *m, const celt_norm * __restrict__ X,
-      celt_sig * __restrict__ freq, const opus_val16 *bandLogE, int start,
+      celt_sig * __restrict__ freq, const int16_t *bandLogE, int start,
       int end, int M, int downsample, int silence)
 {
    int i, N;
@@ -177,14 +177,14 @@ void denormalise_bands(const CELTMode *m, const celt_norm * __restrict__ X,
    for (i=start;i<end;i++)
    {
       int j, band_end;
-      opus_val16 g;
-      opus_val16 lg;
+      int16_t g;
+      int16_t lg;
 
       int shift;
 
       j=M*eBands[i];
       band_end = M*eBands[i+1];
-      lg = SATURATE16(ADD32(bandLogE[i], SHL32((opus_val32)eMeans[i],6)));
+      lg = SATURATE16(ADD32(bandLogE[i], SHL32((int32_t)eMeans[i],6)));
 
       /* Handle the integer part of the log energy */
       shift = 16-(lg>>DB_SHIFT);
@@ -223,18 +223,18 @@ void denormalise_bands(const CELTMode *m, const celt_norm * __restrict__ X,
 
 /* This prevents energy collapse for transients with multiple short MDCTs */
 void anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collapse_masks, int LM, int C, int size,
-      int start, int end, const opus_val16 *logE, const opus_val16 *prev1logE,
-      const opus_val16 *prev2logE, const int *pulses, uint32_t seed, int arch)
+      int start, int end, const int16_t *logE, const int16_t *prev1logE,
+      const int16_t *prev2logE, const int *pulses, uint32_t seed, int arch)
 {
    int c, i, j, k;
    for (i=start;i<end;i++)
    {
       int N0;
-      opus_val16 thresh, sqrt_1;
+      int16_t thresh, sqrt_1;
       int depth;
 
       int shift;
-      opus_val32 thresh32;
+      int32_t thresh32;
 
 
       N0 = m->eBands[i+1]-m->eBands[i];
@@ -246,7 +246,7 @@ void anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collapse_mas
       thresh32 = SHR32(celt_exp2(-SHL16(depth, 10-BITRES)),1);
       thresh = MULT16_32_Q15(QCONST16(0.5f, 15), MIN32(32767,thresh32));
       {
-         opus_val32 t;
+         int32_t t;
          t = N0<<LM;
          shift = celt_ilog2(t)>>1;
          t = SHL32(t, (7-shift)<<1);
@@ -256,10 +256,10 @@ void anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collapse_mas
       c=0; do
       {
          celt_norm *X;
-         opus_val16 prev1;
-         opus_val16 prev2;
-         opus_val32 Ediff;
-         opus_val16 r;
+         int16_t prev1;
+         int16_t prev2;
+         int32_t Ediff;
+         int16_t r;
          int renormalize=0;
          prev1 = prev1logE[c*m->nbEBands+i];
          prev2 = prev2logE[c*m->nbEBands+i];
@@ -274,7 +274,7 @@ void anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collapse_mas
 
          if (Ediff < 16384)
          {
-            opus_val32 r32 = SHR32(celt_exp2(-EXTRACT16(Ediff)),1);
+            int32_t r32 = SHR32(celt_exp2(-EXTRACT16(Ediff)),1);
             r = 2*MIN16(16383,r32);
          } else {
             r = 0;
@@ -313,7 +313,7 @@ void anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collapse_mas
    corresponds to some quick-and-dirty perceptual experiments I ran to
    measure inter-aural masking (there doesn't seem to be any published data
    on the topic). */
-static void compute_channel_weights(celt_ener Ex, celt_ener Ey, opus_val16 w[2])
+static void compute_channel_weights(celt_ener Ex, celt_ener Ey, int16_t w[2])
 {
    celt_ener minE;
 
@@ -334,9 +334,9 @@ static void intensity_stereo(const CELTMode *m, celt_norm * __restrict__ X, cons
 {
    int i = bandID;
    int j;
-   opus_val16 a1, a2;
-   opus_val16 left, right;
-   opus_val16 norm;
+   int16_t a1, a2;
+   int16_t left, right;
+   int16_t norm;
 
    int shift = celt_zlog2(MAX32(bandE[i], bandE[i+m->nbEBands]))-13;
 
@@ -360,7 +360,7 @@ static void stereo_split(celt_norm * __restrict__ X, celt_norm * __restrict__ Y,
    int j;
    for (j=0;j<N;j++)
    {
-      opus_val32 r, l;
+      int32_t r, l;
       l = MULT16_16(QCONST16(.70710678f, 15), X[j]);
       r = MULT16_16(QCONST16(.70710678f, 15), Y[j]);
       X[j] = EXTRACT16(SHR32(ADD32(l, r), 15));
@@ -368,16 +368,16 @@ static void stereo_split(celt_norm * __restrict__ X, celt_norm * __restrict__ Y,
    }
 }
 
-static void stereo_merge(celt_norm * __restrict__ X, celt_norm * __restrict__ Y, opus_val16 mid, int N, int arch)
+static void stereo_merge(celt_norm * __restrict__ X, celt_norm * __restrict__ Y, int16_t mid, int N, int arch)
 {
    int j;
-   opus_val32 xp=0, side=0;
-   opus_val32 El, Er;
-   opus_val16 mid2;
+   int32_t xp=0, side=0;
+   int32_t El, Er;
+   int16_t mid2;
 
    int kl, kr;
 
-   opus_val32 t, lgain, rgain;
+   int32_t t, lgain, rgain;
 
    /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
    dual_inner_prod(Y, X, Y, N, &xp, &side, arch);
@@ -449,7 +449,7 @@ int spreading_decision(const CELTMode *m, const celt_norm *X, int *average,
          /* Compute rough CDF of |x[j]| */
          for (j=0;j<N;j++)
          {
-            opus_val32 x2N; /* Q13 */
+            int32_t x2N; /* Q13 */
 
             x2N = MULT16_16(MULT16_16_Q15(x[j], x[j]), N);
             if (x2N < QCONST16(0.25f,13))
@@ -578,7 +578,7 @@ void haar1(celt_norm *X, int N0, int stride)
    for (i=0;i<stride;i++)
       for (j=0;j<N0;j++)
       {
-         opus_val32 tmp1, tmp2;
+         int32_t tmp1, tmp2;
          tmp1 = MULT16_16(QCONST16(.70710678f,15), X[stride*2*j+i]);
          tmp2 = MULT16_16(QCONST16(.70710678f,15), X[stride*(2*j+1)+i]);
          X[stride*2*j+i] = EXTRACT16(PSHR32(ADD32(tmp1, tmp2), 15));
@@ -887,14 +887,14 @@ static unsigned quant_band_n1(struct band_ctx *ctx, celt_norm *X, celt_norm *Y, 
 static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
       int N, int b, int B, celt_norm *lowband,
       int LM,
-      opus_val16 gain, int fill)
+      int16_t gain, int fill)
 {
    const unsigned char *cache;
    int q;
    int curr_bits;
    int imid=0, iside=0;
    int _B0=B;
-   opus_val16 mid=0, side=0;
+   int16_t mid=0, side=0;
    unsigned cm=0;
    celt_norm *Y=NULL;
    int encode;
@@ -1027,7 +1027,7 @@ static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
                   /* Folded spectrum */
                   for (j=0;j<N;j++)
                   {
-                     opus_val16 tmp;
+                     int16_t tmp;
                      ctx->seed = celt_lcg_rand(ctx->seed);
                      /* About 48 dB below the "normal" folding level */
                      tmp = QCONST16(1.0f/256, 10);
@@ -1050,7 +1050,7 @@ static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
 static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
       int N, int b, int B, celt_norm *lowband,
       int LM, celt_norm *lowband_out,
-      opus_val16 gain, celt_norm *lowband_scratch, int fill)
+      int16_t gain, celt_norm *lowband_scratch, int fill)
 {
    int N0=N;
    int N_B=N;
@@ -1161,7 +1161,7 @@ static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
       if (lowband_out)
       {
          int j;
-         opus_val16 n;
+         int16_t n;
          n = celt_sqrt(SHL32(EXTEND32(N0),22));
          for (j=0;j<N0;j++)
             lowband_out[j] = MULT16_16_Q15(n,X[j]);
@@ -1180,7 +1180,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
 {
    int imid=0, iside=0;
    int inv = 0;
-   opus_val16 mid=0, side=0;
+   int16_t mid=0, side=0;
    unsigned cm=0;
    int mbits, sbits, delta;
    int itheta;
@@ -1513,12 +1513,12 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
             {
                ec_ctx ec_save, ec_save2;
                struct band_ctx ctx_save, ctx_save2;
-               opus_val32 dist0, dist1;
+               int32_t dist0, dist1;
                unsigned cm, cm2;
                int nstart_bytes, nend_bytes, save_bytes;
                unsigned char *bytes_buf;
                unsigned char bytes_save[1275];
-               opus_val16 w[2];
+               int16_t w[2];
                compute_channel_weights(bandE[i], bandE[i+m->nbEBands], w);
                /* Make a copy. */
                cm = x_cm|y_cm;

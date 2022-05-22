@@ -65,7 +65,7 @@ static void kf_bfly2(
    } else
 #endif
    {
-      opus_val16 tw;
+      int16_t tw;
       tw = QCONST16(0.7071067812f, 15);
       /* We know that m==4 here because the radix-2 is just after a radix-4 */
       celt_assert(m==4);
@@ -349,7 +349,7 @@ void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout)
 void opus_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
 {
    int i;
-   opus_val16 scale;
+   int16_t scale;
    /* Allows us to scale with MULT16_32_Q16(), which is faster than
       MULT16_32_Q15() on ARM. */
    int scale_shift = st->scale_shift-1;

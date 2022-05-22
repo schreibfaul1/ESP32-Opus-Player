@@ -41,7 +41,7 @@ OPUS_EXPORT opus_int64 celt_mips=0;
 extern opus_int64 celt_mips;
 #endif
 
-#define MULT16_16SU(a,b) ((opus_val32)(opus_val16)(a)*(opus_val32)(opus_uint16)(b))
+#define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(opus_uint16)(b))
 #define MULT32_32_Q31(a,b) ADD32(ADD32(SHL32(MULT16_16(SHR32((a),16),SHR((b),16)),1), SHR32(MULT16_16SU(SHR32((a),16),((b)&0x0000ffff)),15)), SHR32(MULT16_16SU(SHR32((b),16),((a)&0x0000ffff)),15))
 
 /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
@@ -49,8 +49,8 @@ extern opus_int64 celt_mips;
 
 #define MULT16_32_P16(a,b) MULT16_32_PX(a,b,16)
 
-#define QCONST16(x,bits) ((opus_val16)(.5+(x)*(((opus_val32)1)<<(bits))))
-#define QCONST32(x,bits) ((opus_val32)(.5+(x)*(((opus_val32)1)<<(bits))))
+#define QCONST16(x,bits) ((int16_t)(.5+(x)*(((int32_t)1)<<(bits))))
+#define QCONST32(x,bits) ((int32_t)(.5+(x)*(((int32_t)1)<<(bits))))
 
 #define VERIFY_SHORT(x) ((x)<=32767&&(x)>=-32768)
 #define VERIFY_INT(x) ((x)<=2147483647LL&&(x)>=-2147483648LL)
@@ -60,12 +60,12 @@ extern opus_int64 celt_mips;
 #define PSHR(a,b) PSHR32(a,b)
 
 /** Add two 32-bit values, ignore any overflows */
-#define ADD32_ovflw(a,b) (celt_mips+=2,(opus_val32)((opus_uint32)(a)+(opus_uint32)(b)))
+#define ADD32_ovflw(a,b) (celt_mips+=2,(int32_t)((opus_uint32)(a)+(opus_uint32)(b)))
 /** Subtract two 32-bit values, ignore any overflows */
-#define SUB32_ovflw(a,b) (celt_mips+=2,(opus_val32)((opus_uint32)(a)-(opus_uint32)(b)))
+#define SUB32_ovflw(a,b) (celt_mips+=2,(int32_t)((opus_uint32)(a)-(opus_uint32)(b)))
 /* Avoid MSVC warning C4146: unary minus operator applied to unsigned type */
 /** Negate 32-bit value, ignore any overflows */
-#define NEG32_ovflw(a) (celt_mips+=2,(opus_val32)(0-(opus_uint32)(a)))
+#define NEG32_ovflw(a) (celt_mips+=2,(int32_t)(0-(opus_uint32)(a)))
 
 static OPUS_INLINE short NEG16(int x)
 {
@@ -231,7 +231,7 @@ static OPUS_INLINE int SHL32_(opus_int64 a, int shift, char *file, int line)
    return res;
 }
 
-#define PSHR32(a,shift) (celt_mips--,SHR32(ADD32((a),(((opus_val32)(1)<<((shift))>>1))),shift))
+#define PSHR32(a,shift) (celt_mips--,SHR32(ADD32((a),(((int32_t)(1)<<((shift))>>1))),shift))
 #define VSHR32(a, shift) (((shift)>0) ? SHR32(a, shift) : SHL32(a, -(shift)))
 
 #define ROUND16(x,a) (celt_mips--,EXTRACT16(PSHR32((x),(a))))
@@ -446,7 +446,7 @@ static OPUS_INLINE int MULT16_32_QX_(int a, opus_int64 b, int Q, char *file, int
       celt_assert(0);
 #endif
    }
-   if (ABS32(b)>=((opus_val32)(1)<<(15+Q)))
+   if (ABS32(b)>=((int32_t)(1)<<(15+Q)))
    {
       fprintf (stderr, "MULT16_32_Q%d: second operand too large: %d %d in %s: line %d\n", Q, (int)a, (int)b, file, line);
 #ifdef FIXED_DEBUG_ASSERT
@@ -486,7 +486,7 @@ static OPUS_INLINE int MULT16_32_PX_(int a, opus_int64 b, int Q, char *file, int
       celt_assert(0);
 #endif
    }
-   res = ((((opus_int64)a)*(opus_int64)b) + (((opus_val32)(1)<<Q)>>1))>> Q;
+   res = ((((opus_int64)a)*(opus_int64)b) + (((int32_t)(1)<<Q)>>1))>> Q;
    if (!VERIFY_INT(res))
    {
       fprintf (stderr, "MULT16_32_P%d: output is not int: %d*%d=%d in %s: line %d\n\n", Q, (int)a, (int)b,(int)res, file, line);
@@ -775,7 +775,7 @@ static OPUS_INLINE int DIV32_(opus_int64 a, opus_int64 b, char *file, int line)
    return res;
 }
 
-static OPUS_INLINE opus_val16 SIG2WORD16_generic(celt_sig x)
+static OPUS_INLINE int16_t SIG2WORD16_generic(celt_sig x)
 {
    x = PSHR32(x, SIG_SHIFT);
    x = MAX32(x, -32768);

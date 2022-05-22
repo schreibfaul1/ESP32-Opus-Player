@@ -37,12 +37,12 @@
 
 #define LPC_ORDER 24
 
-void _celt_lpc(opus_val16 *_lpc, const opus_val32 *ac, int p);
+void _celt_lpc(int16_t *_lpc, const int32_t *ac, int p);
 
 void celt_fir_c(
-         const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16 *y,
+         const int16_t *x,
+         const int16_t *num,
+         int16_t *y,
          int N,
          int ord,
          int arch);
@@ -52,15 +52,15 @@ void celt_fir_c(
     (celt_fir_c(x, num, y, N, ord, arch))
 #endif
 
-void celt_iir(const opus_val32 *x,
-         const opus_val16 *den,
-         opus_val32 *y,
+void celt_iir(const int32_t *x,
+         const int16_t *den,
+         int32_t *y,
          int N,
          int ord,
-         opus_val16 *mem,
+         int16_t *mem,
          int arch);
 
-int _celt_autocorr(const opus_val16 *x, opus_val32 *ac,
-         const opus_val16 *window, int overlap, int lag, int n, int arch);
+int _celt_autocorr(const int16_t *x, int32_t *ac,
+         const int16_t *window, int overlap, int lag, int n, int arch);
 
 #endif /* PLC_H */

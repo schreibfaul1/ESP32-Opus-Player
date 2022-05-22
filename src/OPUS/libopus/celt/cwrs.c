@@ -457,12 +457,12 @@ void encode_pulses(const int *_y,int _n,int _k,ec_enc *_enc){
   ec_enc_uint(_enc,icwrs(_n,_y),CELT_PVQ_V(_n,_k));
 }
 
-static opus_val32 cwrsi(int _n,int _k,uint32_t _i,int *_y){
+static int32_t cwrsi(int _n,int _k,uint32_t _i,int *_y){
   uint32_t p;
   int         s;
   int         k0;
   int16_t  val;
-  opus_val32  yy=0;
+  int32_t  yy=0;
   celt_assert(_k>0);
   celt_assert(_n>1);
   while(_n>2){
@@ -533,7 +533,7 @@ static opus_val32 cwrsi(int _n,int _k,uint32_t _i,int *_y){
   return yy;
 }
 
-opus_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
+int32_t decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
   return cwrsi(_n,_k,ec_dec_uint(_dec,CELT_PVQ_V(_n,_k)),_y);
 }
 
@@ -599,10 +599,10 @@ static uint32_t ncwrs_urow(unsigned _n,unsigned _k,uint32_t *_u){
   _y: Returns the vector of pulses.
   _u: Must contain entries [0..._k+1] of row _n of U() on input.
       Its contents will be destructively modified.*/
-static opus_val32 cwrsi(int _n,int _k,uint32_t _i,int *_y,uint32_t *_u){
+static int32_t cwrsi(int _n,int _k,uint32_t _i,int *_y,uint32_t *_u){
   int j;
   int16_t val;
-  opus_val32 yy=0;
+  int32_t yy=0;
   celt_assert(_n>0);
   j=0;
   do{
@@ -698,7 +698,7 @@ void encode_pulses(const int *_y,int _n,int _k,ec_enc *_enc){
   RESTORE_STACK;
 }
 
-opus_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
+int32_t decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
   VARDECL(uint32_t,u);
   int ret;
   SAVE_STACK;

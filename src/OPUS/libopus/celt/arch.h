@@ -75,13 +75,9 @@
 
 #define PRINT_MIPS(file)
 
-typedef int16_t opus_val16;
-typedef int32_t opus_val32;
-typedef int64_t opus_val64;
-
-typedef opus_val32 celt_sig;
-typedef opus_val16 celt_norm;
-typedef opus_val32 celt_ener;
+typedef int32_t celt_sig;
+typedef int16_t celt_norm;
+typedef int32_t celt_ener;
 
 #define celt_isnan(x) 0
 
@@ -98,8 +94,8 @@ typedef opus_val32 celt_ener;
 
 #define EPSILON 1
 #define VERY_SMALL 0
-#define VERY_LARGE16 ((opus_val16)32767)
-#define Q15_ONE ((opus_val16)32767)
+#define VERY_LARGE16 ((int16_t)32767)
+#define Q15_ONE ((int16_t)32767)
 
 #define SCALEIN(a)      (a)
 #define SCALEOUT(a)     (a)

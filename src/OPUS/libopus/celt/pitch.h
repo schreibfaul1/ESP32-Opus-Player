@@ -37,22 +37,22 @@
 #include "modes.h"
 #include "cpu_support.h"
 
-void pitch_downsample(celt_sig * __restrict__ x[], opus_val16 * __restrict__ x_lp,
+void pitch_downsample(celt_sig * __restrict__ x[], int16_t * __restrict__ x_lp,
       int len, int C, int arch);
 
-void pitch_search(const opus_val16 * __restrict__ x_lp, opus_val16 * __restrict__ y,
+void pitch_search(const int16_t * __restrict__ x_lp, int16_t * __restrict__ y,
                   int len, int max_pitch, int *pitch, int arch);
 
-opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
-      int N, int *T0, int prev_period, opus_val16 prev_gain, int arch);
+int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod,
+      int N, int *T0, int prev_period, int16_t prev_gain, int arch);
 
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot
    by the prefilter and by the PLC. */
-static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[4], int len)
+static OPUS_INLINE void xcorr_kernel_c(const int16_t * x, const int16_t * y, int32_t sum[4], int len)
 {
    int j;
-   opus_val16 y_0, y_1, y_2, y_3;
+   int16_t y_0, y_1, y_2, y_3;
    celt_assert(len>=3);
    y_3=0; /* gcc doesn't realize that y_3 can't be used uninitialized */
    y_0=*y++;
@@ -60,7 +60,7 @@ static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * 
    y_2=*y++;
    for (j=0;j<len-3;j+=4)
    {
-      opus_val16 tmp;
+      int16_t tmp;
       tmp = *x++;
       y_3=*y++;
       sum[0] = MAC16_16(sum[0],tmp,y_0);
@@ -88,7 +88,7 @@ static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * 
    }
    if (j++<len)
    {
-      opus_val16 tmp = *x++;
+      int16_t tmp = *x++;
       y_3=*y++;
       sum[0] = MAC16_16(sum[0],tmp,y_0);
       sum[1] = MAC16_16(sum[1],tmp,y_1);
@@ -97,7 +97,7 @@ static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * 
    }
    if (j++<len)
    {
-      opus_val16 tmp=*x++;
+      int16_t tmp=*x++;
       y_0=*y++;
       sum[0] = MAC16_16(sum[0],tmp,y_1);
       sum[1] = MAC16_16(sum[1],tmp,y_2);
@@ -106,7 +106,7 @@ static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * 
    }
    if (j<len)
    {
-      opus_val16 tmp=*x++;
+      int16_t tmp=*x++;
       y_1=*y++;
       sum[0] = MAC16_16(sum[0],tmp,y_2);
       sum[1] = MAC16_16(sum[1],tmp,y_3);
@@ -121,12 +121,12 @@ static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * 
 #endif /* OVERRIDE_XCORR_KERNEL */
 
 
-static OPUS_INLINE void dual_inner_prod_c(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
-      int N, opus_val32 *xy1, opus_val32 *xy2)
+static OPUS_INLINE void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const int16_t *y02,
+      int N, int32_t *xy1, int32_t *xy2)
 {
    int i;
-   opus_val32 xy01=0;
-   opus_val32 xy02=0;
+   int32_t xy01=0;
+   int32_t xy02=0;
    for (i=0;i<N;i++)
    {
       xy01 = MAC16_16(xy01, x[i], y01[i]);
@@ -143,11 +143,11 @@ static OPUS_INLINE void dual_inner_prod_c(const opus_val16 *x, const opus_val16 
 
 /*We make sure a C version is always available for cases where the overhead of
   vectorization and passing around an arch flag aren't worth it.*/
-static OPUS_INLINE opus_val32 celt_inner_prod_c(const opus_val16 *x,
-      const opus_val16 *y, int N)
+static OPUS_INLINE int32_t celt_inner_prod_c(const int16_t *x,
+      const int16_t *y, int N)
 {
    int i;
-   opus_val32 xy=0;
+   int32_t xy=0;
    for (i=0;i<N;i++)
       xy = MAC16_16(xy, x[i], y[i]);
    return xy;
@@ -161,8 +161,8 @@ static OPUS_INLINE opus_val32 celt_inner_prod_c(const opus_val16 *x,
 
 
 
-opus_val32 celt_pitch_xcorr_c(const opus_val16 *_x, const opus_val16 *_y,
-      opus_val32 *xcorr, int len, int max_pitch, int arch);
+int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y,
+      int32_t *xcorr, int len, int max_pitch, int arch);
 
 # define celt_pitch_xcorr celt_pitch_xcorr_c
 

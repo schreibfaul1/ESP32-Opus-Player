@@ -66,8 +66,8 @@ struct OpusMSEncoder {
    MappingType mapping_type;
    int32_t bitrate_bps;
    /* Encoder states go here */
-   /* then opus_val32 window_mem[channels*120]; */
-   /* then opus_val32 preemph_mem[channels]; */
+   /* then int32_t window_mem[channels*120]; */
+   /* then int32_t preemph_mem[channels]; */
 };
 
 struct OpusMSDecoder {
@@ -86,7 +86,7 @@ int get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
 int get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
 
 typedef void (*opus_copy_channel_in_func)(
-  opus_val16 *dst,
+  int16_t *dst,
   int dst_stride,
   const void *src,
   int src_stride,
@@ -99,7 +99,7 @@ typedef void (*opus_copy_channel_out_func)(
   void *dst,
   int dst_stride,
   int dst_channel,
-  const opus_val16 *src,
+  const int16_t *src,
   int src_stride,
   int frame_size,
   void *user_data
@@ -132,10 +132,10 @@ typedef void (*opus_copy_channel_out_func)(
 #define OPUS_SET_FORCE_MODE_REQUEST    11002
 #define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, __opus_check_int(x)
 
-typedef void (*downmix_func)(const void *, opus_val32 *, int, int, int, int, int);
-void downmix_float(const void *_x, opus_val32 *sub, int subframe, int offset, int c1, int c2, int C);
-void downmix_int(const void *_x, opus_val32 *sub, int subframe, int offset, int c1, int c2, int C);
-int is_digital_silence(const opus_val16* pcm, int frame_size, int channels, int lsb_depth);
+typedef void (*downmix_func)(const void *, int32_t *, int, int, int, int, int);
+void downmix_float(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+void downmix_int(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+int is_digital_silence(const int16_t* pcm, int frame_size, int channels, int lsb_depth);
 
 int encode_size(int size, unsigned char *data);
 
@@ -143,13 +143,13 @@ int32_t frame_size_select(int32_t frame_size, int variable_duration, int32_t Fs)
 
 
 int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len,
-      opus_val16 *pcm, int frame_size, int decode_fec, int self_delimited,
+      int16_t *pcm, int frame_size, int decode_fec, int self_delimited,
       int32_t *packet_offset, int soft_clip);
 
 /* Make sure everything is properly aligned. */
 static OPUS_INLINE int align(int i)
 {
-    struct foo {char c; union { void* p; int32_t i; opus_val32 v; } u;};
+    struct foo {char c; union { void* p; int32_t i; int32_t v; } u;};
 
     unsigned int alignment = offsetof(struct foo, u);
 

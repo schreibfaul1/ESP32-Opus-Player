@@ -88,19 +88,19 @@ struct OpusCustomDecoder {
    int skip_plc;
    int postfilter_period;
    int postfilter_period_old;
-   opus_val16 postfilter_gain;
-   opus_val16 postfilter_gain_old;
+   int16_t postfilter_gain;
+   int16_t postfilter_gain_old;
    int postfilter_tapset;
    int postfilter_tapset_old;
 
    celt_sig preemph_memD[2];
 
    celt_sig _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
-   /* opus_val16 lpc[],  Size = channels*LPC_ORDER */
-   /* opus_val16 oldEBands[], Size = 2*mode->nbEBands */
-   /* opus_val16 oldLogE[], Size = 2*mode->nbEBands */
-   /* opus_val16 oldLogE2[], Size = 2*mode->nbEBands */
-   /* opus_val16 backgroundLogE[], Size = 2*mode->nbEBands */
+   /* int16_t lpc[],  Size = channels*LPC_ORDER */
+   /* int16_t oldEBands[], Size = 2*mode->nbEBands */
+   /* int16_t oldLogE[], Size = 2*mode->nbEBands */
+   /* int16_t oldLogE2[], Size = 2*mode->nbEBands */
+   /* int16_t backgroundLogE[], Size = 2*mode->nbEBands */
 };
 
 
@@ -109,8 +109,8 @@ int opus_custom_decoder_get_size(const CELTMode *mode, int channels)
    static int size;
    size = sizeof(struct CELTDecoder)
             + (channels*(DECODE_BUFFER_SIZE+mode->overlap)-1)*sizeof(celt_sig)
-            + channels*LPC_ORDER*sizeof(opus_val16)
-            + 4*2*mode->nbEBands*sizeof(opus_val16);
+            + channels*LPC_ORDER*sizeof(int16_t)
+            + 4*2*mode->nbEBands*sizeof(int16_t);
    return size;
 }
 
@@ -169,7 +169,7 @@ int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels)
 /* Special case for stereo with no downsampling and no accumulation. This is
    quite common and we can make it faster by processing both channels in the
    same loop, reducing overhead due to the dependency loop in the IIR filter. */
-static void deemphasis_stereo_simple(celt_sig *in[], opus_val16 *pcm, int N, const opus_val16 coef0,
+static void deemphasis_stereo_simple(celt_sig *in[], int16_t *pcm, int N, const int16_t coef0,
       celt_sig *mem)
 {
    celt_sig * __restrict__ x0;
@@ -199,13 +199,13 @@ static void deemphasis_stereo_simple(celt_sig *in[], opus_val16 *pcm, int N, con
 
 static
 
-void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, const opus_val16 *coef,
+void deemphasis(celt_sig *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
       celt_sig *mem, int accum)
 {
    int c;
    int Nd;
    int apply_downsampling=0;
-   opus_val16 coef0;
+   int16_t coef0;
    VARDECL(celt_sig, scratch);
    SAVE_STACK;
 
@@ -222,7 +222,7 @@ void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, c
    c=0; do {
       int j;
       celt_sig * __restrict__ x;
-      opus_val16  * __restrict__ y;
+      int16_t  * __restrict__ y;
       celt_sig m = mem[c];
       x =in[c];
       y = pcm+c;
@@ -284,7 +284,7 @@ void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, c
 static
 
 void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
-                    opus_val16 *oldBandE, int start, int effEnd, int C, int CC,
+                    int16_t *oldBandE, int start, int effEnd, int C, int CC,
                     int isTransient, int LM, int downsample,
                     int silence, int arch)
 {
@@ -403,9 +403,9 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
 static int celt_plc_pitch_search(celt_sig *decode_mem[2], int C, int arch)
 {
    int pitch_index;
-   VARDECL( opus_val16, lp_pitch_buf );
+   VARDECL( int16_t, lp_pitch_buf );
    SAVE_STACK;
-   opus_val16 *lp_pitch_buf = (opus_val16*)malloc((DECODE_BUFFER_SIZE>>1) * sizeof(opus_val16)); //ALLOC( lp_pitch_buf, DECODE_BUFFER_SIZE>>1, opus_val16 );
+   int16_t *lp_pitch_buf = (int16_t*)malloc((DECODE_BUFFER_SIZE>>1) * sizeof(int16_t)); //ALLOC( lp_pitch_buf, DECODE_BUFFER_SIZE>>1, int16_t );
    pitch_downsample(decode_mem, lp_pitch_buf,
          DECODE_BUFFER_SIZE, C, arch);
    pitch_search(lp_pitch_buf+(PLC_PITCH_LAG_MAX>>1), lp_pitch_buf,
@@ -424,8 +424,8 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
    const int C = st->channels;
    celt_sig *decode_mem[2];
    celt_sig *out_syn[2];
-   opus_val16 *lpc;
-   opus_val16 *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
+   int16_t *lpc;
+   int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
    const OpusCustomMode *mode;
    int nbEBands;
    int overlap;
@@ -444,7 +444,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
       decode_mem[c] = st->_decode_mem + c*(DECODE_BUFFER_SIZE+overlap);
       out_syn[c] = decode_mem[c]+DECODE_BUFFER_SIZE-N;
    } while (++c<C);
-   lpc = (opus_val16*)(st->_decode_mem+(DECODE_BUFFER_SIZE+overlap)*C);
+   lpc = (int16_t*)(st->_decode_mem+(DECODE_BUFFER_SIZE+overlap)*C);
    oldBandE = lpc+C*LPC_ORDER;
    oldLogE = oldBandE + 2*nbEBands;
    oldLogE2 = oldLogE + 2*nbEBands;
@@ -462,7 +462,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
       uint32_t seed;
       int end;
       int effEnd;
-      opus_val16 decay;
+      int16_t decay;
       end = st->end;
       effEnd = IMAX(start, IMIN(end, mode->effEBands));
 
@@ -506,13 +506,13 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
    } else {
       int exc_length;
       /* Pitch-based PLC */
-      const opus_val16 *window;
-      opus_val16 *exc;
-      opus_val16 fade = Q15ONE;
+      const int16_t *window;
+      int16_t *exc;
+      int16_t fade = Q15ONE;
       int pitch_index;
-      VARDECL(opus_val32, etmp);
-      VARDECL(opus_val16, _exc);
-      VARDECL(opus_val16, fir_tmp);
+      VARDECL(int32_t, etmp);
+      VARDECL(int16_t, _exc);
+      VARDECL(int16_t, fir_tmp);
 
       if (loss_count == 0)
       {
@@ -526,15 +526,15 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
          decaying signal, but we can't get more than MAX_PERIOD. */
       exc_length = IMIN(2*pitch_index, MAX_PERIOD);
 
-      ALLOC(etmp, overlap, opus_val32);
-      ALLOC(_exc, MAX_PERIOD+LPC_ORDER, opus_val16);
-      ALLOC(fir_tmp, exc_length, opus_val16);
+      ALLOC(etmp, overlap, int32_t);
+      ALLOC(_exc, MAX_PERIOD+LPC_ORDER, int16_t);
+      ALLOC(fir_tmp, exc_length, int16_t);
       exc = _exc+LPC_ORDER;
       window = mode->window;
       c=0; do {
-         opus_val16 decay;
-         opus_val16 attenuation;
-         opus_val32 S1=0;
+         int16_t decay;
+         int16_t attenuation;
+         int32_t S1=0;
          celt_sig *buf;
          int extrapolation_offset;
          int extrapolation_len;
@@ -546,7 +546,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
 
          if (loss_count == 0)
          {
-            opus_val32 ac[LPC_ORDER+1];
+            int32_t ac[LPC_ORDER+1];
             /* Compute LPC coefficients for the last MAX_PERIOD samples before
                the first loss so we can work in the excitation-filter domain. */
             _celt_autocorr(exc, ac, window, overlap,
@@ -569,8 +569,8 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             no overflow can happen in the IIR filter. This means:
             32768*sum(abs(filter)) < 2^31 */
          while (1) {
-            opus_val16 tmp=Q15ONE;
-            opus_val32 sum=QCONST16(1., SIG_SHIFT);
+            int16_t tmp=Q15ONE;
+            int32_t sum=QCONST16(1., SIG_SHIFT);
             for (i=0;i<LPC_ORDER;i++)
                sum += ABS16(lpc[c*LPC_ORDER+i]);
             if (sum < 65535) break;
@@ -596,7 +596,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             We do this to avoid adding energy when concealing in a segment
             with decaying energy. */
          {
-            opus_val32 E1=1, E2=1;
+            int32_t E1=1, E2=1;
             int decay_length;
 
             int shift = IMAX(0,2*celt_zlog2(celt_maxabs16(&exc[MAX_PERIOD-exc_length], exc_length))-20);
@@ -604,7 +604,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             decay_length = exc_length>>1;
             for (i=0;i<decay_length;i++)
             {
-               opus_val16 e;
+               int16_t e;
                e = exc[MAX_PERIOD-decay_length+i];
                E1 += SHR32(MULT16_16(e, e), shift);
                e = exc[MAX_PERIOD-2*decay_length+i];
@@ -630,7 +630,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
          attenuation = MULT16_16_Q15(fade, decay);
          for (i=j=0;i<extrapolation_len;i++,j++)
          {
-            opus_val16 tmp;
+            int16_t tmp;
             if (j >= pitch_index) {
                j -= pitch_index;
                attenuation = MULT16_16_Q15(attenuation, decay);
@@ -646,7 +646,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             S1 += SHR32(MULT16_16(tmp, tmp), 10);
          }
          {
-            opus_val16 lpc_mem[LPC_ORDER];
+            int16_t lpc_mem[LPC_ORDER];
             /* Copy the last decoded samples (prior to the overlap region) to
                synthesis filter memory so we can have a continuous signal. */
             for (i=0;i<LPC_ORDER;i++)
@@ -666,10 +666,10 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
             happen with the signal changes during our window. If so,
             attenuate. */
          {
-            opus_val32 S2=0;
+            int32_t S2=0;
             for (i=0;i<extrapolation_len;i++)
             {
-               opus_val16 tmp = ROUND16(buf[DECODE_BUFFER_SIZE-N+i], SIG_SHIFT);
+               int16_t tmp = ROUND16(buf[DECODE_BUFFER_SIZE-N+i], SIG_SHIFT);
                S2 += SHR32(MULT16_16(tmp, tmp), 10);
             }
             /* This checks for an "explosion" in the synthesis. */
@@ -681,10 +681,10 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
                   buf[DECODE_BUFFER_SIZE-N+i] = 0;
             } else if (S1 < S2)
             {
-               opus_val16 ratio = celt_sqrt(frac_div32(SHR32(S1,1)+1,S2+1));
+               int16_t ratio = celt_sqrt(frac_div32(SHR32(S1,1)+1,S2+1));
                for (i=0;i<overlap;i++)
                {
-                  opus_val16 tmp_g = Q15ONE
+                  int16_t tmp_g = Q15ONE
                         - MULT16_16_Q15(window[i], Q15ONE-ratio);
                   buf[DECODE_BUFFER_SIZE-N+i] =
                         MULT16_32_Q15(tmp_g, buf[DECODE_BUFFER_SIZE-N+i]);
@@ -722,7 +722,7 @@ static void celt_decode_lost(CELTDecoder * __restrict__ st, int N, int LM)
 }
 
 int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data,
-      int len, opus_val16 * __restrict__ pcm, int frame_size, ec_dec *dec, int accum)
+      int len, int16_t * __restrict__ pcm, int frame_size, ec_dec *dec, int accum)
 {
    int c, i, N;
    int spread_decision;
@@ -740,8 +740,8 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    VARDECL(unsigned char, collapse_masks);
    celt_sig *decode_mem[2];
    celt_sig *out_syn[2];
-   opus_val16 *lpc;
-   opus_val16 *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
+   int16_t *lpc;
+   int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
 
    int shortBlocks;
    int isTransient;
@@ -754,7 +754,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    int codedBands;
    int alloc_trim;
    int postfilter_pitch;
-   opus_val16 postfilter_gain;
+   int16_t postfilter_gain;
    int intensity=0;
    int dual_stereo=0;
    int32_t total_bits;
@@ -781,7 +781,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    end = st->end;
    frame_size *= st->downsample;
 
-   lpc = (opus_val16*)(st->_decode_mem+(DECODE_BUFFER_SIZE+overlap)*CC);
+   lpc = (int16_t*)(st->_decode_mem+(DECODE_BUFFER_SIZE+overlap)*CC);
    oldBandE = lpc+CC*LPC_ORDER;
    oldLogE = oldBandE + 2*nbEBands;
    oldLogE2 = oldLogE + 2*nbEBands;
@@ -1018,7 +1018,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
    /* In case start or end were to change */
    if (!isTransient)
    {
-      opus_val16 max_background_increase;
+      int16_t max_background_increase;
       OPUS_COPY(oldLogE2, oldLogE, 2*nbEBands);
       OPUS_COPY(oldLogE, oldBandE, 2*nbEBands);
       /* In normal circumstances, we only allow the noise floor to increase by
@@ -1112,8 +1112,8 @@ int opus_custom_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...)
       case OPUS_RESET_STATE:
       {
          int i;
-         opus_val16 *lpc, *oldBandE, *oldLogE, *oldLogE2;
-         lpc = (opus_val16*)(st->_decode_mem+(DECODE_BUFFER_SIZE+st->overlap)*st->channels);
+         int16_t *lpc, *oldBandE, *oldLogE, *oldLogE2;
+         lpc = (int16_t*)(st->_decode_mem+(DECODE_BUFFER_SIZE+st->overlap)*st->channels);
          oldBandE = lpc+st->channels*LPC_ORDER;
          oldLogE = oldBandE + 2*st->mode->nbEBands;
          oldLogE2 = oldLogE + 2*st->mode->nbEBands;

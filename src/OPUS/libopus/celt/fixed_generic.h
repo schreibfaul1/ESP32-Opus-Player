@@ -34,41 +34,41 @@
 #define FIXED_GENERIC_H
 
 /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
-#define MULT16_16SU(a,b) ((opus_val32)(opus_val16)(a)*(opus_val32)(uint16_t)(b))
+#define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(uint16_t)(b))
 
 /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
 #if OPUS_FAST_INT64
-#define MULT16_32_Q16(a,b) ((opus_val32)SHR((opus_int64)((opus_val16)(a))*(b),16))
+#define MULT16_32_Q16(a,b) ((int32_t)SHR((opus_int64)((int16_t)(a))*(b),16))
 #else
 #define MULT16_32_Q16(a,b) ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
 #endif
 
 /** 16x32 multiplication, followed by a 16-bit shift right (round-to-nearest). Results fits in 32 bits */
 #if OPUS_FAST_INT64
-#define MULT16_32_P16(a,b) ((opus_val32)PSHR((opus_int64)((opus_val16)(a))*(b),16))
+#define MULT16_32_P16(a,b) ((int32_t)PSHR((opus_int64)((int16_t)(a))*(b),16))
 #else
 #define MULT16_32_P16(a,b) ADD32(MULT16_16((a),SHR((b),16)), PSHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
 #endif
 
 /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
 #if OPUS_FAST_INT64
-#define MULT16_32_Q15(a,b) ((opus_val32)SHR((opus_int64)((opus_val16)(a))*(b),15))
+#define MULT16_32_Q15(a,b) ((int32_t)SHR((opus_int64)((int16_t)(a))*(b),15))
 #else
 #define MULT16_32_Q15(a,b) ADD32(SHL(MULT16_16((a),SHR((b),16)),1), SHR(MULT16_16SU((a),((b)&0x0000ffff)),15))
 #endif
 
 /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
 #if OPUS_FAST_INT64
-#define MULT32_32_Q31(a,b) ((opus_val32)SHR((opus_int64)(a)*(opus_int64)(b),31))
+#define MULT32_32_Q31(a,b) ((int32_t)SHR((opus_int64)(a)*(opus_int64)(b),31))
 #else
 #define MULT32_32_Q31(a,b) ADD32(ADD32(SHL(MULT16_16(SHR((a),16),SHR((b),16)),1), SHR(MULT16_16SU(SHR((a),16),((b)&0x0000ffff)),15)), SHR(MULT16_16SU(SHR((b),16),((a)&0x0000ffff)),15))
 #endif
 
 /** Compile-time conversion of float constant to 16-bit value */
-#define QCONST16(x,bits) ((opus_val16)(0.5L+(x)*(((opus_val32)1)<<(bits))))
+#define QCONST16(x,bits) ((int16_t)(0.5L+(x)*(((int32_t)1)<<(bits))))
 
 /** Compile-time conversion of float constant to 32-bit value */
-#define QCONST32(x,bits) ((opus_val32)(0.5L+(x)*(((opus_val32)1)<<(bits))))
+#define QCONST32(x,bits) ((int32_t)(0.5L+(x)*(((int32_t)1)<<(bits))))
 
 /** Negate a 16-bit value */
 #define NEG16(x) (-(x))
@@ -76,9 +76,9 @@
 #define NEG32(x) (-(x))
 
 /** Change a 32-bit value into a 16-bit value. The value is assumed to fit in 16-bit, otherwise the result is undefined */
-#define EXTRACT16(x) ((opus_val16)(x))
+#define EXTRACT16(x) ((int16_t)(x))
 /** Change a 16-bit value into a 32-bit value */
-#define EXTEND32(x) ((opus_val32)(x))
+#define EXTEND32(x) ((int32_t)(x))
 
 /** Arithmetic shift-right of a 16-bit value */
 #define SHR16(a,shift) ((a) >> (shift))
@@ -112,28 +112,28 @@
 #define HALF32(x)  (SHR32(x,1))
 
 /** Add two 16-bit values */
-#define ADD16(a,b) ((opus_val16)((opus_val16)(a)+(opus_val16)(b)))
+#define ADD16(a,b) ((int16_t)((int16_t)(a)+(int16_t)(b)))
 /** Subtract two 16-bit values */
-#define SUB16(a,b) ((opus_val16)(a)-(opus_val16)(b))
+#define SUB16(a,b) ((int16_t)(a)-(int16_t)(b))
 /** Add two 32-bit values */
-#define ADD32(a,b) ((opus_val32)(a)+(opus_val32)(b))
+#define ADD32(a,b) ((int32_t)(a)+(int32_t)(b))
 /** Subtract two 32-bit values */
-#define SUB32(a,b) ((opus_val32)(a)-(opus_val32)(b))
+#define SUB32(a,b) ((int32_t)(a)-(int32_t)(b))
 
 /** Add two 32-bit values, ignore any overflows */
-#define ADD32_ovflw(a,b) ((opus_val32)((uint32_t)(a)+(uint32_t)(b)))
+#define ADD32_ovflw(a,b) ((int32_t)((uint32_t)(a)+(uint32_t)(b)))
 /** Subtract two 32-bit values, ignore any overflows */
-#define SUB32_ovflw(a,b) ((opus_val32)((uint32_t)(a)-(uint32_t)(b)))
+#define SUB32_ovflw(a,b) ((int32_t)((uint32_t)(a)-(uint32_t)(b)))
 /* Avoid MSVC warning C4146: unary minus operator applied to unsigned type */
 /** Negate 32-bit value, ignore any overflows */
-#define NEG32_ovflw(a) ((opus_val32)(0-(uint32_t)(a)))
+#define NEG32_ovflw(a) ((int32_t)(0-(uint32_t)(a)))
 
 /** 16x16 multiplication where the result fits in 16 bits */
-#define MULT16_16_16(a,b)     ((((opus_val16)(a))*((opus_val16)(b))))
+#define MULT16_16_16(a,b)     ((((int16_t)(a))*((int16_t)(b))))
 
-/* (opus_val32)(opus_val16) gives TI compiler a hint that it's 16x16->32 multiply */
+/* (int32_t)(int16_t) gives TI compiler a hint that it's 16x16->32 multiply */
 /** 16x16 multiplication where the result fits in 32 bits */
-#define MULT16_16(a,b)     (((opus_val32)(opus_val16)(a))*((opus_val32)(opus_val16)(b)))
+#define MULT16_16(a,b)     (((int32_t)(int16_t)(a))*((int32_t)(int16_t)(b)))
 
 /** 16x16 multiply-add where the result fits in 32 bits */
 #define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
@@ -157,16 +157,16 @@
 #define MULT16_16_P15(a,b) (SHR(ADD32(16384,MULT16_16((a),(b))),15))
 
 /** Divide a 32-bit value by a 16-bit value. Result fits in 16 bits */
-#define DIV32_16(a,b) ((opus_val16)(((opus_val32)(a))/((opus_val16)(b))))
+#define DIV32_16(a,b) ((int16_t)(((int32_t)(a))/((int16_t)(b))))
 
 /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
-#define DIV32(a,b) (((opus_val32)(a))/((opus_val32)(b)))
+#define DIV32(a,b) (((int32_t)(a))/((int32_t)(b)))
 
 #if defined(MIPSr1_ASM)
 #include "mips/fixed_generic_mipsr1.h"
 #endif
 
-static OPUS_INLINE opus_val16 SIG2WORD16_generic(celt_sig x)
+static OPUS_INLINE int16_t SIG2WORD16_generic(celt_sig x)
 {
    x = PSHR32(x, SIG_SHIFT);
    x = MAX32(x, -32768);

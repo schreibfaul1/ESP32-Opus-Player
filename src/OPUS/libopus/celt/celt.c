@@ -91,10 +91,10 @@ int resampling_factor(int32_t rate)
 #ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #endif
-void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
-      opus_val16 g10, opus_val16 g11, opus_val16 g12)
+void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
+      int16_t g10, int16_t g11, int16_t g12)
 {
-   opus_val32 x0, x1, x2, x3, x4;
+   int32_t x0, x1, x2, x3, x4;
    int i;
    x4 = SHL32(x[-T-2], 1);
    x3 = SHL32(x[-T-1], 1);
@@ -102,7 +102,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
    x1 = SHL32(x[-T+1], 1);
    for (i=0;i<N-4;i+=5)
    {
-      opus_val32 t;
+      int32_t t;
       x0=SHL32(x[i-T+2],1);
       t = MAC16_32_Q16(x[i], g10, x2);
       t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
@@ -137,7 +137,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #ifdef CUSTOM_MODES
    for (;i<N;i++)
    {
-      opus_val32 t;
+      int32_t t;
       x0=SHL32(x[i-T+2],1);
       t = MAC16_32_Q16(x[i], g10, x2);
       t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
@@ -155,10 +155,10 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #endif
-void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
-      opus_val16 g10, opus_val16 g11, opus_val16 g12)
+void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
+      int16_t g10, int16_t g11, int16_t g12)
 {
-   opus_val32 x0, x1, x2, x3, x4;
+   int32_t x0, x1, x2, x3, x4;
    int i;
    x4 = x[-T-2];
    x3 = x[-T-1];
@@ -183,15 +183,15 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #endif
 
 #ifndef OVERRIDE_comb_filter
-void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
-      opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,
-      const opus_val16 *window, int overlap, int arch)
+void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N,
+      int16_t g0, int16_t g1, int tapset0, int tapset1,
+      const int16_t *window, int overlap, int arch)
 {
    int i;
    /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
-   opus_val16 g00, g01, g02, g10, g11, g12;
-   opus_val32 x0, x1, x2, x3, x4;
-   static const opus_val16 gains[3][3] = {
+   int16_t g00, g01, g02, g10, g11, g12;
+   int32_t x0, x1, x2, x3, x4;
+   static const int16_t gains[3][3] = {
          {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
          {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
          {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
@@ -222,7 +222,7 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
       overlap=0;
    for (i=0;i<overlap;i++)
    {
-      opus_val16 f;
+      int16_t f;
       x0=x[i-T1+2];
       f = MULT16_16_Q15(window[i],window[i]);
       y[i] = x[i]

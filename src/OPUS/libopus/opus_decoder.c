@@ -158,9 +158,9 @@ OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error)
    return st;
 }
 
-static void smooth_fade(const opus_val16 *in1, const opus_val16 *in2,
-      opus_val16 *out, int overlap, int channels,
-      const opus_val16 *window, int32_t Fs)
+static void smooth_fade(const int16_t *in1, const int16_t *in2,
+      int16_t *out, int overlap, int channels,
+      const int16_t *window, int32_t Fs)
 {
    int i, c;
    int inc = 48000/Fs;
@@ -168,7 +168,7 @@ static void smooth_fade(const opus_val16 *in1, const opus_val16 *in2,
    {
       for (i=0;i<overlap;i++)
       {
-         opus_val16 w = MULT16_16_Q15(window[i*inc], window[i*inc]);
+         int16_t w = MULT16_16_Q15(window[i*inc], window[i*inc]);
          out[i*channels+c] = SHR32(MAC16_16(MULT16_16(w,in2[i*channels+c]),
                                    Q15ONE-w, in1[i*channels+c]), 15);
       }
@@ -191,7 +191,7 @@ static int opus_packet_get_mode(const unsigned char *data)
 }
 
 static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
-      int32_t len, opus_val16 *pcm, int frame_size, int decode_fec)
+      int32_t len, int16_t *pcm, int frame_size, int decode_fec)
 {
    void *silk_dec;
    CELTDecoder *celt_dec;
@@ -201,12 +201,12 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    int pcm_silk_size;
    VARDECL(int16_t, pcm_silk);
    int pcm_transition_silk_size;
-   VARDECL(opus_val16, pcm_transition_silk);
+   VARDECL(int16_t, pcm_transition_silk);
    int pcm_transition_celt_size;
-   VARDECL(opus_val16, pcm_transition_celt);
-   opus_val16 *pcm_transition=NULL;
+   VARDECL(int16_t, pcm_transition_celt);
+   int16_t *pcm_transition=NULL;
    int redundant_audio_size;
-   VARDECL(opus_val16, redundant_audio);
+   VARDECL(int16_t, redundant_audio);
 
    int audiosize;
    int mode;
@@ -218,7 +218,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    int celt_to_silk=0;
    int c;
    int F2_5, F5, F10, F20;
-   const opus_val16 *window;
+   const int16_t *window;
    uint32_t redundant_rng = 0;
    int celt_accum;
    ALLOC_STACK;
@@ -308,7 +308,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
       else
          pcm_transition_silk_size = F5*st->channels;
    }
-   ALLOC(pcm_transition_celt, pcm_transition_celt_size, opus_val16);
+   ALLOC(pcm_transition_celt, pcm_transition_celt_size, int16_t);
    if (transition && mode == MODE_CELT_ONLY)
    {
       pcm_transition = pcm_transition_celt;
@@ -425,7 +425,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
       pcm_transition_silk_size=ALLOC_NONE;
    }
 
-   ALLOC(pcm_transition_silk, pcm_transition_silk_size, opus_val16);
+   ALLOC(pcm_transition_silk, pcm_transition_silk_size, int16_t);
 
    if (transition && mode != MODE_CELT_ONLY)
    {
@@ -463,7 +463,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
 
    /* Only allocation memory for redundancy if/when needed */
    redundant_audio_size = redundancy ? F5*st->channels : ALLOC_NONE;
-   ALLOC(redundant_audio, redundant_audio_size, opus_val16);
+   ALLOC(redundant_audio, redundant_audio_size, int16_t);
 
    /* 5 ms redundant frame for CELT->SILK*/
    if (redundancy && celt_to_silk)
@@ -558,11 +558,11 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
 
    if(st->decode_gain)
    {
-      opus_val32 gain;
+      int32_t gain;
       gain = celt_exp2(MULT16_16_P15(QCONST16(6.48814081e-4f, 25), st->decode_gain));
       for (i=0;i<frame_size*st->channels;i++)
       {
-         opus_val32 x;
+         int32_t x;
          x = MULT16_32_P16(pcm[i],gain);
          pcm[i] = SATURATE(x, 32767);
       }
@@ -588,7 +588,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
 }
 
 int opus_decode_native(OpusDecoder *st, const unsigned char *data,
-      int32_t len, opus_val16 *pcm, int frame_size, int decode_fec,
+      int32_t len, int16_t *pcm, int frame_size, int decode_fec,
       int self_delimited, int32_t *packet_offset, int soft_clip)
 {
 //   log_i("len %i frame_size %i decode_fec %i self_delimited %i, packet_offset %i", len, frame_size, decode_fec, self_delimited, *packet_offset);
@@ -722,7 +722,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
 
 
 int opus_decode(OpusDecoder *st, const unsigned char *data,
-      int32_t len, opus_val16 *pcm, int frame_size, int decode_fec)
+      int32_t len, int16_t *pcm, int frame_size, int decode_fec)
 {
    log_i("len %i frame_size %i decode_fec %i", len, frame_size, decode_fec);
    if(frame_size<=0)

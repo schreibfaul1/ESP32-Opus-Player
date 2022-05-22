@@ -54,7 +54,7 @@ struct OpusCustomMode {
 
    int          nbEBands;
    int          effEBands;
-   opus_val16    preemph[4];
+   int16_t    preemph[4];
    const int16_t   *eBands;   /**< Definition for each "pseudo-critical band" */
 
    int         maxLM;
@@ -65,7 +65,7 @@ struct OpusCustomMode {
    const unsigned char   *allocVectors;   /**< Number of bits in each band for several rates */
    const int16_t *logN;
 
-   const opus_val16 *window;
+   const int16_t *window;
    mdct_lookup mdct;
    PulseCache cache;
 };

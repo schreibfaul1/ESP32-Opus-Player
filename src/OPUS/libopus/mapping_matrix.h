@@ -65,7 +65,7 @@ void mapping_matrix_multiply_channel_in_short(
     const MappingMatrix *matrix,
     const int16_t *input,
     int input_rows,
-    opus_val16 *output,
+    int16_t *output,
     int output_row,
     int output_rows,
     int frame_size
@@ -73,7 +73,7 @@ void mapping_matrix_multiply_channel_in_short(
 
 void mapping_matrix_multiply_channel_out_short(
     const MappingMatrix *matrix,
-    const opus_val16 *input,
+    const int16_t *input,
     int input_row,
     int input_rows,
     int16_t *output,

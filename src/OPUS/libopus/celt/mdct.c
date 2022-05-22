@@ -50,7 +50,7 @@
 /* Forward MDCT trashes the input array */
 #ifndef OVERRIDE_clt_mdct_forward
 void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * __restrict__ out,
-      const opus_val16 *window, int overlap, int shift, int stride, int arch)
+      const int16_t *window, int overlap, int shift, int stride, int arch)
 {
    int i;
    int N, N2, N4;
@@ -58,7 +58,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
    VARDECL(kiss_fft_cpx, f2);
    const kiss_fft_state *st = l->kfft[shift];
    const kiss_twiddle_scalar *trig;
-   opus_val16 scale;
+   int16_t scale;
    /* Allows us to scale with MULT16_32_Q16(), which is faster than
       MULT16_32_Q15() on ARM. */
    int scale_shift = st->scale_shift-1;
@@ -86,8 +86,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
       const kiss_fft_scalar * __restrict__ xp1 = in+(overlap>>1);
       const kiss_fft_scalar * __restrict__ xp2 = in+N2-1+(overlap>>1);
       kiss_fft_scalar * __restrict__ yp = f;
-      const opus_val16 * __restrict__ wp1 = window+(overlap>>1);
-      const opus_val16 * __restrict__ wp2 = window+(overlap>>1)-1;
+      const int16_t * __restrict__ wp1 = window+(overlap>>1);
+      const int16_t * __restrict__ wp2 = window+(overlap>>1)-1;
       for(i=0;i<((overlap+3)>>2);i++)
       {
          /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
@@ -171,7 +171,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
 
 #ifndef OVERRIDE_clt_mdct_backward
 void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * __restrict__ out,
-      const opus_val16 * __restrict__ window, int overlap, int shift, int stride, int arch)
+      const int16_t * __restrict__ window, int overlap, int shift, int stride, int arch)
 {
    int i;
    int N, N2, N4;
@@ -256,8 +256,8 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
    {
       kiss_fft_scalar * __restrict__ xp1 = out+overlap-1;
       kiss_fft_scalar * __restrict__ yp1 = out;
-      const opus_val16 * __restrict__ wp1 = window;
-      const opus_val16 * __restrict__ wp2 = window+overlap-1;
+      const int16_t * __restrict__ wp1 = window;
+      const int16_t * __restrict__ wp2 = window+overlap-1;
 
       for(i = 0; i < overlap/2; i++)
       {

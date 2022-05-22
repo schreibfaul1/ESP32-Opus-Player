@@ -194,7 +194,7 @@ int opus_multistream_decode_native(
    int s, c;
    char *ptr;
    int do_plc=0;
-   VARDECL(opus_val16, buf);
+   VARDECL(int16_t, buf);
    ALLOC_STACK;
 
    VALIDATE_MS_DECODER(st);
@@ -206,7 +206,7 @@ int opus_multistream_decode_native(
    /* Limit frame_size to avoid excessive stack allocations. */
    MUST_SUCCEED(opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE(&Fs)));
    frame_size = IMIN(frame_size, Fs/25*3);
-   ALLOC(buf, 2*frame_size, opus_val16);
+   ALLOC(buf, 2*frame_size, int16_t);
    ptr = (char*)st + align(sizeof(OpusMSDecoder));
    coupled_size = opus_decoder_get_size(2);
    mono_size = opus_decoder_get_size(1);
@@ -308,7 +308,7 @@ static void opus_copy_channel_out_short(
   void *dst,
   int dst_stride,
   int dst_channel,
-  const opus_val16 *src,
+  const int16_t *src,
   int src_stride,
   int frame_size,
   void *user_data

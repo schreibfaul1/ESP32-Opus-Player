@@ -48,7 +48,7 @@ static void opus_projection_copy_channel_out_short(
   void *dst,
   int dst_stride,
   int dst_channel,
-  const opus_val16 *src,
+  const int16_t *src,
   int src_stride,
   int frame_size,
   void *user_data)

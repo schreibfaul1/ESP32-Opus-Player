@@ -46,7 +46,7 @@ int bitexact_log2tan(int isin,int icos);
  */
 void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *bandE, int end, int C, int LM, int arch);
 
-/*void compute_noise_energies(const CELTMode *m, const celt_sig *X, const opus_val16 *tonality, celt_ener *bandE);*/
+/*void compute_noise_energies(const CELTMode *m, const celt_sig *X, const int16_t *tonality, celt_ener *bandE);*/
 
 /** Normalise each band of X such that the energy in each band is
     equal to 1
@@ -62,7 +62,7 @@ void normalise_bands(const CELTMode *m, const celt_sig * __restrict__ freq, celt
  * @param bandE Square root of the energy for each band
  */
 void denormalise_bands(const CELTMode *m, const celt_norm * __restrict__ X,
-      celt_sig * __restrict__ freq, const opus_val16 *bandE, int start,
+      celt_sig * __restrict__ freq, const int16_t *bandE, int start,
       int end, int M, int downsample, int silence);
 
 #define SPREAD_NONE       (0)
@@ -109,12 +109,12 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
 
 void anti_collapse(const CELTMode *m, celt_norm *X_,
       unsigned char *collapse_masks, int LM, int C, int size, int start,
-      int end, const opus_val16 *logE, const opus_val16 *prev1logE,
-      const opus_val16 *prev2logE, const int *pulses, uint32_t seed,
+      int end, const int16_t *logE, const int16_t *prev1logE,
+      const int16_t *prev2logE, const int *pulses, uint32_t seed,
       int arch);
 
 uint32_t celt_lcg_rand(uint32_t seed);
 
-int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev);
+int hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int N, int prev);
 
 #endif /* BANDS_H */

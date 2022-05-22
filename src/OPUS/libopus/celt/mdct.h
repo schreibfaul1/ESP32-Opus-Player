@@ -64,14 +64,14 @@ void clt_mdct_clear(mdct_lookup *l, int arch);
 /** Compute a forward MDCT and scale by 4/N, trashes the input array */
 void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in,
                         kiss_fft_scalar * __restrict__ out,
-                        const opus_val16 *window, int overlap,
+                        const int16_t *window, int overlap,
                         int shift, int stride, int arch);
 
 /** Compute a backward MDCT (no scaling) and performs weighted overlap-add
     (scales implicitly by 1/2) */
 void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
       kiss_fft_scalar * __restrict__ out,
-      const opus_val16 * __restrict__ window,
+      const int16_t * __restrict__ window,
       int overlap, int shift, int stride, int arch);
 
 /* Is run-time CPU detection enabled on this platform? */

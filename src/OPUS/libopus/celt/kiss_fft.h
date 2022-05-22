@@ -74,7 +74,7 @@ typedef struct arch_fft_state{
 
 typedef struct kiss_fft_state{
     int nfft;
-    opus_val16 scale;
+    int16_t scale;
     int scale_shift;
     int shift;
     int16_t factors[2*MAXFACTORS];

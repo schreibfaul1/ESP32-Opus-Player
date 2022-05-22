@@ -39,7 +39,7 @@
 
 void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
 
-opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
+int16_t op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
 
 #if !defined(OVERRIDE_OP_PVQ_SEARCH)
 #define op_pvq_search(x, iy, K, N, arch) \
@@ -56,7 +56,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
  * @ret A mask indicating which blocks in the band received pulses
 */
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
-      opus_val16 gain, int resynth, int arch);
+      int16_t gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
  * @param X Decoded normalised spectrum (returned)
@@ -66,9 +66,9 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
  * @ret A mask indicating which blocks in the band received pulses
  */
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
-      ec_dec *dec, opus_val16 gain);
+      ec_dec *dec, int16_t gain);
 
-void renormalise_vector(celt_norm *X, int N, opus_val16 gain, int arch);
+void renormalise_vector(celt_norm *X, int N, int16_t gain, int arch);
 
 int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
 

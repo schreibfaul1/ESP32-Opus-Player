@@ -11,7 +11,7 @@
 
 #ifndef DEF_WINDOW120
 #define DEF_WINDOW120
-static const opus_val16 window120[120] = {
+static const int16_t window120[120] = {
 2, 20, 55, 108, 178,
 266, 372, 494, 635, 792,
 966, 1157, 1365, 1590, 1831,
@@ -503,7 +503,7 @@ NULL,
 
 #ifndef MDCT_TWIDDLES960
 #define MDCT_TWIDDLES960
-static const opus_val16 mdct_twiddles960[1800] = {
+static const int16_t mdct_twiddles960[1800] = {
 32767, 32767, 32767, 32766, 32765,
 32763, 32761, 32759, 32756, 32753,
 32750, 32746, 32742, 32738, 32733,
