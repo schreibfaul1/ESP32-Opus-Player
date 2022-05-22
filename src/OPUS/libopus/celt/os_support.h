@@ -37,7 +37,7 @@
 
 #include "../opus_defines.h"
 
-#include <string.h>
+#include "Arduino.h"
 #include <stdio.h>
 #include <stdlib.h>
 
