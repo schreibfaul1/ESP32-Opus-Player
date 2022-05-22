@@ -147,7 +147,7 @@ int opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int channels
 
    st->arch = opus_select_arch();
 
-   opus_custom_decoder_ctl(st, OPUS_RESET_STATE);
+   celt_decoder_ctl(st, OPUS_RESET_STATE);
 
    return OPUS_OK;
 }
@@ -1061,7 +1061,7 @@ int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data
 
 
 
-int opus_custom_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...)
+int celt_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...)
 {
    va_list ap;
 

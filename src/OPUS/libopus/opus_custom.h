@@ -194,7 +194,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode(
   * by a convenience macro.
   * @see opus_encoderctls
   */
-OPUS_CUSTOM_EXPORT int opus_custom_encoder_ctl(OpusCustomEncoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+OPUS_CUSTOM_EXPORT int celt_encoder_ctl(OpusCustomEncoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
 
 
 /** Creates a new decoder state. Each stream needs its own decoder state (can't
@@ -256,7 +256,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode(
   * by a convenience macro.
   * @see opus_genericctls
   */
-OPUS_CUSTOM_EXPORT int opus_custom_decoder_ctl(OpusCustomDecoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+OPUS_CUSTOM_EXPORT int celt_decoder_ctl(OpusCustomDecoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
 
 /**@}*/
 

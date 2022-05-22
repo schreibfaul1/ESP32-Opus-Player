@@ -459,7 +459,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
       }
       MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_END_BAND(endband)));
    }
-   MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS(st->stream_channels)));
+   //MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS(st->stream_channels)));
 
    /* Only allocation memory for redundancy if/when needed */
    redundant_audio_size = redundancy ? F5*st->channels : ALLOC_NONE;
@@ -468,14 +468,14 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    /* 5 ms redundant frame for CELT->SILK*/
    if (redundancy && celt_to_silk)
    {
-      MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
+      //MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
       celt_decode_with_ec(celt_dec, data+len, redundancy_bytes,
                           redundant_audio, F5, NULL, 0);
-      MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE(&redundant_rng)));
+      //MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE(&redundant_rng)));
    }
 
    /* MUST be after PLC */
-   MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(start_band)));
+   //MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(start_band)));
 
    if (mode != MODE_SILK_ONLY)
    {

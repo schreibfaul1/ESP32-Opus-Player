@@ -166,7 +166,7 @@ static int opus_custom_encoder_init_arch(CELTEncoder *st, const CELTMode *mode,
    st->complexity = 5;
    st->lsb_depth=24;
 
-   opus_custom_encoder_ctl(st, OPUS_RESET_STATE);
+   celt_encoder_ctl(st, OPUS_RESET_STATE);
 
    return OPUS_OK;
 }
@@ -2102,7 +2102,7 @@ int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int 
 
 
 
-int opus_custom_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...)
+int celt_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...)
 {
    va_list ap;
 

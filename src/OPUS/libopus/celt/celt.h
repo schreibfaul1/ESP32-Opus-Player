@@ -151,9 +151,6 @@ int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels);
 int celt_decode_with_ec(OpusCustomDecoder * __restrict__ st, const unsigned char *data,
       int len, int16_t * __restrict__ pcm, int frame_size, ec_dec *dec, int accum);
 
-#define celt_encoder_ctl opus_custom_encoder_ctl
-#define celt_decoder_ctl opus_custom_decoder_ctl
-
 
 #ifdef CUSTOM_MODES
 #define OPUS_CUSTOM_NOSTATIC
