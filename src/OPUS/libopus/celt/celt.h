@@ -294,6 +294,12 @@ struct CELTEncoder{
 
 #define DECODE_BUFFER_SIZE 2048
 
+/*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
+#define CELT_PVQ_U(_n, _k) (CELT_PVQ_U_ROW[IMIN(_n, _k)][IMAX(_n, _k)])
+/*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
+   with K pulses allocated to it.*/
+#define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
+
 /* Prototypes */
 
 
