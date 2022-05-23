@@ -28,8 +28,6 @@
 //#ifdef HAVE_CONFIG_H
 #include "config.h"
 //#endif
-
-#include "celt/float_cast.h"
 #include "opus_private.h"
 #include "opus_defines.h"
 #include "mapping_matrix.h"

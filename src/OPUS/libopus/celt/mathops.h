@@ -35,7 +35,6 @@
 #define MATHOPS_H
 
 #include "celt.h"
-#include "fixed_generic.h"
 #include "os_support.h"
 
 //#define PI 3.141592653f

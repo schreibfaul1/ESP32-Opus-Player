@@ -35,7 +35,6 @@
 #include "celt/modes.h"
 #include "silk/API.h"
 #include "celt/stack_alloc.h"
-#include "celt/float_cast.h"
 #include "opus_private.h"
 #include "celt/os_support.h"
 #include "silk/structs.h"
