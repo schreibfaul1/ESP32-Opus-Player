@@ -48,7 +48,7 @@ typedef struct {
 /** Mode definition (opaque)
  @brief Mode definition
  */
-struct OpusCustomMode {
+struct CELTMode {
    int32_t Fs;
    int          overlap;
 

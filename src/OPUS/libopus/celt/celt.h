@@ -45,12 +45,6 @@
 extern "C" {
 #endif
 
-#define CELTEncoder OpusCustomEncoder
-#define CELTDecoder OpusCustomDecoder
-#define CELTMode OpusCustomMode
-
-
-
 #define LEAK_BANDS 19
 
 typedef struct {
@@ -74,8 +68,7 @@ typedef struct {
    int offset;
 } SILKInfo;
 
-struct band_ctx
-{
+struct band_ctx{
     int encode;
     int resynth;
     const CELTMode *m;
@@ -102,6 +95,106 @@ struct split_ctx{
     int qalloc;
 };
 
+struct CELTDecoder {
+    const CELTMode *mode;
+    int overlap;
+    int channels;
+    int stream_channels;
+
+    int downsample;
+    int start, end;
+    int signalling;
+    int disable_inv;
+    int arch;
+
+    /* Everything beyond this point gets cleared on a reset */
+#define DECODER_RESET_START rng
+
+    uint32_t rng;
+    int error;
+    int last_pitch_index;
+    int loss_count;
+    int skip_plc;
+    int postfilter_period;
+    int postfilter_period_old;
+    int16_t postfilter_gain;
+    int16_t postfilter_gain_old;
+    int postfilter_tapset;
+    int postfilter_tapset_old;
+
+    int32_t preemph_memD[2];
+
+    int32_t _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
+                            /* int16_t lpc[],  Size = channels*LPC_ORDER */
+                            /* int16_t oldEBands[], Size = 2*mode->nbEBands */
+                            /* int16_t oldLogE[], Size = 2*mode->nbEBands */
+                            /* int16_t oldLogE2[], Size = 2*mode->nbEBands */
+                            /* int16_t backgroundLogE[], Size = 2*mode->nbEBands */
+};
+
+struct CELTEncoder{
+    const CELTMode *mode; /**< Mode used by the encoder */
+    int channels;
+    int stream_channels;
+
+    int force_intra;
+    int clip;
+    int disable_pf;
+    int complexity;
+    int upsample;
+    int start, end;
+
+    int32_t bitrate;
+    int vbr;
+    int signalling;
+    int constrained_vbr; /* If zero, VBR can do whatever it likes with the rate */
+    int loss_rate;
+    int lsb_depth;
+    int lfe;
+    int disable_inv;
+    int arch;
+
+    /* Everything beyond this point gets cleared on a reset */
+#define ENCODER_RESET_START rng
+
+    uint32_t rng;
+    int spread_decision;
+    int32_t delayedIntra;
+    int tonal_average;
+    int lastCodedBands;
+    int hf_average;
+    int tapset_decision;
+
+    int prefilter_period;
+    int16_t prefilter_gain;
+    int prefilter_tapset;
+
+    int consec_transient;
+    AnalysisInfo analysis;
+    SILKInfo silk_info;
+
+    int32_t preemph_memE[2];
+    int32_t preemph_memD[2];
+
+    /* VBR-related parameters */
+    int32_t vbr_reservoir;
+    int32_t vbr_drift;
+    int32_t vbr_offset;
+    int32_t vbr_count;
+    int32_t overlap_max;
+    int16_t stereo_saving;
+    int intensity;
+    int16_t *energy_mask;
+    int16_t spec_avg;
+
+    int32_t in_mem[1]; /* Size = channels*mode->overlap */
+                       /* int32_t prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
+                       /* int16_t oldBandE[],     Size = channels*mode->nbEBands */
+                       /* int16_t oldLogE[],      Size = channels*mode->nbEBands */
+                       /* int16_t oldLogE2[],     Size = channels*mode->nbEBands */
+                       /* int16_t energyError[],  Size = channels*mode->nbEBands */
+};
+
 #define ABS16(x) ((x) < 0 ? (-(x)) : (x))
 #define ABS32(x) ((x) < 0 ? (-(x)) : (x))
 
@@ -117,15 +210,12 @@ struct split_ctx{
 #define USUB32(a,b) ((a)-(b))
 
 #define __celt_check_mode_ptr_ptr(ptr) ((ptr) + ((ptr) - (const CELTMode**)(ptr)))
-
 #define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
-
 #define __celt_check_silkinfo_ptr(ptr) ((ptr) + ((ptr) - (const SILKInfo*)(ptr)))
 
 /* Encoder/decoder Requests */
-
-
 #define CELT_SET_PREDICTION_REQUEST    10002
+
 /** Controls the use of interframe prediction.
     0=Independent frames
     1=Short term interframe prediction allowed
@@ -174,39 +264,46 @@ struct split_ctx{
 #define CELT_SET_SILK_INFO_REQUEST    10028
 #define CELT_SET_SILK_INFO(x) CELT_SET_SILK_INFO_REQUEST, __celt_check_silkinfo_ptr(x)
 
-/* The maximum pitch lag to allow in the pitch-based PLC. It's possible to save
-   CPU time in the PLC pitch search by making this smaller than MAX_PERIOD. The
-   current value corresponds to a pitch of 66.67 Hz. */
+/* The maximum pitch lag to allow in the pitch-based PLC. It's possible to save CPU time in the PLC pitch search by
+   making this smaller than MAX_PERIOD. The current value corresponds to a pitch of 66.67 Hz. */
 #define PLC_PITCH_LAG_MAX (720)
-/* The minimum pitch lag to allow in the pitch-based PLC. This corresponds to a
-   pitch of 480 Hz. */
+
+/* The minimum pitch lag to allow in the pitch-based PLC. This corresponds to a pitch of 480 Hz. */
 #define PLC_PITCH_LAG_MIN (100)
 
 /*The number of bits to output at a time.*/
 # define EC_SYM_BITS   (8)
+
 /*The total number of bits in each of the state registers.*/
 # define EC_CODE_BITS  (32)
+
 /*The maximum symbol value.*/
 # define EC_SYM_MAX    ((1U<<EC_SYM_BITS)-1)
+
 /*Bits to shift by to move a symbol into the high-order position.*/
 # define EC_CODE_SHIFT (EC_CODE_BITS-EC_SYM_BITS-1)
+
 /*Carry bit of the high-order range symbol.*/
 # define EC_CODE_TOP   (((uint32_t)1U)<<(EC_CODE_BITS-1))
+
 /*Low-order bit of the high-order range symbol.*/
 # define EC_CODE_BOT   (EC_CODE_TOP>>EC_SYM_BITS)
+
 /*The number of bits available for the last, partial symbol in the code field.*/
 # define EC_CODE_EXTRA ((EC_CODE_BITS-2)%EC_SYM_BITS+1)
 
+#define DECODE_BUFFER_SIZE 2048
+
+/* Prototypes */
 
 
-/* Encoder stuff */
+
+
+
 
 int celt_encoder_get_size(int channels);
-
-int celt_encode_with_ec(OpusCustomEncoder * __restrict__ st, const int16_t * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
-
-int celt_encoder_init(CELTEncoder *st, int32_t sampling_rate, int channels,
-                      int arch);
+int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
+int celt_encoder_init(CELTEncoder *st, int32_t sampling_rate, int channels, int arch);
 
 
 
@@ -217,15 +314,12 @@ int celt_decoder_get_size(int channels);
 
 int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels);
 
-int celt_decode_with_ec(OpusCustomDecoder * __restrict__ st, const unsigned char *data,
+int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data,
       int len, int16_t * __restrict__ pcm, int frame_size, ec_dec *dec, int accum);
 
 
-#ifdef CUSTOM_MODES
-#define OPUS_CUSTOM_NOSTATIC
-#else
 #define OPUS_CUSTOM_NOSTATIC static OPUS_INLINE
-#endif
+
 
 static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
 /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
