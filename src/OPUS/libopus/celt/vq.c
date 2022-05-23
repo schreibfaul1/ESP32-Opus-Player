@@ -28,7 +28,6 @@
 
 #include "mathops.h"
 #include "vq.h"
-#include "os_support.h"
 #include "rate.h"
 #include "pitch.h"
 #include "stack_alloc.h"

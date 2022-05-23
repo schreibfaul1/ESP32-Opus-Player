@@ -30,7 +30,6 @@
 //#endif
 
 #include "celt/mathops.h"
-#include "celt/os_support.h"
 #include "opus_private.h"
 #include "opus_defines.h"
 #include "opus_projection.h"

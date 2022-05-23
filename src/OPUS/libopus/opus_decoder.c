@@ -32,11 +32,9 @@
 #include <stdarg.h>
 #include "celt/celt.h"
 #include "opus.h"
-#include "celt/modes.h"
 #include "silk/API.h"
 #include "celt/stack_alloc.h"
 #include "opus_private.h"
-#include "celt/os_support.h"
 #include "silk/structs.h"
 #include "silk/define.h"
 #include "celt/mathops.h"

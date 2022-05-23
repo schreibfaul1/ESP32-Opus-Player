@@ -29,7 +29,6 @@
 #include "quant_bands.h"
 
 #include <math.h>
-#include "os_support.h"
 
 #include "celt.h"
 #include "mathops.h"

@@ -28,7 +28,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "API.h"
 #include "main.h"
 #include "../celt/stack_alloc.h"
-#include "../celt/os_support.h"
 
 /************************/
 /* Decoder Super Struct */

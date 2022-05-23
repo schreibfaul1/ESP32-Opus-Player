@@ -27,9 +27,10 @@
 */
 
 #include <math.h>
-#include "modes.h"
-#include "os_support.h"
+
 #include "stack_alloc.h"
+#include "../opus_custom.h"
+#include "celt.h"
 
 #include "rate.h"
 

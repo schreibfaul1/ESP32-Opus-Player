@@ -35,7 +35,7 @@
 #define MATHOPS_H
 
 #include "celt.h"
-#include "os_support.h"
+#include <stdint.h>
 
 //#define PI 3.141592653f
 
@@ -71,7 +71,6 @@ static OPUS_INLINE int32_t celt_maxabs32(const int32_t *x, int len)
 }
 
 
-#include "os_support.h"
 
 #ifndef OVERRIDE_CELT_ILOG2
 /** Integer log in base2. Undefined for zero and negative numbers */
@@ -122,14 +121,14 @@ static OPUS_INLINE int16_t celt_log2(int32_t x)
 #define D2 14819
 #define D3 10204
 
-static OPUS_INLINE int32_t celt_exp2_frac(int16_t x)
+static inline int32_t celt_exp2_frac(int16_t x)
 {
    int16_t frac;
    frac = SHL16(x, 4);
    return ADD16(D0, MULT16_16_Q15(frac, ADD16(D1, MULT16_16_Q15(frac, ADD16(D2 , MULT16_16_Q15(D3,frac))))));
 }
 /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
-static OPUS_INLINE int32_t celt_exp2(int16_t x)
+static inline int32_t celt_exp2(int16_t x)
 {
    int integer;
    int16_t frac;
@@ -144,44 +143,9 @@ static OPUS_INLINE int32_t celt_exp2(int16_t x)
 
 int32_t celt_rcp(int32_t x);
 
-#define celt_div(a,b) MULT32_32_Q31((int32_t)(a),celt_rcp(b))
+
 
 int32_t frac_div32(int32_t a, int32_t b);
 
-#define M1 32767
-#define M2 -21
-#define M3 -11943
-#define M4 4936
-
-/* Atan approximation using a 4th order polynomial. Input is in Q15 format
-   and normalized by pi/4. Output is in Q15 format */
-static OPUS_INLINE int16_t celt_atan01(int16_t x)
-{
-   return MULT16_16_P15(x, ADD32(M1, MULT16_16_P15(x, ADD32(M2, MULT16_16_P15(x, ADD32(M3, MULT16_16_P15(M4, x)))))));
-}
-
-#undef M1
-#undef M2
-#undef M3
-#undef M4
-
-/* atan2() approximation valid for positive input values */
-static OPUS_INLINE int16_t celt_atan2p(int16_t y, int16_t x)
-{
-   if (y < x)
-   {
-      int32_t arg;
-      arg = celt_div(SHL32(EXTEND32(y),15),x);
-      if (arg >= 32767)
-         arg = 32767;
-      return SHR16(celt_atan01(EXTRACT16(arg)),1);
-   } else {
-      int32_t arg;
-      arg = celt_div(SHL32(EXTEND32(x),15),y);
-      if (arg >= 32767)
-         arg = 32767;
-      return 25736-SHR16(celt_atan01(EXTRACT16(arg)),1);
-   }
-}
 
 #endif /* MATHOPS_H */

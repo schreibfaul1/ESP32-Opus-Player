@@ -34,7 +34,6 @@
 #include "opus_private.h"
 #include "celt/stack_alloc.h"
 #include <stdarg.h>
-#include "celt/os_support.h"
 
 
 int validate_layout(const ChannelLayout *layout)

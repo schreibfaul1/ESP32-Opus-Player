@@ -31,7 +31,6 @@
 
 #include "opus.h"
 #include "opus_private.h"
-#include "celt/os_support.h"
 
 int encode_size(int size, unsigned char *data)
 {
