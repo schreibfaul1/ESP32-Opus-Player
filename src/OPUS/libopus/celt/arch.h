@@ -50,7 +50,7 @@
 /* Assume that all LP64 architectures have fast 64-bit types; also x86_64
    (which can be ILP32 for x32) and Win64 (which is LLP64). */
 
-#define OPUS_FAST_INT64 0
+#define OPUS_FAST_INT64 1
 
 #define PRINT_MIPS(file)
 
