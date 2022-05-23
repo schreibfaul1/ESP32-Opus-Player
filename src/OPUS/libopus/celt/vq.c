@@ -31,7 +31,6 @@
 #include "vq.h"
 #include "arch.h"
 #include "os_support.h"
-#include "bands.h"
 #include "rate.h"
 #include "pitch.h"
 

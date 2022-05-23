@@ -142,6 +142,27 @@ typedef struct {
    int16_t i;
 }kiss_twiddle_cpx;
 
+typedef struct arch_fft_state{
+   int is_supported;
+   void *priv;
+} arch_fft_state;
+
+#define MAXFACTORS 8
+
+typedef struct kiss_fft_state{
+    int nfft;
+    int16_t scale;
+    int scale_shift;
+    int shift;
+    int16_t factors[2*MAXFACTORS];
+    const int16_t *bitrev;
+    const kiss_twiddle_cpx *twiddles;
+    arch_fft_state *arch_fft;
+} kiss_fft_state;
+
+
+
+
 
 struct CELTEncoder{
     const CELTMode *mode; /**< Mode used by the encoder */
@@ -211,6 +232,10 @@ struct CELTEncoder{
 /* List of all the available modes */
 #define TOTAL_MODES 1
 
+#define SPREAD_NONE       (0)
+#define SPREAD_LIGHT      (1)
+#define SPREAD_NORMAL     (2)
+#define SPREAD_AGGRESSIVE (3)
 
 #define MIN(a,b) ((a)<(b) ? (a):(b))
 #define MAX(a,b) ((a)>(b) ? (a):(b))
@@ -331,9 +356,10 @@ struct CELTEncoder{
 #define SAMP_MAX 2147483647
 #define TWID_MAX 32767
 #define TRIG_UPSCALE 1
+#define LPC_ORDER 24
 
 #define SAMP_MIN -SAMP_MAX
-
+#define celt_fir(x, num, y, N, ord, arch) (celt_fir_c(x, num, y, N, ord, arch))
 
 #define S_MUL(a,b) MULT16_32_Q15(b, a)
 #define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
@@ -379,7 +405,7 @@ struct CELTEncoder{
 
 #define VALIDATE_CELT_DECODER(st)
 
-#define MAXFACTORS 8
+
 
 # define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
     ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))

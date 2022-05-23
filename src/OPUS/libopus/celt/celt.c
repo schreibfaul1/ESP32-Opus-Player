@@ -35,7 +35,6 @@
 #include "mdct.h"
 #include <math.h>
 #include "pitch.h"
-#include "bands.h"
 #include "modes.h"
 #include "entcode.h"
 #include "quant_bands.h"
@@ -44,7 +43,7 @@
 #include "mathops.h"
 #include "float_cast.h"
 #include <stdarg.h>
-#include "celt_lpc.h"
+
 #include "vq.h"
 #include <pgmspace.h>
 #include "static_modes_fixed.h"

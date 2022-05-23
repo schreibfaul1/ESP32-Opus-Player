@@ -27,7 +27,7 @@
 */
 
 #include "quant_bands.h"
-#include "laplace.h"
+
 #include <math.h>
 #include "os_support.h"
 #include "arch.h"

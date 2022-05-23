@@ -26,7 +26,6 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "../SigProc_FIX.h"
-#include "../../celt/celt_lpc.h"
 
 /* Compute autocorrelation */
 void silk_autocorr(

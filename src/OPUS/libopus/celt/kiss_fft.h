@@ -48,22 +48,6 @@ extern "C" {
  4*4*4*2
  */
 
-typedef struct arch_fft_state{
-   int is_supported;
-   void *priv;
-} arch_fft_state;
-
-typedef struct kiss_fft_state{
-    int nfft;
-    int16_t scale;
-    int scale_shift;
-    int shift;
-    int16_t factors[2*MAXFACTORS];
-    const int16_t *bitrev;
-    const kiss_twiddle_cpx *twiddles;
-    arch_fft_state *arch_fft;
-} kiss_fft_state;
-
 
 
 /*typedef struct kiss_fft_state* kiss_fft_cfg;*/

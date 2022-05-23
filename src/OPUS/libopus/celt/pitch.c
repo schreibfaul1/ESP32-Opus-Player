@@ -36,7 +36,7 @@
 #include "modes.h"
 #include "stack_alloc.h"
 #include "mathops.h"
-#include "celt_lpc.h"
+
 
 static void find_best_pitch(int32_t *xcorr, int16_t *y, int len,
                             int max_pitch, int *best_pitch
