@@ -405,7 +405,10 @@ struct CELTEncoder{
 
 #define VALIDATE_CELT_DECODER(st)
 
-
+#define opus_fft_alloc_arch(_st, arch) ((void)(arch), opus_fft_alloc_arch_c(_st))
+#define opus_fft_free_arch(_st, arch)  ((void)(arch), opus_fft_free_arch_c(_st))
+#define opus_fft(_cfg, _fin, _fout, arch) ((void)(arch), opus_fft_c(_cfg, _fin, _fout))
+#define opus_ifft(_cfg, _fin, _fout, arch) ((void)(arch), opus_ifft_c(_cfg, _fin, _fout))
 
 # define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
     ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))
@@ -575,9 +578,9 @@ void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits);
 // static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
 // static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
 // static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
-// void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
-// void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
-// void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
+void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
+void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
+void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
 static unsigned ec_laplace_get_freq1(unsigned fs0, int decay);
 void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
 int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay);

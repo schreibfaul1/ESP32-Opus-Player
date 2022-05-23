@@ -43,7 +43,6 @@
 #define MDCT_H
 
 #include "../opus_defines.h"
-#include "kiss_fft.h"
 #include "arch.h"
 
 typedef struct {
