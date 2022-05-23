@@ -32,8 +32,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CELT_H
-#define CELT_H
+#pragma once
 
 #include "../opus_defines.h"
 #include "../opus_custom.h"
@@ -671,6 +670,8 @@ int32_t celt_rcp(int32_t x);
 #define OPUS_PRINT_INT(value) do{}while(0)
 #define OPUS_FPRINTF (void)
 
+#define op_pvq_search(x, iy, K, N, arch) (op_pvq_search_c(x, iy, K, N, arch))
+
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
 extern const unsigned char LOG2_FRAC_TABLE[24];
@@ -995,10 +996,10 @@ void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp);
 void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb);
 void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft);
 void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits);
-// static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N);
-// static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
-// static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
-// static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N);
+static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
 void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
 void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
 void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
@@ -1032,18 +1033,18 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
                                           int *dual_stereo, int dual_stereo_rsv, int *bits, int *ebits,
                                           int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev,
                                           int signalBandwidth);
-// int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
-                           // int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
-                           // int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
-// static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
-// void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
-// static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
-// static unsigned extract_collapse_mask(int *iy, int N, int B);
-// int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
-// unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch)
-// unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
-// void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
-// int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
+int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
+                           int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
+                           int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
+static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
+void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
+static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
+static unsigned extract_collapse_mask(int *iy, int N, int B);
+int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
+unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch);
+unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
+void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
+int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
 static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
                             int32_t maxcorr);
 static void celt_fir5(int16_t *x, const int16_t *num, int N);
@@ -1080,9 +1081,18 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *old
                              int *fine_priority, int bits_left, ec_dec *dec, int C);
 void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C);
 static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
+static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
+void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
+static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
+static unsigned extract_collapse_mask(int *iy, int N, int B);
+int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
+unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch);
+unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
+void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
+int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CELT_H */
