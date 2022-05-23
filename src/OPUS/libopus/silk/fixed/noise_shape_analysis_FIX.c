@@ -121,7 +121,6 @@ static OPUS_INLINE void limit_warped_coefs(
             coefs_Q24[ i ] = silk_SMULWW( gain_Q16, coefs_Q24[ i ] );
         }
     }
-    silk_assert( 0 );
 }
 
 /* Disable MIPS version until it's updated. */

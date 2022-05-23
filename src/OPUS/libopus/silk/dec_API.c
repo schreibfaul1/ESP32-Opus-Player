@@ -101,7 +101,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int delay_stack_alloc;
     SAVE_STACK;
 
-    celt_assert( decControl->nChannelsInternal == 1 || decControl->nChannelsInternal == 2 );
+    assert( decControl->nChannelsInternal == 1 || decControl->nChannelsInternal == 2 );
 
     /**********************************/
     /* Test if first frame in payload */
@@ -140,14 +140,10 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                 channel_state[ n ].nFramesPerPacket = 3;
                 channel_state[ n ].nb_subfr = 4;
             } else {
-                celt_assert( 0 );
-                
                 return SILK_DEC_INVALID_FRAME_SIZE;
             }
             fs_kHz_dec = ( decControl->internalSampleRate >> 10 ) + 1;
             if( fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16 ) {
-                celt_assert( 0 );
-                
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
             ret += silk_decoder_set_fs( &channel_state[ n ], fs_kHz_dec, decControl->API_sampleRate );

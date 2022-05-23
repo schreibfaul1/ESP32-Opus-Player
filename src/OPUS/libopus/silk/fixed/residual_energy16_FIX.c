@@ -43,10 +43,10 @@ int32_t silk_residual_energy16_covar_FIX(
     const int32_t *pRow;
 
     /* Safety checks */
-    celt_assert( D >=  0 );
-    celt_assert( D <= 16 );
-    celt_assert( cQ >  0 );
-    celt_assert( cQ < 16 );
+    assert( D >=  0 );
+    assert( D <= 16 );
+    assert( cQ >  0 );
+    assert( cQ < 16 );
 
     lshifts = 16 - cQ;
     Qxtra = lshifts;

@@ -132,8 +132,7 @@ static OPUS_INLINE int16_t *silk_resampler_private_down_FIR_INTERPOL(
                 *out++ = (int16_t)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
             }
             break;
-        default:
-            celt_assert( 0 );
+        default: {;}
     }
     return out;
 }

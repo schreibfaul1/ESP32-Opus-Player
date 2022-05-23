@@ -258,7 +258,7 @@ int32_t silk_encode_frame_FIX(
                 if( found_lower && ( gainsID == gainsID_lower || nBits > maxBits ) ) {
                     /* Restore output state from earlier iteration that did meet the bitrate budget */
                     silk_memcpy( psRangeEnc, &sRangeEnc_copy2, sizeof( ec_enc ) );
-                    celt_assert( sRangeEnc_copy2.offs <= 1275 );
+                    assert( sRangeEnc_copy2.offs <= 1275 );
                     silk_memcpy( psRangeEnc->buf, ec_buf_copy, sRangeEnc_copy2.offs );
                     silk_memcpy( &psEnc->sCmn.sNSQ, &sNSQ_copy2, sizeof( silk_nsq_state ) );
                     psEnc->sShape.LastGainIndex = LastGainIndex_copy2;
@@ -286,7 +286,7 @@ int32_t silk_encode_frame_FIX(
                     gainsID_lower = gainsID;
                     /* Copy part of the output state */
                     silk_memcpy( &sRangeEnc_copy2, psRangeEnc, sizeof( ec_enc ) );
-                    celt_assert( psRangeEnc->offs <= 1275 );
+                    assert( psRangeEnc->offs <= 1275 );
                     silk_memcpy( ec_buf_copy, psRangeEnc->buf, psRangeEnc->offs );
                     silk_memcpy( &sNSQ_copy2, &psEnc->sCmn.sNSQ, sizeof( silk_nsq_state ) );
                     LastGainIndex_copy2 = psEnc->sShape.LastGainIndex;

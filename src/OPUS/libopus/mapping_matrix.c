@@ -69,7 +69,7 @@ void mapping_matrix_init(MappingMatrix * const matrix,
 #if !defined(ENABLE_ASSERTIONS)
   (void)data_size;
 #endif
-  celt_assert(align(data_size) == align(rows * cols * sizeof(int16_t)));
+  assert(align(data_size) == align(rows * cols * sizeof(int16_t)));
 
   matrix->rows = rows;
   matrix->cols = cols;
@@ -95,7 +95,7 @@ void mapping_matrix_multiply_channel_in_short(
   int16_t* matrix_data;
   int i, col;
 
-  celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
+  assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
   matrix_data = mapping_matrix_get_data(matrix);
 
@@ -126,7 +126,7 @@ void mapping_matrix_multiply_channel_out_short(
   int i, row;
   int32_t input_sample;
 
-  celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
+  assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
   matrix_data = mapping_matrix_get_data(matrix);
 

@@ -355,7 +355,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
               st->DecControl.internalSampleRate = 16000;
            } else {
               st->DecControl.internalSampleRate = 16000;
-              celt_assert( 0 );
            }
         } else {
            /* Hybrid mode */
@@ -454,7 +453,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
          endband = 21;
          break;
       default:
-         celt_assert(0);
          break;
       }
       MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_END_BAND(endband)));
@@ -619,7 +617,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
          }
          pcm_count += ret;
       } while (pcm_count < frame_size);
-      celt_assert(pcm_count == frame_size);
+      assert(pcm_count == frame_size);
       if (OPUS_CHECK_ARRAY(pcm, pcm_count*st->channels))
          OPUS_PRINT_INT(pcm_count);
       st->last_packet_duration = pcm_count;
@@ -663,7 +661,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
             log_i("ret %i", ret);
             return ret;
          }
-         celt_assert(ret==frame_size-packet_frame_size);
+         assert(ret==frame_size-packet_frame_size);
       }
       /* Complete with FEC */
       st->mode = packet_mode;
@@ -709,7 +707,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
           return ret;
       }
 
-      celt_assert(ret==packet_frame_size);
+      assert(ret==packet_frame_size);
       data += size[i];
       nb_samples += ret;
    }

@@ -568,7 +568,6 @@ static OPUS_INLINE opus_int64 silk_ADD_SAT64( opus_int64 a64, opus_int64 b64 ) {
 #undef silk_SUB_SAT16
 static OPUS_INLINE opus_int16 silk_SUB_SAT16( opus_int16 a16, opus_int16 b16 ) {
     opus_int16 res;
-    silk_assert(0);
     /* Nb will be counted in sub-macros*/
     res = (opus_int16)silk_SAT16( silk_SUB32( (opus_int32)(a16), (b16) ) );
     return res;

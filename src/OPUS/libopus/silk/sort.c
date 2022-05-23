@@ -44,9 +44,9 @@ void silk_insertion_sort_increasing(
     int32_t        i, j;
 
     /* Safety checks */
-    celt_assert( K >  0 );
-    celt_assert( L >  0 );
-    celt_assert( L >= K );
+    assert( K >  0 );
+    assert( L >  0 );
+    assert( L >= K );
 
     /* Write start indices in index vector */
     for( i = 0; i < K; i++ ) {
@@ -91,9 +91,9 @@ void silk_insertion_sort_decreasing_int16(
     int32_t value;
 
     /* Safety checks */
-    celt_assert( K >  0 );
-    celt_assert( L >  0 );
-    celt_assert( L >= K );
+    assert( K >  0 );
+    assert( L >  0 );
+    assert( L >= K );
 
     /* Write start indices in index vector */
     for( i = 0; i < K; i++ ) {
@@ -135,7 +135,7 @@ void silk_insertion_sort_increasing_all_values_int16(
     int32_t    i, j;
 
     /* Safety checks */
-    celt_assert( L >  0 );
+    assert( L >  0 );
 
     /* Sort vector elements by value, increasing order */
     for( i = 1; i < L; i++ ) {

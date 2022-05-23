@@ -44,7 +44,7 @@ void silk_process_NLSFs(
 
     silk_assert( psEncC->speech_activity_Q8 >=   0 );
     silk_assert( psEncC->speech_activity_Q8 <= SILK_FIX_CONST( 1.0, 8 ) );
-    celt_assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
+    assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
 
     /***********************/
     /* Calculate mu values */
@@ -56,7 +56,7 @@ void silk_process_NLSFs(
         NLSF_mu_Q20 = silk_ADD_RSHIFT( NLSF_mu_Q20, NLSF_mu_Q20, 1 );
     }
 
-    celt_assert( NLSF_mu_Q20 >  0 );
+    assert( NLSF_mu_Q20 >  0 );
     silk_assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ) );
 
     /* Calculate NLSF weights */
@@ -97,7 +97,7 @@ void silk_process_NLSFs(
 
     } else {
         /* Copy LPC coefficients for first half from second half */
-        celt_assert( psEncC->predictLPCOrder <= MAX_LPC_ORDER );
+        assert( psEncC->predictLPCOrder <= MAX_LPC_ORDER );
         silk_memcpy( PredCoef_Q12[ 0 ], PredCoef_Q12[ 1 ], psEncC->predictLPCOrder * sizeof( int16_t ) );
     }
 }

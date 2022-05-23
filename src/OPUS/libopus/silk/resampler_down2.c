@@ -40,8 +40,8 @@ void silk_resampler_down2(
     int32_t k, len2 = silk_RSHIFT32( inLen, 1 );
     int32_t in32, out32, Y, X;
 
-    celt_assert( silk_resampler_down2_0 > 0 );
-    celt_assert( silk_resampler_down2_1 < 0 );
+    assert( silk_resampler_down2_0 > 0 );
+    assert( silk_resampler_down2_1 < 0 );
 
     /* Internal variables and state are in Q10 format */
     for( k = 0; k < len2; k++ ) {

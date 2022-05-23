@@ -56,9 +56,9 @@ void silk_LPC_analysis_filter(
     int ix;
     int32_t       out32_Q12, out32;
     const int16_t *in_ptr;
-    celt_assert( d >= 6 );
-    celt_assert( (d & 1) == 0 );
-    celt_assert( d <= len );
+    assert( d >= 6 );
+    assert( (d & 1) == 0 );
+    assert( d <= len );
 
     (void)arch;
     for( ix = d; ix < len; ix++ ) {

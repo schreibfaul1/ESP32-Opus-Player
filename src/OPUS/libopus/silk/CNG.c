@@ -142,7 +142,7 @@ void silk_CNG(
 
         /* Generate CNG signal, by synthesis filtering */
         silk_memcpy( CNG_sig_Q14, psCNG->CNG_synth_state, MAX_LPC_ORDER * sizeof( int32_t ) );
-        celt_assert( psDec->LPC_order == 10 || psDec->LPC_order == 16 );
+        assert( psDec->LPC_order == 10 || psDec->LPC_order == 16 );
         for( i = 0; i < length; i++ ) {
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
             LPC_pred_Q10 = silk_RSHIFT( psDec->LPC_order, 1 );

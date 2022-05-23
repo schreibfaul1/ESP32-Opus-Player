@@ -61,7 +61,7 @@ void silk_burg_modified_c(
     int32_t       *xcorr = (int32_t*)malloc(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
     int64_t       C0_64;
 
-    celt_assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
+    assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
 
     /* Compute autocorrelations, added over subframes */
     C0_64 = silk_inner_prod16_aligned_64( x, x, subfr_length*nb_subfr, arch );

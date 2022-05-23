@@ -44,7 +44,7 @@ void silk_warped_autocorrelation_FIX_c(
     int64_t *corr_QC = (int64_t*)calloc(MAX_SHAPE_LPC_ORDER + 1, sizeof(int64_t));
 
     /* Order must be even */
-    celt_assert( ( order & 1 ) == 0 );
+    assert( ( order & 1 ) == 0 );
     silk_assert( 2 * QS - QC >= 0 );
 
     /* Loop over samples */

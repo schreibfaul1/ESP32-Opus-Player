@@ -53,15 +53,15 @@ void silk_apply_sine_window(
     int32_t   k, f_Q16, c_Q16;
     int32_t S0_Q16, S1_Q16;
 
-    celt_assert( win_type == 1 || win_type == 2 );
+    assert( win_type == 1 || win_type == 2 );
 
     /* Length must be in a range from 16 to 120 and a multiple of 4 */
-    celt_assert( length >= 16 && length <= 120 );
-    celt_assert( ( length & 3 ) == 0 );
+    assert( length >= 16 && length <= 120 );
+    assert( ( length & 3 ) == 0 );
 
     /* Frequency */
     k = ( length >> 2 ) - 4;
-    celt_assert( k >= 0 && k <= 26 );
+    assert( k >= 0 && k <= 26 );
     f_Q16 = (int32_t)freq_table_Q16[ k ];
 
     /* Factor used for cosine approximation */

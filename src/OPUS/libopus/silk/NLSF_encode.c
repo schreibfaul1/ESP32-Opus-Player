@@ -56,7 +56,7 @@ int32_t silk_NLSF_encode(                                    /* O    Returns RD 
     const int16_t *pCB_Wght_Q9;
     SAVE_STACK;
 
-    celt_assert( signalType >= 0 && signalType <= 2 );
+    assert( signalType >= 0 && signalType <= 2 );
     silk_assert( NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0 );
 
     /* NLSF stabilization */

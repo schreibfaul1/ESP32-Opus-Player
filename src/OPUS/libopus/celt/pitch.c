@@ -194,7 +194,7 @@ celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y,
       32-bit aligned.
      Since it's hard to put asserts in assembly, put them here.*/
    int32_t maxcorr=1;
-   celt_assert(max_pitch>0);
+   assert(max_pitch>0);
    assert((((unsigned char *)_x-(unsigned char *)NULL)&3)==0);
    for (i=0;i<max_pitch-3;i+=4)
    {
@@ -236,8 +236,8 @@ void pitch_search(const int16_t * __restrict__ x_lp, int16_t * __restrict__ y,
 
    SAVE_STACK;
 
-   celt_assert(len>0);
-   celt_assert(max_pitch>0);
+   assert(len>0);
+   assert(max_pitch>0);
    lag = len+max_pitch;
 
    ALLOC(x_lp4, len>>2, int16_t);

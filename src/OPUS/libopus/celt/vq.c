@@ -301,8 +301,8 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc,
    unsigned collapse_mask;
    SAVE_STACK;
 
-   celt_assert2(K>0, "alg_quant() needs at least one pulse");
-   celt_assert2(N>1, "alg_quant() needs at least two dimensions");
+   assert2(K>0, "alg_quant() needs at least one pulse");
+   assert2(N>1, "alg_quant() needs at least two dimensions");
 
    /* Covers vectorization by up to 4. */
    ALLOC(iy, N+3, int);
@@ -334,8 +334,8 @@ unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B,
    VARDECL(int, iy);
    SAVE_STACK;
 
-   celt_assert2(K>0, "alg_unquant() needs at least one pulse");
-   celt_assert2(N>1, "alg_unquant() needs at least two dimensions");
+   assert2(K>0, "alg_unquant() needs at least one pulse");
+   assert2(N>1, "alg_unquant() needs at least two dimensions");
    ALLOC(iy, N, int);
    Ryy = decode_pulses(iy, N, K, dec);
    normalise_residual(iy, X, N, Ryy, gain);

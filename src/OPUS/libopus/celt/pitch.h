@@ -54,7 +54,7 @@ static OPUS_INLINE void xcorr_kernel_c(const int16_t * x, const int16_t * y, int
 {
    int j;
    int16_t y_0, y_1, y_2, y_3;
-   celt_assert(len>=3);
+   assert(len>=3);
    y_3=0; /* gcc doesn't realize that y_3 can't be used uninitialized */
    y_0=*y++;
    y_1=*y++;

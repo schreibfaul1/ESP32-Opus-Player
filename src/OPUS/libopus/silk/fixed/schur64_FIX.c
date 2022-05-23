@@ -39,7 +39,7 @@ int32_t silk_schur64(                            /* O    returns residual energy
     int32_t C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
     int32_t Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
-    celt_assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
+    assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
 
     /* Check for invalid input */
     if( c[ 0 ] <= 0 ) {

@@ -39,7 +39,7 @@ int32_t silk_schur(                              /* O    Returns residual energy
     int32_t    C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
     int32_t    Ctmp1, Ctmp2, rc_tmp_Q15;
 
-    celt_assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
+    assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
 
     /* Get number of leading zeros */
     lz = silk_CLZ32( c[ 0 ] );

@@ -669,7 +669,7 @@ int resampling_factor(int32_t rate){
         case 16000: ret = 3;  break;
         case 12000: ret = 4;  break;
         case 8000:  ret = 6;  break;
-        default:    celt_assert(0);  ret = 0;  break;
+        default:    ret = 0;  break;
     }
     return ret;
 }
@@ -962,7 +962,7 @@ void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t
                 *f++ = SHR32(MULT16_16(*x++, g), shift);
             } while (++j < band_end);
     }
-    celt_assert(start <= end);
+    assert(start <= end);
     OPUS_CLEAR(&freq[bound], N - bound);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1155,7 +1155,7 @@ int spreading_decision(const CELTMode *m, const int16_t *X, int *average, int la
     int decision;
     int hf_sum = 0;
 
-    celt_assert(end > 0);
+    assert(end > 0);
 
     N0 = M * m->shortMdctSize;
 
@@ -1209,8 +1209,8 @@ int spreading_decision(const CELTMode *m, const int16_t *X, int *average, int la
             *tapset_decision = 0;
     }
     /*printf("%d %d %d\n", hf_sum, *hf_average, *tapset_decision);*/
-    celt_assert(nbBands > 0); /* end has to be non-zero */
-    celt_assert(sum >= 0);
+    assert(nbBands > 0); /* end has to be non-zero */
+    assert(sum >= 0);
     sum = celt_udiv((int32_t)sum << 8, nbBands);
     /* Recursive averaging */
     sum = (sum + *average) >> 1;
@@ -1278,7 +1278,7 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     SAVE_STACK;
     N = N0 * stride;
     ALLOC(tmp, N, int16_t);
-    celt_assert(stride > 0);
+    assert(stride > 0);
     if (hadamard) {
         const int *ordery = ordery_table + stride - 2;
         for (i = 0; i < stride; i++) {
@@ -1353,7 +1353,7 @@ static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
         qn = exp2_table8[qb & 0x7] >> (14 - (qb >> BITRES));
         qn = (qn + 1) >> 1 << 1;
     }
-    celt_assert(qn <= 256);
+    assert(qn <= 256);
     return qn;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1487,7 +1487,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t 
                 ec_dec_update(ec, fl, fl + fs, ft);
             }
         }
-        celt_assert(itheta >= 0);
+        assert(itheta >= 0);
         itheta = celt_udiv((int32_t)itheta * 16384, qn);
         if (encode && stereo) {
             if (itheta == 0)
@@ -2104,7 +2104,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         else
             Y = NULL;
         N = M * eBands[i + 1] - M * eBands[i];
-        celt_assert(N > 0);
+        assert(N > 0);
         tell = ec_tell_frac(ec);
 
         /* Compute how many bits we want to allocate to this band */
@@ -4415,7 +4415,7 @@ int celt_encode_with_ec(CELTEncoder *__restrict__ st, const int16_t *pcm, int fr
         nbFilledBytes = (tell + 4) >> 3;
     }
 
-    celt_assert(st->signalling == 0);
+    assert(st->signalling == 0);
 
     /* Can't produce more than 1275 output bytes */
     nbCompressedBytes = IMIN(nbCompressedBytes, 1275);
@@ -4603,7 +4603,7 @@ int celt_encode_with_ec(CELTEncoder *__restrict__ st, const int16_t *pcm, int fr
                 diff += MULT16_16(mask, 1 + 2 * i - mask_end);
             }
         }
-        celt_assert(count > 0);
+        assert(count > 0);
         mask_avg = DIV32_16(mask_avg, count);
         mask_avg += QCONST16(.2f, DB_SHIFT);
         diff = diff * 6 / (C * (mask_end - 1) * (mask_end + 1) * mask_end);
@@ -5206,7 +5206,7 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord
     int i, j;
     VARDECL(int16_t, rnum);
     SAVE_STACK;
-    celt_assert(x != y);
+    assert(x != y);
     ALLOC(rnum, ord, int16_t);
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
     for (i = 0; i < N - 3; i += 4) {
@@ -5235,7 +5235,7 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord
     VARDECL(int16_t, y);
     SAVE_STACK;
 
-    celt_assert((ord & 3) == 0);
+    assert((ord & 3) == 0);
     ALLOC(rden, ord, int16_t);
     ALLOC(y, N + ord, int16_t);
     for (i = 0; i < ord; i++) rden[i] = den[ord - i - 1];
@@ -5288,8 +5288,8 @@ int _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
     VARDECL(int16_t, xx);
     SAVE_STACK;
     ALLOC(xx, n, int16_t);
-    celt_assert(n > 0);
-    celt_assert(overlap >= 0);
+    assert(n > 0);
+    assert(overlap >= 0);
     if (overlap == 0) {
         xptr = x;
     } else {
@@ -5344,7 +5344,7 @@ static uint32_t icwrs(int _n, const int *_y) {
     uint32_t i;
     int j;
     int k;
-    celt_assert(_n >= 2);
+    assert(_n >= 2);
     j = _n - 1;
     i = _y[j] < 0;
     k = abs(_y[j]);
@@ -5359,7 +5359,7 @@ static uint32_t icwrs(int _n, const int *_y) {
 //----------------------------------------------------------------------------------------------------------------------
 
 void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
-    celt_assert(_k > 0);
+    assert(_k > 0);
     ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5370,8 +5370,8 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
     int k0;
     int16_t val;
     int32_t yy = 0;
-    celt_assert(_k > 0);
-    celt_assert(_n > 1);
+    assert(_k > 0);
+    assert(_n > 1);
     while (_n > 2) {
         uint32_t q;
         /*Lots of pulses case:*/
@@ -5579,7 +5579,7 @@ uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft) {
     unsigned s;
     int ftb;
     /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-    celt_assert(_ft > 1);
+    assert(_ft > 1);
     _ft--;
     ftb = EC_ILOG(_ft);
     if (ftb > EC_UINT_BITS) {
@@ -5747,7 +5747,7 @@ void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft) {
     unsigned fl;
     int ftb;
     /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-    celt_assert(_ft > 1);
+    assert(_ft > 1);
     _ft--;
     ftb = EC_ILOG(_ft);
     if (ftb > EC_UINT_BITS) {
@@ -5766,7 +5766,7 @@ void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
     int used;
     window = _this->end_window;
     used = _this->nend_bits;
-    celt_assert(_bits > 0);
+    assert(_bits > 0);
     if (used + _bits > EC_WINDOW_SIZE) {
         do {
             _this->error |= ec_write_byte_at_end(_this, (unsigned)window & EC_SYM_MAX);
@@ -5791,7 +5791,7 @@ static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N) {
         int16_t tw;
         tw = QCONST16(0.7071067812f, 15);
         /* We know that m==4 here because the radix-2 is just after a radix-4 */
-        celt_assert(m == 4);
+        assert(m == 4);
         for (i = 0; i < N; i++) {
             kiss_fft_cpx t;
             Fout2 = Fout + 4;
@@ -6041,7 +6041,7 @@ void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx 
     int scale_shift = st->scale_shift - 1;
     scale = st->scale;
 
-    celt_assert2(fin != fout, "In-place FFT not supported");
+    assert2(fin != fout, "In-place FFT not supported");
     /* Bit-reverse the input */
     for (i = 0; i < st->nfft; i++) {
         kiss_fft_cpx x = fin[i];
@@ -6054,7 +6054,7 @@ void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx 
 
 void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
     int i;
-    celt_assert2(fin != fout, "In-place FFT not supported");
+    assert2(fin != fout, "In-place FFT not supported");
     /* Bit-reverse the input */
     for (i = 0; i < st->nfft; i++) fout[st->bitrev[i]] = fin[i];
     for (i = 0; i < st->nfft; i++) fout[i].i = -fout[i].i;
@@ -6102,8 +6102,8 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
             fs += LAPLACE_MINP;
             fl += fs & ~s;
         }
-        celt_assert(fl + fs <= 32768);
-        celt_assert(fs > 0);
+        assert(fl + fs <= 32768);
+        assert(fs > 0);
     }
     ec_encode_bin(enc, fl, fl + fs, 15);
 }
@@ -6139,10 +6139,10 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
         else
             fl += fs;
     }
-    celt_assert(fl < 32768);
-    celt_assert(fs > 0);
-    celt_assert(fl <= fm);
-    celt_assert(fm < IMIN(fl + fs, 32768));
+    assert(fl < 32768);
+    assert(fs > 0);
+    assert(fl <= fm);
+    assert(fm < IMIN(fl + fs, 32768));
     ec_dec_update(dec, fl, IMIN(fl + fs, 32768), 32768);
     return val;
 }
