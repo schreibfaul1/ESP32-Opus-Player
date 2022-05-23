@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "Arduino.h"
-
+#include "../celt/celt.h"
 
 /*
  * Matrix of resampling methods used:

@@ -39,18 +39,7 @@
 
 
 
-#define opus_likely(x)       (__builtin_expect(!!(x), 1))
-#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
 
-
-#define CELT_SIG_SCALE 32768.f
-
-#define CELT_FATAL(str) celt_fatal(str, __FILE__, __LINE__);
-
-
-#define celt_assert(cond)
-#define celt_assert2(cond, message)
-#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/**/; return OPUS_INTERNAL_ERROR;} } while (0)
 
 
 #define celt_sig_assert(cond)

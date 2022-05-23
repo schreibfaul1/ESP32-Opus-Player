@@ -195,6 +195,9 @@ struct CELTEncoder{
                        /* int16_t energyError[],  Size = channels*mode->nbEBands */
 };
 
+#define MIN(a,b) ((a)<(b) ? (a):(b))
+#define MAX(a,b) ((a)>(b) ? (a):(b))
+
 #define ABS16(x) ((x) < 0 ? (-(x)) : (x))
 #define ABS32(x) ((x) < 0 ? (-(x)) : (x))
 
@@ -299,6 +302,55 @@ struct CELTEncoder{
 /*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
    with K pulses allocated to it.*/
 #define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
+
+#define opus_likely(x)       (__builtin_expect(!!(x), 1))
+#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
+
+#define CELT_SIG_SCALE 32768.f
+#define CELT_FATAL(str) celt_fatal(str, __FILE__, __LINE__);
+#define celt_assert(cond)
+#define celt_assert2(cond, message)
+#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/**/; return OPUS_INTERNAL_ERROR;} } while (0)
+
+#define SAMP_MAX 2147483647
+#define TWID_MAX 32767
+#define TRIG_UPSCALE 1
+
+#define SAMP_MIN -SAMP_MAX
+
+
+#define S_MUL(a,b) MULT16_32_Q15(b, a)
+#define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
+                          (m).i = ADD32_ovflw(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
+
+#define C_MULC(m,a,b) do{ (m).r = ADD32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
+                          (m).i = SUB32_ovflw(S_MUL((a).i,(b).r) , S_MUL((a).r,(b).i)); }while(0)
+
+#define C_MULBYSCALAR( c, s ) do{ (c).r =  S_MUL( (c).r , s ) ;  (c).i =  S_MUL( (c).i , s ) ; }while(0)
+
+#define DIVSCALAR(x,k) (x) = S_MUL(  x, (TWID_MAX-((k)>>1))/(k)+1 )
+
+#define C_FIXDIV(c,div) do {    DIVSCALAR( (c).r , div); DIVSCALAR( (c).i  , div); }while (0)
+
+#define  C_ADD( res, a,b) do {(res).r=ADD32_ovflw((a).r,(b).r);  (res).i=ADD32_ovflw((a).i,(b).i); }while(0)
+
+#define  C_SUB( res, a,b) do {(res).r=SUB32_ovflw((a).r,(b).r);  (res).i=SUB32_ovflw((a).i,(b).i); }while(0)
+#define C_ADDTO( res , a) do {(res).r = ADD32_ovflw((res).r, (a).r);  (res).i = ADD32_ovflw((res).i,(a).i); }while(0)
+
+#define C_SUBFROM( res , a) do {(res).r = ADD32_ovflw((res).r,(a).r);  (res).i = SUB32_ovflw((res).i,(a).i); }while(0)
+
+#define CHECK_OVERFLOW_OP(a,op,b) /* noop */
+
+/*#  define KISS_FFT_COS(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * cos (phase))))
+#  define KISS_FFT_SIN(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * sin (phase))))*/
+#  define KISS_FFT_COS(phase)  floor(.5+TWID_MAX*cos (phase))
+#  define KISS_FFT_SIN(phase)  floor(.5+TWID_MAX*sin (phase))
+#  define HALF_OF(x) ((x)>>1)
+
+#define  kf_cexp(x,phase) do{ (x)->r = KISS_FFT_COS(phase); (x)->i = KISS_FFT_SIN(phase); }while(0)
+
+#define  kf_cexp2(x,phase) do{ (x)->r = TRIG_UPSCALE*celt_cos_norm((phase));\
+                               (x)->i = TRIG_UPSCALE*celt_cos_norm((phase)-32768); }while(0)
 
 /* Prototypes */
 

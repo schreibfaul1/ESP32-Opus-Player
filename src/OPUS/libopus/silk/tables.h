@@ -30,6 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "define.h"
 #include "structs.h"
+#include "../celt/celt.h"
 
 #ifdef __cplusplus
 extern "C"

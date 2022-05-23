@@ -43,7 +43,6 @@
 #include "fixed_generic.h"
 #include "mdct.h"
 #include "kiss_fft.h"
-#include "_kiss_fft_guts.h"
 #include <math.h>
 #include "os_support.h"
 #include "mathops.h"

@@ -42,6 +42,7 @@ extern "C"
 #include "resampler_structs.h"
 #include "macros.h"
 #include "../celt/cpu_support.h"
+#include "../celt/celt.h"
 
 
 /********************************************************************/

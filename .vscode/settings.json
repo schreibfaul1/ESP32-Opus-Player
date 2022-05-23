@@ -29,6 +29,9 @@
     "**/.vscode/**"
   ],
   "files.associations": {
-    "opus_defines.h": "c"
+    "opus_defines.h": "c",
+    "tables.h": "c",
+    "pitch_est_defines.h": "c",
+    "sigproc_fix.h": "c"
   }
 }

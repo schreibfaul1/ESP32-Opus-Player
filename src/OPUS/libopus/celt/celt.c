@@ -47,7 +47,7 @@
 #include "celt_lpc.h"
 #include "vq.h"
 #include <pgmspace.h>
-#include "_kiss_fft_guts.h"
+
 
 /*For each V(N,K) supported, we will access element U(min(N,K+1),max(N,K+1)). Thus, the number of entries in row I is
   the larger of the maximum number of pulses we will ever allocate for a given N=I (K=128, or however many fit in
