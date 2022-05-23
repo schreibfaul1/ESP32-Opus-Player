@@ -195,6 +195,12 @@ struct CELTEncoder{
                        /* int16_t energyError[],  Size = channels*mode->nbEBands */
 };
 
+
+
+/* List of all the available modes */
+#define TOTAL_MODES 1
+
+
 #define MIN(a,b) ((a)<(b) ? (a):(b))
 #define MAX(a,b) ((a)>(b) ? (a):(b))
 
@@ -351,6 +357,14 @@ struct CELTEncoder{
 
 #define  kf_cexp2(x,phase) do{ (x)->r = TRIG_UPSCALE*celt_cos_norm((phase));\
                                (x)->i = TRIG_UPSCALE*celt_cos_norm((phase)-32768); }while(0)
+
+/* The minimum probability of an energy delta (out of 32768). */
+#define LAPLACE_LOG_MINP (0)
+#define LAPLACE_MINP (1<<LAPLACE_LOG_MINP)
+/* The minimum number of guaranteed representable energy deltas (in one
+    direction). */
+#define LAPLACE_NMIN (16)
+
 
 /* Prototypes and inlines*/
 
