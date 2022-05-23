@@ -207,7 +207,7 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch)
          pulsesLeft -= iy[j];
       }  while (++j<N);
    }
-   celt_sig_assert(pulsesLeft>=0);
+   assert(pulsesLeft>=0);
 
    /* This should never happen, but just in case it does (e.g. on silence)
       we fill the first bin with pulses. */

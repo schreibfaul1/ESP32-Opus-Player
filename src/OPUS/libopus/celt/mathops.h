@@ -80,7 +80,7 @@ static OPUS_INLINE int32_t celt_maxabs32(const int32_t *x, int len)
 /** Integer log in base2. Undefined for zero and negative numbers */
 static OPUS_INLINE int16_t celt_ilog2(int32_t x)
 {
-   celt_sig_assert(x>0);
+   assert(x>0);
    return EC_ILOG(x)-1;
 }
 #endif

@@ -195,7 +195,7 @@ celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y,
      Since it's hard to put asserts in assembly, put them here.*/
    int32_t maxcorr=1;
    celt_assert(max_pitch>0);
-   celt_sig_assert((((unsigned char *)_x-(unsigned char *)NULL)&3)==0);
+   assert((((unsigned char *)_x-(unsigned char *)NULL)&3)==0);
    for (i=0;i<max_pitch-3;i+=4)
    {
       int32_t sum[4]={0,0,0,0};

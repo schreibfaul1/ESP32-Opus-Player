@@ -352,11 +352,38 @@ struct CELTEncoder{
 #define  kf_cexp2(x,phase) do{ (x)->r = TRIG_UPSCALE*celt_cos_norm((phase));\
                                (x)->i = TRIG_UPSCALE*celt_cos_norm((phase)-32768); }while(0)
 
-/* Prototypes */
+/* Prototypes and inlines*/
 
+static inline int16_t SAT16(int32_t x) {
+   return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
+}
 
+static inline int opus_select_arch(void)
+{
+  return 0;
+}
 
+static inline uint32_t ec_range_bytes(ec_ctx *_this){
+  return _this->offs;
+}
 
+static inline unsigned char *ec_get_buffer(ec_ctx *_this){
+  return _this->buf;
+}
+
+static inline int ec_get_error(ec_ctx *_this){
+  return _this->error;
+}
+
+static inline uint32_t celt_udiv(uint32_t n, uint32_t d) {
+   assert(d>0); return n/d;
+
+}
+
+static inline int32_t celt_sudiv(int32_t n, int32_t d) {
+   assert(d>0); return n/d;
+
+}
 
 
 int celt_encoder_get_size(int channels);

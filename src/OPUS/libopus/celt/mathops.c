@@ -178,7 +178,7 @@ int32_t celt_rcp(int32_t x)
    int i;
    int16_t n;
    int16_t r;
-   celt_sig_assert(x>0);
+   assert(x>0);
    i = celt_ilog2(x);
    /* n is Q15 with range [0,1). */
    n = VSHR32(x,i-15)-32768;

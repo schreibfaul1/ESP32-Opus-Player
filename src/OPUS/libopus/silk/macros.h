@@ -34,32 +34,18 @@ POSSIBILITY OF SUCH DAMAGE.
 /* This is an OPUS_INLINE header file for general platform. */
 
 /* (a32 * (int32_t)((int16_t)(b32))) >> 16 output have to be 32bit int */
-#if OPUS_FAST_INT64
 #define silk_SMULWB(a32, b32)            ((int32_t)(((a32) * (int64_t)((int16_t)(b32))) >> 16))
-#else
-#define silk_SMULWB(a32, b32)            ((((a32) >> 16) * (int32_t)((int16_t)(b32))) + ((((a32) & 0x0000FFFF) * (int32_t)((int16_t)(b32))) >> 16))
-#endif
 
 /* a32 + (b32 * (int32_t)((int16_t)(c32))) >> 16 output have to be 32bit int */
-#if OPUS_FAST_INT64
 #define silk_SMLAWB(a32, b32, c32)       ((int32_t)((a32) + (((b32) * (int64_t)((int16_t)(c32))) >> 16)))
-#else
-#define silk_SMLAWB(a32, b32, c32)       ((a32) + ((((b32) >> 16) * (int32_t)((int16_t)(c32))) + ((((b32) & 0x0000FFFF) * (int32_t)((int16_t)(c32))) >> 16)))
-#endif
+
 
 /* (a32 * (b32 >> 16)) >> 16 */
-#if OPUS_FAST_INT64
 #define silk_SMULWT(a32, b32)            ((int32_t)(((a32) * (int64_t)((b32) >> 16)) >> 16))
-#else
-#define silk_SMULWT(a32, b32)            (((a32) >> 16) * ((b32) >> 16) + ((((a32) & 0x0000FFFF) * ((b32) >> 16)) >> 16))
-#endif
+
 
 /* a32 + (b32 * (c32 >> 16)) >> 16 */
-#if OPUS_FAST_INT64
 #define silk_SMLAWT(a32, b32, c32)       ((int32_t)((a32) + (((b32) * ((int64_t)(c32) >> 16)) >> 16)))
-#else
-#define silk_SMLAWT(a32, b32, c32)       ((a32) + (((b32) >> 16) * ((c32) >> 16)) + ((((b32) & 0x0000FFFF) * ((c32) >> 16)) >> 16))
-#endif
 
 /* (int32_t)((int16_t)(a3))) * (int32_t)((int16_t)(b32)) output have to be 32bit int */
 #define silk_SMULBB(a32, b32)            ((int32_t)((int16_t)(a32)) * (int32_t)((int16_t)(b32)))
@@ -77,18 +63,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((opus_int64)(b32) * (opus_int64)(c32))))
 
 /* (a32 * b32) >> 16 */
-#if OPUS_FAST_INT64
 #define silk_SMULWW(a32, b32)            ((int32_t)(((int64_t)(a32) * (b32)) >> 16))
-#else
-#define silk_SMULWW(a32, b32)            silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16))
-#endif
 
 /* a32 + ((b32 * c32) >> 16) */
-#if OPUS_FAST_INT64
 #define silk_SMLAWW(a32, b32, c32)       ((int32_t)((a32) + (((int64_t)(b32) * (c32)) >> 16)))
-#else
-#define silk_SMLAWW(a32, b32, c32)       silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16))
-#endif
+
 
 /* add/subtract with output saturated */
 #define silk_ADD_SAT32(a, b)             ((((uint32_t)(a) + (uint32_t)(b)) & 0x80000000) == 0 ?                              \

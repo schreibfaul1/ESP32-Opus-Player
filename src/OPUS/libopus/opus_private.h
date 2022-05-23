@@ -147,7 +147,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len,
       int32_t *packet_offset, int soft_clip);
 
 /* Make sure everything is properly aligned. */
-static OPUS_INLINE int align(int i)
+static inline int align(int i)
 {
     struct foo {char c; union { void* p; int32_t i; int32_t v; } u;};
 

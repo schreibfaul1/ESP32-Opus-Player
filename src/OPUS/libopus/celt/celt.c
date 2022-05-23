@@ -327,10 +327,10 @@ int16_t bitexact_cos(int16_t x) {
     int32_t tmp;
     int16_t x2;
     tmp = (4096 + ((int32_t)(x) * (x))) >> 13;
-    celt_sig_assert(tmp <= 32767);
+    assert(tmp <= 32767);
     x2 = tmp;
     x2 = (32767 - x2) + FRAC_MUL16(x2, (-7651 + FRAC_MUL16(x2, (8277 + FRAC_MUL16(-626, x2)))));
-    celt_sig_assert(x2 <= 32766);
+    assert(x2 <= 32766);
     return 1 + x2;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -496,7 +496,7 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
 
         N0 = m->eBands[i + 1] - m->eBands[i];
         /* depth in 1/8 bits */
-        celt_sig_assert(pulses[i] >= 0);
+        assert(pulses[i] >= 0);
         depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i])) >> LM;
 
         thresh32 = SHR32(celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
@@ -1862,8 +1862,8 @@ static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const i
         tmp1 = x1[j] + VERY_SMALL + m1;
         m0 = MULT16_32_Q15(coef0, tmp0);
         m1 = MULT16_32_Q15(coef0, tmp1);
-        pcm[2 * j] = SCALEOUT(SIG2WORD16(tmp0));
-        pcm[2 * j + 1] = SCALEOUT(SIG2WORD16(tmp1));
+        pcm[2 * j] = SCALEOUT(sig2word16(tmp0));
+        pcm[2 * j + 1] = SCALEOUT(sig2word16(tmp1));
     }
     mem[0] = m0;
     mem[1] = m1;
@@ -1913,14 +1913,14 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
                 for (j = 0; j < N; j++) {
                     int32_t tmp = x[j] + m + VERY_SMALL;
                     m = MULT16_32_Q15(coef0, tmp);
-                    y[j * C] = SAT16(ADD32(y[j * C], SCALEOUT(SIG2WORD16(tmp))));
+                    y[j * C] = SAT16(ADD32(y[j * C], SCALEOUT(sig2word16(tmp))));
                 }
             }
             else {
                 for (j = 0; j < N; j++) {
                     int32_t tmp = x[j] + VERY_SMALL + m;
                     m = MULT16_32_Q15(coef0, tmp);
-                    y[j * C] = SCALEOUT(SIG2WORD16(tmp));
+                    y[j * C] = SCALEOUT(sig2word16(tmp));
                 }
             }
         }
@@ -1931,11 +1931,11 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
 
             if (accum)  {
                 for (j = 0; j < Nd; j++)
-                    y[j * C] = SAT16(ADD32(y[j * C], SCALEOUT(SIG2WORD16(scratch[j * downsample]))));
+                    y[j * C] = SAT16(ADD32(y[j * C], SCALEOUT(sig2word16(scratch[j * downsample]))));
             }
             else {
                 for (j = 0; j < Nd; j++)
-                    y[j * C] = SCALEOUT(SIG2WORD16(scratch[j * downsample]));
+                    y[j * C] = SCALEOUT(sig2word16(scratch[j * downsample]));
             }
         }
     } while (++c < C);
@@ -4900,7 +4900,7 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
             k0 = _k;
             q = row[_n];
             if (q > _i) {
-                celt_sig_assert(p > q);
+                assert(p > q);
                 _k = _n;
                 do p = CELT_PVQ_U_ROW[--_k][_n];
                 while (p > _i);
@@ -5176,7 +5176,7 @@ static void ec_enc_carry_out(ec_enc *_this, int _c) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static OPUS_INLINE void ec_enc_normalize(ec_enc *_this) {
+static inline void ec_enc_normalize(ec_enc *_this) {
     /*If the range is too small, output some bits and rescale it.*/
     while (_this->rng <= EC_CODE_BOT) {
         ec_enc_carry_out(_this, (int)(_this->val >> EC_CODE_SHIFT));

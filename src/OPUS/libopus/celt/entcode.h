@@ -25,10 +25,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
+
 #include "../opus_defines.h"
 
-#if !defined(_entcode_H)
-# define _entcode_H (1)
 # include <limits.h>
 # include <stddef.h>
 # include "ecintrin.h"
@@ -86,63 +86,18 @@ struct ec_ctx{
    int            error;
 };
 
-static OPUS_INLINE uint32_t ec_range_bytes(ec_ctx *_this){
-  return _this->offs;
-}
 
-static OPUS_INLINE unsigned char *ec_get_buffer(ec_ctx *_this){
-  return _this->buf;
-}
 
-static OPUS_INLINE int ec_get_error(ec_ctx *_this){
-  return _this->error;
-}
-
-/*Returns the number of bits "used" by the encoded or decoded symbols so far.
-  This same number can be computed in either the encoder or the decoder, and is
-   suitable for making coding decisions.
-  Return: The number of bits.
-          This will always be slightly larger than the exact value (e.g., all
-           rounding error is in the positive direction).*/
-static OPUS_INLINE int ec_tell(ec_ctx *_this){
+/*Returns the number of bits "used" by the encoded or decoded symbols so far. This same number can be computed in
+  either the encoder or the decoder, and is suitable for making coding decisions. Return: The number of bits.
+  This will always be slightly larger than the exact value (e.g., all rounding error is in the positive direction).*/
+static inline int ec_tell(ec_ctx *_this){
   return _this->nbits_total-EC_ILOG(_this->rng);
 }
 
-/*Returns the number of bits "used" by the encoded or decoded symbols so far.
-  This same number can be computed in either the encoder or the decoder, and is
-   suitable for making coding decisions.
-  Return: The number of bits scaled by 2**BITRES.
-          This will always be slightly larger than the exact value (e.g., all
-           rounding error is in the positive direction).*/
+/*Returns the number of bits "used" by the encoded or decoded symbols so far. This same number can be computed in
+  either the encoder or the decoder, and is suitable for making coding decisions. Return: The number of bits scaled
+  by 2**BITRES.This will always be slightly larger than the exact value (e.g., all rounding error is in the
+  positive direction).*/
 uint32_t ec_tell_frac(ec_ctx *_this);
 
-/* Tested exhaustively for all n and for 1<=d<=256 */
-static OPUS_INLINE uint32_t celt_udiv(uint32_t n, uint32_t d) {
-   celt_sig_assert(d>0);
-#ifdef USE_SMALL_DIV_TABLE
-   if (d>256)
-      return n/d;
-   else {
-      uint32_t t, q;
-      t = EC_ILOG(d&-d);
-      q = (opus_uint64)SMALL_DIV_TABLE[d>>t]*(n>>(t-1))>>32;
-      return q+(n-q*d >= d);
-   }
-#else
-   return n/d;
-#endif
-}
-
-static OPUS_INLINE int32_t celt_sudiv(int32_t n, int32_t d) {
-   celt_sig_assert(d>0);
-#ifdef USE_SMALL_DIV_TABLE
-   if (n<0)
-      return -(int32_t)celt_udiv(-n, d);
-   else
-      return celt_udiv(n, d);
-#else
-   return n/d;
-#endif
-}
-
-#endif

@@ -38,20 +38,6 @@
 #include "Arduino.h"
 
 
-
-
-
-
-#define celt_sig_assert(cond)
-
-
-
-/* Set this if int64_t is a native type of the CPU. */
-/* Assume that all LP64 architectures have fast 64-bit types; also x86_64
-   (which can be ILP32 for x32) and Win64 (which is LLP64). */
-
-#define OPUS_FAST_INT64 1
-
 #define PRINT_MIPS(file)
 
 #define celt_isnan(x) 0
@@ -77,9 +63,6 @@
 
 
 
-static OPUS_INLINE int16_t SAT16(int32_t x) {
-   return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
-}
 
 //#include "fixed_generic.h"
 #define GLOBAL_STACK_SIZE 120000
