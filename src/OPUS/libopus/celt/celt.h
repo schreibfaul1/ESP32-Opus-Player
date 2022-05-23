@@ -640,9 +640,24 @@ struct CELTMode {
 int32_t celt_rcp(int32_t x);
 #define celt_div(a,b) MULT32_32_Q31((int32_t)(a),celt_rcp(b))
 #define MAX_PERIOD 1024
+#define OPUS_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+#define OPUS_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+#define OPUS_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
+#define ALLOC_STEPS 6
+
+#define celt_inner_prod(x, y, N, arch) ((void)(arch),celt_inner_prod_c(x, y, N))
+#define celt_pitch_xcorr celt_pitch_xcorr_c
+#define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
+#define xcorr_kernel(x, y, sum, len, arch) ((void)(arch),xcorr_kernel_c(x, y, sum, len))
+
+
+/* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
+#define FRAC_MUL16(a,b) ((16384+((int32_t)(int16_t)(a)*(int16_t)(b)))>>15)
+
 
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
+extern const unsigned char LOG2_FRAC_TABLE[24];
 
 /* Prototypes and inlines*/
 
@@ -713,6 +728,94 @@ static inline int16_t celt_atan2p(int16_t y, int16_t x) {
     }
 }
 
+static inline int32_t celt_maxabs16(const int16_t *x, int len) {
+    int i;
+    int16_t maxval = 0;
+    int16_t minval = 0;
+    for (i = 0; i < len; i++) {
+        maxval = MAX16(maxval, x[i]);
+        minval = MIN16(minval, x[i]);
+    }
+    return MAX32(EXTEND32(maxval), -EXTEND32(minval));
+}
+
+static inline int32_t celt_maxabs32(const int32_t *x, int len) {
+    int i;
+    int32_t maxval = 0;
+    int32_t minval = 0;
+    for (i = 0; i < len; i++) {
+        maxval = MAX32(maxval, x[i]);
+        minval = MIN32(minval, x[i]);
+    }
+    return MAX32(maxval, -minval);
+}
+
+/** Integer log in base2. Undefined for zero and negative numbers */
+static inline int16_t celt_ilog2(int32_t x) {
+    assert(x > 0);
+    return EC_ILOG(x) - 1;
+}
+
+/** Integer log in base2. Defined for zero, but not for negative numbers */
+static inline int16_t celt_zlog2(int32_t x) { return x <= 0 ? 0 : celt_ilog2(x); }
+
+/** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
+static inline int16_t celt_log2(int32_t x) {
+    int i;
+    int16_t n, frac;
+    /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
+        0.15530808010959576, -0.08556153059057618 */
+    static const int16_t C[5] = {-6801 + (1 << (13 - DB_SHIFT)), 15746, -5217, 2545, -1401};
+    if (x == 0) return -32767;
+    i = celt_ilog2(x);
+    n = VSHR32(x, i - 15) - 32768 - 16384;
+    frac = ADD16(
+        C[0],
+        MULT16_16_Q15(
+            n, ADD16(C[1], MULT16_16_Q15(n, ADD16(C[2], MULT16_16_Q15(n, ADD16(C[3], MULT16_16_Q15(n, C[4]))))))));
+    return SHL16(i - 13, DB_SHIFT) + SHR16(frac, 14 - DB_SHIFT);
+}
+
+static inline int32_t celt_exp2_frac(int16_t x) {
+    int16_t frac;
+    frac = SHL16(x, 4);
+    return ADD16(16383,
+                 MULT16_16_Q15(frac, ADD16(22804, MULT16_16_Q15(frac, ADD16(14819, MULT16_16_Q15(10204, frac))))));
+}
+/** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
+static inline int32_t celt_exp2(int16_t x) {
+    int integer;
+    int16_t frac;
+    integer = SHR16(x, 10);
+    if (integer > 14)
+        return 0x7f000000;
+    else if (integer < -15)
+        return 0;
+    frac = celt_exp2_frac(x - SHL16(integer, 10));
+    return VSHR32(EXTEND32(frac), -integer - 2);
+}
+
+static inline void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const int16_t *y02, int N, int32_t *xy1,
+                                     int32_t *xy2) {
+    int i;
+    int32_t xy01 = 0;
+    int32_t xy02 = 0;
+    for (i = 0; i < N; i++) {
+        xy01 = MAC16_16(xy01, x[i], y01[i]);
+        xy02 = MAC16_16(xy02, x[i], y02[i]);
+    }
+    *xy1 = xy01;
+    *xy2 = xy02;
+}
+
+/*We make sure a C version is always available for cases where the overhead of vectorization and passing around an
+  arch flag aren't worth it.*/
+static inline int32_t celt_inner_prod_c(const int16_t *x, const int16_t *y, int N) {
+    int i;
+    int32_t xy = 0;
+    for (i = 0; i < N; i++) xy = MAC16_16(xy, x[i], y[i]);
+    return xy;
+}
 
 int resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12);
@@ -898,8 +1001,32 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
 int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0_, int prev_period, int16_t prev_gain,
                         int arch);
-
-
+static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, const int *bits1, const int *bits2,
+                              const int *thresh, const int *cap, int32_t total, int32_t *_balance, int skip_rsv,
+                              int *intensity, int intensity_rsv, int *dual_stereo, int dual_stereo_rsv, int *bits,
+                              int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev,
+                              int signalBandwidth);
+int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
+                           int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
+                           int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
+static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const int16_t *eBands, int16_t *oldEBands,
+                                    int32_t budget, int32_t tell, const unsigned char *prob_model, int16_t *error,
+                                    ec_enc *enc, int C, int LM, int intra, int16_t max_decay, int lfe);
+void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, const int16_t *eBands, int16_t *oldEBands,
+                         uint32_t budget, int16_t *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
+                         int force_intra, int32_t *delayedIntra, int two_pass, int loss_rate, int lfe);
+void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
+                       ec_enc *enc, int C);
+void quant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
+                           int *fine_priority, int bits_left, ec_enc *enc, int C);
+void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int intra, ec_dec *dec, int C,
+                           int LM);
+void unquant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int *fine_quant, ec_dec *dec,
+                         int C);
+void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int *fine_quant,
+                             int *fine_priority, int bits_left, ec_dec *dec, int C);
+void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C);
+static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
 
 #ifdef __cplusplus
 }

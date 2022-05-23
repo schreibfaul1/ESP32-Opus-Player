@@ -32,7 +32,7 @@
 
 #include "celt.h"
 
-#include "mathops.h"
+
 
 extern const signed char eMeans[25];
 
