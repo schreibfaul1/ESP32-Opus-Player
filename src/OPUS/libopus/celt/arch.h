@@ -38,13 +38,6 @@
 #include "Arduino.h"
 
 
-#define PRINT_MIPS(file)
-
-#define celt_isnan(x) 0
-
-#define Q15ONE 32767
-
-#define SIG_SHIFT 12
 /* Safe saturation value for 32-bit signals. Should be less than
    2^31*(1-0.85) to avoid blowing up on DC at deemphasis.*/
 #define SIG_SAT (300000000)

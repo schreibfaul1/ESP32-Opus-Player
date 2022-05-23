@@ -153,7 +153,7 @@
 
 
 static int16_t sig2word16(int32_t x){
-   x = PSHR32(x, SIG_SHIFT);
+   x = PSHR32(x, 12);
    x = MAX32(x, -32768);
    x = MIN32(x, 32767);
    return EXTRACT16(x);

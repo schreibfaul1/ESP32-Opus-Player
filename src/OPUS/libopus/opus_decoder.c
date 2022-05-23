@@ -170,7 +170,7 @@ static void smooth_fade(const int16_t *in1, const int16_t *in2,
       {
          int16_t w = MULT16_16_Q15(window[i*inc], window[i*inc]);
          out[i*channels+c] = SHR32(MAC16_16(MULT16_16(w,in2[i*channels+c]),
-                                   Q15ONE-w, in1[i*channels+c]), 15);
+                                   32767-w, in1[i*channels+c]), 15);
       }
    }
 }

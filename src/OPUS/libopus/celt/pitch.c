@@ -107,7 +107,7 @@ static void celt_fir5(int16_t *x,
    mem4=0;
    for (i=0;i<N;i++)
    {
-      int32_t sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+      int32_t sum = SHL32(EXTEND32(x[i]), 12);
       sum = MAC16_16(sum,num0,mem0);
       sum = MAC16_16(sum,num1,mem1);
       sum = MAC16_16(sum,num2,mem2);
@@ -118,7 +118,7 @@ static void celt_fir5(int16_t *x,
       mem2 = mem1;
       mem1 = mem0;
       mem0 = x[i];
-      x[i] = ROUND16(sum, SIG_SHIFT);
+      x[i] = ROUND16(sum, 12);
    }
 }
 
@@ -128,7 +128,7 @@ void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
 {
    int i;
    int32_t ac[5];
-   int16_t tmp=Q15ONE;
+   int16_t tmp=32767;
    int16_t lpc[4];
    int16_t lpc2[5];
    int16_t c1 = QCONST16(.8f,15);
@@ -175,7 +175,7 @@ void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
       lpc[i] = MULT16_16_Q15(lpc[i], tmp);
    }
    /* Add a zero */
-   lpc2[0] = lpc[0] + QCONST16(.8f,SIG_SHIFT);
+   lpc2[0] = lpc[0] + QCONST16(.8f,12);
    lpc2[1] = lpc[1] + MULT16_16_Q15(c1,lpc[0]);
    lpc2[2] = lpc[2] + MULT16_16_Q15(c1,lpc[1]);
    lpc2[3] = lpc[3] + MULT16_16_Q15(c1,lpc[2]);
@@ -341,7 +341,7 @@ static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy)
    den = celt_rsqrt_norm(x2y2);
    g = MULT16_32_Q15(den, xy);
    g = VSHR32(g, (shift>>1)-1);
-   return EXTRACT16(MIN32(g, Q15ONE));
+   return EXTRACT16(MIN32(g, 32767));
 }
 
 static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
@@ -431,7 +431,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod,
    }
    best_xy = MAX32(0, best_xy);
    if (best_yy <= best_xy)
-      pg = Q15ONE;
+      pg = 32767;
    else
       pg = SHR32(frac_div32(best_xy,best_yy+1),16);
 

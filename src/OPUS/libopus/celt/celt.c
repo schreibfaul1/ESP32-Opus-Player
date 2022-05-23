@@ -246,7 +246,7 @@ void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int1
         int16_t f;
         x0 = x[i - T1 + 2];
         f = MULT16_16_Q15(window[i], window[i]);
-        y[i] = x[i] + MULT16_32_Q15(MULT16_16_Q15((Q15ONE - f), g00), x[i - T0]) + MULT16_32_Q15(MULT16_16_Q15((Q15ONE - f), g01), ADD32(x[i - T0 + 1], x[i - T0 - 1])) + MULT16_32_Q15(MULT16_16_Q15((Q15ONE - f), g02), ADD32(x[i - T0 + 2], x[i - T0 - 2])) + MULT16_32_Q15(MULT16_16_Q15(f, g10), x2) + MULT16_32_Q15(MULT16_16_Q15(f, g11), ADD32(x1, x3)) + MULT16_32_Q15(MULT16_16_Q15(f, g12), ADD32(x0, x4));
+        y[i] = x[i] + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g00), x[i - T0]) + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g01), ADD32(x[i - T0 + 1], x[i - T0 - 1])) + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g02), ADD32(x[i - T0 + 2], x[i - T0 - 2])) + MULT16_32_Q15(MULT16_16_Q15(f, g10), x2) + MULT16_32_Q15(MULT16_16_Q15(f, g11), ADD32(x1, x3)) + MULT16_32_Q15(MULT16_16_Q15(f, g12), ADD32(x0, x4));
         y[i] = SATURATE(y[i], SIG_SAT);
         x4 = x3;
         x3 = x2;
@@ -551,7 +551,7 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
             }
             /* We just added some energy, so we need to renormalise */
             if (renormalize)
-                renormalise_vector(X, N0 << LM, Q15ONE, arch);
+                renormalise_vector(X, N0 << LM, 32767, arch);
         } while (++c < C);
     }
 }
@@ -1442,7 +1442,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
         sign = 1 - 2 * sign;
         /* We use orig_fill here because we want to fold the side, but if
            itheta==16384, we'll have cleared the low bits of fill. */
-        cm = quant_band(ctx, x2, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+        cm = quant_band(ctx, x2, N, mbits, B, lowband, LM, lowband_out, 32767,
                         lowband_scratch, orig_fill);
         /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse),
            and there's no need to worry about mixing with the other channel. */
@@ -1474,7 +1474,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
         if (mbits >= sbits) {
             /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                mid for folding later. */
-            cm = quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+            cm = quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, 32767,
                             lowband_scratch, fill);
             rebalance = mbits - (rebalance - ctx->remaining_bits);
             if (rebalance > 3 << BITRES && itheta != 0)
@@ -1493,7 +1493,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
                 mbits += rebalance - (3 << BITRES);
             /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                mid for folding later. */
-            cm |= quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+            cm |= quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, 32767,
                              lowband_scratch, fill);
         }
     }
@@ -1690,10 +1690,10 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         if (dual_stereo) {
             x_cm = quant_band(&ctx, X, N, b / 2, B,
                               effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
-                              last ? NULL : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, x_cm);
+                              last ? NULL : norm + M * eBands[i] - norm_offset, 32767, lowband_scratch, x_cm);
             y_cm = quant_band(&ctx, Y, N, b / 2, B,
                               effective_lowband != -1 ? norm2 + effective_lowband : NULL, LM,
-                              last ? NULL : norm2 + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, y_cm);
+                              last ? NULL : norm2 + M * eBands[i] - norm_offset, 32767, lowband_scratch, y_cm);
         }
         else {
             if (Y != NULL) {
@@ -1772,7 +1772,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
             else {
                 x_cm = quant_band(&ctx, X, N, b, B,
                                   effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
-                                  last ? NULL : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, x_cm | y_cm);
+                                  last ? NULL : norm + M * eBands[i] - norm_offset, 32767, lowband_scratch, x_cm | y_cm);
             }
             y_cm = x_cm;
         }
@@ -2143,7 +2143,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                     seed = celt_lcg_rand(seed);
                     X[boffs + j] = (int16_t)((int32_t)seed >> 20);
                 }
-                renormalise_vector(X + boffs, blen, Q15ONE, st->arch);
+                renormalise_vector(X + boffs, blen, 32767, st->arch);
             }
         }
         st->rng = seed;
@@ -2161,7 +2161,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         /* Pitch-based PLC */
         const int16_t *window;
         int16_t *exc;
-        int16_t fade = Q15ONE;
+        int16_t fade = 32767;
         int pitch_index;
         VARDECL(int32_t, etmp);
         VARDECL(int16_t, _exc);
@@ -2196,7 +2196,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
 
             buf = decode_mem[c];
             for (i = 0; i < MAX_PERIOD + LPC_ORDER; i++)
-                exc[i - LPC_ORDER] = ROUND16(buf[DECODE_BUFFER_SIZE - MAX_PERIOD - LPC_ORDER + i], SIG_SHIFT);
+                exc[i - LPC_ORDER] = ROUND16(buf[DECODE_BUFFER_SIZE - MAX_PERIOD - LPC_ORDER + i], 12);
 
             if (loss_count == 0) {
                 int32_t ac[LPC_ORDER + 1];
@@ -2220,8 +2220,8 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                    no overflow can happen in the IIR filter. This means:
                    32768*sum(abs(filter)) < 2^31 */
                 while (1)  {
-                    int16_t tmp = Q15ONE;
-                    int32_t sum = QCONST16(1., SIG_SHIFT);
+                    int16_t tmp = 32767;
+                    int32_t sum = QCONST16(1., 12);
                     for (i = 0; i < LPC_ORDER; i++)
                         sum += ABS16(lpc[c * LPC_ORDER + i]);
                     if (sum < 65535)
@@ -2287,12 +2287,12 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                 buf[DECODE_BUFFER_SIZE - N + i] =
                     SHL32(EXTEND32(MULT16_16_Q15(attenuation,
                                                  exc[extrapolation_offset + j])),
-                          SIG_SHIFT);
+                          12);
                 /* Compute the energy of the previously decoded signal whose
                    excitation we're copying. */
                 tmp = ROUND16(
                     buf[DECODE_BUFFER_SIZE - MAX_PERIOD - N + extrapolation_offset + j],
-                    SIG_SHIFT);
+                    12);
                 S1 += SHR32(MULT16_16(tmp, tmp), 10);
             }
             {
@@ -2300,7 +2300,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                 /* Copy the last decoded samples (prior to the overlap region) to
                    synthesis filter memory so we can have a continuous signal. */
                 for (i = 0; i < LPC_ORDER; i++)
-                    lpc_mem[i] = ROUND16(buf[DECODE_BUFFER_SIZE - N - 1 - i], SIG_SHIFT);
+                    lpc_mem[i] = ROUND16(buf[DECODE_BUFFER_SIZE - N - 1 - i], 12);
                 /* Apply the synthesis filter to convert the excitation back into
                    the signal domain. */
                 celt_iir(buf + DECODE_BUFFER_SIZE - N, lpc + c * LPC_ORDER,
@@ -2318,7 +2318,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                 int32_t S2 = 0;
                 for (i = 0; i < extrapolation_len; i++)
                 {
-                    int16_t tmp = ROUND16(buf[DECODE_BUFFER_SIZE - N + i], SIG_SHIFT);
+                    int16_t tmp = ROUND16(buf[DECODE_BUFFER_SIZE - N + i], 12);
                     S2 += SHR32(MULT16_16(tmp, tmp), 10);
                 }
                 /* This checks for an "explosion" in the synthesis. */
@@ -2330,7 +2330,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                 else if (S1 < S2) {
                     int16_t ratio = celt_sqrt(frac_div32(SHR32(S1, 1) + 1, S2 + 1));
                     for (i = 0; i < overlap; i++) {
-                        int16_t tmp_g = Q15ONE - MULT16_16_Q15(window[i], Q15ONE - ratio);
+                        int16_t tmp_g = 32767 - MULT16_16_Q15(window[i], 32767 - ratio);
                         buf[DECODE_BUFFER_SIZE - N + i] =
                             MULT16_32_Q15(tmp_g, buf[DECODE_BUFFER_SIZE - N + i]);
                     }
@@ -2883,7 +2883,7 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
         /* High-pass filter: (1 - 2*z^-1 + z^-2) / (1 - z^-1 + .5*z^-2) */
         for (i = 0; i < len; i++) {
             int32_t x, y;
-            x = SHR32(in[i + c * len], SIG_SHIFT);
+            x = SHR32(in[i + c * len], 12);
             y = ADD32(mem0, x);
 
             mem0 = mem1 + y - SHL32(x, 1);
@@ -2952,8 +2952,8 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
            before it does any damage later on. If these asserts are disabled (no hardening), then the table
            lookup a few lines below (id = ...) is likely to crash dur to an out-of-bounds read. DO NOT FIX
            that crash on NaN since it could result in a worse issue later on. */
-        celt_assert(!celt_isnan(tmp[0]));
-        celt_assert(!celt_isnan(norm));
+        assert(tmp[0] != 0);
+        assert(norm != 0);
         for (i = 12; i < len2 - 5; i += 4) {
             int id;
 
@@ -3076,8 +3076,8 @@ void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ in
             int16_t x;
             x = SCALEIN(pcmp[CC * i]);
             /* Apply pre-emphasis */
-            inp[i] = SHL32(x, SIG_SHIFT) - m;
-            m = SHR32(MULT16_16(coef0, x), 15 - SIG_SHIFT);
+            inp[i] = SHL32(x, 12) - m;
+            m = SHR32(MULT16_16(coef0, x), 15 - 12);
         }
         *mem = m;
         return;
@@ -3098,8 +3098,8 @@ void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ in
             int16_t x;
             x = inp[i];
             /* Apply pre-emphasis */
-            inp[i] = SHL32(x, SIG_SHIFT) - m;
-            m = SHR32(MULT16_16(coef0, x), 15 - SIG_SHIFT);
+            inp[i] = SHL32(x, 12) - m;
+            m = SHR32(MULT16_16(coef0, x), 15 - 12);
         }
     }
     *mem = m;
@@ -4083,7 +4083,7 @@ int celt_encode_with_ec(CELTEncoder *__restrict__ st, const int16_t *pcm, int fr
     compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
     /* This should catch any NaN in the CELT input. Since we're not supposed to see any (they're filtered
        at the Opus layer), just abort. */
-    celt_assert(!celt_isnan(freq[0]) && (C == 1 || !celt_isnan(freq[N])));
+    assert((freq[0] != 0) && (C == 1 || (freq[N] != 0)));
     if (CC == 2 && C == 1) tf_chan = 0;
     compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
 
@@ -4725,20 +4725,20 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
     for (i = 0; i < N - 3; i += 4) {
         int32_t sum[4];
-        sum[0] = SHL32(EXTEND32(x[i]), SIG_SHIFT);
-        sum[1] = SHL32(EXTEND32(x[i + 1]), SIG_SHIFT);
-        sum[2] = SHL32(EXTEND32(x[i + 2]), SIG_SHIFT);
-        sum[3] = SHL32(EXTEND32(x[i + 3]), SIG_SHIFT);
+        sum[0] = SHL32(EXTEND32(x[i]), 12);
+        sum[1] = SHL32(EXTEND32(x[i + 1]), 12);
+        sum[2] = SHL32(EXTEND32(x[i + 2]), 12);
+        sum[3] = SHL32(EXTEND32(x[i + 3]), 12);
         xcorr_kernel(rnum, x + i - ord, sum, ord, arch);
-        y[i] = ROUND16(sum[0], SIG_SHIFT);
-        y[i + 1] = ROUND16(sum[1], SIG_SHIFT);
-        y[i + 2] = ROUND16(sum[2], SIG_SHIFT);
-        y[i + 3] = ROUND16(sum[3], SIG_SHIFT);
+        y[i] = ROUND16(sum[0], 12);
+        y[i + 1] = ROUND16(sum[1], 12);
+        y[i + 2] = ROUND16(sum[2], 12);
+        y[i + 3] = ROUND16(sum[3], 12);
     }
     for (; i < N; i++) {
-        int32_t sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+        int32_t sum = SHL32(EXTEND32(x[i]), 12);
         for (j = 0; j < ord; j++) sum = MAC16_16(sum, rnum[j], x[i + j - ord]);
-        y[i] = ROUND16(sum, SIG_SHIFT);
+        y[i] = ROUND16(sum, 12);
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4765,26 +4765,26 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord
         xcorr_kernel(rden, y + i, sum, ord, arch);
 
         /* Patch up the result to compensate for the fact that this is an IIR */
-        y[i + ord] = -SROUND16(sum[0], SIG_SHIFT);
+        y[i + ord] = -SROUND16(sum[0], 12);
         _y[i] = sum[0];
         sum[1] = MAC16_16(sum[1], y[i + ord], den[0]);
-        y[i + ord + 1] = -SROUND16(sum[1], SIG_SHIFT);
+        y[i + ord + 1] = -SROUND16(sum[1], 12);
         _y[i + 1] = sum[1];
         sum[2] = MAC16_16(sum[2], y[i + ord + 1], den[0]);
         sum[2] = MAC16_16(sum[2], y[i + ord], den[1]);
-        y[i + ord + 2] = -SROUND16(sum[2], SIG_SHIFT);
+        y[i + ord + 2] = -SROUND16(sum[2], 12);
         _y[i + 2] = sum[2];
 
         sum[3] = MAC16_16(sum[3], y[i + ord + 2], den[0]);
         sum[3] = MAC16_16(sum[3], y[i + ord + 1], den[1]);
         sum[3] = MAC16_16(sum[3], y[i + ord], den[2]);
-        y[i + ord + 3] = -SROUND16(sum[3], SIG_SHIFT);
+        y[i + ord + 3] = -SROUND16(sum[3], 12);
         _y[i + 3] = sum[3];
     }
     for (; i < N; i++) {
         int32_t sum = _x[i];
         for (j = 0; j < ord; j++) sum -= MULT16_16(rden[j], y[i + j]);
-        y[i + ord] = SROUND16(sum, SIG_SHIFT);
+        y[i + ord] = SROUND16(sum, 12);
         _y[i] = sum;
     }
     for (i = 0; i < ord; i++) mem[i] = _y[N - i - 1];

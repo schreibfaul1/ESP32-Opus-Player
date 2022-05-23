@@ -80,7 +80,7 @@ void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread)
    theta = HALF16(MULT16_16_Q15(gain,gain));
 
    c = celt_cos_norm(EXTEND32(theta));
-   s = celt_cos_norm(EXTEND32(SUB16(Q15ONE,theta))); /*  sin(theta) */
+   s = celt_cos_norm(EXTEND32(SUB16(32767,theta))); /*  sin(theta) */
 
    if (len>=8*stride)
    {
