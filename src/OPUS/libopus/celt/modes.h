@@ -32,7 +32,6 @@
 
 #include "celt.h"
 #include "arch.h"
-#include "mdct.h"
 #include "entenc.h"
 #include "entdec.h"
 

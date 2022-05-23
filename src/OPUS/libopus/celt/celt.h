@@ -227,7 +227,12 @@ struct CELTEncoder{
                        /* int16_t energyError[],  Size = channels*mode->nbEBands */
 };
 
-
+typedef struct {
+   int n;
+   int maxshift;
+   const kiss_fft_state *kfft[4];
+   const int16_t * __restrict__ trig;
+} mdct_lookup;
 
 /* List of all the available modes */
 #define TOTAL_MODES 1
@@ -413,6 +418,14 @@ struct CELTEncoder{
 # define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
     ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))
 
+
+#define clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+   clt_mdct_forward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
+
+#define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+   clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
+
+
 extern const signed char tf_select_table[4][8];
 
 
@@ -590,10 +603,10 @@ int16_t celt_rsqrt_norm(int32_t x);
 int32_t celt_sqrt(int32_t x);
 int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
-// void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
-//                         const int16_t *window, int overlap, int shift, int stride, int arch);
-// void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
-//                          const int16_t *__restrict__ window, int overlap, int shift, int stride, int arch);
+void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
+                        const int16_t *window, int overlap, int shift, int stride, int arch);
+void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
+                         const int16_t *__restrict__ window, int overlap, int shift, int stride, int arch);
 CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
 static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
                             int32_t maxcorr);

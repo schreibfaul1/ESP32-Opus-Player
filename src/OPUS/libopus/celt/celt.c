@@ -32,7 +32,7 @@
 
 #include "celt.h"
 #include "os_support.h"
-#include "mdct.h"
+
 #include <math.h>
 #include "pitch.h"
 #include "modes.h"
