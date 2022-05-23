@@ -128,7 +128,7 @@ OpusMSDecoder *opus_multistream_decoder_create(
          *error = OPUS_BAD_ARG;
       return NULL;
    }
-   st = (OpusMSDecoder *)opus_alloc(opus_multistream_decoder_get_size(streams, coupled_streams));
+   st = (OpusMSDecoder *)malloc(opus_multistream_decoder_get_size(streams, coupled_streams));
    if (st==NULL)
    {
       if (error)
@@ -140,7 +140,7 @@ OpusMSDecoder *opus_multistream_decoder_create(
       *error = ret;
    if (ret != OPUS_OK)
    {
-      opus_free(st);
+      free(st);
       st = NULL;
    }
    return st;
@@ -478,5 +478,5 @@ int opus_multistream_decoder_ctl(OpusMSDecoder *st, int request, ...)
 
 void opus_multistream_decoder_destroy(OpusMSDecoder *st)
 {
-    opus_free(st);
+    free(st);
 }

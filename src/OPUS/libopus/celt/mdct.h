@@ -50,7 +50,7 @@ typedef struct {
    int n;
    int maxshift;
    const kiss_fft_state *kfft[4];
-   const kiss_twiddle_scalar * __restrict__ trig;
+   const int16_t * __restrict__ trig;
 } mdct_lookup;
 
 #if defined(HAVE_ARM_NE10)
@@ -62,15 +62,15 @@ int clt_mdct_init(mdct_lookup *l,int N, int maxshift, int arch);
 void clt_mdct_clear(mdct_lookup *l, int arch);
 
 /** Compute a forward MDCT and scale by 4/N, trashes the input array */
-void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in,
-                        kiss_fft_scalar * __restrict__ out,
+void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in,
+                        int32_t * __restrict__ out,
                         const int16_t *window, int overlap,
                         int shift, int stride, int arch);
 
 /** Compute a backward MDCT (no scaling) and performs weighted overlap-add
     (scales implicitly by 1/2) */
-void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
-      kiss_fft_scalar * __restrict__ out,
+void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in,
+      int32_t * __restrict__ out,
       const int16_t * __restrict__ window,
       int overlap, int shift, int stride, int arch);
 

@@ -38,30 +38,11 @@
 extern "C" {
 #endif
 
-#ifdef USE_SIMD
-# include <xmmintrin.h>
-# define kiss_fft_scalar __m128
-#define KISS_FFT_MALLOC(nbytes) memalign(16,nbytes)
-#else
-#define KISS_FFT_MALLOC opus_alloc
-#endif
 
 #include "arch.h"
 
-#  define kiss_fft_scalar int32_t
-#  define kiss_twiddle_scalar int16_t
 
-typedef struct {
-    kiss_fft_scalar r;
-    kiss_fft_scalar i;
-}kiss_fft_cpx;
 
-typedef struct {
-   kiss_twiddle_scalar r;
-   kiss_twiddle_scalar i;
-}kiss_twiddle_cpx;
-
-#define MAXFACTORS 8
 /* e.g. an fft of length 128 has 4 factors
  as far as kissfft is concerned
  4*4*4*2
