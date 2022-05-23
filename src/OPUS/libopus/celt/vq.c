@@ -26,10 +26,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "mathops.h"
 #include "vq.h"
 #include "rate.h"
-#include "pitch.h"
 #include "stack_alloc.h"
 
 #ifndef OVERRIDE_vq_exp_rotation1

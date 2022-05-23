@@ -29,7 +29,7 @@
 #include "config.h"
 //#endif
 
-#include "celt/mathops.h"
+
 #include "opus_private.h"
 #include "opus_defines.h"
 #include "opus_projection.h"

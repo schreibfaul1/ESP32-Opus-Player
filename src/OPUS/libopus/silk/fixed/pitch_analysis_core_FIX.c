@@ -32,7 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../pitch_est_defines.h"
 #include "../../celt/stack_alloc.h"
 #include "../debug.h"
-#include "../../celt/pitch.h"
 
 #define SCRATCH_SIZE    22
 #define SF_LENGTH_4KHZ  ( PE_SUBFR_LENGTH_MS * 4 )
