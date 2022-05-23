@@ -505,6 +505,14 @@ static const int16_t fft_bitrev60[60] = {
     2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58, 3, 15, 27, 39, 51, 7, 19, 31, 43, 55, 11, 23, 35, 47, 59,
 };
 
+static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
+
+static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
+/* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
+static const unsigned char spread_icdf[4] = {25, 23, 2, 0};
+
+static const unsigned char tapset_icdf[3]={2,1,0};
+
 static const kiss_fft_state fft_state48000_960_0 = {
     480,   /* nfft */
     17476, /* scale */

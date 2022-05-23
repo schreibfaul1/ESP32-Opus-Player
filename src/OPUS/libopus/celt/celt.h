@@ -363,6 +363,15 @@ struct CELTEncoder{
 /* The minimum number of guaranteed representable energy deltas (in one
     direction). */
 #define LAPLACE_NMIN (16)
+#define COMBFILTER_MAXPERIOD 1024
+#define COMBFILTER_MINPERIOD 15
+
+#define VALIDATE_CELT_DECODER(st)
+
+# define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
+    ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))
+
+extern const signed char tf_select_table[4][8];
 
 
 /* Prototypes and inlines*/
@@ -398,60 +407,180 @@ static inline int32_t celt_sudiv(int32_t n, int32_t d) {
 
 }
 
-
-int celt_encoder_get_size(int channels);
-int celt_encode_with_ec(CELTEncoder * __restrict__ st, const int16_t * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
-int celt_encoder_init(CELTEncoder *st, int32_t sampling_rate, int channels, int arch);
-
-
-
-/* Decoder stuff */
-
-int celt_decoder_get_size(int channels);
-
-
-int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels);
-
-int celt_decode_with_ec(CELTDecoder * __restrict__ st, const unsigned char *data,
-      int len, int16_t * __restrict__ pcm, int frame_size, ec_dec *dec, int accum);
-
-
-#define OPUS_CUSTOM_NOSTATIC static OPUS_INLINE
-
-
-static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
-/* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
-static const unsigned char spread_icdf[4] = {25, 23, 2, 0};
-
-static const unsigned char tapset_icdf[3]={2,1,0};
-
-#define COMBFILTER_MAXPERIOD 1024
-#define COMBFILTER_MINPERIOD 15
-
-extern const signed char tf_select_table[4][8];
-
-#define VALIDATE_CELT_DECODER(st)
-
 int resampling_factor(int32_t rate);
-
-void celt_preemphasis(const int16_t * __restrict__ pcmp, int32_t * __restrict__ inp,
-                        int N, int CC, int upsample, const int16_t *coef, int32_t *mem, int clip);
-
-void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N,
-      int16_t g0, int16_t g1, int tapset0, int tapset1,
-      const int16_t *window, int overlap, int arch);
-
-#ifdef NON_STATIC_COMB_FILTER_CONST_C
-void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N,
-                         int16_t g10, int16_t g11, int16_t g12);
-#endif
-
-#ifndef OVERRIDE_COMB_FILTER_CONST
-# define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
-    ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))
-#endif
-
-void init_caps(const CELTMode *m,int *cap,int LM,int C);
+void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12);
+void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int16_t g1, int tapset0, int tapset1,
+                 const int16_t *window, int overlap, int arch);
+void init_caps(const CELTMode *m, int *cap, int LM, int C);
+const char *opus_strerror(int error);
+int hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int N, int prev);
+uint32_t celt_lcg_rand(uint32_t seed);
+int16_t bitexact_cos(int16_t x);
+int bitexact_log2tan(int isin, int icos);
+void compute_band_energies(const CELTMode *m, const int32_t *X, int32_t *bandE, int end, int C, int LM, int arch);
+void normalise_bands(const CELTMode *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE,
+                     int end, int C, int M);
+void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
+                       const int16_t *bandLogE, int start, int end, int M, int downsample, int silence);
+void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks, int LM, int C, int size, int start,
+                   int end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int *pulses,
+                   uint32_t seed, int arch);
+static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
+static void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
+                             const int32_t *bandE, int bandID, int N);
+static void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int N);
+static void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int N, int arch);
+int spreading_decision(const CELTMode *m, const int16_t *X, int *average, int last_decision, int *hf_average,
+                       int *tapset_decision, int update_hf, int end, int C, int M, const int *spread_weight);
+static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard);
+static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard);
+void haar1(int16_t *X, int N0, int stride);
+static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo);
+static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int N, int *b, int B,
+                          int __B0, int LM, int stereo, int *fill);
+static unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int b,  int16_t *lowband_out);
+static unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
+                                int16_t gain, int fill);
+static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
+                           int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int fill);
+static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int N, int b, int B, int16_t *lowband,
+                                  int LM, int16_t *lowband_out, int16_t *lowband_scratch, int fill);
+static void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int start, int M, int dual_stereo);
+void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t *X_, int16_t *Y_,
+                     unsigned char *collapse_masks, const int32_t *bandE, int *pulses, int shortBlocks, int spread,
+                     int dual_stereo, int intensity, int *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
+                     int LM, int codedBands, uint32_t *seed, int complexity, int arch, int disable_inv);
+int opus_custom_decoder_get_size(const CELTMode *mode, int channels);
+int celt_decoder_get_size(int channels);
+int opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int channels);
+int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels);
+static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const int16_t coef0, int32_t *mem);
+static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
+               int32_t *mem, int accum);
+static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int start,
+                           int effEnd, int C, int CC, int isTransient, int LM, int downsample, int silence, int arch);
+static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec);
+static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch);
+static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM);
+int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data, int len, int16_t *__restrict__ pcm,
+                        int frame_size, ec_dec *dec, int accum);
+int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
+int opus_custom_encoder_get_size(const CELTMode *mode, int channels);
+int celt_encoder_get_size(int channels);
+static int opus_custom_encoder_init_arch(CELTEncoder *st, const CELTMode *mode, int channels, int arch);
+int celt_encoder_init(CELTEncoder *st, int32_t sampling_rate, int channels,  int arch);
+static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
+                              int allow_weak_transients, int *weak_transient);
+static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);
+static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
+                          int C, int CC, int LM, int upsample, int arch);
+void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
+                      const int16_t *coef, int32_t *mem, int clip);
+static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias);
+static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
+                       int16_t tf_estimate, int tf_chan, int *importance);
+static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc);
+static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_t *bandLogE, int end, int LM, int C,
+                               int N0, AnalysisInfo *analysis, int16_t *stereo_saving, int16_t tf_estimate,
+                               int intensity, int16_t surround_trim, int32_t equiv_rate, int arch);
+static int stereo_analysis(const CELTMode *m, const int16_t *X, int LM, int N0);
+static int16_t median_of_5(const int16_t *x);
+static int16_t median_of_3(const int16_t *x);
+static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLogE2, int nbEBands, int start, int end,
+                                 int C, int *offsets, int lsb_depth, const int16_t *logN, int isTransient, int vbr,
+                                 int constrained_vbr, const int16_t *eBands, int LM, int effectiveBytes,
+                                 int32_t *tot_boost_, int lfe, int16_t *surround_dynalloc, AnalysisInfo *analysis,
+                                 int *importance, int *spread_weight);
+static int run_prefilter(CELTEncoder *st, int32_t *in, int32_t *prefilter_mem, int CC, int N, int prefilter_tapset,
+                         int *pitch, int16_t *gain, int *qgain, int enabled, int nbAvailableBytes,
+                         AnalysisInfo *analysis);
+static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t base_target, int LM, int32_t bitrate,
+                       int lastCodedBands, int C, int intensity, int constrained_vbr, int16_t stereo_saving,
+                       int tot_boost, int16_t tf_estimate, int pitch_change, int16_t maxDepth, int lfe,
+                       int has_surround_mask, int16_t surround_masking, int16_t temporal_vbr);
+int celt_encode_with_ec(CELTEncoder *__restrict__ st, const int16_t *pcm, int frame_size, unsigned char *compressed,
+                        int nbCompressedBytes, ec_enc *enc);
+int celt_encoder_ctl(CELTEncoder *__restrict__ st, int request, ...);
+void _celt_lpc(int16_t *_lpc, const int32_t *ac, int p);
+void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch);
+void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord, int16_t *mem, int arch);
+int _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int overlap, int lag, int n, int arch);
+static uint32_t icwrs(int _n, const int *_y);
+void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc);
+static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y);
+int32_t decode_pulses(int *_y, int _n, int _k, ec_dec *_dec);
+uint32_t ec_tell_frac(ec_ctx *_this);
+static int ec_read_byte(ec_dec *_this);
+static int ec_read_byte_from_end(ec_dec *_this);
+static void ec_dec_normalize(ec_dec *_this);
+void ec_dec_init(ec_dec *_this, unsigned char *_buf, uint32_t _storage);
+unsigned ec_decode(ec_dec *_this, unsigned _ft);
+unsigned ec_decode_bin(ec_dec *_this, unsigned _bits);
+void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft);
+int ec_dec_bit_logp(ec_dec *_this, unsigned _logp);
+int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb);
+uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft);
+uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits);
+static int ec_write_byte(ec_enc *_this, unsigned _value);
+static int ec_write_byte_at_end(ec_enc *_this, unsigned _value);
+static void ec_enc_carry_out(ec_enc *_this, int _c);
+static inline void ec_enc_normalize(ec_enc *_this);
+void ec_enc_init(ec_enc *_this, unsigned char *_buf, uint32_t _size);
+void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft);
+void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits);
+void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp);
+void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb);
+void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft);
+void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits);
+// static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N);
+// static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+// static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+// static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm);
+// void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
+// void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
+// void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
+static unsigned ec_laplace_get_freq1(unsigned fs0, int decay);
+void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
+int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay);
+unsigned isqrt32(uint32_t _val);
+int32_t frac_div32(int32_t a, int32_t b);
+int16_t celt_rsqrt_norm(int32_t x);
+int32_t celt_sqrt(int32_t x);
+int16_t celt_cos_norm(int32_t x);
+int32_t celt_rcp(int32_t x);
+// void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar *__restrict__ out,
+//                         const int16_t *window, int overlap, int shift, int stride, int arch);
+// void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar *__restrict__ out,
+//                          const int16_t *__restrict__ window, int overlap, int shift, int stride, int arch);
+CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
+static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
+                            int32_t maxcorr);
+static void celt_fir5(int16_t *x, const int16_t *num, int N);
+void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int len, int C, int arch);
+int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int len, int max_pitch, int arch);
+void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int len, int max_pitch, int *pitch,
+                  int arch);
+static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
+int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0_, int prev_period, int16_t prev_gain,
+                        int arch);
+static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, const int *bits1,
+                                          const int *bits2, const int *thresh, const int *cap, int32_t total,
+                                          int32_t *_balance, int skip_rsv, int *intensity, int intensity_rsv,
+                                          int *dual_stereo, int dual_stereo_rsv, int *bits, int *ebits,
+                                          int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev,
+                                          int signalBandwidth);
+// int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
+                           // int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
+                           // int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
+// static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
+// void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
+// static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
+// static unsigned extract_collapse_mask(int *iy, int N, int B);
+// int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
+// unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch)
+// unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
+// void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
+// int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
 
 
 #ifdef __cplusplus
