@@ -74,6 +74,34 @@ typedef struct {
    int offset;
 } SILKInfo;
 
+struct band_ctx
+{
+    int encode;
+    int resynth;
+    const CELTMode *m;
+    int i;
+    int intensity;
+    int spread;
+    int tf_change;
+    ec_ctx *ec;
+    int32_t remaining_bits;
+    const int32_t *bandE;
+    uint32_t seed;
+    int arch;
+    int theta_round;
+    int disable_inv;
+    int avoid_split_noise;
+};
+
+struct split_ctx{
+    int inv;
+    int imid;
+    int iside;
+    int delta;
+    int itheta;
+    int qalloc;
+};
+
 #define ABS16(x) ((x) < 0 ? (-(x)) : (x))
 #define ABS32(x) ((x) < 0 ? (-(x)) : (x))
 

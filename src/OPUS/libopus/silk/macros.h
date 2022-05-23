@@ -99,9 +99,6 @@ POSSIBILITY OF SUCH DAMAGE.
                                         (( (a) & ((b)^0x80000000) & 0x80000000) ? silk_int32_MIN : (a)-(b)) :    \
                                         ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
 
-#if defined(MIPSr1_ASM)
-#include "mips/macros_mipsr1.h"
-#endif
 
 #include "../celt/ecintrin.h"
 #ifndef OVERRIDE_silk_CLZ16

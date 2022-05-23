@@ -35,10 +35,6 @@
 #include "rate.h"
 #include "pitch.h"
 
-#if defined(MIPSr1_ASM)
-#include "mips/vq_mipsr1.h"
-#endif
-
 #ifndef OVERRIDE_vq_exp_rotation1
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s)
 {

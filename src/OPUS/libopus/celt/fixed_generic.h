@@ -164,9 +164,6 @@
 /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
 #define DIV32(a,b) (((int32_t)(a))/((int32_t)(b)))
 
-#if defined(MIPSr1_ASM)
-#include "mips/fixed_generic_mipsr1.h"
-#endif
 
 static OPUS_INLINE int16_t SIG2WORD16_generic(int32_t x)
 {

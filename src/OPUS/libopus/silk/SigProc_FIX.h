@@ -621,10 +621,6 @@ static OPUS_INLINE int64_t silk_max_64(int64_t a, int64_t b)
 #include "arm/SigProc_FIX_armv5e.h"
 #endif
 
-#if defined(MIPSr1_ASM)
-#include "mips/sigproc_fix_mipsr1.h"
-#endif
-
 
 #ifdef  __cplusplus
 }
