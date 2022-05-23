@@ -33,8 +33,10 @@
 
 #ifndef PITCH_H
 #define PITCH_H
+#include <stdint.h>
+#include "Arduino.h"
+#include "celt.h"
 
-#include "modes.h"
 
 void pitch_downsample(int32_t * __restrict__ x[], int16_t * __restrict__ x_lp,
       int len, int C, int arch);
@@ -48,7 +50,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod,
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot
    by the prefilter and by the PLC. */
-static OPUS_INLINE void xcorr_kernel_c(const int16_t * x, const int16_t * y, int32_t sum[4], int len)
+static inline void xcorr_kernel_c(const int16_t * x, const int16_t * y, int32_t sum[4], int len)
 {
    int j;
    int16_t y_0, y_1, y_2, y_3;
@@ -120,7 +122,7 @@ static OPUS_INLINE void xcorr_kernel_c(const int16_t * x, const int16_t * y, int
 #endif /* OVERRIDE_XCORR_KERNEL */
 
 
-static OPUS_INLINE void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const int16_t *y02,
+static inline void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const int16_t *y02,
       int N, int32_t *xy1, int32_t *xy2)
 {
    int i;
@@ -142,7 +144,7 @@ static OPUS_INLINE void dual_inner_prod_c(const int16_t *x, const int16_t *y01, 
 
 /*We make sure a C version is always available for cases where the overhead of
   vectorization and passing around an arch flag aren't worth it.*/
-static OPUS_INLINE int32_t celt_inner_prod_c(const int16_t *x,
+static inline int32_t celt_inner_prod_c(const int16_t *x,
       const int16_t *y, int N)
 {
    int i;

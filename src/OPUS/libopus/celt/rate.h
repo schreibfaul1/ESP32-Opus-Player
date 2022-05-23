@@ -40,7 +40,7 @@
 #define QTHETA_OFFSET 4
 #define QTHETA_OFFSET_TWOPHASE 16
 
-#include "modes.h"
+
 
 void compute_pulse_cache(CELTMode *m, int LM);
 

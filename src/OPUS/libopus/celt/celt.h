@@ -264,6 +264,38 @@ typedef struct {
    const int16_t * __restrict__ trig;
 } mdct_lookup;
 
+typedef struct {
+    int size;
+    const int16_t *index;
+    const unsigned char *bits;
+    const unsigned char *caps;
+} PulseCache;
+
+/** Mode definition (opaque)
+ @brief Mode definition
+ */
+struct CELTMode {
+    int32_t Fs;
+    int overlap;
+
+    int nbEBands;
+    int effEBands;
+    int16_t preemph[4];
+    const int16_t *eBands; /**< Definition for each "pseudo-critical band" */
+
+    int maxLM;
+    int nbShortMdcts;
+    int shortMdctSize;
+
+    int nbAllocVectors;                /**< Number of lines in the matrix below */
+    const unsigned char *allocVectors; /**< Number of bits in each band for several rates */
+    const int16_t *logN;
+
+    const int16_t *window;
+    mdct_lookup mdct;
+    PulseCache cache;
+};
+
 /* List of all the available modes */
 #define TOTAL_MODES 1
 
@@ -605,6 +637,9 @@ typedef struct {
 
 /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
 #define DIV32(a,b) (((int32_t)(a))/((int32_t)(b)))
+int32_t celt_rcp(int32_t x);
+#define celt_div(a,b) MULT32_32_Q31((int32_t)(a),celt_rcp(b))
+#define MAX_PERIOD 1024
 
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
@@ -655,6 +690,29 @@ static inline int16_t sig2word16(int32_t x){
 static inline int ec_tell(ec_ctx *_this){
   return _this->nbits_total-EC_ILOG(_this->rng);
 }
+
+/* Atan approximation using a 4th order polynomial. Input is in Q15 format and normalized by pi/4. Output is in
+   Q15 format */
+static inline int16_t celt_atan01(int16_t x) {
+    return MULT16_16_P15(
+        x, ADD32(32767, MULT16_16_P15(x, ADD32(-21, MULT16_16_P15(x, ADD32(-11943, MULT16_16_P15(4936, x)))))));
+}
+
+/* atan2() approximation valid for positive input values */
+static inline int16_t celt_atan2p(int16_t y, int16_t x) {
+    if (y < x) {
+        int32_t arg;
+        arg = celt_div(SHL32(EXTEND32(y), 15), x);
+        if (arg >= 32767) arg = 32767;
+        return SHR16(celt_atan01(EXTRACT16(arg)), 1);
+    } else {
+        int32_t arg;
+        arg = celt_div(SHL32(EXTEND32(x), 15), y);
+        if (arg >= 32767) arg = 32767;
+        return 25736 - SHR16(celt_atan01(EXTRACT16(arg)), 1);
+    }
+}
+
 
 int resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12);
@@ -830,6 +888,17 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
 // unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
 // void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
 // int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
+static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
+                            int32_t maxcorr);
+static void celt_fir5(int16_t *x, const int16_t *num, int N);
+void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int len, int C, int arch);
+int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int len, int max_pitch, int arch);
+void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int len, int max_pitch, int *pitch,
+                  int arch);
+static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
+int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0_, int prev_period, int16_t prev_gain,
+                        int arch);
+
 
 
 #ifdef __cplusplus

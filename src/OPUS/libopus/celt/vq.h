@@ -33,7 +33,7 @@
 #ifndef VQ_H
 #define VQ_H
 
-#include "modes.h"
+
 
 void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
 
