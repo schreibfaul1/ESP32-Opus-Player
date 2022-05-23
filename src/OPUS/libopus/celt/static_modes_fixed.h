@@ -2,7 +2,7 @@
    with arguments: 48000 960
    It contains static definitions for some pre-defined modes. */
 
-#include "rate.h"
+
 #include "celt.h"
 
 #pragma once

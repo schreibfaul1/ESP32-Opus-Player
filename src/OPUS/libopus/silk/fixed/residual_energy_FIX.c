@@ -26,7 +26,6 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "main_FIX.h"
-#include "../../celt/stack_alloc.h"
 
 /* Calculates residual energies of input subframes where all subframes have LPC_order   */
 /* of preceding samples                                                                 */

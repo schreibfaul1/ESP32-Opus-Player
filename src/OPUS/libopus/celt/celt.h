@@ -650,10 +650,26 @@ int32_t celt_rcp(int32_t x);
 #define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
 #define xcorr_kernel(x, y, sum, len, arch) ((void)(arch),xcorr_kernel_c(x, y, sum, len))
 
+#define MAX_PSEUDO 40
+#define LOG_MAX_PSEUDO 6
+#define CELT_MAX_PULSES 128
+#define MAX_FINE_BITS 8
+#define FINE_OFFSET 21
+#define QTHETA_OFFSET 4
+#define QTHETA_OFFSET_TWOPHASE 16
 
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((int32_t)(int16_t)(a)*(int16_t)(b)))>>15)
 
+#define VARDECL(type, var)
+#define ALLOC(var, size, type) type var[size]
+#define SAVE_STACK
+#define ALLOC_STACK
+#define ALLOC_NONE 1
+#define OPUS_CHECK_ARRAY(ptr, len) _opus_false()
+#define OPUS_CHECK_VALUE(value) _opus_false()
+#define OPUS_PRINT_INT(value) do{}while(0)
+#define OPUS_FPRINTF (void)
 
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
@@ -808,6 +824,41 @@ static inline void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const
     *xy2 = xy02;
 }
 
+static inline int get_pulses(int i) { return i < 8 ? i : (8 + (i & 7)) << ((i >> 3) - 1); }
+
+static inline int bits2pulses(const CELTMode *m, int band, int LM, int bits) {
+    int i;
+    int lo, hi;
+    const unsigned char *cache;
+
+    LM++;
+    cache = m->cache.bits + m->cache.index[LM * m->nbEBands + band];
+
+    lo = 0;
+    hi = cache[0];
+    bits--;
+    for (i = 0; i < LOG_MAX_PSEUDO; i++) {
+        int mid = (lo + hi + 1) >> 1;
+        /* OPT: Make sure this is implemented with a conditional move */
+        if ((int)cache[mid] >= bits)
+            hi = mid;
+        else
+            lo = mid;
+    }
+    if (bits - (lo == 0 ? -1 : (int)cache[lo]) <= (int)cache[hi] - bits)
+        return lo;
+    else
+        return hi;
+}
+
+static inline int pulses2bits(const CELTMode *m, int band, int LM, int pulses) {
+    const unsigned char *cache;
+
+    LM++;
+    cache = m->cache.bits + m->cache.index[LM * m->nbEBands + band];
+    return pulses == 0 ? 0 : cache[pulses] + 1;
+}
+
 /*We make sure a C version is always available for cases where the overhead of vectorization and passing around an
   arch flag aren't worth it.*/
 static inline int32_t celt_inner_prod_c(const int16_t *x, const int16_t *y, int N) {
@@ -816,6 +867,8 @@ static inline int32_t celt_inner_prod_c(const int16_t *x, const int16_t *y, int 
     for (i = 0; i < N; i++) xy = MAC16_16(xy, x[i], y[i]);
     return xy;
 }
+
+static inline int _opus_false(void) {return 0;}
 
 int resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12);

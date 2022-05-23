@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "main.h"
-#include "../celt/stack_alloc.h"
+
 
 /***********************/
 /* NLSF vector encoder */

@@ -33,9 +33,7 @@
 #include "celt.h"
 
 #include <math.h>
-#include "quant_bands.h"
-#include "rate.h"
-#include "stack_alloc.h"
+
 #include <stdarg.h>
 #include "vq.h"
 #include <pgmspace.h>

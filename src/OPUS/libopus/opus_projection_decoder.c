@@ -35,7 +35,7 @@
 #include "opus_projection.h"
 #include "opus_multistream.h"
 #include "mapping_matrix.h"
-#include "celt/stack_alloc.h"
+
 
 struct OpusProjectionDecoder
 {

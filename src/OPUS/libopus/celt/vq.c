@@ -27,8 +27,6 @@
 */
 
 #include "vq.h"
-#include "rate.h"
-#include "stack_alloc.h"
 
 #ifndef OVERRIDE_vq_exp_rotation1
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s)

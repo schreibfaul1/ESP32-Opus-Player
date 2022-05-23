@@ -30,7 +30,6 @@ POSSIBILITY OF SUCH DAMAGE.
 ********************************************************** */
 #include "../SigProc_FIX.h"
 #include "../pitch_est_defines.h"
-#include "../../celt/stack_alloc.h"
 #include "../debug.h"
 
 #define SCRATCH_SIZE    22
