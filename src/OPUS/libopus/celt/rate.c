@@ -31,7 +31,6 @@
 #include "os_support.h"
 #include "stack_alloc.h"
 
-#include "entcode.h"
 #include "rate.h"
 
 static const unsigned char LOG2_FRAC_TABLE[24]={

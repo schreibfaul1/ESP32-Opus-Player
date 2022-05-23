@@ -611,7 +611,6 @@ static OPUS_INLINE int64_t silk_max_64(int64_t a, int64_t b)
 
 #include "Inlines.h"
 #include "MacroCount.h"
-#include "MacroDebug.h"
 
 #ifdef OPUS_ARM_INLINE_ASM
 #include "arm/SigProc_FIX_armv4.h"

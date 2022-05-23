@@ -87,10 +87,10 @@ extern LARGE_INTEGER silk_Timer_start[silk_NUM_TIMERS_MAX];
 extern unsigned long silk_Timer_start[silk_NUM_TIMERS_MAX];
 #endif
 extern unsigned int  silk_Timer_cnt[silk_NUM_TIMERS_MAX];
-extern opus_int64    silk_Timer_sum[silk_NUM_TIMERS_MAX];
-extern opus_int64    silk_Timer_max[silk_NUM_TIMERS_MAX];
-extern opus_int64    silk_Timer_min[silk_NUM_TIMERS_MAX];
-extern opus_int64    silk_Timer_depth[silk_NUM_TIMERS_MAX];
+extern int64_t    silk_Timer_sum[silk_NUM_TIMERS_MAX];
+extern int64_t    silk_Timer_max[silk_NUM_TIMERS_MAX];
+extern int64_t    silk_Timer_min[silk_NUM_TIMERS_MAX];
+extern int64_t    silk_Timer_depth[silk_NUM_TIMERS_MAX];
 
 /* WARNING: TIC()/TOC can measure only up to 0.1 seconds at a time */
 #ifdef _WIN32
@@ -225,7 +225,7 @@ extern opus_int64    silk_Timer_depth[silk_NUM_TIMERS_MAX];
 /************************************/
 /* write data to file for debugging */
 /************************************/
-/* Example: DEBUG_STORE_DATA(testfile.pcm, &RIN[0], 160*sizeof(opus_int16)); */
+/* Example: DEBUG_STORE_DATA(testfile.pcm, &RIN[0], 160*sizeof(int16_t)); */
 
 #define silk_NUM_STORES_MAX                                  100
 extern FILE *silk_debug_store_fp[ silk_NUM_STORES_MAX ];

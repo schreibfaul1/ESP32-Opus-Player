@@ -346,7 +346,7 @@ OPUS_EXPORT int opus_multistream_surround_encoder_init(
 
 /** Encodes a multistream Opus frame.
   * @param st <tt>OpusMSEncoder*</tt>: Multistream encoder state.
-  * @param[in] pcm <tt>const opus_int16*</tt>: The input signal as interleaved
+  * @param[in] pcm <tt>const int16_t*</tt>: The input signal as interleaved
   *                                            samples.
   *                                            This must contain
   *                                            <code>frame_size*channels</code>
@@ -560,7 +560,7 @@ OPUS_EXPORT int opus_multistream_decoder_init(
   *                                                pointer to indicate packet
   *                                                loss.
   * @param len <tt>int32_t</tt>: Number of bytes in payload.
-  * @param[out] pcm <tt>opus_int16*</tt>: Output signal, with interleaved
+  * @param[out] pcm <tt>int16_t*</tt>: Output signal, with interleaved
   *                                       samples.
   *                                       This must contain room for
   *                                       <code>frame_size*channels</code>
@@ -598,7 +598,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_multistream_decode(
   *                                                pointer to indicate packet
   *                                                loss.
   * @param len <tt>int32_t</tt>: Number of bytes in payload.
-  * @param[out] pcm <tt>opus_int16*</tt>: Output signal, with interleaved
+  * @param[out] pcm <tt>int16_t*</tt>: Output signal, with interleaved
   *                                       samples.
   *                                       This must contain room for
   *                                       <code>frame_size*channels</code>

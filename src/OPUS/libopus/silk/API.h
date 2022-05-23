@@ -31,9 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "control.h"
 #include "typedef.h"
 #include "errors.h"
-#include "../celt/entenc.h"
-#include "../celt/entdec.h"
 #include "Arduino.h"
+#include "../celt/celt.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -122,7 +121,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 /* Get table of contents for a packet */
 /**************************************/
 int32_t silk_get_TOC(
-    const opus_uint8                *payload,           /* I    Payload data                                */
+    const uint8_t                *payload,           /* I    Payload data                                */
     const int32_t                  nBytesIn,           /* I    Number of input bytes                       */
     const int32_t                  nFramesPerPayload,  /* I    Number of SILK frames per payload           */
     silk_TOC_struct                 *Silk_TOC           /* O    Type of content                             */

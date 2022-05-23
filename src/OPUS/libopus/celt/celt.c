@@ -36,7 +36,6 @@
 #include <math.h>
 #include "pitch.h"
 #include "modes.h"
-#include "entcode.h"
 #include "quant_bands.h"
 #include "rate.h"
 #include "stack_alloc.h"

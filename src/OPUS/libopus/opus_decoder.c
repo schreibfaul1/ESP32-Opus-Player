@@ -32,7 +32,6 @@
 #include <stdarg.h>
 #include "celt/celt.h"
 #include "opus.h"
-#include "celt/entdec.h"
 #include "celt/modes.h"
 #include "silk/API.h"
 #include "celt/stack_alloc.h"

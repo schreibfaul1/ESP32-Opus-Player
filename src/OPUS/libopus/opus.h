@@ -96,8 +96,8 @@ OPUS_EXPORT int opus_decoder_init(
   * @param [in] st <tt>OpusDecoder*</tt>: Decoder state
   * @param [in] data <tt>char*</tt>: Input payload. Use a NULL pointer to indicate packet loss
   * @param [in] len <tt>int32_t</tt>: Number of bytes in payload*
-  * @param [out] pcm <tt>opus_int16*</tt>: Output signal (interleaved if 2 channels). length
-  *  is frame_size*channels*sizeof(opus_int16)
+  * @param [out] pcm <tt>int16_t*</tt>: Output signal (interleaved if 2 channels). length
+  *  is frame_size*channels*sizeof(int16_t)
   * @param [in] frame_size Number of samples per channel of available space in \a pcm.
   *  If this is less than the maximum packet duration (120ms; 5760 for 48kHz), this function will
   *  not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1),
@@ -169,7 +169,7 @@ OPUS_EXPORT void opus_decoder_destroy(OpusDecoder *st);
   * @param [in] len <tt>int32_t</tt>: size of data
   * @param [out] out_toc <tt>char*</tt>: TOC pointer
   * @param [out] frames <tt>char*[48]</tt> encapsulated frames
-  * @param [out] size <tt>opus_int16[48]</tt> sizes of the encapsulated frames
+  * @param [out] size <tt>int16_t[48]</tt> sizes of the encapsulated frames
   * @param [out] payload_offset <tt>int*</tt>: returns the position of the payload within the packet (in bytes)
   * @returns number of frames
   */

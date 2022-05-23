@@ -126,7 +126,7 @@ int32_t silk_encode_frame_FIX(
 
     if( !psEnc->sCmn.prefillFlag ) {
         VARDECL( int16_t, res_pitch );
-        VARDECL( opus_uint8, ec_buf_copy );
+        VARDECL( uint8_t, ec_buf_copy );
         int16_t *res_pitch_frame;
 
         ALLOC( res_pitch,

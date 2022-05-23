@@ -37,8 +37,7 @@
 
 #include "../opus_defines.h"
 #include "../opus_custom.h"
-#include "entenc.h"
-#include "entdec.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +65,38 @@ typedef struct {
    int signalType;
    int offset;
 } SILKInfo;
+
+/*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
+   larger type, you can speed up the decoder by using it here.*/
+typedef uint32_t           ec_window;
+typedef struct ec_ctx         ec_ctx;
+typedef struct ec_ctx         ec_enc;
+typedef struct ec_ctx         ec_dec;
+
+/*The entropy encoder/decoder context.
+  We use the same structure for both, so that common functions like ec_tell()
+   can be used on either one.*/
+struct ec_ctx {
+    unsigned char *buf; /*Buffered input/output.*/
+    uint32_t storage; /*The size of the buffer.*/
+    uint32_t end_offs; /*The offset at which the last byte containing raw bits was read/written.*/
+    ec_window end_window; /*Bits that will be read from/written at the end.*/
+    int nend_bits; /*Number of valid bits in end_window.*/
+    /*The total number of whole bits read/written.
+      This does not include partial bits currently in the range coder.*/
+    int nbits_total;
+    uint32_t offs; /*The offset at which the next range coder byte will be read/written.*/
+    uint32_t rng; /*The number of values in the current range.*/
+    /*In the decoder: the difference between the top of the current range and
+       the input value, minus one.
+      In the encoder: the low end of the current range.*/
+    uint32_t val;
+    /*In the decoder: the saved normalization factor from ec_decode().
+      In the encoder: the number of oustanding carry propagating symbols.*/
+    uint32_t ext;
+    int rem; /*A buffered input/output symbol, awaiting carry propagation.*/
+    int error; /*Nonzero if an error occurred.*/
+};
 
 struct band_ctx{
     int encode;
@@ -434,8 +465,33 @@ typedef struct {
 #define SCALEIN(a)      (a)
 #define SCALEOUT(a)     (a)
 
-extern const signed char tf_select_table[4][8];
+# define EC_WINDOW_SIZE ((int)sizeof(ec_window)*CHAR_BIT)
 
+/*The number of bits to use for the range-coded part of unsigned integers.*/
+# define EC_UINT_BITS   (8)
+
+/*The resolution of fractional-precision bit usage measurements, i.e., 3 => 1/8th bits.*/
+# define BITRES 3
+
+/*Modern gcc (4.x) can compile the naive versions of min and max with cmov if given an appropriate architecture, but
+  the branchless bit-twiddling versions are just as fast, and do not require any special target architecture.
+  Earlier gcc versions (3.x) compiled both code to the same assembly instructions, because of the way they
+  represented ((_b)>(_a)) internally.*/
+#define EC_MINI(_a,_b)      ((_a)+(((_b)-(_a))&-((_b)<(_a))))
+
+/*Count leading zeros. This macro should only be used for implementing ec_ilog(), if it is defined.
+  All other code should use EC_ILOG() instead.*/
+#define EC_CLZ0    ((int)sizeof(unsigned)*CHAR_BIT)
+#define EC_CLZ(_x) (__builtin_clz(_x))
+
+
+/*Note that __builtin_clz is not defined when _x==0, according to the gcc documentation (and that of the BSR
+  instruction that implements it on x86). The majority of the time we can never pass it zero. When we need to,
+  it can be special cased.*/
+#define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
+
+extern const signed char tf_select_table[4][8];
+extern const uint32_t SMALL_DIV_TABLE[129];
 
 /* Prototypes and inlines*/
 
@@ -468,6 +524,13 @@ static inline uint32_t celt_udiv(uint32_t n, uint32_t d) {
 static inline int32_t celt_sudiv(int32_t n, int32_t d) {
    assert(d>0); return n/d;
 
+}
+
+/*Returns the number of bits "used" by the encoded or decoded symbols so far. This same number can be computed in
+  either the encoder or the decoder, and is suitable for making coding decisions. Return: The number of bits.
+  This will always be slightly larger than the exact value (e.g., all rounding error is in the positive direction).*/
+static inline int ec_tell(ec_ctx *_this){
+  return _this->nbits_total-EC_ILOG(_this->rng);
 }
 
 int resampling_factor(int32_t rate);

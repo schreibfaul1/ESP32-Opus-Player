@@ -35,8 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "PLC.h"
 #include "control.h"
 #include "debug.h"
-#include "../celt/entenc.h"
-#include "../celt/entdec.h"
+
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
 void silk_stereo_LR_to_MS(

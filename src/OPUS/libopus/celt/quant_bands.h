@@ -32,8 +32,6 @@
 
 #include "celt.h"
 #include "modes.h"
-#include "entenc.h"
-#include "entdec.h"
 #include "mathops.h"
 
 extern const signed char eMeans[25];

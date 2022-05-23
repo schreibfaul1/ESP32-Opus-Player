@@ -29,6 +29,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_MACROS_H
 
 #include "../opus_defines.h"
+#include "../celt/celt.h"
+#include <math.h>
+#include <limits.h>
 
 
 /* This is an OPUS_INLINE header file for general platform. */
@@ -60,7 +63,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define silk_SMLABT(a32, b32, c32)       ((a32) + ((int32_t)((int16_t)(b32))) * ((c32) >> 16))
 
 /* a64 + (b32 * c32) */
-#define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((opus_int64)(b32) * (opus_int64)(c32))))
+#define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((int64_t)(b32) * (int64_t)(c32))))
 
 /* (a32 * b32) >> 16 */
 #define silk_SMULWW(a32, b32)            ((int32_t)(((int64_t)(a32) * (b32)) >> 16))
@@ -79,7 +82,6 @@ POSSIBILITY OF SUCH DAMAGE.
                                         ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
 
 
-#include "../celt/ecintrin.h"
 #ifndef OVERRIDE_silk_CLZ16
 static OPUS_INLINE int32_t silk_CLZ16(int16_t in16)
 {

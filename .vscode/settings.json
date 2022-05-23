@@ -1,5 +1,5 @@
 {
-  "C_Cpp_Runner.cCompilerPath": "gcc",
+  "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
   "C_Cpp_Runner.debuggerPath": "gdb",
   "C_Cpp_Runner.cStandard": "",
@@ -32,6 +32,8 @@
     "opus_defines.h": "c",
     "tables.h": "c",
     "pitch_est_defines.h": "c",
-    "sigproc_fix.h": "c"
+    "sigproc_fix.h": "c",
+    "mathops.h": "c",
+    "structs.h": "c"
   }
 }

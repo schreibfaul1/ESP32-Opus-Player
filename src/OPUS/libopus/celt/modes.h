@@ -31,8 +31,7 @@
 #define MODES_H
 
 #include "celt.h"
-#include "entenc.h"
-#include "entdec.h"
+
 
 #define MAX_PERIOD 1024
 
