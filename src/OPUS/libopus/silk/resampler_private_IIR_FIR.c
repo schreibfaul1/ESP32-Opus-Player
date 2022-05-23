@@ -27,7 +27,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_private.h"
-#include "../celt/stack_alloc.h"
 
 static OPUS_INLINE int16_t *silk_resampler_private_IIR_FIR_INTERPOL(
     int16_t  *out,

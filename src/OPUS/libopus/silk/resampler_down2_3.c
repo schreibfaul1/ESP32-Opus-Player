@@ -28,7 +28,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_private.h"
-#include "../celt/stack_alloc.h"
 
 #define ORDER_FIR                   4
 

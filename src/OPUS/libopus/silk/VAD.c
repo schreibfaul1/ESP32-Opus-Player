@@ -28,7 +28,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include  <pgmspace.h>
 
 #include "main.h"
-#include "../celt/stack_alloc.h"
 
 /* Silk VAD noise level estimation */
 # if !defined(OPUS_X86_MAY_HAVE_SSE4_1)

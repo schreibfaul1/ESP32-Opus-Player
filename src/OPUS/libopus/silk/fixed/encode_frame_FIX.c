@@ -27,7 +27,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdlib.h>
 #include "main_FIX.h"
-#include "../../celt/stack_alloc.h"
 #include "../tuning_parameters.h"
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */

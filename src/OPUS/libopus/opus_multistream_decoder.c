@@ -31,7 +31,6 @@
 #include "opus_multistream.h"
 #include "opus.h"
 #include "opus_private.h"
-#include "celt/stack_alloc.h"
 #include <stdarg.h>
 
 /* DECODER */
