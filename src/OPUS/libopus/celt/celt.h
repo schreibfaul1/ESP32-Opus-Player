@@ -39,7 +39,6 @@
 #include "../opus_custom.h"
 #include "entenc.h"
 #include "entdec.h"
-#include "arch.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -425,6 +424,15 @@ typedef struct {
 #define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
    clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
 
+#define SIG_SAT (300000000)
+#define NORM_SCALING 16384
+#define DB_SHIFT 10
+#define EPSILON 1
+#define VERY_SMALL 0
+#define VERY_LARGE16 ((int16_t)32767)
+#define Q15_ONE ((int16_t)32767)
+#define SCALEIN(a)      (a)
+#define SCALEOUT(a)     (a)
 
 extern const signed char tf_select_table[4][8];
 

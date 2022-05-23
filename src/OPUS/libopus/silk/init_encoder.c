@@ -27,7 +27,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "fixed/main_FIX.h"
 #include "tuning_parameters.h"
-#include "../celt/cpu_support.h"
 
 /*********************************/
 /* Initialize Silk Encoder state */

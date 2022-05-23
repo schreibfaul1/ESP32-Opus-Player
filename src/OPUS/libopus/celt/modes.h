@@ -31,7 +31,6 @@
 #define MODES_H
 
 #include "celt.h"
-#include "arch.h"
 #include "entenc.h"
 #include "entdec.h"
 

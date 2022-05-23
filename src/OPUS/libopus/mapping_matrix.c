@@ -29,7 +29,6 @@
 #include "config.h"
 //#endif
 
-#include "celt/arch.h"
 #include "celt/float_cast.h"
 #include "opus_private.h"
 #include "opus_defines.h"

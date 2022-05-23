@@ -30,7 +30,6 @@
 #define FLOAT_CAST_H
 
 
-#include "arch.h"
 
 /*============================================================================
 **      On Intel Pentium processors (especially PIII and probably P4), converting

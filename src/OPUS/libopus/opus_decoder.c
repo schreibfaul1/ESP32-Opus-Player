@@ -42,7 +42,6 @@
 #include "silk/structs.h"
 #include "silk/define.h"
 #include "celt/mathops.h"
-#include "celt/cpu_support.h"
 
 struct OpusDecoder {
    int          celt_dec_offset;

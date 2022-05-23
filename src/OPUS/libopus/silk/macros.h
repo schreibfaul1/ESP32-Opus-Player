@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_MACROS_H
 
 #include "../opus_defines.h"
-#include "../celt/arch.h"
+
 
 /* This is an OPUS_INLINE header file for general platform. */
 

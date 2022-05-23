@@ -29,7 +29,6 @@
 
 #include <math.h>
 #include <limits.h>
-#include "arch.h"
 #if !defined(_ecintrin_H)
 # define _ecintrin_H (1)
 

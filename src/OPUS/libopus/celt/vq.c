@@ -27,12 +27,11 @@
 */
 
 #include "mathops.h"
-#include "cwrs.h"
 #include "vq.h"
-#include "arch.h"
 #include "os_support.h"
 #include "rate.h"
 #include "pitch.h"
+#include "stack_alloc.h"
 
 #ifndef OVERRIDE_vq_exp_rotation1
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s)
