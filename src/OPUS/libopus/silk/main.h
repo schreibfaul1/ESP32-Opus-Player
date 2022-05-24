@@ -30,9 +30,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "silk.h"
 #include "SigProc_FIX.h"
-#include "define.h"
+
 #include "PLC.h"
-#include "debug.h"
 
 
 

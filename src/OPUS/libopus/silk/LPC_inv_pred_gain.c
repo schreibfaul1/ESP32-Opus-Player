@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "SigProc_FIX.h"
-#include "define.h"
+
 #include "silk.h"
 
 #define A_LIMIT                     SILK_FIX_CONST( 0.99975, 24 )

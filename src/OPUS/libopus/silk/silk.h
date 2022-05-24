@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 #include "macros.h"
 #include "SigProc_FIX.h"
-#include "define.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -315,15 +315,74 @@ extern "C" {
 #define silk_TRUE        1
 #define silk_FALSE       0
 
-
-
+#define VARDECL(type, var)
+#define ALLOC(var, size, type) type var[size]
+#define silk_enc_map(a)                  ( silk_RSHIFT( (a), 15 ) + 1 )
+#define silk_dec_map(a)                  ( silk_LSHIFT( (a),  1 ) - 1 )
 
 /* Macro to convert floating-point constants to fixed-point */
 #define SILK_FIX_CONST(C, Q) ((int32_t)((C) * ((int64_t)1 << (Q)) + 0.5L))
 
+/* define macros as empty strings */
+#define TIC(TAG_NAME)
+#define TOC(TAG_NAME)
+#define silk_TimerSave(FILE_NAME)
 
+/* NLSF quantizer */
+#define NLSF_W_Q                                2
+#define NLSF_VQ_MAX_VECTORS                     32
+#define NLSF_QUANT_MAX_AMPLITUDE                4
+#define NLSF_QUANT_MAX_AMPLITUDE_EXT            10
+#define NLSF_QUANT_LEVEL_ADJ                    0.1
+#define NLSF_QUANT_DEL_DEC_STATES_LOG2          2
+#define NLSF_QUANT_DEL_DEC_STATES               ( 1 << NLSF_QUANT_DEL_DEC_STATES_LOG2 )
 
+/* Transition filtering for mode switching */
+#define TRANSITION_TIME_MS                      5120    /* 5120 = 64 * FRAME_LENGTH_MS * ( TRANSITION_INT_NUM - 1 ) = 64*(20*4)*/
+#define TRANSITION_NB                           3       /* Hardcoded in tables */
+#define TRANSITION_NA                           2       /* Hardcoded in tables */
+#define TRANSITION_INT_NUM                      5       /* Hardcoded in tables */
+#define TRANSITION_FRAMES                       ( TRANSITION_TIME_MS / MAX_FRAME_LENGTH_MS )
+#define TRANSITION_INT_STEPS                    ( TRANSITION_FRAMES  / ( TRANSITION_INT_NUM - 1 ) )
 
+/* BWE factors to apply after packet loss */
+#define BWE_AFTER_LOSS_Q16                      63570
+
+/* Defines for CN generation */
+#define CNG_BUF_MASK_MAX                        255     /* 2^floor(log2(MAX_FRAME_LENGTH))-1    */
+#define CNG_GAIN_SMTH_Q16                       4634    /* 0.25^(1/4)                           */
+#define CNG_NLSF_SMTH_Q16                       16348   /* 0.25                                 */
+#define PE_MAX_FS_KHZ               16 /* Maximum sampling frequency used */
+
+#define PE_MAX_NB_SUBFR             4
+#define PE_SUBFR_LENGTH_MS          5   /* 5 ms */
+
+#define PE_LTP_MEM_LENGTH_MS        ( 4 * PE_SUBFR_LENGTH_MS )
+
+#define PE_MAX_FRAME_LENGTH_MS      ( PE_LTP_MEM_LENGTH_MS + PE_MAX_NB_SUBFR * PE_SUBFR_LENGTH_MS )
+#define PE_MAX_FRAME_LENGTH         ( PE_MAX_FRAME_LENGTH_MS * PE_MAX_FS_KHZ )
+#define PE_MAX_FRAME_LENGTH_ST_1    ( PE_MAX_FRAME_LENGTH >> 2 )
+#define PE_MAX_FRAME_LENGTH_ST_2    ( PE_MAX_FRAME_LENGTH >> 1 )
+
+#define PE_MAX_LAG_MS               18           /* 18 ms -> 56 Hz */
+#define PE_MIN_LAG_MS               2            /* 2 ms -> 500 Hz */
+#define PE_MAX_LAG                  ( PE_MAX_LAG_MS * PE_MAX_FS_KHZ )
+#define PE_MIN_LAG                  ( PE_MIN_LAG_MS * PE_MAX_FS_KHZ )
+#define PE_D_SRCH_LENGTH            24
+#define PE_NB_STAGE3_LAGS           5
+#define PE_NB_CBKS_STAGE2           3
+#define PE_NB_CBKS_STAGE2_EXT       11
+#define PE_NB_CBKS_STAGE3_MAX       34
+#define PE_NB_CBKS_STAGE3_MID       24
+#define PE_NB_CBKS_STAGE3_MIN       16
+#define PE_NB_CBKS_STAGE3_10MS      12
+#define PE_NB_CBKS_STAGE2_10MS      3
+#define PE_SHORTLAG_BIAS            0.2f    /* for logarithmic weighting    */
+#define PE_PREVLAG_BIAS             0.2f    /* for logarithmic weighting    */
+#define PE_FLATCONTOUR_BIAS         0.05f
+#define SILK_PE_MIN_COMPLEX         0
+#define SILK_PE_MID_COMPLEX         1
+#define SILK_PE_MAX_COMPLEX         2
 
 #define silk_assert(COND)
 
@@ -611,18 +670,15 @@ typedef struct {
     int32_t LTP_scale_Q14;
 } silk_decoder_control;
 
+/* Decoder Super Struct */
+typedef struct {
+    silk_decoder_state          channel_state[ DECODER_NUM_CHANNELS ];
+    stereo_dec_state                sStereo;
+    int32_t                         nChannelsAPI;
+    int32_t                         nChannelsInternal;
+    int32_t                         prev_decode_only_middle;
+} silk_decoder;
 
-#if 0
-/**************************************/
-/* Get table of contents for a packet */
-/**************************************/
-int32_t silk_get_TOC(
-    const uint8_t      *payload,           /* I    Payload data                                */
-    const int32_t      nBytesIn,           /* I    Number of input bytes                       */
-    const int32_t      nFramesPerPayload,  /* I    Number of SILK frames per payload           */
-    silk_TOC_struct    *Silk_TOC           /* O    Type of content                             */
-);
-#endif
 
 
 
@@ -848,19 +904,7 @@ void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t le
 static void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA],
                                             const int32_t ind, const int32_t fac_Q16);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
-
-
-
-
-
-
-
-
-
-
-
-
-    void silk_NLSF_unpack(int16_t ec_ix[], uint8_t pred_Q8[], const silk_NLSF_CB_struct *psNLSF_CB,
+void silk_NLSF_unpack(int16_t ec_ix[], uint8_t pred_Q8[], const silk_NLSF_CB_struct *psNLSF_CB,
                           const int32_t CB1_index);
 void silk_NLSF_decode(int16_t *pNLSF_Q15, int8_t *NLSFIndices, const silk_NLSF_CB_struct   *psNLSF_CB);
 int32_t silk_decoder_set_fs(silk_decoder_state *psDec, int32_t fs_kHz, int32_t fs_API_Hz);
@@ -943,18 +987,7 @@ void silk_CNG_Reset(silk_decoder_state *psDec);
 void silk_CNG(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t length);
 void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR,
                          int32_t condCoding);
-
-
-
-
-
-
-
-
-
-
-
-
+void silk_CNG_Reset(silk_decoder_state *psDec);
 int32_t check_control_input(silk_EncControlStruct *encControl);
 int32_t silk_control_audio_bandwidth(silk_encoder_state *psEncC, silk_EncControlStruct *encControl);
 
@@ -970,6 +1003,15 @@ int32_t silk_Decode(void* decState, silk_DecControlStruct* decControl, int32_t l
                     ec_dec *psRangeDec, int16_t *samplesOut, int32_t *nSamplesOut, int arch);
 static void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
 void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d, int arch);
+static void silk_CNG_exc(int32_t exc_Q14[], int32_t exc_buf_Q14[], int32_t length, int32_t *rand_seed);
+void silk_decode_core(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t xq[],
+                      const int16_t pulses[MAX_FRAME_LENGTH], int arch);
+int32_t silk_decode_frame(silk_decoder_state *psDec, ec_dec *psRangeDec, int16_t pOut[], int32_t *pN, int32_t lostFlag,
+                          int32_t condCoding, int arch);
+void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz,
+                       const int32_t nb_subfr);
+
+
 
 #ifdef __cplusplus
 }

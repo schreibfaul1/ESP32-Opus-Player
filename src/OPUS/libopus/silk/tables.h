@@ -28,7 +28,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_TABLES_H
 #define SILK_TABLES_H
 
-#include "define.h"
 #include "../celt/celt.h"
 
 #ifdef __cplusplus
@@ -101,8 +100,8 @@ extern const uint8_t  silk_NLSF_interpolation_factor_iCDF[ 5 ];                 
 extern const int16_t  silk_Quantization_Offsets_Q10[ 2 ][ 2 ];                                   /*   8 */
 
 /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
-extern const int32_t  silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM ][ TRANSITION_NB ];           /*  60 */
-extern const int32_t  silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM ][ TRANSITION_NA ];           /*  60 */
+//extern const int32_t  silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM ][ TRANSITION_NB ];           /*  60 */
+//extern const int32_t  silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM ][ TRANSITION_NA ];           /*  60 */
 
 /* Rom table with cosine values */
 //extern const int16_t  silk_LSFCosTab_FIX_Q12[ LSF_COS_TAB_SZ_FIX + 1 ];                          /* 258 */

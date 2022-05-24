@@ -2,13 +2,13 @@
 #pragma once
 
 #include "../SigProc_FIX.h"
-#include "../define.h"
+
 #include "../tuning_parameters.h"
 #include <stdlib.h>
 #include "../silk.h"
 #include "../main.h"
 #include "../PLC.h"
-#include "../debug.h"
+
 #include "../pitch_est_defines.h"
 #include "../typedef.h"
 

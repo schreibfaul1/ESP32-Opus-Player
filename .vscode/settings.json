@@ -45,5 +45,6 @@
     "typedef.h": "c",
     "silk.h": "c",
     "random": "c"
-  }
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
 }

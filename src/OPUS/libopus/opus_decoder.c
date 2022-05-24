@@ -34,7 +34,7 @@
 #include "opus.h"
 #include "silk/silk.h"
 #include "opus_private.h"
-#include "silk/define.h"
+
 
 
 struct OpusDecoder {
