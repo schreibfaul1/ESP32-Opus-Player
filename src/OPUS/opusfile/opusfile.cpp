@@ -12,7 +12,6 @@
 
 //#ifdef HAVE_CONFIG_H
 #include "config.h"
-#include "Arduino.h"
 #include "internal.h"
 #include "opusfile.h"
 

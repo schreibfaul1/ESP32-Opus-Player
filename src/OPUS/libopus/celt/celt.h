@@ -34,6 +34,11 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+#include <limits.h>
+#include <assert.h>
+#include <string.h>
 #include "../opus_defines.h"
 #include "../opus_custom.h"
 

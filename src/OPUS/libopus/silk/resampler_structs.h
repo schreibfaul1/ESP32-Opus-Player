@@ -27,7 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef SILK_RESAMPLER_STRUCTS_H
 #define SILK_RESAMPLER_STRUCTS_H
-#include "Arduino.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

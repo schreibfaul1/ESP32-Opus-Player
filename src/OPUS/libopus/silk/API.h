@@ -28,10 +28,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_API_H
 #define SILK_API_H
 
+#include <stdint.h>
 #include "control.h"
 #include "typedef.h"
 #include "errors.h"
-#include "Arduino.h"
 #include "../celt/celt.h"
 
 #ifdef __cplusplus

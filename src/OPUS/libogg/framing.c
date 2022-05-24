@@ -23,10 +23,14 @@
 #include "config.h"
 //#endif
 
-#include "Arduino.h"
+#include <pgmspace.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
 #include "ogg.h"
 #include "crctable.h"
-#include <pgmspace.h>
+
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 

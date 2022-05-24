@@ -37,6 +37,10 @@
     "structs.h": "c",
     "define.h": "c",
     "tuning_parameters.h": "c",
-    "fixed.h": "c"
+    "fixed.h": "c",
+    "main.h": "c",
+    "control.h": "c",
+    "opus_custom.h": "c",
+    "stdint.h": "c"
   }
 }

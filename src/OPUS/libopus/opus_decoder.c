@@ -595,7 +595,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       return OPUS_BAD_ARG;
    /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
    if ((decode_fec || len==0 || data==NULL) && frame_size%(st->Fs/400)!=0){
-       log_i("OPUS_BAD_ARG %i", i);
        return OPUS_BAD_ARG;
    }
 
@@ -606,7 +605,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
          int ret;
          ret = opus_decode_frame(st, NULL, 0, pcm+pcm_count*st->channels, frame_size-pcm_count, 0);
          if (ret<0){
-            log_i("ret %i", ret);
             return ret;
          }
          pcm_count += ret;
@@ -615,10 +613,8 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       if (OPUS_CHECK_ARRAY(pcm, pcm_count*st->channels))
          OPUS_PRINT_INT(pcm_count);
       st->last_packet_duration = pcm_count;
-      log_i("pcm_count %i", pcm_count);
       return pcm_count;
    } else if (len<0){
-      log_i("OPUS_BAD_ARG %i", OPUS_BAD_ARG);
       return OPUS_BAD_ARG;
    }
    packet_mode = opus_packet_get_mode(data);
@@ -629,7 +625,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
    count = opus_packet_parse_impl(data, len, self_delimited, &toc, NULL,
                                   size, &offset, packet_offset);
    if (count<0){
-       log_i("count %i", count);
           return count;
    }
    data += offset;
@@ -641,7 +636,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       /* If no FEC can be present, run the PLC (recursive call) */
       if (frame_size < packet_frame_size || packet_mode == MODE_CELT_ONLY || st->mode == MODE_CELT_ONLY){
           ret = opus_decode_native(st, NULL, 0, pcm, frame_size, 0, 0, NULL, soft_clip);
-          log_i("ret %i", ret);
           return ret;
       }
       /* Otherwise, run the PLC on everything except the size for which we might have FEC */
@@ -652,7 +646,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
          if (ret<0)
          {
             st->last_packet_duration = duration_copy;
-            log_i("ret %i", ret);
             return ret;
          }
          assert(ret==frame_size-packet_frame_size);
@@ -665,7 +658,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       ret = opus_decode_frame(st, data, size[0], pcm+st->channels*(frame_size-packet_frame_size),
             packet_frame_size, 1);
       if (ret<0){
-          log_i("ret %i", ret);
           return ret;
       }
 
@@ -673,13 +665,11 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
          if (OPUS_CHECK_ARRAY(pcm, frame_size*st->channels))
             OPUS_PRINT_INT(frame_size);
          st->last_packet_duration = frame_size;
-         log_i("frame_size %i", frame_size);
-         return frame_size;
+          return frame_size;
       }
    }
 
    if (count*packet_frame_size > frame_size){
-       log_i("OPUS_BUFFER_TOO_SMALL %i", OPUS_BUFFER_TOO_SMALL);
         return OPUS_BUFFER_TOO_SMALL;
    }
 
@@ -697,7 +687,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       int ret;
       ret = opus_decode_frame(st, data, size[i], pcm+nb_samples*st->channels, frame_size-nb_samples, 0);
       if (ret<0){
-          log_i("ret %i", ret);
           return ret;
       }
 
@@ -708,7 +697,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
    st->last_packet_duration = nb_samples;
    if (OPUS_CHECK_ARRAY(pcm, nb_samples*st->channels))
       OPUS_PRINT_INT(nb_samples);
-//   log_i("len %i, nb_samples %i", len, nb_samples);
    return nb_samples;
 }
 
@@ -716,7 +704,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
 int opus_decode(OpusDecoder *st, const unsigned char *data,
       int32_t len, int16_t *pcm, int frame_size, int decode_fec)
 {
-   log_i("len %i frame_size %i decode_fec %i", len, frame_size, decode_fec);
    if(frame_size<=0)
       return OPUS_BAD_ARG;
    return opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, NULL, 0);

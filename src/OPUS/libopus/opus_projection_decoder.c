@@ -113,7 +113,6 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
   expected_matrix_size = nb_input_streams * channels * sizeof(int16_t);
   if (expected_matrix_size != demixing_matrix_size)
   {
-    
     return OPUS_BAD_ARG;
   }
 
@@ -131,7 +130,6 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
     mapping_matrix_get_size(channels, nb_input_streams);
   if (!st->demixing_matrix_size_in_bytes)
   {
-    
     return OPUS_BAD_ARG;
   }
 
@@ -144,7 +142,6 @@ int opus_projection_decoder_init(OpusProjectionDecoder *st, int32_t Fs,
 
   ret = opus_multistream_decoder_init(
     get_multistream_decoder(st), Fs, channels, streams, coupled_streams, mapping);
-  
   return ret;
 }
 
@@ -189,7 +186,6 @@ int opus_projection_decode(OpusProjectionDecoder *st, const unsigned char *data,
                            int32_t len, int16_t *pcm, int frame_size,
                            int decode_fec)
 {
-    log_i("len %i", len);
   return opus_multistream_decode_native(get_multistream_decoder(st), data, len,
     pcm, opus_projection_copy_channel_out_short, frame_size, decode_fec, 0,
     get_dec_demixing_matrix(st));

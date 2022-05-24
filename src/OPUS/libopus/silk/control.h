@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_CONTROL_H
 
 #include "typedef.h"
-#include "Arduino.h"
+
 
 #ifdef __cplusplus
 extern "C"

@@ -35,8 +35,8 @@
 #ifndef OPUS_CUSTOM_H
 #define OPUS_CUSTOM_H
 
+#include <stdint.h>
 #include "opus_defines.h"
-#include "Arduino.h"
 
 #ifdef __cplusplus
 extern "C" {

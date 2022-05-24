@@ -5,11 +5,11 @@ static const int16_t freq_table_Q16[27] = {
     12111, 9804, 8235, 7100, 6239, 5565, 5022, 4575, 4202, 3885, 3612, 3375, 3167, 2984,
     2820,  2674, 2542, 2422, 2313, 2214, 2123, 2038, 1961, 1889, 1822, 1760, 1702,
 };
-
-void silk_apply_sine_window(int16_t px_win[],   /* O    Pointer to windowed signal                                  */
-                            const int16_t px[], /* I    Pointer to input signal                                     */
-                            const int32_t win_type, /* I    Selects a window type */
-                            const int32_t length /* I    Window length, multiple of 4                                */
+//----------------------------------------------------------------------------------------------------------------------
+void silk_apply_sine_window(int16_t px_win[],       /* O    Pointer to windowed signal                               */
+                            const int16_t px[],     /* I    Pointer to input signal                                  */
+                            const int32_t win_type, /* I    Selects a window type                                    */
+                            const int32_t length    /* I    Window length, multiple of 4                             */
 ) {
     int32_t k, f_Q16, c_Q16;
     int32_t S0_Q16, S1_Q16;
@@ -56,19 +56,21 @@ void silk_apply_sine_window(int16_t px_win[],   /* O    Pointer to windowed sign
         S1_Q16 = silk_min(S1_Q16, ((int32_t)1 << 16));
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Compute autocorrelation */
-void silk_autocorr(int32_t *results,            /* O    Result (length correlationCount)                            */
-                   int32_t *scale,              /* O    Scaling of the correlation vector                           */
-                   const int16_t *inputData,    /* I    Input data to correlate                                     */
-                   const int32_t inputDataSize, /* I    Length of input                                             */
-                   const int32_t correlationCount, /* I    Number of correlation taps to compute */
-                   int arch /* I    Run-time architecture                                       */
+void silk_autocorr(int32_t *results,                /* O    Result (length correlationCount)      */
+                   int32_t *scale,                  /* O    Scaling of the correlation vector     */
+                   const int16_t *inputData,        /* I    Input data to correlate               */
+                   const int32_t inputDataSize,     /* I    Length of input                       */
+                   const int32_t correlationCount,  /* I    Number of correlation taps to compute */
+                   int arch                         /* I    Run-time architecture                 */
 ) {
     int32_t corrCount;
     corrCount = silk_min_int(inputDataSize, correlationCount);
     *scale = _celt_autocorr(inputData, results, NULL, 0, corrCount - 1, inputDataSize, arch);
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Compute reflection coefficients from input signal */
 void silk_burg_modified_c(
@@ -312,15 +314,16 @@ void silk_burg_modified_c(
     free(CAb);
     free(xcorr);
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Calculates correlation vector X'*t */
-void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1] used to form data matrix X      */
+void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1] used to form data matrix X */
                          const int16_t *t,      /* I    Target vector [L]      */
                          const int32_t L,       /* I    Length of vectors       */
                          const int32_t order,   /* I    Max lag for correlation   */
-                         int32_t *Xt,           /* O    Pointer to X'*t correlation vector [order]           */
+                         int32_t *Xt,           /* O    Pointer to X'*t correlation vector [order]          */
                          const int32_t rshifts, /* I    Right shifts of correlations */
-                         int arch /* I    Run-time architecture                                                       */
+                         int arch /* I    Run-time architecture                                             */
 ) {
     int32_t lag, i;
     const int16_t *ptr1, *ptr2;
@@ -347,15 +350,16 @@ void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1]
         }
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Calculates correlation matrix X'*X */
 void silk_corrMatrix_FIX(const int16_t *x,    /* I    x vector [L + order - 1] used to form data matrix X    */
                          const int32_t L,     /* I    Length of vectors     */
                          const int32_t order, /* I    Max lag for correlation */
-                         int32_t *XX,         /* O    Pointer to X'*X correlation matrix [ order x order ]         */
+                         int32_t *XX,         /* O    Pointer to X'*X correlation matrix [ order x order ]   */
                          int32_t *nrg,        /* O    Energy of x vector        */
                          int32_t *rshifts,    /* O    Right shifts of correlations and energy    */
-                         int arch /* I    Run-time architecture                                                       */
+                         int arch /* I    Run-time architecture                                              */
 ) {
     int32_t i, j, lag;
     int32_t energy;
@@ -421,17 +425,18 @@ void silk_corrMatrix_FIX(const int16_t *x,    /* I    x vector [L + order - 1] u
         }
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
-/* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
-static OPUS_INLINE void silk_LBRR_encode_FIX(
+/* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate              */
+static inline void silk_LBRR_encode_FIX(
     silk_encoder_state_FIX *psEnc,       /* I/O  Pointer to Silk FIX encoder state       */
     silk_encoder_control_FIX *psEncCtrl, /* I/O  Pointer to Silk FIX encoder control struct */
-    const int16_t x16[], /* I    Input signal                                                                */
-    int32_t condCoding   /* I    The type of conditional coding used so far for this frame                   */
+    const int16_t x16[], /* I    Input signal                                                              */
+    int32_t condCoding   /* I    The type of conditional coding used so far for this frame                 */
 );
 
-void silk_encode_do_VAD_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to Silk FIX encoder state */
-                            int32_t activity               /* I    Decision of Opus voice activity detector               */
+void silk_encode_do_VAD_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to Silk FIX encoder state        */
+                            int32_t activity               /* I    Decision of Opus voice activity detector */
 ) {
     const int32_t activity_threshold = SILK_FIX_CONST(SPEECH_ACTIVITY_DTX_THRES, 8);
 
@@ -464,16 +469,14 @@ void silk_encode_do_VAD_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to Si
         psEnc->sCmn.VAD_flags[psEnc->sCmn.nFramesEncoded] = 1;
     }
 }
-
-/****************/
+//----------------------------------------------------------------------------------------------------------------------
 /* Encode frame */
-/****************/
 int32_t silk_encode_frame_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to Silk FIX encoder state */
-                              int32_t *pnBytesOut,           /* O    Pointer to number of payload bytes;           */
+                              int32_t *pnBytesOut,           /* O    Pointer to number of payload bytes;        */
                               ec_enc *psRangeEnc,            /* I/O  compressor data structure            */
-                              int32_t condCoding,            /* I    The type of conditional coding to use            */
-                              int32_t maxBits,               /* I    If > 0: maximum number of output bits               */
-                              int32_t useCBR                 /* I    Flag to force constant-bitrate operation                 */
+                              int32_t condCoding,            /* I    The type of conditional coding to use      */
+                              int32_t maxBits,               /* I    If > 0: maximum number of output bits      */
+                              int32_t useCBR                 /* I    Flag to force constant-bitrate operation   */
 ) {
     silk_encoder_control_FIX sEncCtrl;
     int32_t i, iter, maxIter, found_upper, found_lower, ret = 0;
@@ -522,19 +525,13 @@ int32_t silk_encode_frame_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to 
         /* start of pitch LPC residual frame */
         res_pitch_frame = res_pitch + psEnc->sCmn.ltp_mem_length;
 
-        /*****************************************/
         /* Find pitch lags, initial LPC analysis */
-        /*****************************************/
         silk_find_pitch_lags_FIX(psEnc, &sEncCtrl, res_pitch, x_frame - psEnc->sCmn.ltp_mem_length, psEnc->sCmn.arch);
 
-        /************************/
         /* Noise shape analysis */
-        /************************/
         silk_noise_shape_analysis_FIX(psEnc, &sEncCtrl, res_pitch_frame, x_frame, psEnc->sCmn.arch);
 
-        /***************************************************/
         /* Find linear prediction coefficients (LPC + LTP) */
-        /***************************************************/
         silk_find_pred_coefs_FIX(psEnc, &sEncCtrl, res_pitch_frame, x_frame, condCoding);
 
         /****************************************/
@@ -773,13 +770,14 @@ int32_t silk_encode_frame_FIX(silk_encoder_state_FIX *psEnc, /* I/O  Pointer to 
 
     return ret;
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
-static OPUS_INLINE void silk_LBRR_encode_FIX(
+static void silk_LBRR_encode_FIX(
     silk_encoder_state_FIX *psEnc,       /* I/O  Pointer to Silk FIX encoder state       */
     silk_encoder_control_FIX *psEncCtrl, /* I/O  Pointer to Silk FIX encoder control struct */
-    const int16_t x16[], /* I    Input signal                                                                */
-    int32_t condCoding   /* I    The type of conditional coding used so far for this frame                   */
+    const int16_t x16[], /* I    Input signal                                                           */
+    int32_t condCoding   /* I    The type of conditional coding used so far for this frame              */
 ) {
     int32_t TempGains_Q16[MAX_NB_SUBFR];
     SideInfoIndices *psIndices_LBRR = &psEnc->sCmn.indices_LBRR[psEnc->sCmn.nFramesEncoded];
@@ -832,6 +830,7 @@ static OPUS_INLINE void silk_LBRR_encode_FIX(
         silk_memcpy(psEncCtrl->Gains_Q16, TempGains_Q16, psEnc->sCmn.nb_subfr * sizeof(int32_t));
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Finds LPC vector from correlations, and converts to NLSF */
 void silk_find_LPC_FIX(silk_encoder_state *psEncC,  /* I/O  Encoder state  */
@@ -951,14 +950,15 @@ void silk_find_LPC_FIX(silk_encoder_state *psEncC,  /* I/O  Encoder state  */
     assert(psEncC->indices.NLSFInterpCoef_Q2 == 4 ||
            (psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR));
 }
+//----------------------------------------------------------------------------------------------------------------------
 
-void silk_find_LTP_FIX(int32_t XXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER], /* O    Correlation matrix */
-                       int32_t xXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER],             /* O    Correlation vector             */
-                       const int16_t r_ptr[],                                   /* I    Residual signal after LPC                                   */
-                       const int32_t lag[MAX_NB_SUBFR],                         /* I    LTP lags                         */
-                       const int32_t subfr_length,                              /* I    Subframe length                              */
-                       const int32_t nb_subfr,                                  /* I    Number of subframes                                  */
-                       int arch /* I    Run-time architecture                                                       */
+void silk_find_LTP_FIX(int32_t XXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER], /* O    Correlation matrix           */
+                       int32_t xXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER],             /* O    Correlation vector           */
+                       const int16_t r_ptr[],                                   /* I    Residual signal after LPC    */
+                       const int32_t lag[MAX_NB_SUBFR],                         /* I    LTP lags                     */
+                       const int32_t subfr_length,                              /* I    Subframe length              */
+                       const int32_t nb_subfr,                                  /* I    Number of subframes          */
+                       int arch                                                 /* I    Run-time architecture        */
 ) {
     int32_t i, k, extra_shifts;
     int32_t xx_shifts, xX_shifts, XX_shifts;
@@ -1017,6 +1017,7 @@ void silk_find_LTP_FIX(int32_t XXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER], 
         xXLTP_Q17_ptr += LTP_ORDER;
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Find pitch lags */
 void silk_find_pitch_lags_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state       */
@@ -1125,12 +1126,13 @@ void silk_find_pitch_lags_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encod
         psEnc->LTPCorr_Q15 = 0;
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
-void silk_find_pred_coefs_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state       */
-                              silk_encoder_control_FIX *psEncCtrl, /* I/O  encoder control */
+void silk_find_pred_coefs_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state                          */
+                              silk_encoder_control_FIX *psEncCtrl, /* I/O  encoder control                        */
                               const int16_t res_pitch[],           /* I    Residual from pitch analysis           */
-                              const int16_t x[],                   /* I    Speech signal                   */
-                              int32_t condCoding                   /* I    The type of conditional coding to use                   */
+                              const int16_t x[],                   /* I    Speech signal                          */
+                              int32_t condCoding                   /* I    The type of conditional coding to use  */
 ) {
     int32_t i;
     int32_t invGains_Q16[MAX_NB_SUBFR], local_gains[MAX_NB_SUBFR];
@@ -1238,8 +1240,9 @@ void silk_find_pred_coefs_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encod
     /* Copy to prediction struct for use in next frame for interpolation */
     silk_memcpy(psEnc->sCmn.prev_NLSFq_Q15, NLSF_Q15, sizeof(psEnc->sCmn.prev_NLSFq_Q15));
 }
+//----------------------------------------------------------------------------------------------------------------------
 
-/* Step up function, converts reflection coefficients to prediction coefficients */
+/* Step up function, converts reflection coefficients to prediction coefficients                         */
 void silk_k2a(int32_t *A_Q24,        /* O    Prediction coefficients [order] Q24                         */
               const int16_t *rc_Q15, /* I    Reflection coefficients [order] Q15                         */
               const int32_t order    /* I    Prediction order                                            */
@@ -1258,6 +1261,7 @@ void silk_k2a(int32_t *A_Q24,        /* O    Prediction coefficients [order] Q24
         A_Q24[k] = -silk_LSHIFT((int32_t)rc_Q15[k], 9);
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Step up function, converts reflection coefficients to prediction coefficients */
 void silk_k2a_Q16(int32_t *A_Q24,        /* O    Prediction coefficients [order] Q24                         */
@@ -1278,14 +1282,15 @@ void silk_k2a_Q16(int32_t *A_Q24,        /* O    Prediction coefficients [order]
         A_Q24[k] = -silk_LSHIFT(rc, 8);
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 void silk_LTP_analysis_filter_FIX(
-    int16_t *LTP_res, /* O    LTP residual signal of length MAX_NB_SUBFR * ( pre_length + subfr_length )  */
-    const int16_t *x, /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
+    int16_t *LTP_res, /* O    LTP residual signal of length MAX_NB_SUBFR * ( pre_length + subfr_length )            */
+    const int16_t *x, /* I    Pointer to input signal with at least max( pitchL ) preceding samples                 */
     const int16_t
-        LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR], /* I    LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe */
-    const int32_t pitchL[MAX_NB_SUBFR],        /* I    Pitch lag, one for each subframe        */
-    const int32_t invGains_Q16[MAX_NB_SUBFR],  /* I    Inverse quantization gains, one for each subframe  */
+        LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR], /* I    LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe    */
+    const int32_t pitchL[MAX_NB_SUBFR],        /* I    Pitch lag, one for each subframe                             */
+    const int32_t invGains_Q16[MAX_NB_SUBFR],  /* I    Inverse quantization gains, one for each subframe            */
     const int32_t subfr_length, /* I    Length of each subframe                                                     */
     const int32_t nb_subfr,     /* I    Number of subframes                                                         */
     const int32_t pre_length    /* I    Length of the preceding samples starting at &x[0] for each subframe         */
@@ -1334,11 +1339,12 @@ void silk_LTP_analysis_filter_FIX(
         x_ptr += subfr_length;
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Calculation of LTP state scaling */
-void silk_LTP_scale_ctrl_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state       */
-                             silk_encoder_control_FIX *psEncCtrl, /* I/O  encoder control */
-                             int32_t condCoding                   /* I    The type of conditional coding to use                   */
+void silk_LTP_scale_ctrl_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state                          */
+                             silk_encoder_control_FIX *psEncCtrl, /* I/O  encoder control                        */
+                             int32_t condCoding                   /* I    The type of conditional coding to use  */
 ) {
     int32_t round_loss;
 
@@ -1353,12 +1359,13 @@ void silk_LTP_scale_ctrl_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encode
     }
     psEncCtrl->LTP_scale_Q14 = silk_LTPScales_table_Q14[psEnc->sCmn.indices.LTP_scaleIndex];
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Compute gain to make warped filter coefficients have a zero mean log frequency response on a   */
 /* non-warped frequency scale. (So that it can be implemented with a minimum-phase monic filter.) */
 /* Note: A monic filter is one with the first coefficient equal to 1.0. In Silk we omit the first */
 /* coefficient in an array of coefficients, for monic filters.                                    */
-static OPUS_INLINE int32_t warped_gain(/* gain in Q16*/
+static inline int32_t warped_gain(/* gain in Q16*/
                                        const int32_t *coefs_Q24, int32_t lambda_Q16, int32_t order) {
     int32_t i;
     int32_t gain_Q24;
@@ -1371,10 +1378,11 @@ static OPUS_INLINE int32_t warped_gain(/* gain in Q16*/
     gain_Q24 = silk_SMLAWB(SILK_FIX_CONST(1.0, 24), gain_Q24, -lambda_Q16);
     return silk_INVERSE32_varQ(gain_Q24, 40);
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
 /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
-static OPUS_INLINE void limit_warped_coefs(int32_t *coefs_Q24, int32_t lambda_Q16, int32_t limit_Q24, int32_t order) {
+static inline void limit_warped_coefs(int32_t *coefs_Q24, int32_t lambda_Q16, int32_t limit_Q24, int32_t order) {
     int32_t i, iter, ind = 0;
     int32_t tmp, maxabs_Q24, chirp_Q16, gain_Q16;
     int32_t nom_Q16, den_Q24;
@@ -1440,13 +1448,13 @@ static OPUS_INLINE void limit_warped_coefs(int32_t *coefs_Q24, int32_t lambda_Q1
         }
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /* Disable MIPS version until it's updated. */
 
 /**************************************************************/
 /* Compute noise shaping coefficients and initial gain values */
 /**************************************************************/
-#ifndef OVERRIDE_silk_noise_shape_analysis_FIX
 void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  Encoder state FIX       */
                                    silk_encoder_control_FIX *psEncCtrl, /* I/O  Encoder control FIX */
                                    const int16_t *pitch_res,            /* I    LPC residual from pitch analysis            */
@@ -1725,30 +1733,7 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
         psEncCtrl->Tilt_Q14[k] = (int32_t)silk_RSHIFT_ROUND(psShapeSt->Tilt_smth_Q16, 2);
     }
 }
-#endif /* OVERRIDE_silk_noise_shape_analysis_FIX */
-
-/************************************************************/
-/* Internally used functions                                */
-/************************************************************/
-static void silk_P_Ana_calc_corr_st3(
-    silk_pe_stage3_vals cross_corr_st3[],              /* O 3 DIM correlation array */
-    const int16_t  frame[],                         /* I vector to correlate         */
-    int32_t          start_lag,                       /* I lag offset to search around */
-    int32_t          sf_length,                       /* I length of a 5 ms subframe   */
-    int32_t          nb_subfr,                        /* I number of subframes         */
-    int32_t          complexity,                      /* I Complexity setting          */
-    int               arch                             /* I Run-time architecture       */
-);
-
-static void silk_P_Ana_calc_energy_st3(
-    silk_pe_stage3_vals energies_st3[],                /* O 3 DIM energy array */
-    const int16_t  frame[],                         /* I vector to calc energy in    */
-    int32_t          start_lag,                       /* I lag offset to search around */
-    int32_t          sf_length,                       /* I length of one 5 ms subframe */
-    int32_t          nb_subfr,                        /* I number of subframes         */
-    int32_t          complexity,                      /* I Complexity setting          */
-    int               arch                             /* I Run-time architecture       */
-);
+//----------------------------------------------------------------------------------------------------------------------
 
 /*************************************************************/
 /*      FIXED POINT CORE PITCH ANALYSIS FUNCTION             */
@@ -1852,7 +1837,6 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         frame_4kHz[ i ] = silk_ADD_SAT16( frame_4kHz[ i ], frame_4kHz[ i - 1 ] );
     }
 
-
     /******************************************************************************
     * FIRST STAGE, operating in 4 khz
     ******************************************************************************/
@@ -1934,7 +1918,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         *LTPCorr_Q15  = 0;
         *lagIndex     = 0;
         *contourIndex = 0;
-        
+
         return 1;
     }
 
@@ -2120,7 +2104,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         *LTPCorr_Q15  = 0;
         *lagIndex     = 0;
         *contourIndex = 0;
-        
+
         return 1;
     }
 
@@ -2226,9 +2210,10 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
     }
     assert( *lagIndex >= 0 );
     /* return as voiced */
-    
+
     return 0;
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /***********************************************************************
  * Calculates the correlations used in stage 3 search. In order to cover
@@ -2308,8 +2293,8 @@ static void silk_P_Ana_calc_corr_st3(
         }
         target_ptr += sf_length;
     }
-    
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 /********************************************************************/
 /* Calculate the energies for first two subframes. The energies are */
@@ -2392,3 +2377,482 @@ static void silk_P_Ana_calc_energy_st3(
         target_ptr += sf_length;
     }
 }
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Processing of gains */
+void silk_process_gains_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  Encoder state       */
+                            silk_encoder_control_FIX *psEncCtrl, /* I/O  Encoder control */
+                            int32_t condCoding                   /* I    The type of conditional coding to use                   */
+) {
+    silk_shape_state_FIX *psShapeSt = &psEnc->sShape;
+    int32_t k;
+    int32_t s_Q16, InvMaxSqrVal_Q16, gain, gain_squared, ResNrg, ResNrgPart, quant_offset_Q10;
+
+    /* Gain reduction when LTP coding gain is high */
+    if (psEnc->sCmn.indices.signalType == TYPE_VOICED) {
+        /*s = -0.5f * silk_sigmoid( 0.25f * ( psEncCtrl->LTPredCodGain - 12.0f ) ); */
+        s_Q16 = -silk_sigm_Q15(silk_RSHIFT_ROUND(psEncCtrl->LTPredCodGain_Q7 - SILK_FIX_CONST(12.0, 7), 4));
+        for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
+            psEncCtrl->Gains_Q16[k] = silk_SMLAWB(psEncCtrl->Gains_Q16[k], psEncCtrl->Gains_Q16[k], s_Q16);
+        }
+    }
+
+    /* Limit the quantized signal */
+    /* InvMaxSqrVal = pow( 2.0f, 0.33f * ( 21.0f - SNR_dB ) ) / subfr_length; */
+    InvMaxSqrVal_Q16 = silk_DIV32_16(
+        silk_log2lin(silk_SMULWB(SILK_FIX_CONST(21 + 16 / 0.33, 7) - psEnc->sCmn.SNR_dB_Q7, SILK_FIX_CONST(0.33, 16))),
+        psEnc->sCmn.subfr_length);
+
+    for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
+        /* Soft limit on ratio residual energy and squared gains */
+        ResNrg = psEncCtrl->ResNrg[k];
+        ResNrgPart = silk_SMULWW(ResNrg, InvMaxSqrVal_Q16);
+        if (psEncCtrl->ResNrgQ[k] > 0) {
+            ResNrgPart = silk_RSHIFT_ROUND(ResNrgPart, psEncCtrl->ResNrgQ[k]);
+        } else {
+            if (ResNrgPart >= silk_RSHIFT(silk_int32_MAX, -psEncCtrl->ResNrgQ[k])) {
+                ResNrgPart = silk_int32_MAX;
+            } else {
+                ResNrgPart = silk_LSHIFT(ResNrgPart, -psEncCtrl->ResNrgQ[k]);
+            }
+        }
+        gain = psEncCtrl->Gains_Q16[k];
+        gain_squared = silk_ADD_SAT32(ResNrgPart, silk_SMMUL(gain, gain));
+        if (gain_squared < silk_int16_MAX) {
+            /* recalculate with higher precision */
+            gain_squared = silk_SMLAWW(silk_LSHIFT(ResNrgPart, 16), gain, gain);
+            silk_assert(gain_squared > 0);
+            gain = silk_SQRT_APPROX(gain_squared); /* Q8   */
+            gain = silk_min(gain, silk_int32_MAX >> 8);
+            psEncCtrl->Gains_Q16[k] = silk_LSHIFT_SAT32(gain, 8); /* Q16  */
+        } else {
+            gain = silk_SQRT_APPROX(gain_squared); /* Q0   */
+            gain = silk_min(gain, silk_int32_MAX >> 16);
+            psEncCtrl->Gains_Q16[k] = silk_LSHIFT_SAT32(gain, 16); /* Q16  */
+        }
+    }
+
+    /* Save unquantized gains and gain Index */
+    silk_memcpy(psEncCtrl->GainsUnq_Q16, psEncCtrl->Gains_Q16, psEnc->sCmn.nb_subfr * sizeof(int32_t));
+    psEncCtrl->lastGainIndexPrev = psShapeSt->LastGainIndex;
+
+    /* Quantize gains */
+    silk_gains_quant(psEnc->sCmn.indices.GainsIndices, psEncCtrl->Gains_Q16, &psShapeSt->LastGainIndex,
+                     condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr);
+
+    /* Set quantizer offset for voiced signals. Larger offset when LTP coding gain is low or tilt is high (ie low-pass)
+     */
+    if (psEnc->sCmn.indices.signalType == TYPE_VOICED) {
+        if (psEncCtrl->LTPredCodGain_Q7 + silk_RSHIFT(psEnc->sCmn.input_tilt_Q15, 8) > SILK_FIX_CONST(1.0, 7)) {
+            psEnc->sCmn.indices.quantOffsetType = 0;
+        } else {
+            psEnc->sCmn.indices.quantOffsetType = 1;
+        }
+    }
+
+    /* Quantizer boundary adjustment */
+    quant_offset_Q10 =
+        silk_Quantization_Offsets_Q10[psEnc->sCmn.indices.signalType >> 1][psEnc->sCmn.indices.quantOffsetType];
+    psEncCtrl->Lambda_Q10 =
+        SILK_FIX_CONST(LAMBDA_OFFSET, 10) +
+        silk_SMULBB(SILK_FIX_CONST(LAMBDA_DELAYED_DECISIONS, 10), psEnc->sCmn.nStatesDelayedDecision) +
+        silk_SMULWB(SILK_FIX_CONST(LAMBDA_SPEECH_ACT, 18), psEnc->sCmn.speech_activity_Q8) +
+        silk_SMULWB(SILK_FIX_CONST(LAMBDA_INPUT_QUALITY, 12), psEncCtrl->input_quality_Q14) +
+        silk_SMULWB(SILK_FIX_CONST(LAMBDA_CODING_QUALITY, 12), psEncCtrl->coding_quality_Q14) +
+        silk_SMULWB(SILK_FIX_CONST(LAMBDA_QUANT_OFFSET, 16), quant_offset_Q10);
+
+    silk_assert(psEncCtrl->Lambda_Q10 > 0);
+    silk_assert(psEncCtrl->Lambda_Q10 < SILK_FIX_CONST(2, 10));
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Add noise to matrix diagonal */
+void silk_regularize_correlations_FIX(int32_t *XX,   /* I/O  Correlation matrices   */
+                                      int32_t *xx,   /* I/O  Correlation values   */
+                                      int32_t noise, /* I    Noise to add */
+                                      int32_t D      /* I    Dimension of XX      */
+) {
+    int32_t i;
+    for (i = 0; i < D; i++) {
+        matrix_ptr(&XX[0], i, i, D) = silk_ADD32(matrix_ptr(&XX[0], i, i, D), noise);
+    }
+    xx[0] += noise;
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Calculates residual energies of input subframes where all subframes have LPC_order   */
+/* of preceding samples                                                                 */
+void silk_residual_energy_FIX(int32_t nrgs[MAX_NB_SUBFR],        /* O    Residual energy per subframe        */
+                              int32_t nrgsQ[MAX_NB_SUBFR],       /* O    Q value per subframe       */
+                              const int16_t x[],                 /* I    Input signal                 */
+                              int16_t a_Q12[2][MAX_LPC_ORDER],   /* I    AR coefs for each frame half   */
+                              const int32_t gains[MAX_NB_SUBFR], /* I    Quantization gains */
+                              const int32_t subfr_length,        /* I    Subframe length        */
+                              const int32_t nb_subfr,            /* I    Number of subframes            */
+                              const int32_t LPC_order,           /* I    LPC order           */
+                              int arch                           /* I    Run-time architecture                           */
+) {
+    int32_t offset, i, j, rshift, lz1, lz2;
+    int16_t *LPC_res_ptr;
+    VARDECL(int16_t, LPC_res);
+    const int16_t *x_ptr;
+    int32_t tmp32;
+    SAVE_STACK;
+
+    x_ptr = x;
+    offset = LPC_order + subfr_length;
+
+    /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
+    ALLOC(LPC_res, (MAX_NB_SUBFR >> 1) * offset, int16_t);
+    assert((nb_subfr >> 1) * (MAX_NB_SUBFR >> 1) == nb_subfr);
+    for (i = 0; i < nb_subfr >> 1; i++) {
+        /* Calculate half frame LPC residual signal including preceding samples */
+        silk_LPC_analysis_filter(LPC_res, x_ptr, a_Q12[i], (MAX_NB_SUBFR >> 1) * offset, LPC_order, arch);
+
+        /* Point to first subframe of the just calculated LPC residual signal */
+        LPC_res_ptr = LPC_res + LPC_order;
+        for (j = 0; j < (MAX_NB_SUBFR >> 1); j++) {
+            /* Measure subframe energy */
+            silk_sum_sqr_shift(&nrgs[i * (MAX_NB_SUBFR >> 1) + j], &rshift, LPC_res_ptr, subfr_length);
+
+            /* Set Q values for the measured energy */
+            nrgsQ[i * (MAX_NB_SUBFR >> 1) + j] = -rshift;
+
+            /* Move to next subframe */
+            LPC_res_ptr += offset;
+        }
+        /* Move to next frame half */
+        x_ptr += (MAX_NB_SUBFR >> 1) * offset;
+    }
+
+    /* Apply the squared subframe gains */
+    for (i = 0; i < nb_subfr; i++) {
+        /* Fully upscale gains and energies */
+        lz1 = silk_CLZ32(nrgs[i]) - 1;
+        lz2 = silk_CLZ32(gains[i]) - 1;
+
+        tmp32 = silk_LSHIFT32(gains[i], lz2);
+
+        /* Find squared gains */
+        tmp32 = silk_SMMUL(tmp32, tmp32); /* Q( 2 * lz2 - 32 )*/
+
+        /* Scale energies */
+        nrgs[i] = silk_SMMUL(tmp32, silk_LSHIFT32(nrgs[i], lz1)); /* Q( nrgsQ[ i ] + lz1 + 2 * lz2 - 32 - 32 )*/
+        nrgsQ[i] += lz1 + 2 * lz2 - 32 - 32;
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
+int32_t silk_residual_energy16_covar_FIX(const int16_t *c,   /* I    Prediction vector   */
+                                         const int32_t *wXX, /* I    Correlation matrix */
+                                         const int32_t *wXx, /* I    Correlation vector */
+                                         int32_t wxx,        /* I    Signal energy        */
+                                         int32_t D,          /* I    Dimension          */
+                                         int32_t cQ          /* I    Q value for c vector 0 - 15          */
+) {
+    int32_t i, j, lshifts, Qxtra;
+    int32_t c_max, w_max, tmp, tmp2, nrg;
+    int32_t cn[MAX_MATRIX_SIZE];
+    const int32_t *pRow;
+
+    /* Safety checks */
+    assert(D >= 0);
+    assert(D <= 16);
+    assert(cQ > 0);
+    assert(cQ < 16);
+
+    lshifts = 16 - cQ;
+    Qxtra = lshifts;
+
+    c_max = 0;
+    for (i = 0; i < D; i++) {
+        c_max = silk_max_32(c_max, silk_abs((int32_t)c[i]));
+    }
+    Qxtra = silk_min_int(Qxtra, silk_CLZ32(c_max) - 17);
+
+    w_max = silk_max_32(wXX[0], wXX[D * D - 1]);
+    Qxtra = silk_min_int(Qxtra, silk_CLZ32(silk_MUL(D, silk_RSHIFT(silk_SMULWB(w_max, c_max), 4))) - 5);
+    Qxtra = silk_max_int(Qxtra, 0);
+    for (i = 0; i < D; i++) {
+        cn[i] = silk_LSHIFT((int32_t)c[i], Qxtra);
+        silk_assert(silk_abs(cn[i]) <= (silk_int16_MAX + 1)); /* Check that silk_SMLAWB can be used */
+    }
+    lshifts -= Qxtra;
+
+    /* Compute wxx - 2 * wXx * c */
+    tmp = 0;
+    for (i = 0; i < D; i++) {
+        tmp = silk_SMLAWB(tmp, wXx[i], cn[i]);
+    }
+    nrg = silk_RSHIFT(wxx, 1 + lshifts) - tmp; /* Q: -lshifts - 1 */
+
+    /* Add c' * wXX * c, assuming wXX is symmetric */
+    tmp2 = 0;
+    for (i = 0; i < D; i++) {
+        tmp = 0;
+        pRow = &wXX[i * D];
+        for (j = i + 1; j < D; j++) {
+            tmp = silk_SMLAWB(tmp, pRow[j], cn[j]);
+        }
+        tmp = silk_SMLAWB(tmp, silk_RSHIFT(pRow[i], 1), cn[i]);
+        tmp2 = silk_SMLAWB(tmp2, tmp, cn[i]);
+    }
+    nrg = silk_ADD_LSHIFT32(nrg, tmp2, lshifts); /* Q: -lshifts - 1 */
+
+    /* Keep one bit free always, because we add them for LSF interpolation */
+    if (nrg < 1) {
+        nrg = 1;
+    } else if (nrg > silk_RSHIFT(silk_int32_MAX, lshifts + 2)) {
+        nrg = silk_int32_MAX >> 1;
+    } else {
+        nrg = silk_LSHIFT(nrg, lshifts + 1); /* Q0 */
+    }
+    return nrg;
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Faster than schur64(), but much less accurate.                       */
+/* uses SMLAWB(), requiring armv5E and higher.                          */
+int32_t silk_schur(                    /* O    Returns residual energy                                     */
+                   int16_t *rc_Q15,    /* O    reflection coefficients [order] Q15                         */
+                   const int32_t *c,   /* I    correlations [order+1]                                      */
+                   const int32_t order /* I    prediction order                                            */
+) {
+    int32_t k, n, lz;
+    int32_t C[SILK_MAX_ORDER_LPC + 1][2];
+    int32_t Ctmp1, Ctmp2, rc_tmp_Q15;
+
+    assert(order >= 0 && order <= SILK_MAX_ORDER_LPC);
+
+    /* Get number of leading zeros */
+    lz = silk_CLZ32(c[0]);
+
+    /* Copy correlations and adjust level to Q30 */
+    k = 0;
+    if (lz < 2) {
+        /* lz must be 1, so shift one to the right */
+        do {
+            C[k][0] = C[k][1] = silk_RSHIFT(c[k], 1);
+        } while (++k <= order);
+    } else if (lz > 2) {
+        /* Shift to the left */
+        lz -= 2;
+        do {
+            C[k][0] = C[k][1] = silk_LSHIFT(c[k], lz);
+        } while (++k <= order);
+    } else {
+        /* No need to shift */
+        do {
+            C[k][0] = C[k][1] = c[k];
+        } while (++k <= order);
+    }
+
+    for (k = 0; k < order; k++) {
+        /* Check that we won't be getting an unstable rc, otherwise stop here. */
+        if (silk_abs_int32(C[k + 1][0]) >= C[0][1]) {
+            if (C[k + 1][0] > 0) {
+                rc_Q15[k] = -SILK_FIX_CONST(.99f, 15);
+            } else {
+                rc_Q15[k] = SILK_FIX_CONST(.99f, 15);
+            }
+            k++;
+            break;
+        }
+
+        /* Get reflection coefficient */
+        rc_tmp_Q15 = -silk_DIV32_16(C[k + 1][0], silk_max_32(silk_RSHIFT(C[0][1], 15), 1));
+
+        /* Clip (shouldn't happen for properly conditioned inputs) */
+        rc_tmp_Q15 = silk_SAT16(rc_tmp_Q15);
+
+        /* Store */
+        rc_Q15[k] = (int16_t)rc_tmp_Q15;
+
+        /* Update correlations */
+        for (n = 0; n < order - k; n++) {
+            Ctmp1 = C[n + k + 1][0];
+            Ctmp2 = C[n][1];
+            C[n + k + 1][0] = silk_SMLAWB(Ctmp1, silk_LSHIFT(Ctmp2, 1), rc_tmp_Q15);
+            C[n][1] = silk_SMLAWB(Ctmp2, silk_LSHIFT(Ctmp1, 1), rc_tmp_Q15);
+        }
+    }
+
+    for (; k < order; k++) {
+        rc_Q15[k] = 0;
+    }
+
+    /* return residual energy */
+    return silk_max_32(1, C[0][1]);
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Slower than schur(), but more accurate.                              */
+/* Uses SMULL(), available on armv4                                     */
+int32_t silk_schur64(                   /* O    returns residual energy                                     */
+                     int32_t rc_Q16[],  /* O    Reflection coefficients [order] Q16                         */
+                     const int32_t c[], /* I    Correlations [order+1]                                      */
+                     int32_t order      /* I    Prediction order                                            */
+) {
+    int32_t k, n;
+    int32_t C[SILK_MAX_ORDER_LPC + 1][2];
+    int32_t Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
+
+    assert(order >= 0 && order <= SILK_MAX_ORDER_LPC);
+
+    /* Check for invalid input */
+    if (c[0] <= 0) {
+        silk_memset(rc_Q16, 0, order * sizeof(int32_t));
+        return 0;
+    }
+
+    k = 0;
+    do {
+        C[k][0] = C[k][1] = c[k];
+    } while (++k <= order);
+
+    for (k = 0; k < order; k++) {
+        /* Check that we won't be getting an unstable rc, otherwise stop here. */
+        if (silk_abs_int32(C[k + 1][0]) >= C[0][1]) {
+            if (C[k + 1][0] > 0) {
+                rc_Q16[k] = -SILK_FIX_CONST(.99f, 16);
+            } else {
+                rc_Q16[k] = SILK_FIX_CONST(.99f, 16);
+            }
+            k++;
+            break;
+        }
+
+        /* Get reflection coefficient: divide two Q30 values and get result in Q31 */
+        rc_tmp_Q31 = silk_DIV32_varQ(-C[k + 1][0], C[0][1], 31);
+
+        /* Save the output */
+        rc_Q16[k] = silk_RSHIFT_ROUND(rc_tmp_Q31, 15);
+
+        /* Update correlations */
+        for (n = 0; n < order - k; n++) {
+            Ctmp1_Q30 = C[n + k + 1][0];
+            Ctmp2_Q30 = C[n][1];
+
+            /* Multiply and add the highest int32 */
+            C[n + k + 1][0] = Ctmp1_Q30 + silk_SMMUL(silk_LSHIFT(Ctmp2_Q30, 1), rc_tmp_Q31);
+            C[n][1] = Ctmp2_Q30 + silk_SMMUL(silk_LSHIFT(Ctmp1_Q30, 1), rc_tmp_Q31);
+        }
+    }
+
+    for (; k < order; k++) {
+        rc_Q16[k] = 0;
+    }
+
+    return silk_max_32(1, C[0][1]);
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Copy and multiply a vector by a constant */
+void silk_scale_copy_vector16(int16_t *data_out, const int16_t *data_in, int32_t gain_Q16, /* I    Gain in Q16 */
+                              const int32_t dataSize                                       /* I    Length                                       */
+) {
+    int32_t i;
+    int32_t tmp32;
+
+    for (i = 0; i < dataSize; i++) {
+        tmp32 = silk_SMULWB(gain_Q16, data_in[i]);
+        data_out[i] = (int16_t)silk_CHECK_FIT16(tmp32);
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Multiply a vector by a constant */
+void silk_scale_vector32_Q26_lshift_18(int32_t *data1,   /* I/O  Q0/Q18   */
+                                       int32_t gain_Q26, /* I    Q26 */
+                                       int32_t dataSize  /* I    length  */
+) {
+    int32_t i;
+
+    for (i = 0; i < dataSize; i++) {
+        data1[i] = (int32_t)silk_CHECK_FIT32(silk_RSHIFT64(silk_SMULL(data1[i], gain_Q26), 8)); /* OUTPUT: Q18 */
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
+/* Note for ARM asm:                                                            */
+/*        * inVec1 and inVec2 should be at least 2 byte aligned.                */
+/*        * len should be positive 16bit integer.                               */
+/*        * only when len>6, memory access can be reduced by half.              */
+int32_t silk_inner_prod_aligned(const int16_t *const inVec1, /*    I input vector 1 */
+                                const int16_t *const inVec2, /*    I input vector 2 */
+                                const int32_t len,           /*    I vector lengths */
+                                int arch /*    I Run-time architecture              */
+) {
+    return celt_inner_prod(inVec1, inVec2, len, arch);
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+int64_t silk_inner_prod16_aligned_64_c(const int16_t *inVec1, /*    I input vector 1 */
+                                       const int16_t *inVec2, /*    I input vector 2 */
+                                       const int32_t len      /*    I vector lengths */
+) {
+    int32_t i;
+    int64_t sum = 0;
+    for (i = 0; i < len; i++) {
+        sum = silk_SMLALBB(sum, inVec1[i], inVec2[i]);
+    }
+    return sum;
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Autocorrelations for a warped frequency axis */
+void silk_warped_autocorrelation_FIX_c(int32_t *corr,             /* O    Result [order + 1]                */
+                                       int32_t *scale,            /* O    Scaling of the correlation vector */
+                                       const int16_t *input,      /* I    Input data to correlate           */
+                                       const int32_t warping_Q16, /* I    Warping coefficient               */
+                                       const int32_t length,      /* I    Length of input                   */
+                                       const int32_t order        /* I    Correlation order (even)          */
+) {
+    int32_t n, i, lsh;
+    int32_t tmp1_QS, tmp2_QS;
+    int32_t *state_QS = (int32_t *)calloc(MAX_SHAPE_LPC_ORDER + 1, sizeof(int32_t));
+    int64_t *corr_QC = (int64_t *)calloc(MAX_SHAPE_LPC_ORDER + 1, sizeof(int64_t));
+
+    /* Order must be even */
+    assert((order & 1) == 0);
+    silk_assert(2 * QS - QC >= 0);
+
+    /* Loop over samples */
+    for (n = 0; n < length; n++) {
+        tmp1_QS = silk_LSHIFT32((int32_t)input[n], QS);
+        /* Loop over allpass sections */
+        for (i = 0; i < order; i += 2) {
+            /* Output of allpass section */
+            tmp2_QS = silk_SMLAWB(state_QS[i], state_QS[i + 1] - tmp1_QS, warping_Q16);
+            state_QS[i] = tmp1_QS;
+            corr_QC[i] += silk_RSHIFT64(silk_SMULL(tmp1_QS, state_QS[0]), 2 * QS - QC);
+            /* Output of allpass section */
+            tmp1_QS = silk_SMLAWB(state_QS[i + 1], state_QS[i + 2] - tmp2_QS, warping_Q16);
+            state_QS[i + 1] = tmp2_QS;
+            corr_QC[i + 1] += silk_RSHIFT64(silk_SMULL(tmp2_QS, state_QS[0]), 2 * QS - QC);
+        }
+        state_QS[order] = tmp1_QS;
+        corr_QC[order] += silk_RSHIFT64(silk_SMULL(tmp1_QS, state_QS[0]), 2 * QS - QC);
+    }
+
+    lsh = silk_CLZ64(corr_QC[0]) - 35;
+    lsh = silk_LIMIT(lsh, -12 - QC, 30 - QC);
+    *scale = -(QC + lsh);
+    silk_assert(*scale >= -30 && *scale <= 12);
+    if (lsh >= 0) {
+        for (i = 0; i < order + 1; i++) {
+            corr[i] = (int32_t)silk_CHECK_FIT32(silk_LSHIFT64(corr_QC[i], lsh));
+        }
+    } else {
+        for (i = 0; i < order + 1; i++) {
+            corr[i] = (int32_t)silk_CHECK_FIT32(silk_RSHIFT64(corr_QC[i], -lsh));
+        }
+    }
+    silk_assert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
+    free(state_QS);
+    free(corr_QC);
+}
+
+

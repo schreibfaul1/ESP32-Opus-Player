@@ -17,7 +17,9 @@
 /* We're 'LSb' endian; if we write a word but read individual bits,
    then we'll read the lsb first */
 
-#include "Arduino.h"
+#include <stdlib.h>
+#include <limits.h>
+#include <string.h>
 #include "ogg.h"
 
 #define BUFFER_INCREMENT 256

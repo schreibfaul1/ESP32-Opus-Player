@@ -29,12 +29,13 @@
 
 #define CELT_C
 
-#include "Arduino.h"
-#include "celt.h"
-
+#include <stdint.h>
 #include <math.h>
 #include <stdarg.h>
 #include <pgmspace.h>
+#include "celt.h"
+
+
 
 
 

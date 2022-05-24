@@ -20,9 +20,8 @@
 extern "C" {
 #endif
 
-#include "Arduino.h"
 #include <stddef.h>
-
+#include <stdint.h>
 
 typedef struct {
   void *iov_base;
