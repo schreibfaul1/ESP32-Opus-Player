@@ -34,6 +34,9 @@
     "pitch_est_defines.h": "c",
     "sigproc_fix.h": "c",
     "mathops.h": "c",
-    "structs.h": "c"
+    "structs.h": "c",
+    "define.h": "c",
+    "tuning_parameters.h": "c",
+    "fixed.h": "c"
   }
 }

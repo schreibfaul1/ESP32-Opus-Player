@@ -25,7 +25,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main_FIX.h"
+#include "fixed.h"
 
 /* Autocorrelations for a warped frequency axis */
 #ifndef OVERRIDE_silk_warped_autocorrelation_FIX_c

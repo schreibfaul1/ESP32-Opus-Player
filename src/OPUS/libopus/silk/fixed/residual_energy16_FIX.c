@@ -25,7 +25,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main_FIX.h"
+#include "fixed.h"
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
 int32_t silk_residual_energy16_covar_FIX(

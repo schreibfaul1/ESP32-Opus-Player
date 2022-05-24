@@ -25,7 +25,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "fixed/main_FIX.h"
+#include "fixed/fixed.h"
 #include "tuning_parameters.h"
 
 /* High-pass filter with cutoff frequency adaptation based on pitch lag statistics */
