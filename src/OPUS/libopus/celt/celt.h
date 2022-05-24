@@ -672,6 +672,8 @@ static OPUS_INLINE int _opus_false(void) {return 0;}
 #define OPUS_PRINT_INT(value) do{}while(0)
 #define OPUS_FPRINTF (void)
 
+#define op_pvq_search(x, iy, K, N, arch) (op_pvq_search_c(x, iy, K, N, arch))
+
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
 extern const unsigned char LOG2_FRAC_TABLE[24];
@@ -872,7 +874,15 @@ static inline int pulses2bits(const CELTMode *m, int band, int LM, int pulses){
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
-
+static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
+void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
+static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
+static unsigned extract_collapse_mask(int *iy, int N, int B);
+int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch);
+unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch);
+unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
+void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
+int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
 int resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int T, int N, int16_t g10, int16_t g11, int16_t g12);
 void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int16_t g1, int tapset0, int tapset1,
