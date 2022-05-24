@@ -25,9 +25,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
-#include "NSQ.h"
 
+#include "NSQ.h"
+#include <stdint.h>
+#include "silk.h"
 
 static inline void silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
@@ -102,7 +103,7 @@ void silk_NSQ_c
     /* Set unvoiced lag to the previous one, overwrite later for voiced */
     lag = NSQ->lagPrev;
 
-    silk_assert( NSQ->prev_gain_Q16 != 0 );
+    assert( NSQ->prev_gain_Q16 != 0 );
 
     offset_Q10 = silk_Quantization_Offsets_Q10[ psIndices->signalType >> 1 ][ psIndices->quantOffsetType ];
 
@@ -125,7 +126,7 @@ void silk_NSQ_c
         AR_shp_Q13 = &AR_Q13[ k * MAX_SHAPE_LPC_ORDER ];
 
         /* Noise shape parameters */
-        silk_assert( HarmShapeGain_Q14[ k ] >= 0 );
+        assert( HarmShapeGain_Q14[ k ] >= 0 );
         HarmShapeFIRPacked_Q14  =                          silk_RSHIFT( HarmShapeGain_Q14[ k ], 2 );
         HarmShapeFIRPacked_Q14 |= silk_LSHIFT( (int32_t)silk_RSHIFT( HarmShapeGain_Q14[ k ], 1 ), 16 );
 
@@ -379,7 +380,7 @@ static inline void silk_nsq_scale_states(
 
     lag          = pitchL[ subfr ];
     inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
-    silk_assert( inv_gain_Q31 != 0 );
+    assert( inv_gain_Q31 != 0 );
 
     /* Scale input */
     inv_gain_Q26 = silk_RSHIFT_ROUND( inv_gain_Q31, 5 );
@@ -394,7 +395,7 @@ static inline void silk_nsq_scale_states(
             inv_gain_Q31 = silk_LSHIFT( silk_SMULWB( inv_gain_Q31, LTP_scale_Q14 ), 2 );
         }
         for( i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx; i++ ) {
-            silk_assert( i < MAX_FRAME_LENGTH );
+            assert( i < MAX_FRAME_LENGTH );
             sLTP_Q15[ i ] = silk_SMULWB( inv_gain_Q31, sLTP[ i ] );
         }
     }

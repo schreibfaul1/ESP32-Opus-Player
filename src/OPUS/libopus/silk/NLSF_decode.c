@@ -25,7 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
+#include <stdint.h>
+#include "silk.h"
 
 /* Predictive dequantizer for NLSF residuals */
 static inline void silk_NLSF_residual_dequant(          /* O    Returns RD value in Q30                     */

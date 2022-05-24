@@ -56,7 +56,7 @@ void silk_sum_sqr_shift(
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
         nrg = (int32_t)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
-    silk_assert( nrg >= 0 );
+    assert( nrg >= 0 );
     /* Make sure the result will fit in a 32-bit signed integer with two bits
        of headroom. */
     shft = silk_max_32(0, shft+3 - silk_CLZ32(nrg));
@@ -72,7 +72,7 @@ void silk_sum_sqr_shift(
         nrg = (int32_t)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
 
-    silk_assert( nrg >= 0 );
+    assert( nrg >= 0 );
 
     /* Output arguments */
     *shift  = shft;

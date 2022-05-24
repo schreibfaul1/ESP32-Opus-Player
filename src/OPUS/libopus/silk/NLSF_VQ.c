@@ -25,7 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
+#include <stdint.h>
+#include "silk.h"
 
 /* Compute quantization errors for an LPC_order element input vector for a VQ codebook */
 void silk_NLSF_VQ(
@@ -63,7 +64,7 @@ void silk_NLSF_VQ(
             sum_error_Q24 = silk_ADD32( sum_error_Q24, silk_abs( silk_SUB_RSHIFT32( diffw_Q24, pred_Q24, 1 ) ) );
             pred_Q24 = diffw_Q24;
 
-            silk_assert( sum_error_Q24 >= 0 );
+            assert( sum_error_Q24 >= 0 );
         }
         err_Q24[ i ] = sum_error_Q24;
         cb_Q8_ptr += LPC_order;

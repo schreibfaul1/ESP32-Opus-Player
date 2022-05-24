@@ -25,7 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
+#include <stdint.h>
+#include "silk.h"
 
 /* Limit, stabilize, convert and quantize NLSFs */
 void silk_process_NLSFs(
@@ -42,8 +43,8 @@ void silk_process_NLSFs(
     int16_t   pNLSFW_QW[ MAX_LPC_ORDER ];
     int16_t   pNLSFW0_temp_QW[ MAX_LPC_ORDER ];
 
-    silk_assert( psEncC->speech_activity_Q8 >=   0 );
-    silk_assert( psEncC->speech_activity_Q8 <= SILK_FIX_CONST( 1.0, 8 ) );
+    assert( psEncC->speech_activity_Q8 >=   0 );
+    assert( psEncC->speech_activity_Q8 <= SILK_FIX_CONST( 1.0, 8 ) );
     assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
 
     /***********************/
@@ -57,7 +58,7 @@ void silk_process_NLSFs(
     }
 
     assert( NLSF_mu_Q20 >  0 );
-    silk_assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ) );
+    assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ) );
 
     /* Calculate NLSF weights */
     silk_NLSF_VQ_weights_laroia( pNLSFW_QW, pNLSF_Q15, psEncC->predictLPCOrder );
@@ -77,7 +78,7 @@ void silk_process_NLSFs(
         for( i = 0; i < psEncC->predictLPCOrder; i++ ) {
             pNLSFW_QW[ i ] = silk_ADD16( silk_RSHIFT( pNLSFW_QW[ i ], 1 ), silk_RSHIFT(
                   silk_SMULBB( pNLSFW0_temp_QW[ i ], i_sqr_Q15 ), 16) );
-            silk_assert( pNLSFW_QW[ i ] >= 1 );
+            assert( pNLSFW_QW[ i ] >= 1 );
         }
     }
 

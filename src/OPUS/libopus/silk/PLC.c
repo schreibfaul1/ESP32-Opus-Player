@@ -25,8 +25,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
-#include "PLC.h"
+
+#include <stdint.h>
+#include "silk.h"
 
 #define NB_ATT 2
 static const int16_t HARM_ATT_Q15[NB_ATT]              = { 32440, 31130 }; /* 0.99, 0.95 */

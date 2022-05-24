@@ -26,8 +26,9 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include  <pgmspace.h>
+#include <stdint.h>
+#include "silk.h"
 
-#include "main.h"
 
 /* Silk VAD noise level estimation */
 # if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
@@ -97,7 +98,7 @@ int32_t silk_VAD_GetSA_Q8_c(                                   /* O    Return va
     SAVE_STACK;
 
     /* Safety checks */
-    silk_assert( VAD_N_BANDS == 4 );
+    assert( VAD_N_BANDS == 4 );
     assert( MAX_FRAME_LENGTH >= psEncC->frame_length );
     assert( psEncC->frame_length <= 512 );
     assert( psEncC->frame_length == 8 * silk_RSHIFT( psEncC->frame_length, 3 ) );
@@ -171,7 +172,7 @@ int32_t silk_VAD_GetSA_Q8_c(                                   /* O    Return va
                 sumSquared = silk_SMLABB( sumSquared, x_tmp, x_tmp );
 
                 /* Safety check */
-                silk_assert( sumSquared >= 0 );
+                assert( sumSquared >= 0 );
             }
 
             /* Add/saturate summed energy of current subframe */
@@ -318,15 +319,15 @@ void silk_VAD_GetNoiseLevels(
     for( k = 0; k < VAD_N_BANDS; k++ ) {
         /* Get old noise level estimate for current band */
         nl = psSilk_VAD->NL[ k ];
-        silk_assert( nl >= 0 );
+        assert( nl >= 0 );
 
         /* Add bias */
         nrg = silk_ADD_POS_SAT32( pX[ k ], psSilk_VAD->NoiseLevelBias[ k ] );
-        silk_assert( nrg > 0 );
+        assert( nrg > 0 );
 
         /* Invert energies */
         inv_nrg = silk_DIV32( silk_int32_MAX, nrg );
-        silk_assert( inv_nrg >= 0 );
+        assert( inv_nrg >= 0 );
 
         /* Less update when subband energy is high */
         if( nrg > silk_LSHIFT( nl, 3 ) ) {
@@ -342,11 +343,11 @@ void silk_VAD_GetNoiseLevels(
 
         /* Smooth inverse energies */
         psSilk_VAD->inv_NL[ k ] = silk_SMLAWB( psSilk_VAD->inv_NL[ k ], inv_nrg - psSilk_VAD->inv_NL[ k ], coef );
-        silk_assert( psSilk_VAD->inv_NL[ k ] >= 0 );
+        assert( psSilk_VAD->inv_NL[ k ] >= 0 );
 
         /* Compute noise level by inverting again */
         nl = silk_DIV32( silk_int32_MAX, psSilk_VAD->inv_NL[ k ] );
-        silk_assert( nl >= 0 );
+        assert( nl >= 0 );
 
         /* Limit noise levels (guarantee 7 bits of head room) */
         nl = silk_min( nl, 0x00FFFFFF );

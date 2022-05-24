@@ -25,7 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
+#include <stdint.h>
+#include "silk.h"
 
 /* Find least-squares prediction gain for one signal based on another and quantize it */
 int32_t silk_stereo_find_predictor(                          /* O    Returns predictor in Q13                    */
@@ -57,7 +58,7 @@ int32_t silk_stereo_find_predictor(                          /* O    Returns pre
     smooth_coef_Q16 = (int32_t)silk_max_int( smooth_coef_Q16, silk_abs( pred2_Q10 ) );
 
     /* Smoothed mid and residual norms */
-    silk_assert( smooth_coef_Q16 < 32768 );
+    assert( smooth_coef_Q16 < 32768 );
     scale = silk_RSHIFT( scale, 1 );
     mid_res_amp_Q0[ 0 ] = silk_SMLAWB( mid_res_amp_Q0[ 0 ], silk_LSHIFT( silk_SQRT_APPROX( nrgx ), scale ) - mid_res_amp_Q0[ 0 ],
         smooth_coef_Q16 );

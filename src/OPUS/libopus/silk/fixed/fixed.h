@@ -6,8 +6,7 @@
 #include "../tuning_parameters.h"
 #include <stdlib.h>
 #include "../silk.h"
-#include "../main.h"
-#include "../PLC.h"
+
 
 #include "../pitch_est_defines.h"
 #include "../typedef.h"
@@ -107,26 +106,12 @@ void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1]
 /********************************/
 /* Noise shaping analysis state */
 /********************************/
-typedef struct {
-    int8_t LastGainIndex;
-    int32_t HarmBoost_smth_Q16;
-    int32_t HarmShapeGain_smth_Q16;
-    int32_t Tilt_smth_Q16;
-} silk_shape_state_FIX;
+
 
 /********************************/
 /* Encoder state FIX            */
 /********************************/
-typedef struct {
-    silk_encoder_state sCmn;     /* Common struct, shared with floating-point code       */
-    silk_shape_state_FIX sShape; /* Shape state                                          */
 
-    /* Buffer for find pitch and noise shape analysis */
-    silk_DWORD_ALIGN int16_t
-        x_buf[2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX]; /* Buffer for find pitch and noise shape analysis  */
-    int32_t LTPCorr_Q15;                            /* Normalized correlation from pitch lag estimator      */
-    int32_t resNrgSmth;
-} silk_encoder_state_FIX;
 
 /************************/
 /* Encoder control FIX  */
@@ -176,9 +161,7 @@ typedef struct {
     int32_t prev_decode_only_middle;
 } silk_encoder;
 
-#define silk_encoder_state_Fxx      silk_encoder_state_FIX
-#define silk_encode_do_VAD_Fxx      silk_encode_do_VAD_FIX
-#define silk_encode_frame_Fxx       silk_encode_frame_FIX
+
 
 /*********************/
 /* Encoder Functions */

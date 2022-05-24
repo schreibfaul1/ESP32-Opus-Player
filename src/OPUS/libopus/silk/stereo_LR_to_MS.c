@@ -25,7 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
+#include <stdint.h>
+#include "silk.h"
 
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
@@ -106,7 +107,7 @@ void silk_stereo_LR_to_MS(
         total_rate_bps = 1;
     }
     min_mid_rate_bps = silk_SMLABB( 2000, fs_kHz, 600 );
-    silk_assert( min_mid_rate_bps < 32767 );
+    assert( min_mid_rate_bps < 32767 );
     /* Default bitrate distribution: 8 parts for Mid and (5+3*frac) parts for Side. so: mid_rate = ( 8 / ( 13 + 3 * frac ) ) * total_ rate */
     frac_3_Q16 = silk_MUL( 3, frac_Q16 );
     mid_side_rates_bps[ 0 ] = silk_DIV32_varQ( total_rate_bps, SILK_FIX_CONST( 8 + 5, 16 ) + frac_3_Q16, 16+3 );

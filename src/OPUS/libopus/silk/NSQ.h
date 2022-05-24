@@ -29,13 +29,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_NSQ_H
 
 #include "SigProc_FIX.h"
+#include "silk.h"
 
 #undef silk_short_prediction_create_arch_coef
 
 static inline int32_t silk_noise_shape_quantizer_short_prediction_c(const int32_t *buf32, const int16_t *coef16, int32_t order)
 {
     int32_t out;
-    silk_assert( order == 10 || order == 16 );
+    assert( order == 10 || order == 16 );
 
     /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
     out = silk_RSHIFT( order, 1 );

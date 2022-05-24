@@ -25,9 +25,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
 #include "NSQ.h"
-
+#include <stdint.h>
+#include "silk.h"
 
 typedef struct {
     int32_t sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ];
@@ -142,7 +142,7 @@ void silk_NSQ_del_dec_c(
     /* Set unvoiced lag to the previous one, overwrite later for voiced */
     lag = NSQ->lagPrev;
 
-    silk_assert( NSQ->prev_gain_Q16 != 0 );
+    assert( NSQ->prev_gain_Q16 != 0 );
 
     /* Initialize delayed decision states */
     ALLOC( psDelDec, psEncC->nStatesDelayedDecision, NSQ_del_dec_struct );
@@ -196,7 +196,7 @@ void silk_NSQ_del_dec_c(
         AR_shp_Q13 = &AR_Q13[     k * MAX_SHAPE_LPC_ORDER ];
 
         /* Noise shape parameters */
-        silk_assert( HarmShapeGain_Q14[ k ] >= 0 );
+        assert( HarmShapeGain_Q14[ k ] >= 0 );
         HarmShapeFIRPacked_Q14  =                          silk_RSHIFT( HarmShapeGain_Q14[ k ], 2 );
         HarmShapeFIRPacked_Q14 |= silk_LSHIFT( (int32_t)silk_RSHIFT( HarmShapeGain_Q14[ k ], 1 ), 16 );
 
@@ -221,7 +221,7 @@ void silk_NSQ_del_dec_c(
                     for( i = 0; i < psEncC->nStatesDelayedDecision; i++ ) {
                         if( i != Winner_ind ) {
                             psDelDec[ i ].RD_Q10 += ( silk_int32_MAX >> 4 );
-                            silk_assert( psDelDec[ i ].RD_Q10 >= 0 );
+                            assert( psDelDec[ i ].RD_Q10 >= 0 );
                         }
                     }
 
@@ -573,7 +573,7 @@ static inline void silk_noise_shape_quantizer_del_dec(
             if( psDelDec[ k ].RandState[ last_smple_idx ] != Winner_rand_state ) {
                 psSampleState[ k ][ 0 ].RD_Q10 = silk_ADD32( psSampleState[ k ][ 0 ].RD_Q10, silk_int32_MAX >> 4 );
                 psSampleState[ k ][ 1 ].RD_Q10 = silk_ADD32( psSampleState[ k ][ 1 ].RD_Q10, silk_int32_MAX >> 4 );
-                silk_assert( psSampleState[ k ][ 0 ].RD_Q10 >= 0 );
+                assert( psSampleState[ k ][ 0 ].RD_Q10 >= 0 );
             }
         }
 
@@ -663,7 +663,7 @@ static inline void silk_nsq_del_dec_scale_states(
 
     lag          = pitchL[ subfr ];
     inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
-    silk_assert( inv_gain_Q31 != 0 );
+    assert( inv_gain_Q31 != 0 );
 
     /* Scale input */
     inv_gain_Q26 = silk_RSHIFT_ROUND( inv_gain_Q31, 5 );
@@ -678,7 +678,7 @@ static inline void silk_nsq_del_dec_scale_states(
             inv_gain_Q31 = silk_LSHIFT( silk_SMULWB( inv_gain_Q31, LTP_scale_Q14 ), 2 );
         }
         for( i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx; i++ ) {
-            silk_assert( i < MAX_FRAME_LENGTH );
+            assert( i < MAX_FRAME_LENGTH );
             sLTP_Q15[ i ] = silk_SMULWB( inv_gain_Q31, sLTP[ i ] );
         }
     }

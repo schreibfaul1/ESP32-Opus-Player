@@ -25,8 +25,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "main.h"
 
+#include <stdint.h>
+#include "silk.h"
 
 /***********************/
 /* NLSF vector encoder */
@@ -57,7 +58,7 @@ int32_t silk_NLSF_encode(                                    /* O    Returns RD 
     SAVE_STACK;
 
     assert( signalType >= 0 && signalType <= 2 );
-    silk_assert( NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0 );
+    assert( NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0 );
 
     /* NLSF stabilization */
     silk_NLSF_stabilize( pNLSF_Q15, psNLSF_CB->deltaMin_Q15, psNLSF_CB->order );

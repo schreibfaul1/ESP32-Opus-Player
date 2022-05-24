@@ -40,7 +40,7 @@ extern "C"
 #include <string.h>                                 /* for memset(), memcpy(), memmove() */
 #include "typedef.h"
 #include "resampler_structs.h"
-#include "macros.h"
+
 #include "../celt/celt.h"
 #include <stdint.h>
 
@@ -450,15 +450,8 @@ static inline int32_t silk_ROR32( int32_t a32, int32_t rot )
     ((void)(arch),silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
 #endif
 
-#include "MacroCount.h"
 
-#ifdef OPUS_ARM_INLINE_ASM
-#include "arm/SigProc_FIX_armv4.h"
-#endif
 
-#ifdef OPUS_ARM_INLINE_EDSP
-#include "arm/SigProc_FIX_armv5e.h"
-#endif
 
 
 #ifdef  __cplusplus

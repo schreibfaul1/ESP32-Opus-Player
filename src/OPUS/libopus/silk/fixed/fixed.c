@@ -29,7 +29,7 @@ void silk_apply_sine_window(int16_t px_win[],       /* O    Pointer to windowed 
 
     /* Factor used for cosine approximation */
     c_Q16 = silk_SMULWB((int32_t)f_Q16, -f_Q16);
-    silk_assert(c_Q16 >= -32768);
+    assert(c_Q16 >= -32768);
 
     /* initialize state */
     if (win_type == 1) {
@@ -359,7 +359,7 @@ void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1]
             ptr1--;               /* Go to next column of X */
         }
     } else {
-        silk_assert(rshifts == 0);
+        assert(rshifts == 0);
         for (lag = 0; lag < order; lag++) {
             Xt[lag] = silk_inner_prod_aligned(ptr1, ptr2, L, arch); /* X[:,lag]'*t */
             ptr1--;                                                 /* Go to next column of X */
@@ -394,13 +394,13 @@ void silk_corrMatrix_FIX(const int16_t *x,    /* I    x vector [L + order - 1] u
     /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
     /* Fill out the diagonal of the correlation matrix */
     matrix_ptr(XX, 0, 0, order) = energy;
-    silk_assert(energy >= 0);
+    assert(energy >= 0);
     ptr1 = &x[order - 1]; /* First sample of column 0 of X */
     for (j = 1; j < order; j++) {
         energy = silk_SUB32(energy, silk_RSHIFT32(silk_SMULBB(ptr1[L - j], ptr1[L - j]), *rshifts));
         energy = silk_ADD32(energy, silk_RSHIFT32(silk_SMULBB(ptr1[-j], ptr1[-j]), *rshifts));
         matrix_ptr(XX, j, j, order) = energy;
-        silk_assert(energy >= 0);
+        assert(energy >= 0);
     }
 
     ptr2 = &x[order - 2]; /* First sample of column 1 of X */
@@ -891,7 +891,7 @@ void silk_find_LPC_FIX(silk_encoder_state *psEncC,  /* I/O  Encoder state  */
                 res_nrg = res_nrg - silk_RSHIFT(res_tmp_nrg, shift);
             }
         } else {
-            silk_assert(shift > -32);
+            assert(shift > -32);
             res_nrg = silk_RSHIFT(res_nrg, -shift) - res_tmp_nrg;
             res_nrg_Q = res_tmp_nrg_Q;
         }
@@ -1166,7 +1166,7 @@ void silk_find_pred_coefs_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encod
     }
     for (i = 0; i < psEnc->sCmn.nb_subfr; i++) {
         /* Divide to Q16 */
-        silk_assert(psEncCtrl->Gains_Q16[i] > 0);
+        assert(psEncCtrl->Gains_Q16[i] > 0);
         /* Invert and normalize gains, and ensure that maximum invGains_Q16 is within range of a 16 bit int */
         invGains_Q16[i] = silk_DIV32_varQ(min_gain_Q16, psEncCtrl->Gains_Q16[i], 16 - 2);
 
@@ -1174,7 +1174,7 @@ void silk_find_pred_coefs_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encod
         invGains_Q16[i] = silk_max(invGains_Q16[i], 100);
 
         /* Square the inverted gains */
-        silk_assert(invGains_Q16[i] == silk_SAT16(invGains_Q16[i]));
+        assert(invGains_Q16[i] == silk_SAT16(invGains_Q16[i]));
 
         /* Invert the inverted and normalized gains */
         local_gains[i] = silk_DIV32(((int32_t)1 << 16), invGains_Q16[i]);
@@ -1611,14 +1611,14 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
 
         /* Calculate the reflection coefficients using schur */
         nrg = silk_schur64(refl_coef_Q16, auto_corr, psEnc->sCmn.shapingLPCOrder);
-        silk_assert(nrg >= 0);
+        assert(nrg >= 0);
 
         /* Convert reflection coefficients to prediction coefficients */
         silk_k2a_Q16(AR_Q24, refl_coef_Q16, psEnc->sCmn.shapingLPCOrder);
 
         Qnrg = -scale; /* range: -12...30*/
-        silk_assert(Qnrg >= -12);
-        silk_assert(Qnrg <= 30);
+        assert(Qnrg >= -12);
+        assert(Qnrg <= 30);
 
         /* Make sure that Qnrg is an even number */
         if (Qnrg & 1) {
@@ -1634,7 +1634,7 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Adjust gain for warping */
             gain_mult_Q16 = warped_gain(AR_Q24, warping_Q16, psEnc->sCmn.shapingLPCOrder);
-            silk_assert(psEncCtrl->Gains_Q16[k] > 0);
+            assert(psEncCtrl->Gains_Q16[k] > 0);
             if (psEncCtrl->Gains_Q16[k] < SILK_FIX_CONST(0.25, 16)) {
                 psEncCtrl->Gains_Q16[k] = silk_SMULWW(psEncCtrl->Gains_Q16[k], gain_mult_Q16);
             } else {
@@ -1645,7 +1645,7 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
                     psEncCtrl->Gains_Q16[k] = silk_LSHIFT32(psEncCtrl->Gains_Q16[k], 1);
                 }
             }
-            silk_assert(psEncCtrl->Gains_Q16[k] > 0);
+            assert(psEncCtrl->Gains_Q16[k] > 0);
         }
 
         /* Bandwidth expansion */
@@ -1671,10 +1671,10 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
     gain_mult_Q16 = silk_log2lin(-silk_SMLAWB(-SILK_FIX_CONST(16.0, 7), SNR_adj_dB_Q7, SILK_FIX_CONST(0.16, 16)));
     gain_add_Q16 =
         silk_log2lin(silk_SMLAWB(SILK_FIX_CONST(16.0, 7), SILK_FIX_CONST(MIN_QGAIN_DB, 7), SILK_FIX_CONST(0.16, 16)));
-    silk_assert(gain_mult_Q16 > 0);
+    assert(gain_mult_Q16 > 0);
     for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
         psEncCtrl->Gains_Q16[k] = silk_SMULWW(psEncCtrl->Gains_Q16[k], gain_mult_Q16);
-        silk_assert(psEncCtrl->Gains_Q16[k] >= 0);
+        assert(psEncCtrl->Gains_Q16[k] >= 0);
         psEncCtrl->Gains_Q16[k] = silk_ADD_POS_SAT32(psEncCtrl->Gains_Q16[k], gain_add_Q16);
     }
 
@@ -1697,7 +1697,7 @@ void silk_noise_shape_analysis_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  
                 silk_LSHIFT(SILK_FIX_CONST(1.0, 14) - b_Q14 - silk_SMULWB(strength_Q16, b_Q14), 16);
             psEncCtrl->LF_shp_Q14[k] |= (uint16_t)(b_Q14 - SILK_FIX_CONST(1.0, 14));
         }
-        silk_assert(
+        assert(
             SILK_FIX_CONST(HARM_HP_NOISE_COEF, 24) <
             SILK_FIX_CONST(0.5, 24)); /* Guarantees that second argument to SMULWB() is within range of an int16_t*/
         Tilt_Q16 = -SILK_FIX_CONST(HP_NOISE_COEF, 16) -
@@ -1803,8 +1803,8 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
     assert( complexity >= SILK_PE_MIN_COMPLEX );
     assert( complexity <= SILK_PE_MAX_COMPLEX );
 
-    silk_assert( search_thres1_Q16 >= 0 && search_thres1_Q16 <= (1<<16) );
-    silk_assert( search_thres2_Q13 >= 0 && search_thres2_Q13 <= (1<<13) );
+    assert( search_thres1_Q16 >= 0 && search_thres1_Q16 <= (1<<16) );
+    assert( search_thres2_Q13 >= 0 && search_thres2_Q13 <= (1<<13) );
 
     /* Set up frame lengths max / min lag for the sampling frequency */
     frame_length      = ( PE_LTP_MEM_LENGTH_MS + nb_subfr * PE_SUBFR_LENGTH_MS ) * Fs_kHz;
@@ -1887,8 +1887,8 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
             basis_ptr--;
 
             /* Check that we are within range of the array */
-            silk_assert( basis_ptr >= frame_4kHz );
-            silk_assert( basis_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
+            assert( basis_ptr >= frame_4kHz );
+            assert( basis_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
 
             cross_corr = xcorr32[ MAX_LAG_4KHZ - d ];
 
@@ -2008,8 +2008,8 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
             basis_ptr = target_ptr - d;
 
             /* Check that we are within range of the array */
-            silk_assert( basis_ptr >= frame_8kHz );
-            silk_assert( basis_ptr + SF_LENGTH_8KHZ <= frame_8kHz + frame_length_8kHz );
+            assert( basis_ptr >= frame_8kHz );
+            assert( basis_ptr + SF_LENGTH_8KHZ <= frame_8kHz + frame_length_8kHz );
 
             cross_corr = silk_inner_prod_aligned( target_ptr, basis_ptr, SF_LENGTH_8KHZ, arch );
             if( cross_corr > 0 ) {
@@ -2045,7 +2045,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
     } else {
         prevLag_log2_Q7 = 0;
     }
-    silk_assert( search_thres2_Q13 == silk_SAT16( search_thres2_Q13 ) );
+    assert( search_thres2_Q13 == silk_SAT16( search_thres2_Q13 ) );
     /* Set up stage 2 codebook based on number of subframes */
     if( nb_subfr == PE_MAX_NB_SUBFR ) {
         cbk_size   = PE_NB_CBKS_STAGE2_EXT;
@@ -2088,15 +2088,15 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
 
         /* Bias towards shorter lags */
         lag_log2_Q7 = silk_lin2log( d ); /* Q7 */
-        silk_assert( lag_log2_Q7 == silk_SAT16( lag_log2_Q7 ) );
-        silk_assert( nb_subfr * SILK_FIX_CONST( PE_SHORTLAG_BIAS, 13 ) == silk_SAT16( nb_subfr * SILK_FIX_CONST( PE_SHORTLAG_BIAS, 13 ) ) );
+        assert( lag_log2_Q7 == silk_SAT16( lag_log2_Q7 ) );
+        assert( nb_subfr * SILK_FIX_CONST( PE_SHORTLAG_BIAS, 13 ) == silk_SAT16( nb_subfr * SILK_FIX_CONST( PE_SHORTLAG_BIAS, 13 ) ) );
         CCmax_new_b = CCmax_new - silk_RSHIFT( silk_SMULBB( nb_subfr * SILK_FIX_CONST( PE_SHORTLAG_BIAS, 13 ), lag_log2_Q7 ), 7 ); /* Q13 */
 
         /* Bias towards previous lag */
-        silk_assert( nb_subfr * SILK_FIX_CONST( PE_PREVLAG_BIAS, 13 ) == silk_SAT16( nb_subfr * SILK_FIX_CONST( PE_PREVLAG_BIAS, 13 ) ) );
+        assert( nb_subfr * SILK_FIX_CONST( PE_PREVLAG_BIAS, 13 ) == silk_SAT16( nb_subfr * SILK_FIX_CONST( PE_PREVLAG_BIAS, 13 ) ) );
         if( prevLag > 0 ) {
             delta_lag_log2_sqr_Q7 = lag_log2_Q7 - prevLag_log2_Q7;
-            silk_assert( delta_lag_log2_sqr_Q7 == silk_SAT16( delta_lag_log2_sqr_Q7 ) );
+            assert( delta_lag_log2_sqr_Q7 == silk_SAT16( delta_lag_log2_sqr_Q7 ) );
             delta_lag_log2_sqr_Q7 = silk_RSHIFT( silk_SMULBB( delta_lag_log2_sqr_Q7, delta_lag_log2_sqr_Q7 ), 7 );
             prev_lag_bias_Q13 = silk_RSHIFT( silk_SMULBB( nb_subfr * SILK_FIX_CONST( PE_PREVLAG_BIAS, 13 ), *LTPCorr_Q15 ), 15 ); /* Q13 */
             prev_lag_bias_Q13 = silk_DIV32( silk_MUL( prev_lag_bias_Q13, delta_lag_log2_sqr_Q7 ), delta_lag_log2_sqr_Q7 + SILK_FIX_CONST( 0.5, 7 ) );
@@ -2126,14 +2126,14 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
 
     /* Output normalized correlation */
     *LTPCorr_Q15 = (int32_t)silk_LSHIFT( silk_DIV32_16( CCmax, nb_subfr ), 2 );
-    silk_assert( *LTPCorr_Q15 >= 0 );
+    assert( *LTPCorr_Q15 >= 0 );
 
     if( Fs_kHz > 8 ) {
         /* Search in original signal */
 
         CBimax_old = CBimax;
         /* Compensate for decimation */
-        silk_assert( lag == silk_SAT16( lag ) );
+        assert( lag == silk_SAT16( lag ) );
         if( Fs_kHz == 12 ) {
             lag = silk_RSHIFT( silk_SMULBB( lag, 3 ), 1 );
         } else if( Fs_kHz == 16 ) {
@@ -2172,7 +2172,7 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
         silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
 
         lag_counter = 0;
-        silk_assert( lag == silk_SAT16( lag ) );
+        assert( lag == silk_SAT16( lag ) );
         contour_bias_Q15 = silk_DIV32_16( SILK_FIX_CONST( PE_FLATCONTOUR_BIAS, 15 ), lag );
 
         target_ptr = &frame[ PE_LTP_MEM_LENGTH_MS * Fs_kHz ];
@@ -2188,13 +2188,13 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
                     energy     = silk_ADD32( energy,
                         matrix_ptr( energies_st3, k, j,
                                     nb_cbk_search )[ lag_counter ] );
-                    silk_assert( energy >= 0 );
+                    assert( energy >= 0 );
                 }
                 if( cross_corr > 0 ) {
                     CCmax_new = silk_DIV32_varQ( cross_corr, energy, 13 + 1 );          /* Q13 */
                     /* Reduce depending on flatness of contour */
                     diff = silk_int16_MAX - silk_MUL( contour_bias_Q15, j );            /* Q15 */
-                    silk_assert( diff == silk_SAT16( diff ) );
+                    assert( diff == silk_SAT16( diff ) );
                     CCmax_new = silk_SMULWB( CCmax_new, diff );                         /* Q14 */
                 } else {
                     CCmax_new = 0;
@@ -2290,7 +2290,7 @@ static void silk_P_Ana_calc_corr_st3(
         assert(lag_high-lag_low+1 <= SCRATCH_SIZE);
         celt_pitch_xcorr( target_ptr, target_ptr - start_lag - lag_high, xcorr32, sf_length, lag_high - lag_low + 1, arch );
         for( j = lag_low; j <= lag_high; j++ ) {
-            silk_assert( lag_counter < SCRATCH_SIZE );
+            assert( lag_counter < SCRATCH_SIZE );
             scratch_mem[ lag_counter ] = xcorr32[ lag_high - j ];
             lag_counter++;
         }
@@ -2301,8 +2301,8 @@ static void silk_P_Ana_calc_corr_st3(
             /* each code_book vector for each start lag */
             idx = matrix_ptr( Lag_CB_ptr, k, i, cbk_size ) - delta;
             for( j = 0; j < PE_NB_STAGE3_LAGS; j++ ) {
-                silk_assert( idx + j < SCRATCH_SIZE );
-                silk_assert( idx + j < lag_counter );
+                assert( idx + j < SCRATCH_SIZE );
+                assert( idx + j < lag_counter );
                 matrix_ptr( cross_corr_st3, k, i, nb_cbk_search )[ j ] =
                     scratch_mem[ idx + j ];
             }
@@ -2358,7 +2358,7 @@ static void silk_P_Ana_calc_energy_st3(
         /* Calculate the energy for first lag */
         basis_ptr = target_ptr - ( start_lag + matrix_ptr( Lag_range_ptr, k, 0, 2 ) );
         energy = silk_inner_prod_aligned( basis_ptr, basis_ptr, sf_length, arch );
-        silk_assert( energy >= 0 );
+        assert( energy >= 0 );
         scratch_mem[ lag_counter ] = energy;
         lag_counter++;
 
@@ -2366,12 +2366,12 @@ static void silk_P_Ana_calc_energy_st3(
         for( i = 1; i < lag_diff; i++ ) {
             /* remove part outside new window */
             energy -= silk_SMULBB( basis_ptr[ sf_length - i ], basis_ptr[ sf_length - i ] );
-            silk_assert( energy >= 0 );
+            assert( energy >= 0 );
 
             /* add part that comes into window */
             energy = silk_ADD_SAT32( energy, silk_SMULBB( basis_ptr[ -i ], basis_ptr[ -i ] ) );
-            silk_assert( energy >= 0 );
-            silk_assert( lag_counter < SCRATCH_SIZE );
+            assert( energy >= 0 );
+            assert( lag_counter < SCRATCH_SIZE );
             scratch_mem[ lag_counter ] = energy;
             lag_counter++;
         }
@@ -2382,11 +2382,11 @@ static void silk_P_Ana_calc_energy_st3(
             /* each code_book vector for each start lag                     */
             idx = matrix_ptr( Lag_CB_ptr, k, i, cbk_size ) - delta;
             for( j = 0; j < PE_NB_STAGE3_LAGS; j++ ) {
-                silk_assert( idx + j < SCRATCH_SIZE );
-                silk_assert( idx + j < lag_counter );
+                assert( idx + j < SCRATCH_SIZE );
+                assert( idx + j < lag_counter );
                 matrix_ptr( energies_st3, k, i, nb_cbk_search )[ j ] =
                     scratch_mem[ idx + j ];
-                silk_assert(
+                assert(
                     matrix_ptr( energies_st3, k, i, nb_cbk_search )[ j ] >= 0 );
             }
         }
@@ -2437,7 +2437,7 @@ void silk_process_gains_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  Encoder
         if (gain_squared < silk_int16_MAX) {
             /* recalculate with higher precision */
             gain_squared = silk_SMLAWW(silk_LSHIFT(ResNrgPart, 16), gain, gain);
-            silk_assert(gain_squared > 0);
+            assert(gain_squared > 0);
             gain = silk_SQRT_APPROX(gain_squared); /* Q8   */
             gain = silk_min(gain, silk_int32_MAX >> 8);
             psEncCtrl->Gains_Q16[k] = silk_LSHIFT_SAT32(gain, 8); /* Q16  */
@@ -2477,8 +2477,8 @@ void silk_process_gains_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  Encoder
         silk_SMULWB(SILK_FIX_CONST(LAMBDA_CODING_QUALITY, 12), psEncCtrl->coding_quality_Q14) +
         silk_SMULWB(SILK_FIX_CONST(LAMBDA_QUANT_OFFSET, 16), quant_offset_Q10);
 
-    silk_assert(psEncCtrl->Lambda_Q10 > 0);
-    silk_assert(psEncCtrl->Lambda_Q10 < SILK_FIX_CONST(2, 10));
+    assert(psEncCtrl->Lambda_Q10 > 0);
+    assert(psEncCtrl->Lambda_Q10 < SILK_FIX_CONST(2, 10));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2592,7 +2592,7 @@ int32_t silk_residual_energy16_covar_FIX(const int16_t *c,   /* I    Prediction 
     Qxtra = silk_max_int(Qxtra, 0);
     for (i = 0; i < D; i++) {
         cn[i] = silk_LSHIFT((int32_t)c[i], Qxtra);
-        silk_assert(silk_abs(cn[i]) <= (silk_int16_MAX + 1)); /* Check that silk_SMLAWB can be used */
+        assert(silk_abs(cn[i]) <= (silk_int16_MAX + 1)); /* Check that silk_SMLAWB can be used */
     }
     lshifts -= Qxtra;
 
@@ -2833,7 +2833,7 @@ void silk_warped_autocorrelation_FIX_c(int32_t *corr,             /* O    Result
 
     /* Order must be even */
     assert((order & 1) == 0);
-    silk_assert(2 * QS - QC >= 0);
+    assert(2 * QS - QC >= 0);
 
     /* Loop over samples */
     for (n = 0; n < length; n++) {
@@ -2856,7 +2856,7 @@ void silk_warped_autocorrelation_FIX_c(int32_t *corr,             /* O    Result
     lsh = silk_CLZ64(corr_QC[0]) - 35;
     lsh = silk_LIMIT(lsh, -12 - QC, 30 - QC);
     *scale = -(QC + lsh);
-    silk_assert(*scale >= -30 && *scale <= 12);
+    assert(*scale >= -30 && *scale <= 12);
     if (lsh >= 0) {
         for (i = 0; i < order + 1; i++) {
             corr[i] = (int32_t)silk_CHECK_FIT32(silk_LSHIFT64(corr_QC[i], lsh));
@@ -2866,7 +2866,7 @@ void silk_warped_autocorrelation_FIX_c(int32_t *corr,             /* O    Result
             corr[i] = (int32_t)silk_CHECK_FIT32(silk_RSHIFT64(corr_QC[i], -lsh));
         }
     }
-    silk_assert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
+    assert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
     free(state_QS);
     free(corr_QC);
 }

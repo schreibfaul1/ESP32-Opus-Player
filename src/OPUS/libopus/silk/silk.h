@@ -30,10 +30,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 
 #include "../celt/celt.h"
-#include "errors.h"
 #include "typedef.h"
-#include "main.h"
-#include "macros.h"
+
+
 #include "SigProc_FIX.h"
 
 
@@ -383,8 +382,112 @@ extern "C" {
 #define SILK_PE_MIN_COMPLEX         0
 #define SILK_PE_MID_COMPLEX         1
 #define SILK_PE_MAX_COMPLEX         2
+#define USE_CELT_FIR                0
+#define A_LIMIT                     SILK_FIX_CONST( 0.99975, 24 )
+#define MUL32_FRAC_Q(a32, b32, Q)   ((int32_t)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
+/* Error messages */
+#define SILK_NO_ERROR                               0
+#define SILK_ENC_INPUT_INVALID_NO_OF_SAMPLES        -101
+#define SILK_ENC_FS_NOT_SUPPORTED                   -102 /* Sampling frequency not 8000, 12000 or 16000 Hertz */
+#define SILK_ENC_PACKET_SIZE_NOT_SUPPORTED          -103 /* Packet size not 10, 20, 40, or 60 ms */
+#define SILK_ENC_PAYLOAD_BUF_TOO_SHORT              -104 /* Allocated payload buffer too short */
+#define SILK_ENC_INVALID_LOSS_RATE                  -105 /* Loss rate not between 0 and 100 percent */
+#define SILK_ENC_INVALID_COMPLEXITY_SETTING         -106 /* Complexity setting not valid, use 0...10 */
+#define SILK_ENC_INVALID_INBAND_FEC_SETTING         -107 /* Inband FEC setting not valid, use 0 or 1 */
+#define SILK_ENC_INVALID_DTX_SETTING                -108 /* DTX setting not valid, use 0 or 1 */
+#define SILK_ENC_INVALID_CBR_SETTING                -109 /* CBR setting not valid, use 0 or 1 */
+#define SILK_ENC_INTERNAL_ERROR                     -110 /* Internal encoder error */
+#define SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR   -111 /* Internal encoder error */
+/* Decoder error messages */
+#define SILK_DEC_INVALID_SAMPLING_FREQUENCY         -200 /* Output samplfreq lower than intern. decoded sampling freq */
+#define SILK_DEC_PAYLOAD_TOO_LARGE                  -201 /* Payload size exceeded the maximum allowed 1024 bytes */
+#define SILK_DEC_PAYLOAD_ERROR                      -202 /* Payload has bit errors */
+#define SILK_DEC_INVALID_FRAME_SIZE                 -203 /* Payload has bit errors */
 
-#define silk_assert(COND)
+#define silk_encoder_state_Fxx      silk_encoder_state_FIX
+#define silk_encode_do_VAD_Fxx      silk_encode_do_VAD_FIX
+#define silk_encode_frame_Fxx       silk_encode_frame_FIX
+
+#define OFFSET ((MIN_QGAIN_DB * 128) / 6 + 16 * 128)
+#define SCALE_Q16 ((65536 * (N_LEVELS_QGAIN - 1)) / (((MAX_QGAIN_DB - MIN_QGAIN_DB) * 128) / 6))
+#define INV_SCALE_Q16 ((65536 * (((MAX_QGAIN_DB - MIN_QGAIN_DB) * 128) / 6)) / (N_LEVELS_QGAIN - 1))
+
+/* (a32 * (int32_t)((int16_t)(b32))) >> 16 output have to be 32bit int */
+#define silk_SMULWB(a32, b32)            ((int32_t)(((a32) * (int64_t)((int16_t)(b32))) >> 16))
+
+/* a32 + (b32 * (int32_t)((int16_t)(c32))) >> 16 output have to be 32bit int */
+#define silk_SMLAWB(a32, b32, c32)       ((int32_t)((a32) + (((b32) * (int64_t)((int16_t)(c32))) >> 16)))
+
+/* (a32 * (b32 >> 16)) >> 16 */
+#define silk_SMULWT(a32, b32)            ((int32_t)(((a32) * (int64_t)((b32) >> 16)) >> 16))
+
+/* a32 + (b32 * (c32 >> 16)) >> 16 */
+#define silk_SMLAWT(a32, b32, c32)       ((int32_t)((a32) + (((b32) * ((int64_t)(c32) >> 16)) >> 16)))
+
+/* (int32_t)((int16_t)(a3))) * (int32_t)((int16_t)(b32)) output have to be 32bit int */
+#define silk_SMULBB(a32, b32)            ((int32_t)((int16_t)(a32)) * (int32_t)((int16_t)(b32)))
+
+/* a32 + (int32_t)((int16_t)(b32)) * (int32_t)((int16_t)(c32)) output have to be 32bit int */
+#define silk_SMLABB(a32, b32, c32)       ((a32) + ((int32_t)((int16_t)(b32))) * (int32_t)((int16_t)(c32)))
+
+/* (int32_t)((int16_t)(a32)) * (b32 >> 16) */
+#define silk_SMULBT(a32, b32)            ((int32_t)((int16_t)(a32)) * ((b32) >> 16))
+
+/* a32 + (int32_t)((int16_t)(b32)) * (c32 >> 16) */
+#define silk_SMLABT(a32, b32, c32)       ((a32) + ((int32_t)((int16_t)(b32))) * ((c32) >> 16))
+
+/* a64 + (b32 * c32) */
+#define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((int64_t)(b32) * (int64_t)(c32))))
+
+/* (a32 * b32) >> 16 */
+#define silk_SMULWW(a32, b32)            ((int32_t)(((int64_t)(a32) * (b32)) >> 16))
+
+/* a32 + ((b32 * c32) >> 16) */
+#define silk_SMLAWW(a32, b32, c32)       ((int32_t)((a32) + (((int64_t)(b32) * (c32)) >> 16)))
+
+/* add/subtract with output saturated */
+#define silk_ADD_SAT32(a, b)             ((((uint32_t)(a) + (uint32_t)(b)) & 0x80000000) == 0 ?                 \
+                                        ((((a) & (b)) & 0x80000000) != 0 ? silk_int32_MIN : (a)+(b)) :          \
+                                        ((((a) | (b)) & 0x80000000) == 0 ? silk_int32_MAX : (a)+(b)) )
+
+#define silk_SUB_SAT32(a, b)             ((((uint32_t)(a)-(uint32_t)(b)) & 0x80000000) == 0 ?                    \
+                                        (( (a) & ((b)^0x80000000) & 0x80000000) ? silk_int32_MIN : (a)-(b)) :    \
+                                        ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
+
+static inline int32_t silk_CLZ16(int16_t in16) { return 32 - EC_ILOG(in16 << 16 | 0x8000); }
+
+static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32) : 32; }
+
+/* Row based */
+#define matrix_ptr(Matrix_base_adr, row, column, N) (*((Matrix_base_adr) + ((row) * (N) + (column))))
+#define matrix_adr(Matrix_base_adr, row, column, N) ((Matrix_base_adr) + ((row) * (N) + (column)))
+
+/* Column based */
+#ifndef matrix_c_ptr
+#   define matrix_c_ptr(Matrix_base_adr, row, column, M) \
+    (*((Matrix_base_adr) + ((row)+(M)*(column))))
+#endif
+
+#define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
+                        max_gain_Q7, L, arch)                                                                         \
+    ((void)(arch), silk_VQ_WMat_EC_c(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7,      \
+                                     cl_Q5, subfr_len, max_gain_Q7, L))
+
+#define silk_NSQ(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, Tilt_Q14, \
+                 LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch)                                      \
+    ((void)(arch), silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13,                 \
+                              HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
+
+#define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, \
+                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch)                  \
+    ((void)(arch),                                                                                                  \
+     silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,  \
+                        Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
+
+
+#define silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch), silk_VAD_GetSA_Q8_c(psEnC, pIn))
+
+
 
 /* Struct for TOC (Table of Contents) */
 typedef struct {
@@ -657,6 +760,24 @@ typedef struct {
     silk_PLC_struct sPLC;
 } silk_decoder_state;
 
+typedef struct {
+    int8_t LastGainIndex;
+    int32_t HarmBoost_smth_Q16;
+    int32_t HarmShapeGain_smth_Q16;
+    int32_t Tilt_smth_Q16;
+} silk_shape_state_FIX;
+
+typedef struct {
+    silk_encoder_state sCmn;     /* Common struct, shared with floating-point code       */
+    silk_shape_state_FIX sShape; /* Shape state                                          */
+
+    /* Buffer for find pitch and noise shape analysis */
+    silk_DWORD_ALIGN int16_t
+        x_buf[2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX]; /* Buffer for find pitch and noise shape analysis  */
+    int32_t LTPCorr_Q15;                            /* Normalized correlation from pitch lag estimator      */
+    int32_t resNrgSmth;
+} silk_encoder_state_FIX;
+
 /************************/
 /* Decoder control      */
 /************************/
@@ -793,8 +914,8 @@ static inline int32_t silk_DIV32_varQ(/* O    returns a good approximation of "(
     int32_t a_headrm, b_headrm, lshift;
     int32_t b32_inv, a32_nrm, b32_nrm, result;
 
-    silk_assert(b32 != 0);
-    silk_assert(Qres >= 0);
+    assert(b32 != 0);
+    assert(Qres >= 0);
 
     /* Compute number of bits head room and normalize inputs */
     a_headrm = silk_CLZ32(silk_abs(a32)) - 1;
@@ -837,8 +958,8 @@ static inline int32_t silk_INVERSE32_varQ(/* O    returns a good approximation o
     int32_t b_headrm, lshift;
     int32_t b32_inv, b32_nrm, err_Q32, result;
 
-    silk_assert(b32 != 0);
-    silk_assert(Qres > 0);
+    assert(b32 != 0);
+    assert(Qres > 0);
 
     /* Compute number of bits head room and normalize input */
     b_headrm = silk_CLZ32(silk_abs(b32)) - 1;
@@ -1010,6 +1131,17 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, ec_dec *psRangeDec, int16_t
                           int32_t condCoding, int arch);
 void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz,
                        const int32_t nb_subfr);
+void silk_HP_variable_cutoff(silk_encoder_state_Fxx state_Fxx[]);
+int32_t silk_init_encoder(silk_encoder_state_Fxx *psEnc, int arch);
+int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t *const inVec2, const int32_t scale,
+                                      const int32_t len);
+int32_t silk_lin2log(const int32_t inLin);
+int32_t silk_log2lin(const int32_t inLog_Q7);
+void silk_LPC_analysis_filter(int16_t *out, const int16_t *in, const int16_t *B, const int32_t len, const int32_t d,
+                              int arch);
+void silk_LPC_fit(int16_t *a_QOUT, int32_t *a_QIN, const int32_t QOUT, const int32_t QIN, const int32_t d);
+static int32_t LPC_inverse_pred_gain_QA_c(int32_t A_QA[SILK_MAX_ORDER_LPC], const int32_t order);
+int32_t silk_LPC_inverse_pred_gain_c(const int16_t *A_Q12, const int32_t order);
 
 
 
