@@ -1094,6 +1094,7 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *old
 void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C);
 static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
 
+
 #ifdef __cplusplus
 }
 #endif
