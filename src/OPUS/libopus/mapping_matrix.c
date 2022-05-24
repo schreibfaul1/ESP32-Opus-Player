@@ -63,9 +63,8 @@ void mapping_matrix_init(MappingMatrix * const matrix,
   int i;
   int16_t *ptr;
 
-#if !defined(ENABLE_ASSERTIONS)
   (void)data_size;
-#endif
+
   assert(align(data_size) == align(rows * cols * sizeof(int16_t)));
 
   matrix->rows = rows;

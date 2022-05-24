@@ -35,7 +35,7 @@
 
 /* DECODER */
 
-#if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
+#if defined(ENABLE_HARDENING)
 static void validate_ms_decoder(OpusMSDecoder *st)
 {
    validate_layout(&st->layout);

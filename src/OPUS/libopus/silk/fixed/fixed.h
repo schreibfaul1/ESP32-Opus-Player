@@ -5,7 +5,7 @@
 #include "../define.h"
 #include "../tuning_parameters.h"
 #include <stdlib.h>
-#include "../control.h"
+#include "../silk.h"
 #include "../main.h"
 #include "../PLC.h"
 #include "../debug.h"

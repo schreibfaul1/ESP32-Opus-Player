@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "main.h"
-#include "control.h"
+#include "silk.h"
 #include "errors.h"
 
 /* Check encoder control struct */
