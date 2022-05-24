@@ -27,6 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "silk.h"
 #include "main.h"
+#include "tables.h"
 
 /************************/
 /* Decoder Super Struct */

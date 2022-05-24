@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "NSQ.h"
 
 
-static OPUS_INLINE void silk_nsq_scale_states(
+static inline void silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     const int16_t    x16[],                  /* I    input                           */
@@ -44,7 +44,7 @@ static OPUS_INLINE void silk_nsq_scale_states(
 );
 
 #if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
-static OPUS_INLINE void silk_noise_shape_quantizer(
+static inline void silk_noise_shape_quantizer(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     int32_t            signalType,             /* I    Signal type                     */
     const int32_t    x_sc_Q10[],             /* I                                    */
@@ -173,7 +173,7 @@ void silk_NSQ_c
 /***********************************/
 
 #if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
-static OPUS_INLINE
+static inline
 #endif
 void silk_noise_shape_quantizer(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
@@ -360,7 +360,7 @@ void silk_noise_shape_quantizer(
     silk_memcpy( NSQ->sLPC_Q14, &NSQ->sLPC_Q14[ length ], NSQ_LPC_BUF_LENGTH * sizeof( int32_t ) );
 }
 
-static OPUS_INLINE void silk_nsq_scale_states(
+static inline void silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     const int16_t    x16[],                  /* I    input                           */

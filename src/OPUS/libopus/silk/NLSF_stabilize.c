@@ -35,6 +35,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /*                                                          */
 
 #include "SigProc_FIX.h"
+#include <stdint.h>
+#include "silk.h"
+
 
 /* Constant Definitions */
 #define MAX_LOOPS        20

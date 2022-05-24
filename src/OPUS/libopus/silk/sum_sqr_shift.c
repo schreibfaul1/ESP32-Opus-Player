@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "SigProc_FIX.h"
+#include <stdint.h>
+#include "silk.h"
 
 /* Compute number of bits to right shift the sum of squares of a vector */
 /* of int16s to make it fit in an int32                                 */

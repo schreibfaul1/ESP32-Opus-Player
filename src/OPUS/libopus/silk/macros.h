@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <limits.h>
 
 
-/* This is an OPUS_INLINE header file for general platform. */
+/* This is an inline header file for general platform. */
 
 /* (a32 * (int32_t)((int16_t)(b32))) >> 16 output have to be 32bit int */
 #define silk_SMULWB(a32, b32)            ((int32_t)(((a32) * (int64_t)((int16_t)(b32))) >> 16))
@@ -83,14 +83,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 #ifndef OVERRIDE_silk_CLZ16
-static OPUS_INLINE int32_t silk_CLZ16(int16_t in16)
+static inline int32_t silk_CLZ16(int16_t in16)
 {
     return 32 - EC_ILOG(in16<<16|0x8000);
 }
 #endif
 
 #ifndef OVERRIDE_silk_CLZ32
-static OPUS_INLINE int32_t silk_CLZ32(int32_t in32)
+static inline int32_t silk_CLZ32(int32_t in32)
 {
     return in32 ? 32 - EC_ILOG(in32) : 32;
 }

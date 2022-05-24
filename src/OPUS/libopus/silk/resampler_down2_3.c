@@ -28,6 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_private.h"
+#include "silk.h"
 
 #define ORDER_FIR                   4
 

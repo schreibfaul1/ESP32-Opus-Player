@@ -42,6 +42,7 @@ extern "C"
 #include "resampler_structs.h"
 #include "macros.h"
 #include "../celt/celt.h"
+#include <stdint.h>
 
 
 /********************************************************************/
@@ -327,14 +328,14 @@ void silk_NLSF_VQ_weights_laroia(
 /* Compute reflection coefficients from input signal */
 void silk_burg_modified_c(
     int32_t                  *res_nrg,           /* O    Residual energy                                             */
-    int32_t                    *res_nrg_Q,         /* O    Residual energy Q value                                     */
+    int32_t                  *res_nrg_Q,         /* O    Residual energy Q value                                     */
     int32_t                  A_Q16[],            /* O    Prediction coefficients (length order)                      */
     const int16_t            x[],                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
     const int32_t            minInvGain_Q30,     /* I    Inverse of max prediction gain                              */
-    const int32_t              subfr_length,       /* I    Input signal subframe length (incl. D preceding samples)    */
-    const int32_t              nb_subfr,           /* I    Number of subframes stacked in x                            */
-    const int32_t              D,                  /* I    Order                                                       */
-    int                         arch                /* I    Run-time architecture                                       */
+    const int32_t            subfr_length,       /* I    Input signal subframe length (incl. D preceding samples)    */
+    const int32_t            nb_subfr,           /* I    Number of subframes stacked in x                            */
+    const int32_t            D,                  /* I    Order                                                       */
+    int                      arch                /* I    Run-time architecture                                       */
 );
 
 /* Copy and multiply a vector by a constant */
@@ -386,8 +387,8 @@ int64_t silk_inner_prod16_aligned_64_c(
 /* Rotate a32 right by 'rot' bits. Negative rot values result in rotating
    left. Output is 32bit int.
    Note: contemporary compilers recognize the C expression below and
-   compile it into a 'ror' instruction if available. No need for OPUS_INLINE ASM! */
-static OPUS_INLINE int32_t silk_ROR32( int32_t a32, int32_t rot )
+   compile it into a 'ror' instruction if available. No need for inline ASM! */
+static inline int32_t silk_ROR32( int32_t a32, int32_t rot )
 {
     uint32_t x = (uint32_t) a32;
     uint32_t r = (uint32_t) rot;
@@ -408,167 +409,7 @@ static OPUS_INLINE int32_t silk_ROR32( int32_t a32, int32_t rot )
 #define silk_DWORD_ALIGN
 #endif
 
-/* Useful Macros that can be adjusted to other platforms */
-#define silk_memcpy(dest, src, size)        memcpy((dest), (src), (size))
-#define silk_memset(dest, src, size)        memset((dest), (src), (size))
-#define silk_memmove(dest, src, size)       memmove((dest), (src), (size))
 
-/* Fixed point macros */
-
-/* (a32 * b32) output have to be 32bit int */
-#define silk_MUL(a32, b32)                  ((a32) * (b32))
-
-/* (a32 * b32) output have to be 32bit uint */
-#define silk_MUL_uint(a32, b32)             silk_MUL(a32, b32)
-
-/* a32 + (b32 * c32) output have to be 32bit int */
-#define silk_MLA(a32, b32, c32)             silk_ADD32((a32),((b32) * (c32)))
-
-/* a32 + (b32 * c32) output have to be 32bit uint */
-#define silk_MLA_uint(a32, b32, c32)        silk_MLA(a32, b32, c32)
-
-/* ((a32 >> 16)  * (b32 >> 16)) output have to be 32bit int */
-#define silk_SMULTT(a32, b32)               (((a32) >> 16) * ((b32) >> 16))
-
-/* a32 + ((a32 >> 16)  * (b32 >> 16)) output have to be 32bit int */
-#define silk_SMLATT(a32, b32, c32)          silk_ADD32((a32),((b32) >> 16) * ((c32) >> 16))
-
-#define silk_SMLALBB(a64, b16, c16)         silk_ADD64((a64),(int64_t)((int32_t)(b16) * (int32_t)(c16)))
-
-/* (a32 * b32) */
-#define silk_SMULL(a32, b32)                ((int64_t)(a32) * /*(int64_t)*/(b32))
-
-/* Adds two signed 32-bit values in a way that can overflow, while not relying on undefined behaviour
-   (just standard two's complement implementation-specific behaviour) */
-#define silk_ADD32_ovflw(a, b)              ((int32_t)((uint32_t)(a) + (uint32_t)(b)))
-/* Subtractss two signed 32-bit values in a way that can overflow, while not relying on undefined behaviour
-   (just standard two's complement implementation-specific behaviour) */
-#define silk_SUB32_ovflw(a, b)              ((int32_t)((uint32_t)(a) - (uint32_t)(b)))
-
-/* Multiply-accumulate macros that allow overflow in the addition (ie, no asserts in debug mode) */
-#define silk_MLA_ovflw(a32, b32, c32)       silk_ADD32_ovflw((a32), (uint32_t)(b32) * (uint32_t)(c32))
-#define silk_SMLABB_ovflw(a32, b32, c32)    (silk_ADD32_ovflw((a32) , ((int32_t)((int16_t)(b32))) * (int32_t)((int16_t)(c32))))
-
-#define silk_DIV32_16(a32, b16)             ((int32_t)((a32) / (b16)))
-#define silk_DIV32(a32, b32)                ((int32_t)((a32) / (b32)))
-
-/* These macros enables checking for overflow in silk_API_Debug.h*/
-#define silk_ADD16(a, b)                    ((a) + (b))
-#define silk_ADD32(a, b)                    ((a) + (b))
-#define silk_ADD64(a, b)                    ((a) + (b))
-
-#define silk_SUB16(a, b)                    ((a) - (b))
-#define silk_SUB32(a, b)                    ((a) - (b))
-#define silk_SUB64(a, b)                    ((a) - (b))
-
-#define silk_SAT8(a)                        ((a) > silk_int8_MAX ? silk_int8_MAX  :       \
-                                            ((a) < silk_int8_MIN ? silk_int8_MIN  : (a)))
-#define silk_SAT16(a)                       ((a) > silk_int16_MAX ? silk_int16_MAX :      \
-                                            ((a) < silk_int16_MIN ? silk_int16_MIN : (a)))
-#define silk_SAT32(a)                       ((a) > silk_int32_MAX ? silk_int32_MAX :      \
-                                            ((a) < silk_int32_MIN ? silk_int32_MIN : (a)))
-
-#define silk_CHECK_FIT8(a)                  (a)
-#define silk_CHECK_FIT16(a)                 (a)
-#define silk_CHECK_FIT32(a)                 (a)
-
-#define silk_ADD_SAT16(a, b)                (int16_t)silk_SAT16( silk_ADD32( (int32_t)(a), (b) ) )
-#define silk_ADD_SAT64(a, b)                ((((a) + (b)) & 0x8000000000000000LL) == 0 ?                            \
-                                            ((((a) & (b)) & 0x8000000000000000LL) != 0 ? silk_int64_MIN : (a)+(b)) : \
-                                            ((((a) | (b)) & 0x8000000000000000LL) == 0 ? silk_int64_MAX : (a)+(b)) )
-
-#define silk_SUB_SAT16(a, b)                (int16_t)silk_SAT16( silk_SUB32( (int32_t)(a), (b) ) )
-#define silk_SUB_SAT64(a, b)                ((((a)-(b)) & 0x8000000000000000LL) == 0 ?                                               \
-                                            (( (a) & ((b)^0x8000000000000000LL) & 0x8000000000000000LL) ? silk_int64_MIN : (a)-(b)) : \
-                                            ((((a)^0x8000000000000000LL) & (b)  & 0x8000000000000000LL) ? silk_int64_MAX : (a)-(b)) )
-
-/* Saturation for positive input values */
-#define silk_POS_SAT32(a)                   ((a) > silk_int32_MAX ? silk_int32_MAX : (a))
-
-/* Add with saturation for positive input values */
-#define silk_ADD_POS_SAT8(a, b)             ((((a)+(b)) & 0x80)                 ? silk_int8_MAX  : ((a)+(b)))
-#define silk_ADD_POS_SAT16(a, b)            ((((a)+(b)) & 0x8000)               ? silk_int16_MAX : ((a)+(b)))
-#define silk_ADD_POS_SAT32(a, b)            ((((uint32_t)(a)+(uint32_t)(b)) & 0x80000000) ? silk_int32_MAX : ((a)+(b)))
-
-#define silk_LSHIFT8(a, shift)              ((int32_t8)((uint8_t)(a)<<(shift)))         /* shift >= 0, shift < 8  */
-#define silk_LSHIFT16(a, shift)             ((int16_t)((uint16_t)(a)<<(shift)))       /* shift >= 0, shift < 16 */
-#define silk_LSHIFT32(a, shift)             ((int32_t)((uint32_t)(a)<<(shift)))       /* shift >= 0, shift < 32 */
-#define silk_LSHIFT64(a, shift)             ((int64_t)((uint64_t)(a)<<(shift)))       /* shift >= 0, shift < 64 */
-#define silk_LSHIFT(a, shift)               silk_LSHIFT32(a, shift)                         /* shift >= 0, shift < 32 */
-
-#define silk_RSHIFT8(a, shift)              ((a)>>(shift))                                  /* shift >= 0, shift < 8  */
-#define silk_RSHIFT16(a, shift)             ((a)>>(shift))                                  /* shift >= 0, shift < 16 */
-#define silk_RSHIFT32(a, shift)             ((a)>>(shift))                                  /* shift >= 0, shift < 32 */
-#define silk_RSHIFT64(a, shift)             ((a)>>(shift))                                  /* shift >= 0, shift < 64 */
-#define silk_RSHIFT(a, shift)               silk_RSHIFT32(a, shift)                         /* shift >= 0, shift < 32 */
-
-/* saturates before shifting */
-#define silk_LSHIFT_SAT32(a, shift)         (silk_LSHIFT32( silk_LIMIT( (a), silk_RSHIFT32( silk_int32_MIN, (shift) ), \
-                                                    silk_RSHIFT32( silk_int32_MAX, (shift) ) ), (shift) ))
-
-#define silk_LSHIFT_ovflw(a, shift)         ((int32_t)((uint32_t)(a) << (shift)))     /* shift >= 0, allowed to overflow */
-#define silk_LSHIFT_uint(a, shift)          ((a) << (shift))                                /* shift >= 0 */
-#define silk_RSHIFT_uint(a, shift)          ((a) >> (shift))                                /* shift >= 0 */
-
-#define silk_ADD_LSHIFT(a, b, shift)        ((a) + silk_LSHIFT((b), (shift)))               /* shift >= 0 */
-#define silk_ADD_LSHIFT32(a, b, shift)      silk_ADD32((a), silk_LSHIFT32((b), (shift)))    /* shift >= 0 */
-#define silk_ADD_LSHIFT_uint(a, b, shift)   ((a) + silk_LSHIFT_uint((b), (shift)))          /* shift >= 0 */
-#define silk_ADD_RSHIFT(a, b, shift)        ((a) + silk_RSHIFT((b), (shift)))               /* shift >= 0 */
-#define silk_ADD_RSHIFT32(a, b, shift)      silk_ADD32((a), silk_RSHIFT32((b), (shift)))    /* shift >= 0 */
-#define silk_ADD_RSHIFT_uint(a, b, shift)   ((a) + silk_RSHIFT_uint((b), (shift)))          /* shift >= 0 */
-#define silk_SUB_LSHIFT32(a, b, shift)      silk_SUB32((a), silk_LSHIFT32((b), (shift)))    /* shift >= 0 */
-#define silk_SUB_RSHIFT32(a, b, shift)      silk_SUB32((a), silk_RSHIFT32((b), (shift)))    /* shift >= 0 */
-
-/* Requires that shift > 0 */
-#define silk_RSHIFT_ROUND(a, shift)         ((shift) == 1 ? ((a) >> 1) + ((a) & 1) : (((a) >> ((shift) - 1)) + 1) >> 1)
-#define silk_RSHIFT_ROUND64(a, shift)       ((shift) == 1 ? ((a) >> 1) + ((a) & 1) : (((a) >> ((shift) - 1)) + 1) >> 1)
-
-/* Number of rightshift required to fit the multiplication */
-#define silk_NSHIFT_MUL_32_32(a, b)         ( -(31- (32-silk_CLZ32(silk_abs(a)) + (32-silk_CLZ32(silk_abs(b))))) )
-#define silk_NSHIFT_MUL_16_16(a, b)         ( -(15- (16-silk_CLZ16(silk_abs(a)) + (16-silk_CLZ16(silk_abs(b))))) )
-
-
-#define silk_min(a, b)                      (((a) < (b)) ? (a) : (b))
-#define silk_max(a, b)                      (((a) > (b)) ? (a) : (b))
-
-/* Macro to convert floating-point constants to fixed-point */
-#define SILK_FIX_CONST( C, Q )              ((int32_t)((C) * ((int64_t)1 << (Q)) + 0.5L))
-
-/* silk_min() versions with typecast in the function call */
-static OPUS_INLINE int32_t silk_min_int(int32_t a, int32_t b)
-{
-    return (((a) < (b)) ? (a) : (b));
-}
-static OPUS_INLINE int16_t silk_min_16(int16_t a, int16_t b)
-{
-    return (((a) < (b)) ? (a) : (b));
-}
-static OPUS_INLINE int32_t silk_min_32(int32_t a, int32_t b)
-{
-    return (((a) < (b)) ? (a) : (b));
-}
-static OPUS_INLINE int64_t silk_min_64(int64_t a, int64_t b)
-{
-    return (((a) < (b)) ? (a) : (b));
-}
-
-/* silk_min() versions with typecast in the function call */
-static OPUS_INLINE int32_t silk_max_int(int32_t a, int32_t b)
-{
-    return (((a) > (b)) ? (a) : (b));
-}
-static OPUS_INLINE int16_t silk_max_16(int16_t a, int16_t b)
-{
-    return (((a) > (b)) ? (a) : (b));
-}
-static OPUS_INLINE int32_t silk_max_32(int32_t a, int32_t b)
-{
-    return (((a) > (b)) ? (a) : (b));
-}
-static OPUS_INLINE int64_t silk_max_64(int64_t a, int64_t b)
-{
-    return (((a) > (b)) ? (a) : (b));
-}
 
 #define silk_LIMIT( a, limit1, limit2)      ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) \
                                                                  : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))))
@@ -609,7 +450,6 @@ static OPUS_INLINE int64_t silk_max_64(int64_t a, int64_t b)
     ((void)(arch),silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
 #endif
 
-#include "Inlines.h"
 #include "MacroCount.h"
 
 #ifdef OPUS_ARM_INLINE_ASM

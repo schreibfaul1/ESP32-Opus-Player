@@ -27,6 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 #include "../celt/celt.h"
+#include "silk.h"
 
 /*
  * Matrix of resampling methods used:

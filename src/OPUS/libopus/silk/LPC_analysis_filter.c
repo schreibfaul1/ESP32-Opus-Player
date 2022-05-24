@@ -27,6 +27,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "../celt/celt.h"
+#include <stdint.h>
+#include "silk.h"
 
 /*******************************************/
 /* LPC analysis filter                     */

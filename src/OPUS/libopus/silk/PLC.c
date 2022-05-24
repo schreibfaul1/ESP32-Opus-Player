@@ -33,12 +33,12 @@ static const int16_t HARM_ATT_Q15[NB_ATT]              = { 32440, 31130 }; /* 0.
 static const int16_t PLC_RAND_ATTENUATE_V_Q15[NB_ATT]  = { 31130, 26214 }; /* 0.95, 0.8 */
 static const int16_t PLC_RAND_ATTENUATE_UV_Q15[NB_ATT] = { 32440, 29491 }; /* 0.99, 0.9 */
 
-static OPUS_INLINE void silk_PLC_update(
+static inline void silk_PLC_update(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl          /* I/O Decoder control      */
 );
 
-static OPUS_INLINE void silk_PLC_conceal(
+static inline void silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     int16_t                          frame[],            /* O LPC residual signal    */
@@ -89,7 +89,7 @@ void silk_PLC(
 /**************************************************/
 /* Update state of PLC                            */
 /**************************************************/
-static OPUS_INLINE void silk_PLC_update(
+static inline void silk_PLC_update(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl          /* I/O Decoder control      */
 )
@@ -162,7 +162,7 @@ static OPUS_INLINE void silk_PLC_update(
     psPLC->nb_subfr = psDec->nb_subfr;
 }
 
-static OPUS_INLINE void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
+static inline void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
       const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr)
 {
     int i, k;
@@ -186,7 +186,7 @@ static OPUS_INLINE void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32
     
 }
 
-static OPUS_INLINE void silk_PLC_conceal(
+static inline void silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     int16_t                          frame[],            /* O LPC residual signal    */

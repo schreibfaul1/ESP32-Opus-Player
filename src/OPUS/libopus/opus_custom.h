@@ -44,7 +44,7 @@ extern "C" {
 
 
 # define OPUS_CUSTOM_EXPORT
-# define OPUS_CUSTOM_EXPORT_STATIC static OPUS_INLINE
+# define OPUS_CUSTOM_EXPORT_STATIC static inline
 
 
 

@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "main.h"
+#include "silk.h"
 
 /* Entropy code the mid/side quantization indices */
 void silk_stereo_encode_pred(

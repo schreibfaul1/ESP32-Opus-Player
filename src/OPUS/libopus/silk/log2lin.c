@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "SigProc_FIX.h"
+#include "silk.h"
+#include <stdint.h>
 
 /* Approximation of 2^() (very close inverse of silk_lin2log()) */
 /* Convert input to a linear scale    */

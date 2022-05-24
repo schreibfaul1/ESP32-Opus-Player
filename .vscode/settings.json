@@ -41,6 +41,9 @@
     "main.h": "c",
     "control.h": "c",
     "opus_custom.h": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "typedef.h": "c",
+    "silk.h": "c",
+    "random": "c"
   }
 }

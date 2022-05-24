@@ -28,6 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_rom.h"
+#include "silk.h"
 
 /* Downsample by a factor 2 */
 void silk_resampler_down2(

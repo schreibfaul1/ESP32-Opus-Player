@@ -1,5 +1,7 @@
 
 #include "fixed.h"
+#include "../silk.h"
+#include "../tables.h"
 
 static const int16_t freq_table_Q16[27] = {
     12111, 9804, 8235, 7100, 6239, 5565, 5022, 4575, 4202, 3885, 3612, 3375, 3167, 2984,
@@ -94,6 +96,7 @@ void silk_burg_modified_c(
     int32_t *CAb = (int32_t *)malloc(sizeof(int32_t) * (SILK_MAX_ORDER_LPC + 1));
     int32_t *xcorr = (int32_t *)malloc(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
     int64_t C0_64;
+    const uint8_t QA25 = 25;
 
     assert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
 
@@ -152,17 +155,17 @@ void silk_burg_modified_c(
                 x_ptr = x + s * subfr_length;
                 x1 = -silk_LSHIFT32((int32_t)x_ptr[n], 16 - rshifts);                    /* Q(16-rshifts) */
                 x2 = -silk_LSHIFT32((int32_t)x_ptr[subfr_length - n - 1], 16 - rshifts); /* Q(16-rshifts) */
-                tmp1 = silk_LSHIFT32((int32_t)x_ptr[n], QA - 16);                        /* Q(QA-16) */
-                tmp2 = silk_LSHIFT32((int32_t)x_ptr[subfr_length - n - 1], QA - 16);     /* Q(QA-16) */
+                tmp1 = silk_LSHIFT32((int32_t)x_ptr[n], QA25 - 16);                        /* Q(QA_-16) */
+                tmp2 = silk_LSHIFT32((int32_t)x_ptr[subfr_length - n - 1], QA25 - 16);     /* Q(QA_-16) */
                 for (k = 0; k < n; k++) {
                     C_first_row[k] = silk_SMLAWB(C_first_row[k], x1, x_ptr[n - k - 1]);          /* Q( -rshifts ) */
                     C_last_row[k] = silk_SMLAWB(C_last_row[k], x2, x_ptr[subfr_length - n + k]); /* Q( -rshifts ) */
                     Atmp_QA = Af_QA[k];
-                    tmp1 = silk_SMLAWB(tmp1, Atmp_QA, x_ptr[n - k - 1]);            /* Q(QA-16) */
-                    tmp2 = silk_SMLAWB(tmp2, Atmp_QA, x_ptr[subfr_length - n + k]); /* Q(QA-16) */
+                    tmp1 = silk_SMLAWB(tmp1, Atmp_QA, x_ptr[n - k - 1]);            /* Q(QA_-16) */
+                    tmp2 = silk_SMLAWB(tmp2, Atmp_QA, x_ptr[subfr_length - n + k]); /* Q(QA_-16) */
                 }
-                tmp1 = silk_LSHIFT32(-tmp1, 32 - QA - rshifts); /* Q(16-rshifts) */
-                tmp2 = silk_LSHIFT32(-tmp2, 32 - QA - rshifts); /* Q(16-rshifts) */
+                tmp1 = silk_LSHIFT32(-tmp1, 32 - QA25 - rshifts); /* Q(16-rshifts) */
+                tmp2 = silk_LSHIFT32(-tmp2, 32 - QA25 - rshifts); /* Q(16-rshifts) */
                 for (k = 0; k <= n; k++) {
                     CAf[k] = silk_SMLAWB(CAf[k], tmp1, x_ptr[n - k]);                    /* Q( -rshift ) */
                     CAb[k] = silk_SMLAWB(CAb[k], tmp2, x_ptr[subfr_length - n + k - 1]); /* Q( -rshift ) */
@@ -178,7 +181,12 @@ void silk_burg_modified_c(
                 for (k = 0; k < n; k++) {
                     C_first_row[k] = silk_MLA(C_first_row[k], x1, x_ptr[n - k - 1]);          /* Q( -rshifts ) */
                     C_last_row[k] = silk_MLA(C_last_row[k], x2, x_ptr[subfr_length - n + k]); /* Q( -rshifts ) */
-                    Atmp1 = silk_RSHIFT_ROUND(Af_QA[k], QA - 17);                             /* Q17 */
+
+                    #pragma GCC diagnostic push
+                    #pragma GCC diagnostic ignored "-Wshift-count-negative"
+                    Atmp1 = silk_RSHIFT_ROUND(Af_QA[k], QA25 - 17);                             /* Q17 */
+                    #pragma GCC diagnostic pop
+
                     /* We sometimes have get overflows in the multiplications (even beyond +/- 2^32),
                        but they cancel each other and the real result seems to always fit in a 32-bit
                        signed integer. This was determined experimentally, not theoretically (unfortunately). */
@@ -205,14 +213,14 @@ void silk_burg_modified_c(
         for (k = 0; k < n; k++) {
             Atmp_QA = Af_QA[k];
             lz = silk_CLZ32(silk_abs(Atmp_QA)) - 1;
-            lz = silk_min(32 - QA, lz);
-            Atmp1 = silk_LSHIFT32(Atmp_QA, lz); /* Q( QA + lz ) */
+            lz = silk_min(32 - QA25, lz);
+            Atmp1 = silk_LSHIFT32(Atmp_QA, lz); /* Q( QA_ + lz ) */
 
-            tmp1 = silk_ADD_LSHIFT32(tmp1, silk_SMMUL(C_last_row[n - k - 1], Atmp1), 32 - QA - lz);  /* Q( -rshifts ) */
-            tmp2 = silk_ADD_LSHIFT32(tmp2, silk_SMMUL(C_first_row[n - k - 1], Atmp1), 32 - QA - lz); /* Q( -rshifts ) */
-            num = silk_ADD_LSHIFT32(num, silk_SMMUL(CAb[n - k], Atmp1), 32 - QA - lz);               /* Q( -rshifts ) */
+            tmp1 = silk_ADD_LSHIFT32(tmp1, silk_SMMUL(C_last_row[n - k - 1], Atmp1), 32 - QA25 - lz);  /* Q( -rshifts ) */
+            tmp2 = silk_ADD_LSHIFT32(tmp2, silk_SMMUL(C_first_row[n - k - 1], Atmp1), 32 - QA25 - lz); /* Q( -rshifts ) */
+            num = silk_ADD_LSHIFT32(num, silk_SMMUL(CAb[n - k], Atmp1), 32 - QA25 - lz);               /* Q( -rshifts ) */
             nrg = silk_ADD_LSHIFT32(nrg, silk_SMMUL(silk_ADD32(CAb[k + 1], CAf[k + 1]), Atmp1),
-                                    32 - QA - lz); /* Q( 1-rshifts ) */
+                                    32 - QA25 - lz); /* Q( 1-rshifts ) */
         }
         CAf[n + 1] = tmp1;            /* Q( -rshifts ) */
         CAb[n + 1] = tmp2;            /* Q( -rshifts ) */
@@ -250,12 +258,12 @@ void silk_burg_modified_c(
 
         /* Update the AR coefficients */
         for (k = 0; k < (n + 1) >> 1; k++) {
-            tmp1 = Af_QA[k];                                                         /* QA */
-            tmp2 = Af_QA[n - k - 1];                                                 /* QA */
-            Af_QA[k] = silk_ADD_LSHIFT32(tmp1, silk_SMMUL(tmp2, rc_Q31), 1);         /* QA */
-            Af_QA[n - k - 1] = silk_ADD_LSHIFT32(tmp2, silk_SMMUL(tmp1, rc_Q31), 1); /* QA */
+            tmp1 = Af_QA[k];                                                         /* QA_ */
+            tmp2 = Af_QA[n - k - 1];                                                 /* QA_ */
+            Af_QA[k] = silk_ADD_LSHIFT32(tmp1, silk_SMMUL(tmp2, rc_Q31), 1);         /* QA_ */
+            Af_QA[n - k - 1] = silk_ADD_LSHIFT32(tmp2, silk_SMMUL(tmp1, rc_Q31), 1); /* QA_ */
         }
-        Af_QA[n] = silk_RSHIFT32(rc_Q31, 31 - QA); /* QA */
+        Af_QA[n] = silk_RSHIFT32(rc_Q31, 31 - QA25); /* QA_ */
 
         if (reached_max_gain) {
             /* Reached max prediction gain; set remaining coefficients to zero and exit loop */
@@ -277,7 +285,10 @@ void silk_burg_modified_c(
     if (reached_max_gain) {
         for (k = 0; k < D; k++) {
             /* Scale coefficients */
-            A_Q16[k] = -silk_RSHIFT_ROUND(Af_QA[k], QA - 16);
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wshift-count-negative"
+            A_Q16[k] = -silk_RSHIFT_ROUND(Af_QA[k], QA25 - 16);
+            #pragma GCC diagnostic pop
         }
         /* Subtract energy of preceding samples from C0 */
         if (rshifts > 0) {
@@ -299,7 +310,12 @@ void silk_burg_modified_c(
         nrg = CAf[0];            /* Q( -rshifts ) */
         tmp1 = (int32_t)1 << 16; /* Q16 */
         for (k = 0; k < D; k++) {
-            Atmp1 = silk_RSHIFT_ROUND(Af_QA[k], QA - 16); /* Q16 */
+
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wshift-count-negative"
+            Atmp1 = silk_RSHIFT_ROUND(Af_QA[k], QA25 - 16); /* Q16 */
+            #pragma GCC diagnostic pop
+
             nrg = silk_SMLAWW(nrg, CAf[k + 1], Atmp1);    /* Q( -rshifts ) */
             tmp1 = silk_SMLAWW(tmp1, Atmp1, Atmp1);       /* Q16 */
             A_Q16[k] = -Atmp1;

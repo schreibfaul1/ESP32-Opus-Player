@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Silk VAD noise level estimation */
 # if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
-static OPUS_INLINE void silk_VAD_GetNoiseLevels(
+static inline void silk_VAD_GetNoiseLevels(
     const int32_t             pX[ VAD_N_BANDS ], /* I    subband energies                            */
     silk_VAD_state              *psSilk_VAD         /* I/O  Pointer to Silk VAD state                   */
 );
@@ -295,7 +295,7 @@ int32_t silk_VAD_GetSA_Q8_c(                                   /* O    Return va
 /* Noise level estimation */
 /**************************/
 # if  !defined(OPUS_X86_MAY_HAVE_SSE4_1)
-static OPUS_INLINE
+static inline
 #endif
 void silk_VAD_GetNoiseLevels(
     const int32_t            pX[ VAD_N_BANDS ],  /* I    subband energies                            */

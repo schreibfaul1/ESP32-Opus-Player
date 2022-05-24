@@ -27,6 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_private.h"
+#include "silk.h"
 
 /* Upsample by a factor 2, high quality */
 /* Uses 2nd order allpass filters for the 2x upsampling, followed by a      */

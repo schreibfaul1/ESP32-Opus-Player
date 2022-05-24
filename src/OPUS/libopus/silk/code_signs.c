@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "main.h"
+#include <stdint.h>
+#include "tables.h"
 
 /*#define silk_enc_map(a)                ((a) > 0 ? 1 : 0)*/
 /*#define silk_dec_map(a)                ((a) > 0 ? 1 : -1)*/

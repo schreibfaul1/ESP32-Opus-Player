@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 
 /* Predictive dequantizer for NLSF residuals */
-static OPUS_INLINE void silk_NLSF_residual_dequant(          /* O    Returns RD value in Q30                     */
+static inline void silk_NLSF_residual_dequant(          /* O    Returns RD value in Q30                     */
           int16_t         x_Q10[],                        /* O    Output [ order ]                            */
     const int8_t          indices[],                      /* I    Quantization indices [ order ]              */
     const uint8_t         pred_coef_Q8[],                 /* I    Backward predictor coefs [ order ]          */

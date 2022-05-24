@@ -6633,7 +6633,7 @@ int32_t celt_sqrt(int32_t x) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static OPUS_INLINE int16_t _celt_cos_pi_2(int16_t x) {
+static inline int16_t _celt_cos_pi_2(int16_t x) {
     int16_t x2;
 
     x2 = MULT16_16_P15(x, x);

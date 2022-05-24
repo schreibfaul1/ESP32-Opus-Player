@@ -11,7 +11,6 @@
 #include "../debug.h"
 #include "../pitch_est_defines.h"
 #include "../typedef.h"
-#include "../structs.h"
 
 #define SCRATCH_SIZE    22
 #define SF_LENGTH_4KHZ  ( PE_SUBFR_LENGTH_MS * 4 )
@@ -31,10 +30,10 @@ typedef int32_t silk_pe_stage3_vals[ PE_NB_STAGE3_LAGS ];
 
 #define MAX_FRAME_SIZE 384 /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384 */
 
-#define QA 25
+
 #define N_BITS_HEAD_ROOM 3
 #define MIN_RSHIFTS -16
-#define MAX_RSHIFTS (32 - QA)
+#define MAX_RSHIFTS (32 - 25) // QA_ = 25
 
 
 

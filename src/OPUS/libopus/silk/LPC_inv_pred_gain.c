@@ -27,19 +27,20 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "define.h"
+#include "silk.h"
 
-#define QA                          24
-#define A_LIMIT                     SILK_FIX_CONST( 0.99975, QA )
+#define A_LIMIT                     SILK_FIX_CONST( 0.99975, 24 )
 
 #define MUL32_FRAC_Q(a32, b32, Q)   ((int32_t)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
 
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static int32_t LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse prediction gain in energy domain, Q30    */
-    int32_t           A_QA[ SILK_MAX_ORDER_LPC ],        /* I   Prediction coefficients                                  */
-    const int32_t       order                              /* I   Prediction order                                         */
+static int32_t LPC_inverse_pred_gain_QA_c(           /* O   Returns inverse prediction gain in energy domain, Q30    */
+    int32_t           A_QA[ SILK_MAX_ORDER_LPC ],    /* I   Prediction coefficients                                  */
+    const int32_t       order                        /* I   Prediction order                                         */
 )
 {
+    const uint8_t QA24 = 24;
     int32_t   k, n, mult2Q;
     int32_t invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
 
@@ -51,7 +52,7 @@ static int32_t LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse 
         }
 
         /* Set RC equal to negated AR coef */
-        rc_Q31 = -silk_LSHIFT( A_QA[ k ], 31 - QA );
+        rc_Q31 = -silk_LSHIFT( A_QA[ k ], 31 - QA24 );
 
         /* rc_mult1_Q30 range: [ 1 : 2^30 ] */
         rc_mult1_Q30 = silk_SUB32( SILK_FIX_CONST( 1, 30 ), silk_SMMUL( rc_Q31, rc_Q31 ) );
@@ -97,7 +98,7 @@ static int32_t LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse 
     }
 
     /* Set RC equal to negated AR coef */
-    rc_Q31 = -silk_LSHIFT( A_QA[ 0 ], 31 - QA );
+    rc_Q31 = -silk_LSHIFT( A_QA[ 0 ], 31 - QA24 );
 
     /* Range: [ 1 : 2^30 ] */
     rc_mult1_Q30 = silk_SUB32( SILK_FIX_CONST( 1, 30 ), silk_SMMUL( rc_Q31, rc_Q31 ) );
@@ -123,11 +124,12 @@ int32_t silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse predicti
     int32_t   k;
     int32_t Atmp_QA[ SILK_MAX_ORDER_LPC ];
     int32_t DC_resp = 0;
+    const uint32_t QA24 = 24;
 
     /* Increase Q domain of the AR coefficients */
     for( k = 0; k < order; k++ ) {
         DC_resp += (int32_t)A_Q12[ k ];
-        Atmp_QA[ k ] = silk_LSHIFT32( (int32_t)A_Q12[ k ], QA - 12 );
+        Atmp_QA[ k ] = silk_LSHIFT32( (int32_t)A_Q12[ k ], QA24 - 12 );
     }
     /* If the DC is unstable, we don't even need to do the full calculations */
     if( DC_resp >= 4096 ) {

@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #undef silk_short_prediction_create_arch_coef
 
-static OPUS_INLINE int32_t silk_noise_shape_quantizer_short_prediction_c(const int32_t *buf32, const int16_t *coef16, int32_t order)
+static inline int32_t silk_noise_shape_quantizer_short_prediction_c(const int32_t *buf32, const int16_t *coef16, int32_t order)
 {
     int32_t out;
     silk_assert( order == 10 || order == 16 );
@@ -64,7 +64,7 @@ static OPUS_INLINE int32_t silk_noise_shape_quantizer_short_prediction_c(const i
 
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch,silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
-static OPUS_INLINE int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0, int32_t *data1, const int16_t *coef, int32_t order)
+static inline int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0, int32_t *data1, const int16_t *coef, int32_t order)
 {
     int32_t out;
     int32_t tmp1, tmp2;

@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "SigProc_FIX.h"
+#include "silk.h"
+#include <stdint.h>
 
 /* Convert int32 coefficients to int16 coefs and make sure there's no wrap-around */
 void silk_LPC_fit(

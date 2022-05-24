@@ -27,6 +27,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "define.h"
 #include "SigProc_FIX.h"
+#include "silk.h"
+#include <stdint.h>
 
 /*
 R. Laroia, N. Phamdo and N. Farvardin, "Robust and Efficient Quantization of Speech LSP

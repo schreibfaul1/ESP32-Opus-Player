@@ -72,8 +72,6 @@ extern "C" {
 //#  define OPUS_RESTRICT __restrict__
 
 
-#  define OPUS_INLINE __inline__
-
 # define OPUS_WARN_UNUSED_RESULT __attribute__ ((__warn_unused_result__))
 
 # define OPUS_ARG_NONNULL(_x)  __attribute__ ((__nonnull__(_x)))

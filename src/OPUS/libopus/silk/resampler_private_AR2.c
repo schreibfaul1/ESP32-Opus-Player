@@ -28,6 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SigProc_FIX.h"
 #include "resampler_private.h"
+#include "silk.h"
 
 /* Second order AR filter with single delay elements */
 void silk_resampler_private_AR2(

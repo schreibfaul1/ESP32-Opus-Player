@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "SigProc_FIX.h"
+#include "silk.h"
+#include <stdint.h>
 
 int32_t silk_inner_prod_aligned_scale(
     const int16_t *const     inVec1,             /*    I input vector 1                                              */
