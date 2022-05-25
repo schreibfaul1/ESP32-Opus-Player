@@ -30,7 +30,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 
 #include "../celt/celt.h"
-#include "typedef.h"
 #include "silk.h"
 
 

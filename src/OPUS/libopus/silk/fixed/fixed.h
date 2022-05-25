@@ -1,10 +1,8 @@
 
 #pragma once
 
-#include "../tuning_parameters.h"
 #include <stdlib.h>
 #include "../silk.h"
-#include "../typedef.h"
 
 #define SCRATCH_SIZE    22
 #define SF_LENGTH_4KHZ  ( PE_SUBFR_LENGTH_MS * 4 )
@@ -33,6 +31,8 @@ typedef int32_t silk_pe_stage3_vals[ PE_NB_STAGE3_LAGS ];
 extern "C"
 {
 #endif
+
+extern const int16_t silk_LTPScales_table_Q14[3];
 
 void silk_LTP_analysis_filter_FIX(
     int16_t *LTP_res, /* O    LTP residual signal of length MAX_NB_SUBFR * ( pre_length + subfr_length )            */

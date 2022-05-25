@@ -1,7 +1,6 @@
 
 #include "fixed.h"
 #include "../silk.h"
-#include "../tables.h"
 
 static const int16_t freq_table_Q16[27] = {
     12111, 9804, 8235, 7100, 6239, 5565, 5022, 4575, 4202, 3885, 3612, 3375, 3167, 2984,
