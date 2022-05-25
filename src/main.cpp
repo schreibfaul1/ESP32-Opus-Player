@@ -40,6 +40,7 @@ OggOpusFile *of;
 OpusFileCallbacks cb;
 TaskHandle_t opus_task;
 File file;
+File file1;
 
 // prototypes
 bool playSample(int16_t sample[2]);
@@ -268,7 +269,10 @@ void setup() {
     // SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
     pinMode(2, INPUT_PULLUP);
     SD_MMC.begin("/sdcard", true);
-    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+//    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+    file = SD_MMC.open("/opus/testfile.opus");
+
+
     cb = { OPUS_read, NULL, NULL, NULL };
     of = op_open_callbacks(NULL, &cb, NULL, 0, NULL);
 
