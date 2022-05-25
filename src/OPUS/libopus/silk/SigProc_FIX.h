@@ -39,118 +39,117 @@ extern "C"
 
 #include <string.h>                                 /* for memset(), memcpy(), memmove() */
 #include "typedef.h"
-#include "resampler_structs.h"
-
 #include "../celt/celt.h"
 #include <stdint.h>
+#include "silk.h"
 
 
 /********************************************************************/
 /*                    SIGNAL PROCESSING FUNCTIONS                   */
 /********************************************************************/
 
-/*!
- * Initialize/reset the resampler state for a given pair of input/output sampling rates
-*/
-int32_t silk_resampler_init(
-    silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
-    int32_t                  Fs_Hz_in,           /* I    Input sampling rate (Hz)                                    */
-    int32_t                  Fs_Hz_out,          /* I    Output sampling rate (Hz)                                   */
-    int32_t                    forEnc              /* I    If 1: encoder; if 0: decoder                                */
-);
+// /*!
+//  * Initialize/reset the resampler state for a given pair of input/output sampling rates
+// */
+// int32_t silk_resampler_init(
+//     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
+//     int32_t                  Fs_Hz_in,           /* I    Input sampling rate (Hz)                                    */
+//     int32_t                  Fs_Hz_out,          /* I    Output sampling rate (Hz)                                   */
+//     int32_t                    forEnc              /* I    If 1: encoder; if 0: decoder                                */
+// );
 
-/*!
- * Resampler: convert from one sampling rate to another
- */
-int32_t silk_resampler(
-    silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
-    int16_t                  out[],              /* O    Output signal                                               */
-    const int16_t            in[],               /* I    Input signal                                                */
-    int32_t                  inLen               /* I    Number of input samples                                     */
-);
+// /*!
+//  * Resampler: convert from one sampling rate to another
+//  */
+// int32_t silk_resampler(
+//     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
+//     int16_t                  out[],              /* O    Output signal                                               */
+//     const int16_t            in[],               /* I    Input signal                                                */
+//     int32_t                  inLen               /* I    Number of input samples                                     */
+// );
 
-/*!
-* Downsample 2x, mediocre quality
-*/
-void silk_resampler_down2(
-    int32_t                  *S,                 /* I/O  State vector [ 2 ]                                          */
-    int16_t                  *out,               /* O    Output signal [ len ]                                       */
-    const int16_t            *in,                /* I    Input signal [ floor(len/2) ]                               */
-    int32_t                  inLen               /* I    Number of input samples                                     */
-);
+// /*!
+// * Downsample 2x, mediocre quality
+// */
+// void silk_resampler_down2(
+//     int32_t                  *S,                 /* I/O  State vector [ 2 ]                                          */
+//     int16_t                  *out,               /* O    Output signal [ len ]                                       */
+//     const int16_t            *in,                /* I    Input signal [ floor(len/2) ]                               */
+//     int32_t                  inLen               /* I    Number of input samples                                     */
+// );
 
-/*!
- * Downsample by a factor 2/3, low quality
-*/
-void silk_resampler_down2_3(
-    int32_t                  *S,                 /* I/O  State vector [ 6 ]                                          */
-    int16_t                  *out,               /* O    Output signal [ floor(2*inLen/3) ]                          */
-    const int16_t            *in,                /* I    Input signal [ inLen ]                                      */
-    int32_t                  inLen               /* I    Number of input samples                                     */
-);
+// /*!
+//  * Downsample by a factor 2/3, low quality
+// */
+// void silk_resampler_down2_3(
+//     int32_t                  *S,                 /* I/O  State vector [ 6 ]                                          */
+//     int16_t                  *out,               /* O    Output signal [ floor(2*inLen/3) ]                          */
+//     const int16_t            *in,                /* I    Input signal [ inLen ]                                      */
+//     int32_t                  inLen               /* I    Number of input samples                                     */
+// );
 
-/*!
- * second order ARMA filter;
- * slower than biquad() but uses more precise coefficients
- * can handle (slowly) varying coefficients
- */
-void silk_biquad_alt_stride1(
-    const int16_t            *in,                /* I     input signal                                               */
-    const int32_t            *B_Q28,             /* I     MA coefficients [3]                                        */
-    const int32_t            *A_Q28,             /* I     AR coefficients [2]                                        */
-    int32_t                  *S,                 /* I/O   State vector [2]                                           */
-    int16_t                  *out,               /* O     output signal                                              */
-    const int32_t            len                 /* I     signal length (must be even)                               */
-);
+// /*!
+//  * second order ARMA filter;
+//  * slower than biquad() but uses more precise coefficients
+//  * can handle (slowly) varying coefficients
+//  */
+// void silk_biquad_alt_stride1(
+//     const int16_t            *in,                /* I     input signal                                               */
+//     const int32_t            *B_Q28,             /* I     MA coefficients [3]                                        */
+//     const int32_t            *A_Q28,             /* I     AR coefficients [2]                                        */
+//     int32_t                  *S,                 /* I/O   State vector [2]                                           */
+//     int16_t                  *out,               /* O     output signal                                              */
+//     const int32_t            len                 /* I     signal length (must be even)                               */
+// );
 
-void silk_biquad_alt_stride2_c(
-    const int16_t            *in,                /* I     input signal                                               */
-    const int32_t            *B_Q28,             /* I     MA coefficients [3]                                        */
-    const int32_t            *A_Q28,             /* I     AR coefficients [2]                                        */
-    int32_t                  *S,                 /* I/O   State vector [4]                                           */
-    int16_t                  *out,               /* O     output signal                                              */
-    const int32_t            len                 /* I     signal length (must be even)                               */
-);
+// void silk_biquad_alt_stride2_c(
+//     const int16_t            *in,                /* I     input signal                                               */
+//     const int32_t            *B_Q28,             /* I     MA coefficients [3]                                        */
+//     const int32_t            *A_Q28,             /* I     AR coefficients [2]                                        */
+//     int32_t                  *S,                 /* I/O   State vector [4]                                           */
+//     int16_t                  *out,               /* O     output signal                                              */
+//     const int32_t            len                 /* I     signal length (must be even)                               */
+// );
 
-/* Variable order MA prediction error filter. */
-void silk_LPC_analysis_filter(
-    int16_t                  *out,               /* O    Output signal                                               */
-    const int16_t            *in,                /* I    Input signal                                                */
-    const int16_t            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
-    const int32_t            len,                /* I    Signal length                                               */
-    const int32_t            d,                  /* I    Filter order                                                */
-    int                         arch                /* I    Run-time architecture                                       */
-);
+// /* Variable order MA prediction error filter. */
+// void silk_LPC_analysis_filter(
+//     int16_t                  *out,               /* O    Output signal                                               */
+//     const int16_t            *in,                /* I    Input signal                                                */
+//     const int16_t            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
+//     const int32_t            len,                /* I    Signal length                                               */
+//     const int32_t            d,                  /* I    Filter order                                                */
+//     int                         arch                /* I    Run-time architecture                                       */
+// );
 
-/* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander(
-    int16_t                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
-    const int32_t              d,                  /* I    Length of ar                                                */
-    int32_t                  chirp_Q16           /* I    Chirp factor (typically in the range 0 to 1)                */
-);
+// /* Chirp (bandwidth expand) LP AR filter */
+// void silk_bwexpander(
+//     int16_t                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
+//     const int32_t              d,                  /* I    Length of ar                                                */
+//     int32_t                  chirp_Q16           /* I    Chirp factor (typically in the range 0 to 1)                */
+// );
 
-/* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander_32(
-    int32_t                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
-    const int32_t              d,                  /* I    Length of ar                                                */
-    int32_t                  chirp_Q16           /* I    Chirp factor in Q16                                         */
-);
+// /* Chirp (bandwidth expand) LP AR filter */
+// void silk_bwexpander_32(
+//     int32_t                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
+//     const int32_t              d,                  /* I    Length of ar                                                */
+//     int32_t                  chirp_Q16           /* I    Chirp factor in Q16                                         */
+// );
 
-/* Compute inverse of LPC prediction gain, and                           */
-/* test if LPC coefficients are stable (all poles within unit circle)    */
-int32_t silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
-    const int16_t            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
-    const int32_t              order               /* I   Prediction order                                             */
-);
+// /* Compute inverse of LPC prediction gain, and                           */
+// /* test if LPC coefficients are stable (all poles within unit circle)    */
+// int32_t silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
+//     const int16_t            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
+//     const int32_t              order               /* I   Prediction order                                             */
+// );
 
-/* Split signal in two decimated bands using first-order allpass filters */
-void silk_ana_filt_bank_1(
-    const int16_t            *in,                /* I    Input signal [N]                                            */
-    int32_t                  *S,                 /* I/O  State vector [2]                                            */
-    int16_t                  *outL,              /* O    Low band [N/2]                                              */
-    int16_t                  *outH,              /* O    High band [N/2]                                             */
-    const int32_t            N                   /* I    Number of input samples                                     */
-);
+// /* Split signal in two decimated bands using first-order allpass filters */
+// void silk_ana_filt_bank_1(
+//     const int16_t            *in,                /* I    Input signal [N]                                            */
+//     int32_t                  *S,                 /* I/O  State vector [2]                                            */
+//     int16_t                  *outL,              /* O    Low band [N/2]                                              */
+//     int16_t                  *outH,              /* O    High band [N/2]                                             */
+//     const int32_t            N                   /* I    Number of input samples                                     */
+// );
 
 #if !defined(OVERRIDE_silk_biquad_alt_stride2)
 #define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, out, len))
@@ -384,44 +383,8 @@ int64_t silk_inner_prod16_aligned_64_c(
 /*                                MACROS                            */
 /********************************************************************/
 
-/* Rotate a32 right by 'rot' bits. Negative rot values result in rotating
-   left. Output is 32bit int.
-   Note: contemporary compilers recognize the C expression below and
-   compile it into a 'ror' instruction if available. No need for inline ASM! */
-static inline int32_t silk_ROR32( int32_t a32, int32_t rot )
-{
-    uint32_t x = (uint32_t) a32;
-    uint32_t r = (uint32_t) rot;
-    uint32_t m = (uint32_t) -rot;
-    if( rot == 0 ) {
-        return a32;
-    } else if( rot < 0 ) {
-        return (int32_t) ((x << m) | (x >> (32 - m)));
-    } else {
-        return (int32_t) ((x << (32 - r)) | (x >> r));
-    }
-}
-
-/* Allocate int16_t aligned to 4-byte memory address */
-#if EMBEDDED_ARM
-#define silk_DWORD_ALIGN __attribute__((aligned(4)))
-#else
-#define silk_DWORD_ALIGN
-#endif
 
 
-
-#define silk_LIMIT( a, limit1, limit2)      ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) \
-                                                                 : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))))
-
-#define silk_LIMIT_int                      silk_LIMIT
-#define silk_LIMIT_16                       silk_LIMIT
-#define silk_LIMIT_32                       silk_LIMIT
-
-#define silk_abs(a)                         (((a) >  0)  ? (a) : -(a))            /* Be careful, silk_abs returns wrong when input equals to silk_intXX_MIN */
-#define silk_abs_int(a)                     (((a) ^ ((a) >> (8 * sizeof(a) - 1))) - ((a) >> (8 * sizeof(a) - 1)))
-#define silk_abs_int32(a)                   (((a) ^ ((a) >> 31)) - ((a) >> 31))
-#define silk_abs_int64(a)                   (((a) >  0)  ? (a) : -(a))
 
 #define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))
 
@@ -440,15 +403,8 @@ static inline int32_t silk_ROR32( int32_t a32, int32_t rot )
           ARMv3M+      3 instruction cycles. use SMULL and ignore LSB registers.(except xM)*/
 /*#define silk_SMMUL(a32, b32)                (int32_t)silk_RSHIFT(silk_SMLAL(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16)), 16)*/
 /* the following seems faster on x86 */
-#define silk_SMMUL(a32, b32)                (int32_t)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32)
 
-#if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
-#define silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch) \
-    ((void)(arch), silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
-
-#define silk_inner_prod16_aligned_64(inVec1, inVec2, len, arch) \
-    ((void)(arch),silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
-#endif
+//f
 
 
 

@@ -111,14 +111,14 @@ void silk_corrVector_FIX(const int16_t *x,      /* I    x vector [L + order - 1]
 typedef struct {
     /* Prediction and coding parameters */
     int32_t Gains_Q16[MAX_NB_SUBFR];
-    silk_DWORD_ALIGN int16_t PredCoef_Q12[2][MAX_LPC_ORDER];
+     int16_t PredCoef_Q12[2][MAX_LPC_ORDER];
     int16_t LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR];
     int32_t LTP_scale_Q14;
     int32_t pitchL[MAX_NB_SUBFR];
 
     /* Noise shaping parameters */
     /* Testing */
-    silk_DWORD_ALIGN int16_t AR_Q13[MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER];
+     int16_t AR_Q13[MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER];
     int32_t LF_shp_Q14[MAX_NB_SUBFR]; /* Packs two int16 coefficients per int32 value         */
     int32_t Tilt_Q14[MAX_NB_SUBFR];
     int32_t HarmShapeGain_Q14[MAX_NB_SUBFR];

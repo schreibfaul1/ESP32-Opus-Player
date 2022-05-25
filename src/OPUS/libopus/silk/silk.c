@@ -479,37 +479,37 @@ static const int8_t delay_matrix_dec[3][5] = {
     /* 16 */ {0, 3, 12, 7, 7}};
 
 /* Tables with IIR and FIR coefficients for fractional downsamplers (123 Words) */
-silk_DWORD_ALIGN const int16_t silk_Resampler_3_4_COEFS[2 + 3 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
+ const int16_t silk_Resampler_3_4_COEFS[2 + 3 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
     -20694, -13867, -49,  64,   17,    -157, 353, -496, 163, 11047, 22205, -39,  6,    91,    -170,
     186,    23,     -896, 6336, 19928, -19,  -36, 102,  -89, -24,   328,   -951, 2568, 15909,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_2_3_COEFS[2 + 2 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
+ const int16_t silk_Resampler_2_3_COEFS[2 + 2 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
     -14457, -14019, 64, 128, -122, 36, 310, -768, 584, 9267, 17733, 12, 128, 18, -142, 288, -117, -865, 4123, 14459,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_1_2_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR1 / 2] = {
+ const int16_t silk_Resampler_1_2_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR1 / 2] = {
     616, -14323, -10, 39, 58, -46, -84, 120, 184, -315, -541, 1284, 5380, 9024,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_1_3_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+ const int16_t silk_Resampler_1_3_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
     16102, -15162, -13, 0, 20, 26, 5, -31, -43, -4, 65, 90, 7, -157, -248, -44, 593, 1583, 2612, 3271,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_1_4_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+ const int16_t silk_Resampler_1_4_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
     22500, -15099, 3, -14, -20, -15, 2, 25, 37, 25, -16, -71, -107, -79, 50, 292, 623, 982, 1288, 1464,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_1_6_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+ const int16_t silk_Resampler_1_6_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
     27540, -15257, 17, 12, 8, 1, -10, -22, -30, -32, -22, 3, 44, 100, 168, 243, 317, 381, 429, 455,
 };
 
-silk_DWORD_ALIGN const int16_t silk_Resampler_2_3_COEFS_LQ[2 + 2 * 2] = {
+ const int16_t silk_Resampler_2_3_COEFS_LQ[2 + 2 * 2] = {
     -2797, -6507, 4697, 10739, 1567, 8276,
 };
 
 /* Table with interplation fractions of 1/24, 3/24, 5/24, ... , 23/24 : 23/24 (46 Words) */
-silk_DWORD_ALIGN const int16_t silk_resampler_frac_FIR_12[12][RESAMPLER_ORDER_FIR_12 / 2] = {
+ const int16_t silk_resampler_frac_FIR_12[12][RESAMPLER_ORDER_FIR_12 / 2] = {
     {189, -600, 617, 30567},   {117, -159, -1070, 29704}, {52, 221, -2392, 28276},  {-4, 529, -3350, 26341},
     {-48, 758, -3956, 23973},  {-80, 905, -4235, 21254},  {-99, 972, -4222, 18278}, {-107, 967, -3957, 15143},
     {-103, 896, -3487, 11950}, {-91, 773, -2865, 8798},   {-71, 611, -2143, 5784},  {-46, 425, -1375, 2996},
@@ -522,6 +522,13 @@ static const int16_t silk_resampler_down2_1 = 39809 - 65536;
 /* Tables for 2x upsampler, high quality */
 static const int16_t silk_resampler_up2_hq_0[ 3 ] = { 1746, 14986, 39083 - 65536 };
 static const int16_t silk_resampler_up2_hq_1[ 3 ] = { 6854, 25769, 55542 - 65536 };
+
+/* fprintf(1, '%d, ', round(1024 * ([1 ./ (1 + exp(-(1:5))), 1] - 1 ./ (1 + exp(-(0:5)))))); */
+static const int32_t sigm_LUT_slope_Q10[6]  = {237, 153, 73, 30, 12, 7};
+/* fprintf(1, '%d, ', round(32767 * 1 ./ (1 + exp(-(0:5))))); */
+static const int32_t sigm_LUT_pos_Q15[6]  = {16384, 23955, 28861, 31213, 32178, 32548};
+/* fprintf(1, '%d, ', round(32767 * 1 ./ (1 + exp((0:5))))); */
+static const int32_t sigm_LUT_neg_Q15[6]  = {16384, 8812, 3906, 1554, 589, 219};
 
 const int8_t silk_nb_cbk_searchs_stage3[SILK_PE_MAX_COMPLEX + 1] = {PE_NB_CBKS_STAGE3_MIN, PE_NB_CBKS_STAGE3_MID,
                                                                     PE_NB_CBKS_STAGE3_MAX};
@@ -6076,6 +6083,139 @@ int32_t silk_resampler(silk_resampler_state_struct *S, /* I/O  Resampler state *
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
+int32_t silk_sigm_Q15(int32_t in_Q5) {
+    int32_t ind;
+    if (in_Q5 < 0) {
+        /* Negative input */
+        in_Q5 = -in_Q5;
+        if (in_Q5 >= 6 * 32) {
+            return 0; /* Clip */
+        } else {
+            /* Linear interpolation of look up table */
+            ind = silk_RSHIFT(in_Q5, 5);
+            return (sigm_LUT_neg_Q15[ind] - silk_SMULBB(sigm_LUT_slope_Q10[ind], in_Q5 & 0x1F));
+        }
+    } else {
+        /* Positive input */
+        if (in_Q5 >= 6 * 32) {
+            return 32767; /* clip */
+        } else {
+            /* Linear interpolation of look up table */
+            ind = silk_RSHIFT(in_Q5, 5);
+            return (sigm_LUT_pos_Q15[ind] + silk_SMULBB(sigm_LUT_slope_Q10[ind], in_Q5 & 0x1F));
+        }
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
 
+void silk_insertion_sort_increasing(int32_t *a,      /* I/O   Unsorted / Sorted vector               */
+                                    int32_t *idx,    /* O     Index vector for the sorted elements   */
+                                    const int32_t L, /* I     Vector length                          */
+                                    const int32_t K  /* I     Number of correctly sorted positions   */
+) {
+    int32_t value;
+    int32_t i, j;
+
+    /* Safety checks */
+    assert(K > 0);
+    assert(L > 0);
+    assert(L >= K);
+
+    /* Write start indices in index vector */
+    for (i = 0; i < K; i++) {
+        idx[i] = i;
+    }
+
+    /* Sort vector elements by value, increasing order */
+    for (i = 1; i < K; i++) {
+        value = a[i];
+        for (j = i - 1; (j >= 0) && (value < a[j]); j--) {
+            a[j + 1] = a[j];     /* Shift value */
+            idx[j + 1] = idx[j]; /* Shift index */
+        }
+        a[j + 1] = value; /* Write value */
+        idx[j + 1] = i;   /* Write index */
+    }
+
+    /* If less than L values are asked for, check the remaining values, */
+    /* but only spend CPU to ensure that the K first values are correct */
+    for (i = K; i < L; i++) {
+        value = a[i];
+        if (value < a[K - 1]) {
+            for (j = K - 2; (j >= 0) && (value < a[j]); j--) {
+                a[j + 1] = a[j];     /* Shift value */
+                idx[j + 1] = idx[j]; /* Shift index */
+            }
+            a[j + 1] = value; /* Write value */
+            idx[j + 1] = i;   /* Write index */
+        }
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* This function is only used by the fixed-point build */
+void silk_insertion_sort_decreasing_int16(int16_t *a,      /* I/O   Unsorted / Sorted vector      */
+                                          int32_t *idx,    /* O     Index vector for the sorted elements    */
+                                          const int32_t L, /* I     Vector length */
+                                          const int32_t K  /* I     Number of correctly sorted positions  */
+) {
+    int32_t i, j;
+    int32_t value;
+
+    /* Safety checks */
+    assert(K > 0);
+    assert(L > 0);
+    assert(L >= K);
+
+    /* Write start indices in index vector */
+    for (i = 0; i < K; i++) {
+        idx[i] = i;
+    }
+
+    /* Sort vector elements by value, decreasing order */
+    for (i = 1; i < K; i++) {
+        value = a[i];
+        for (j = i - 1; (j >= 0) && (value > a[j]); j--) {
+            a[j + 1] = a[j];     /* Shift value */
+            idx[j + 1] = idx[j]; /* Shift index */
+        }
+        a[j + 1] = value; /* Write value */
+        idx[j + 1] = i;   /* Write index */
+    }
+
+    /* If less than L values are asked for, check the remaining values, */
+    /* but only spend CPU to ensure that the K first values are correct */
+    for (i = K; i < L; i++) {
+        value = a[i];
+        if (value > a[K - 1]) {
+            for (j = K - 2; (j >= 0) && (value > a[j]); j--) {
+                a[j + 1] = a[j];     /* Shift value */
+                idx[j + 1] = idx[j]; /* Shift index */
+            }
+            a[j + 1] = value; /* Write value */
+            idx[j + 1] = i;   /* Write index */
+        }
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+void silk_insertion_sort_increasing_all_values_int16(int16_t *a,     /* I/O   Unsorted / Sorted vector     */
+                                                     const int32_t L /* I     Vector length */
+) {
+    int32_t value;
+    int32_t i, j;
+
+    /* Safety checks */
+    assert(L > 0);
+
+    /* Sort vector elements by value, increasing order */
+    for (i = 1; i < L; i++) {
+        value = a[i];
+        for (j = i - 1; (j >= 0) && (value < a[j]); j--) {
+            a[j + 1] = a[j]; /* Shift value */
+        }
+        a[j + 1] = value; /* Write value */
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
 
 

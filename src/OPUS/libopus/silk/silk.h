@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "SigProc_FIX.h"
+#include "silk.h"
 
 
 #ifdef __cplusplus
@@ -390,6 +391,9 @@ extern "C" {
 #define RESAMPLER_DOWN_ORDER_FIR1   24
 #define RESAMPLER_DOWN_ORDER_FIR2   36
 #define RESAMPLER_ORDER_FIR_12      8
+
+#define SILK_RESAMPLER_MAX_FIR_ORDER                 36
+#define SILK_RESAMPLER_MAX_IIR_ORDER                 6
 #define A_LIMIT                     SILK_FIX_CONST( 0.99975, 24 )
 #define MUL32_FRAC_Q(a32, b32, Q)   ((int32_t)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
 /* Number of input samples to process in the inner loop */
@@ -427,6 +431,19 @@ extern "C" {
 #define silk_encoder_state_Fxx      silk_encoder_state_FIX
 #define silk_encode_do_VAD_Fxx      silk_encode_do_VAD_FIX
 #define silk_encode_frame_Fxx       silk_encode_frame_FIX
+
+#define silk_LIMIT(a, limit1, limit2)                                                      \
+    ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) \
+                         : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))))
+
+#define silk_LIMIT_int                      silk_LIMIT
+#define silk_LIMIT_16                       silk_LIMIT
+#define silk_LIMIT_32                       silk_LIMIT
+
+#define silk_abs(a)                         (((a) >  0)  ? (a) : -(a))
+#define silk_abs_int(a)                     (((a) ^ ((a) >> (8 * sizeof(a) - 1))) - ((a) >> (8 * sizeof(a) - 1)))
+#define silk_abs_int32(a)                   (((a) ^ ((a) >> 31)) - ((a) >> 31))
+#define silk_abs_int64(a)                   (((a) >  0)  ? (a) : -(a))
 
 #define OFFSET ((MIN_QGAIN_DB * 128) / 6 + 16 * 128)
 #define SCALE_Q16 ((65536 * (N_LEVELS_QGAIN - 1)) / (((MAX_QGAIN_DB - MIN_QGAIN_DB) * 128) / 6))
@@ -510,7 +527,11 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch) \
     ((void)arch, silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
-    
+#define silk_SMMUL(a32, b32) (int32_t) silk_RSHIFT64(silk_SMULL((a32), (b32)), 32)
+#define silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch) \
+    ((void)(arch), silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
+#define silk_inner_prod16_aligned_64(inVec1, inVec2, len, arch) \
+    ((void)(arch), silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
 
 
 static inline int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0, int32_t *data1, const int16_t *coef,
@@ -676,6 +697,24 @@ typedef struct {
     const uint8_t             *ec_Rates_Q5;
     const int16_t             *deltaMin_Q15;
 } silk_NLSF_CB_struct;
+
+typedef struct _silk_resampler_state_struct{
+    int32_t       sIIR[ SILK_RESAMPLER_MAX_IIR_ORDER ]; /* this must be the first element of this struct */
+    union{
+        int32_t   i32[ SILK_RESAMPLER_MAX_FIR_ORDER ];
+        int16_t   i16[ SILK_RESAMPLER_MAX_FIR_ORDER ];
+    }                sFIR;
+    int16_t       delayBuf[ 48 ];
+    int32_t         resampler_function;
+    int32_t         batchSize;
+    int32_t       invRatio_Q16;
+    int32_t         FIR_Order;
+    int32_t         FIR_Fracs;
+    int32_t         Fs_in_kHz;
+    int32_t         Fs_out_kHz;
+    int32_t         inputDelay;
+    const int16_t *Coefs;
+} silk_resampler_state_struct;
 
 typedef struct {
     int32_t In_HP_State[2];                /* High pass filter state                                           */
@@ -859,11 +898,13 @@ typedef struct {
     silk_shape_state_FIX sShape; /* Shape state                                          */
 
     /* Buffer for find pitch and noise shape analysis */
-    silk_DWORD_ALIGN int16_t
+     int16_t
         x_buf[2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX]; /* Buffer for find pitch and noise shape analysis  */
     int32_t LTPCorr_Q15;                            /* Normalized correlation from pitch lag estimator      */
     int32_t resNrgSmth;
 } silk_encoder_state_FIX;
+
+
 
 /************************/
 /* Decoder control      */
@@ -873,7 +914,7 @@ typedef struct {
     int32_t pitchL[MAX_NB_SUBFR];
     int32_t Gains_Q16[MAX_NB_SUBFR];
     /* Holds interpolated and final coefficients, 4-byte aligned */
-    silk_DWORD_ALIGN int16_t PredCoef_Q12[2][MAX_LPC_ORDER];
+     int16_t PredCoef_Q12[2][MAX_LPC_ORDER];
     int16_t LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR];
     int32_t LTP_scale_Q14;
 } silk_decoder_control;
@@ -978,6 +1019,23 @@ static inline int32_t silk_CLZ64(int64_t in) {
         return silk_CLZ32(in_upper);
     }
 }
+
+/* Rotate a32 right by 'rot' bits. Negative rot values result in rotating left. Output is 32bit int.
+   Note: contemporary compilers recognize the C expression below and compile it into a 'ror' instruction if available.
+    No need for inline ASM! */
+static inline int32_t silk_ROR32(int32_t a32, int32_t rot) {
+    uint32_t x = (uint32_t)a32;
+    uint32_t r = (uint32_t)rot;
+    uint32_t m = (uint32_t)-rot;
+    if (rot == 0) {
+        return a32;
+    } else if (rot < 0) {
+        return (int32_t)((x << m) | (x >> (32 - m)));
+    } else {
+        return (int32_t)((x << (32 - r)) | (x >> r));
+    }
+}
+
 
 /* get number of leading zeros and fractional part (the bits right after the leading one */
 static inline void silk_CLZ_FRAC(int32_t in,      /* I  input                               */
@@ -1303,6 +1361,10 @@ void silk_resampler_private_up2_HQ(int32_t *S, int16_t *out, const int16_t *in, 
 void silk_resampler_private_up2_HQ_wrapper(void *SS, int16_t *out, const int16_t *in, int32_t len);
 int32_t silk_resampler_init(silk_resampler_state_struct *S, int32_t Fs_Hz_in, int32_t Fs_Hz_out, int32_t forEnc);
 int32_t silk_resampler(silk_resampler_state_struct *S, int16_t out[], const int16_t in[], int32_t inLen);
+int32_t silk_sigm_Q15(int32_t in_Q5);
+void silk_insertion_sort_increasing(int32_t *a, int32_t *idx, const int32_t L, const int32_t K);
+void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_t L, const int32_t K);
+void silk_insertion_sort_increasing_all_values_int16(int16_t *a, const int32_t L);
 
 #ifdef __cplusplus
 }
