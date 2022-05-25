@@ -34,7 +34,6 @@ extern "C" {
 
 #include "SigProc_FIX.h"
 #include "resampler_structs.h"
-#include "resampler_rom.h"
 
 
 

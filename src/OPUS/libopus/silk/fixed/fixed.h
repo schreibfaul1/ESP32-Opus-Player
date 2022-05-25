@@ -6,9 +6,6 @@
 #include "../tuning_parameters.h"
 #include <stdlib.h>
 #include "../silk.h"
-
-
-#include "../pitch_est_defines.h"
 #include "../typedef.h"
 
 #define SCRATCH_SIZE    22
@@ -27,17 +24,12 @@
 typedef int32_t silk_pe_stage3_vals[ PE_NB_STAGE3_LAGS ];
 
 
-#define MAX_FRAME_SIZE 384 /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384 */
-
-
-#define N_BITS_HEAD_ROOM 3
-#define MIN_RSHIFTS -16
-#define MAX_RSHIFTS (32 - 25) // QA_ = 25
-
-
-
-#define QC  10
-#define QS  13
+#define MAX_FRAME_SIZE    384 /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384 */
+#define N_BITS_HEAD_ROOM  3
+#define MIN_RSHIFTS      -16
+#define MAX_RSHIFTS       (32 - 25) // QA_ = 25
+#define QC                10
+#define QS                13
 
 #ifdef __cplusplus
 extern "C"
@@ -263,6 +255,17 @@ void silk_find_LTP_FIX(int32_t XXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER], 
                        const int32_t nb_subfr,                                  /* I    Number of subframes */
                        int arch                                                 /* I    Run-time architecture */
 );
+
+
+extern const int8_t silk_CB_lags_stage2[PE_MAX_NB_SUBFR][PE_NB_CBKS_STAGE2_EXT];
+extern const int8_t silk_CB_lags_stage2_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE2_10MS];
+extern const int8_t silk_CB_lags_stage3_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE3_10MS];
+extern const int8_t silk_Lag_range_stage3_10_ms[PE_MAX_NB_SUBFR >> 1][2];
+extern const int8_t silk_CB_lags_stage3[PE_MAX_NB_SUBFR][PE_NB_CBKS_STAGE3_MAX];
+extern const int8_t silk_CB_lags_stage3[PE_MAX_NB_SUBFR][PE_NB_CBKS_STAGE3_MAX];
+extern const int8_t silk_Lag_range_stage3[SILK_PE_MAX_COMPLEX + 1][PE_MAX_NB_SUBFR][2];
+extern const int8_t silk_nb_cbk_searchs_stage3[SILK_PE_MAX_COMPLEX + 1];
+
 
 /* Processing of gains */
 void silk_process_gains_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  Encoder state */
