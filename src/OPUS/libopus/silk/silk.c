@@ -6217,5 +6217,53 @@ void silk_insertion_sort_increasing_all_values_int16(int16_t *a,     /* I/O   Un
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
+/* Compute number of bits to right shift the sum of squares of a vector */
+/* of int16s to make it fit in an int32                                 */
+void silk_sum_sqr_shift(int32_t *energy,  /* O   Energy of x, after shifting to the right                     */
+                        int32_t *shift,   /* O   Number of bits right shift applied to energy                 */
+                        const int16_t *x, /* I   Input vector                                                 */
+                        int32_t len       /* I   Length of input vector                                       */
+) {
+    int32_t i, shft;
+    uint32_t nrg_tmp;
+    int32_t nrg;
+
+    /* Do a first run with the maximum shift we could have. */
+    shft = 31 - silk_CLZ32(len);
+    /* Let's be conservative with rounding and start with nrg=len. */
+    nrg = len;
+    for (i = 0; i < len - 1; i += 2) {
+        nrg_tmp = silk_SMULBB(x[i], x[i]);
+        nrg_tmp = silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
+        nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);
+    }
+    if (i < len) {
+        /* One sample left to process */
+        nrg_tmp = silk_SMULBB(x[i], x[i]);
+        nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);
+    }
+    assert(nrg >= 0);
+    /* Make sure the result will fit in a 32-bit signed integer with two bits
+       of headroom. */
+    shft = silk_max_32(0, shft + 3 - silk_CLZ32(nrg));
+    nrg = 0;
+    for (i = 0; i < len - 1; i += 2) {
+        nrg_tmp = silk_SMULBB(x[i], x[i]);
+        nrg_tmp = silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
+        nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);
+    }
+    if (i < len) {
+        /* One sample left to process */
+        nrg_tmp = silk_SMULBB(x[i], x[i]);
+        nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);
+    }
+
+    assert(nrg >= 0);
+
+    /* Output arguments */
+    *shift = shft;
+    *energy = nrg;
+}
+//----------------------------------------------------------------------------------------------------------------------
 
 

@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "../SigProc_FIX.h"
-
 #include "../tuning_parameters.h"
 #include <stdlib.h>
 #include "../silk.h"

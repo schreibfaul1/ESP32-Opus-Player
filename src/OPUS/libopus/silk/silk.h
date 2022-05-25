@@ -31,9 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../celt/celt.h"
 #include "typedef.h"
-
-
-#include "SigProc_FIX.h"
 #include "silk.h"
 
 
@@ -391,6 +388,7 @@ extern "C" {
 #define RESAMPLER_DOWN_ORDER_FIR1   24
 #define RESAMPLER_DOWN_ORDER_FIR2   36
 #define RESAMPLER_ORDER_FIR_12      8
+#define SILK_MAX_ORDER_LPC          24     /* max order of the LPC analysis in schur() and k2a() */
 
 #define SILK_RESAMPLER_MAX_FIR_ORDER                 36
 #define SILK_RESAMPLER_MAX_IIR_ORDER                 6
@@ -435,6 +433,8 @@ extern "C" {
 #define silk_LIMIT(a, limit1, limit2)                                                      \
     ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) \
                          : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))))
+
+#define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))                         
 
 #define silk_LIMIT_int                      silk_LIMIT
 #define silk_LIMIT_16                       silk_LIMIT
@@ -532,7 +532,14 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
     ((void)(arch), silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
 #define silk_inner_prod16_aligned_64(inVec1, inVec2, len, arch) \
     ((void)(arch), silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
+#define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) \
+    ((void)(arch), silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, out, len))
+#define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((void)(arch), silk_LPC_inverse_pred_gain_c(A_Q12, order))
 
+#define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))
+#define RAND_MULTIPLIER                     196314165
+#define RAND_INCREMENT                      907633515
+#define silk_RAND(seed)                     (silk_MLA_ovflw((RAND_INCREMENT), (seed), (RAND_MULTIPLIER)))
 
 static inline int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0, int32_t *data1, const int16_t *coef,
                                                            int32_t order) {
@@ -1365,7 +1372,8 @@ int32_t silk_sigm_Q15(int32_t in_Q5);
 void silk_insertion_sort_increasing(int32_t *a, int32_t *idx, const int32_t L, const int32_t K);
 void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_t L, const int32_t K);
 void silk_insertion_sort_increasing_all_values_int16(int16_t *a, const int32_t L);
-
+void silk_sum_sqr_shift(int32_t *energy, int32_t *shift, const int16_t *x, int32_t len);
+void silk_k2a(int32_t *A_Q24, const int16_t *rc_Q15, const int32_t order);
 #ifdef __cplusplus
 }
 #endif
