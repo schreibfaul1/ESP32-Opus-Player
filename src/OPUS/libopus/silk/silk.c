@@ -437,6 +437,9 @@ static const unsigned char silk_TargetRate_WB_21[201 - 10] = {
 
 const int8_t silk_CB_lags_stage2_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE2_10MS] = {{0, 1, 0}, {0, 0, 1}};
 
+/* Weighting factors for tilt measure */
+static const int32_t tiltWeights[VAD_N_BANDS] = {30000, 6000, -12000, -12000};
+
 const int8_t silk_CB_lags_stage3_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE3_10MS] = {
     {0, 0, 1, -1, 1, -1, 2, -2, 2, -2, 3, -3}, {0, 1, 0, 1, -1, 2, -1, 2, -2, 3, -2, 3}};
 
@@ -6265,5 +6268,717 @@ void silk_sum_sqr_shift(int32_t *energy,  /* O   Energy of x, after shifting to 
     *energy = nrg;
 }
 //----------------------------------------------------------------------------------------------------------------------
+/* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
+void silk_VQ_WMat_EC_c(int8_t *ind,               /* O    index of best codebook vector               */
+                       int32_t *res_nrg_Q15,      /* O    best residual energy                        */
+                       int32_t *rate_dist_Q8,     /* O    best total bitrate                          */
+                       int32_t *gain_Q7,          /* O    sum of absolute LTP coefficients            */
+                       const int32_t *XX_Q17,     /* I    correlation matrix                          */
+                       const int32_t *xX_Q17,     /* I    correlation vector                          */
+                       const int8_t *cb_Q7,       /* I    codebook                                    */
+                       const uint8_t *cb_gain_Q7, /* I    codebook effective gain                     */
+                       const uint8_t *cl_Q5,      /* I    code length for each codebook vector        */
+                       const int32_t subfr_len,   /* I    number of samples per subframe              */
+                       const int32_t max_gain_Q7, /* I    maximum sum of absolute LTP coefficients    */
+                       const int32_t L            /* I    number of vectors in codebook               */
+) {
+    int32_t k, gain_tmp_Q7;
+    const int8_t *cb_row_Q7;
+    int32_t neg_xX_Q24[5];
+    int32_t sum1_Q15, sum2_Q24;
+    int32_t bits_res_Q8, bits_tot_Q8;
 
+    /* Negate and convert to new Q domain */
+    neg_xX_Q24[0] = -silk_LSHIFT32(xX_Q17[0], 7);
+    neg_xX_Q24[1] = -silk_LSHIFT32(xX_Q17[1], 7);
+    neg_xX_Q24[2] = -silk_LSHIFT32(xX_Q17[2], 7);
+    neg_xX_Q24[3] = -silk_LSHIFT32(xX_Q17[3], 7);
+    neg_xX_Q24[4] = -silk_LSHIFT32(xX_Q17[4], 7);
 
+    /* Loop over codebook */
+    *rate_dist_Q8 = silk_int32_MAX;
+    *res_nrg_Q15 = silk_int32_MAX;
+    cb_row_Q7 = cb_Q7;
+    /* In things go really bad, at least *ind is set to something safe. */
+    *ind = 0;
+    for (k = 0; k < L; k++) {
+        int32_t penalty;
+        gain_tmp_Q7 = cb_gain_Q7[k];
+        /* Weighted rate */
+        /* Quantization error: 1 - 2 * xX * cb + cb' * XX * cb */
+        sum1_Q15 = SILK_FIX_CONST(1.001, 15);
+
+        /* Penalty for too large gain */
+        penalty = silk_LSHIFT32(silk_max(silk_SUB32(gain_tmp_Q7, max_gain_Q7), 0), 11);
+
+        /* first row of XX_Q17 */
+        sum2_Q24 = silk_MLA(neg_xX_Q24[0], XX_Q17[1], cb_row_Q7[1]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[2], cb_row_Q7[2]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[3], cb_row_Q7[3]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[4], cb_row_Q7[4]);
+        sum2_Q24 = silk_LSHIFT32(sum2_Q24, 1);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[0], cb_row_Q7[0]);
+        sum1_Q15 = silk_SMLAWB(sum1_Q15, sum2_Q24, cb_row_Q7[0]);
+
+        /* second row of XX_Q17 */
+        sum2_Q24 = silk_MLA(neg_xX_Q24[1], XX_Q17[7], cb_row_Q7[2]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[8], cb_row_Q7[3]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[9], cb_row_Q7[4]);
+        sum2_Q24 = silk_LSHIFT32(sum2_Q24, 1);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[6], cb_row_Q7[1]);
+        sum1_Q15 = silk_SMLAWB(sum1_Q15, sum2_Q24, cb_row_Q7[1]);
+
+        /* third row of XX_Q17 */
+        sum2_Q24 = silk_MLA(neg_xX_Q24[2], XX_Q17[13], cb_row_Q7[3]);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[14], cb_row_Q7[4]);
+        sum2_Q24 = silk_LSHIFT32(sum2_Q24, 1);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[12], cb_row_Q7[2]);
+        sum1_Q15 = silk_SMLAWB(sum1_Q15, sum2_Q24, cb_row_Q7[2]);
+
+        /* fourth row of XX_Q17 */
+        sum2_Q24 = silk_MLA(neg_xX_Q24[3], XX_Q17[19], cb_row_Q7[4]);
+        sum2_Q24 = silk_LSHIFT32(sum2_Q24, 1);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[18], cb_row_Q7[3]);
+        sum1_Q15 = silk_SMLAWB(sum1_Q15, sum2_Q24, cb_row_Q7[3]);
+
+        /* last row of XX_Q17 */
+        sum2_Q24 = silk_LSHIFT32(neg_xX_Q24[4], 1);
+        sum2_Q24 = silk_MLA(sum2_Q24, XX_Q17[24], cb_row_Q7[4]);
+        sum1_Q15 = silk_SMLAWB(sum1_Q15, sum2_Q24, cb_row_Q7[4]);
+
+        /* find best */
+        if (sum1_Q15 >= 0) {
+            /* Translate residual energy to bits using high-rate assumption (6 dB ==> 1 bit/sample) */
+            bits_res_Q8 = silk_SMULBB(subfr_len, silk_lin2log(sum1_Q15 + penalty) - (15 << 7));
+            /* In the following line we reduce the codelength component by half ("-1"); seems to slghtly improve quality
+             */
+            bits_tot_Q8 = silk_ADD_LSHIFT32(bits_res_Q8, cl_Q5[k], 3 - 1);
+            if (bits_tot_Q8 <= *rate_dist_Q8) {
+                *rate_dist_Q8 = bits_tot_Q8;
+                *res_nrg_Q15 = sum1_Q15 + penalty;
+                *ind = (int8_t)k;
+                *gain_Q7 = gain_tmp_Q7;
+            }
+        }
+
+        /* Go to next cbk vector */
+        cb_row_Q7 += LTP_ORDER;
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Entropy code the mid/side quantization indices */
+void silk_stereo_encode_pred(ec_enc *psRangeEnc, /* I/O  Compressor data structure                   */
+                             int8_t ix[2][3]     /* I    Quantization indices                        */
+) {
+    int32_t n;
+
+    /* Entropy coding */
+    n = 5 * ix[0][2] + ix[1][2];
+    assert(n < 25);
+    ec_enc_icdf(psRangeEnc, n, silk_stereo_pred_joint_iCDF, 8);
+    for (n = 0; n < 2; n++) {
+        assert(ix[n][0] < 3);
+        assert(ix[n][1] < STEREO_QUANT_SUB_STEPS);
+        ec_enc_icdf(psRangeEnc, ix[n][0], silk_uniform3_iCDF, 8);
+        ec_enc_icdf(psRangeEnc, ix[n][1], silk_uniform5_iCDF, 8);
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Entropy code the mid-only flag */
+void silk_stereo_encode_mid_only(ec_enc *psRangeEnc, /* I/O  Compressor data structure                   */
+                                 int8_t mid_only_flag) {
+    /* Encode flag that only mid channel is coded */
+    ec_enc_icdf(psRangeEnc, mid_only_flag, silk_stereo_only_code_mid_iCDF, 8);
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Find least-squares prediction gain for one signal based on another and quantize it */
+int32_t silk_stereo_find_predictor(                          /* O    Returns predictor in Q13                    */
+                                   int32_t *ratio_Q14,       /* O    Ratio of residual and mid energies          */
+                                   const int16_t x[],        /* I    Basis signal                                */
+                                   const int16_t y[],        /* I    Target signal                               */
+                                   int32_t mid_res_amp_Q0[], /* I/O  Smoothed mid, residual norms                */
+                                   int32_t length,           /* I    Number of samples                           */
+                                   int32_t smooth_coef_Q16   /* I    Smoothing coefficient                       */
+) {
+    int32_t scale, scale1, scale2;
+    int32_t nrgx, nrgy, corr, pred_Q13, pred2_Q10;
+
+    /* Find  predictor */
+    silk_sum_sqr_shift(&nrgx, &scale1, x, length);
+    silk_sum_sqr_shift(&nrgy, &scale2, y, length);
+    scale = silk_max_int(scale1, scale2);
+    scale = scale + (scale & 1); /* make even */
+    nrgy = silk_RSHIFT32(nrgy, scale - scale2);
+    nrgx = silk_RSHIFT32(nrgx, scale - scale1);
+    nrgx = silk_max_int(nrgx, 1);
+    corr = silk_inner_prod_aligned_scale(x, y, scale, length);
+    pred_Q13 = silk_DIV32_varQ(corr, nrgx, 13);
+    pred_Q13 = silk_LIMIT(pred_Q13, -(1 << 14), 1 << 14);
+    pred2_Q10 = silk_SMULWB(pred_Q13, pred_Q13);
+
+    /* Faster update for signals with large prediction parameters */
+    smooth_coef_Q16 = (int32_t)silk_max_int(smooth_coef_Q16, silk_abs(pred2_Q10));
+
+    /* Smoothed mid and residual norms */
+    assert(smooth_coef_Q16 < 32768);
+    scale = silk_RSHIFT(scale, 1);
+    mid_res_amp_Q0[0] =
+        silk_SMLAWB(mid_res_amp_Q0[0], silk_LSHIFT(silk_SQRT_APPROX(nrgx), scale) - mid_res_amp_Q0[0], smooth_coef_Q16);
+    /* Residual energy = nrgy - 2 * pred * corr + pred^2 * nrgx */
+    nrgy = silk_SUB_LSHIFT32(nrgy, silk_SMULWB(corr, pred_Q13), 3 + 1);
+    nrgy = silk_ADD_LSHIFT32(nrgy, silk_SMULWB(nrgx, pred2_Q10), 6);
+    mid_res_amp_Q0[1] =
+        silk_SMLAWB(mid_res_amp_Q0[1], silk_LSHIFT(silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[1], smooth_coef_Q16);
+
+    /* Ratio of smoothed residual and mid norms */
+    *ratio_Q14 = silk_DIV32_varQ(mid_res_amp_Q0[1], silk_max(mid_res_amp_Q0[0], 1), 14);
+    *ratio_Q14 = silk_LIMIT(*ratio_Q14, 0, 32767);
+
+    return pred_Q13;
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Convert Left/Right stereo signal to adaptive Mid/Side representation */
+void silk_stereo_LR_to_MS(stereo_enc_state *state,      /* I/O  State                                       */
+                          int16_t x1[],                 /* I/O  Left input signal, becomes mid signal       */
+                          int16_t x2[],                 /* I/O  Right input signal, becomes side signal     */
+                          int8_t ix[2][3],              /* O    Quantization indices                        */
+                          int8_t *mid_only_flag,        /* O    Flag: only mid signal coded                 */
+                          int32_t mid_side_rates_bps[], /* O    Bitrates for mid and side signals           */
+                          int32_t total_rate_bps,       /* I    Total bitrate                               */
+                          int32_t prev_speech_act_Q8,   /* I    Speech activity level in previous frame     */
+                          int32_t toMono,               /* I    Last frame before a stereo->mono transition */
+                          int32_t fs_kHz,               /* I    Sample rate (kHz)                           */
+                          int32_t frame_length          /* I    Number of samples                           */
+) {
+    int32_t n, is10msFrame, denom_Q16, delta0_Q13, delta1_Q13;
+    int32_t sum, diff, smooth_coef_Q16, pred_Q13[2], pred0_Q13, pred1_Q13;
+    int32_t LP_ratio_Q14, HP_ratio_Q14, frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
+    VARDECL(int16_t, side);
+    VARDECL(int16_t, LP_mid);
+    VARDECL(int16_t, HP_mid);
+    VARDECL(int16_t, LP_side);
+    VARDECL(int16_t, HP_side);
+    int16_t *mid = &x1[-2];
+    SAVE_STACK;
+
+    ALLOC(side, frame_length + 2, int16_t);
+    /* Convert to basic mid/side signals */
+    for (n = 0; n < frame_length + 2; n++) {
+        sum = x1[n - 2] + (int32_t)x2[n - 2];
+        diff = x1[n - 2] - (int32_t)x2[n - 2];
+        mid[n] = (int16_t)silk_RSHIFT_ROUND(sum, 1);
+        side[n] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(diff, 1));
+    }
+
+    /* Buffering */
+    silk_memcpy(mid, state->sMid, 2 * sizeof(int16_t));
+    silk_memcpy(side, state->sSide, 2 * sizeof(int16_t));
+    silk_memcpy(state->sMid, &mid[frame_length], 2 * sizeof(int16_t));
+    silk_memcpy(state->sSide, &side[frame_length], 2 * sizeof(int16_t));
+
+    /* LP and HP filter mid signal */
+    ALLOC(LP_mid, frame_length, int16_t);
+    ALLOC(HP_mid, frame_length, int16_t);
+    for (n = 0; n < frame_length; n++) {
+        sum = silk_RSHIFT_ROUND(silk_ADD_LSHIFT(mid[n] + (int32_t)mid[n + 2], mid[n + 1], 1), 2);
+        LP_mid[n] = sum;
+        HP_mid[n] = mid[n + 1] - sum;
+    }
+
+    /* LP and HP filter side signal */
+    ALLOC(LP_side, frame_length, int16_t);
+    ALLOC(HP_side, frame_length, int16_t);
+    for (n = 0; n < frame_length; n++) {
+        sum = silk_RSHIFT_ROUND(silk_ADD_LSHIFT(side[n] + (int32_t)side[n + 2], side[n + 1], 1), 2);
+        LP_side[n] = sum;
+        HP_side[n] = side[n + 1] - sum;
+    }
+
+    /* Find energies and predictors */
+    is10msFrame = frame_length == 10 * fs_kHz;
+    smooth_coef_Q16 =
+        is10msFrame ? SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF / 2, 16) : SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF, 16);
+    smooth_coef_Q16 = silk_SMULWB(silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
+
+    pred_Q13[0] = silk_stereo_find_predictor(&LP_ratio_Q14, LP_mid, LP_side, &state->mid_side_amp_Q0[0], frame_length,
+                                             smooth_coef_Q16);
+    pred_Q13[1] = silk_stereo_find_predictor(&HP_ratio_Q14, HP_mid, HP_side, &state->mid_side_amp_Q0[2], frame_length,
+                                             smooth_coef_Q16);
+    /* Ratio of the norms of residual and mid signals */
+    frac_Q16 = silk_SMLABB(HP_ratio_Q14, LP_ratio_Q14, 3);
+    frac_Q16 = silk_min(frac_Q16, SILK_FIX_CONST(1, 16));
+
+    /* Determine bitrate distribution between mid and side, and possibly reduce stereo width */
+    total_rate_bps -= is10msFrame ? 1200 : 600; /* Subtract approximate bitrate for coding stereo parameters */
+    if (total_rate_bps < 1) {
+        total_rate_bps = 1;
+    }
+    min_mid_rate_bps = silk_SMLABB(2000, fs_kHz, 600);
+    assert(min_mid_rate_bps < 32767);
+    /* Default bitrate distribution: 8 parts for Mid and (5+3*frac) parts for Side. so: mid_rate = ( 8 / ( 13 + 3 * frac
+     * ) ) * total_ rate */
+    frac_3_Q16 = silk_MUL(3, frac_Q16);
+    mid_side_rates_bps[0] = silk_DIV32_varQ(total_rate_bps, SILK_FIX_CONST(8 + 5, 16) + frac_3_Q16, 16 + 3);
+    /* If Mid bitrate below minimum, reduce stereo width */
+    if (mid_side_rates_bps[0] < min_mid_rate_bps) {
+        mid_side_rates_bps[0] = min_mid_rate_bps;
+        mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
+        /* width = 4 * ( 2 * side_rate - min_rate ) / ( ( 1 + 3 * frac ) * min_rate ) */
+        width_Q14 = silk_DIV32_varQ(silk_LSHIFT(mid_side_rates_bps[1], 1) - min_mid_rate_bps,
+                                    silk_SMULWB(SILK_FIX_CONST(1, 16) + frac_3_Q16, min_mid_rate_bps), 14 + 2);
+        width_Q14 = silk_LIMIT(width_Q14, 0, SILK_FIX_CONST(1, 14));
+    } else {
+        mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
+        width_Q14 = SILK_FIX_CONST(1, 14);
+    }
+
+    /* Smoother */
+    state->smth_width_Q14 =
+        (int16_t)silk_SMLAWB(state->smth_width_Q14, width_Q14 - state->smth_width_Q14, smooth_coef_Q16);
+
+    /* At very low bitrates or for inputs that are nearly amplitude panned, switch to panned-mono coding */
+    *mid_only_flag = 0;
+    if (toMono) {
+        /* Last frame before stereo->mono transition; collapse stereo width */
+        width_Q14 = 0;
+        pred_Q13[0] = 0;
+        pred_Q13[1] = 0;
+        silk_stereo_quant_pred(pred_Q13, ix);
+    } else if (state->width_prev_Q14 == 0 &&
+               (8 * total_rate_bps < 13 * min_mid_rate_bps ||
+                silk_SMULWB(frac_Q16, state->smth_width_Q14) < SILK_FIX_CONST(0.05, 14))) {
+        /* Code as panned-mono; previous frame already had zero width */
+        /* Scale down and quantize predictors */
+        pred_Q13[0] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[0]), 14);
+        pred_Q13[1] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[1]), 14);
+        silk_stereo_quant_pred(pred_Q13, ix);
+        /* Collapse stereo width */
+        width_Q14 = 0;
+        pred_Q13[0] = 0;
+        pred_Q13[1] = 0;
+        mid_side_rates_bps[0] = total_rate_bps;
+        mid_side_rates_bps[1] = 0;
+        *mid_only_flag = 1;
+    } else if (state->width_prev_Q14 != 0 &&
+               (8 * total_rate_bps < 11 * min_mid_rate_bps ||
+                silk_SMULWB(frac_Q16, state->smth_width_Q14) < SILK_FIX_CONST(0.02, 14))) {
+        /* Transition to zero-width stereo */
+        /* Scale down and quantize predictors */
+        pred_Q13[0] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[0]), 14);
+        pred_Q13[1] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[1]), 14);
+        silk_stereo_quant_pred(pred_Q13, ix);
+        /* Collapse stereo width */
+        width_Q14 = 0;
+        pred_Q13[0] = 0;
+        pred_Q13[1] = 0;
+    } else if (state->smth_width_Q14 > SILK_FIX_CONST(0.95, 14)) {
+        /* Full-width stereo coding */
+        silk_stereo_quant_pred(pred_Q13, ix);
+        width_Q14 = SILK_FIX_CONST(1, 14);
+    } else {
+        /* Reduced-width stereo coding; scale down and quantize predictors */
+        pred_Q13[0] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[0]), 14);
+        pred_Q13[1] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[1]), 14);
+        silk_stereo_quant_pred(pred_Q13, ix);
+        width_Q14 = state->smth_width_Q14;
+    }
+
+    /* Make sure to keep on encoding until the tapered output has been transmitted */
+    if (*mid_only_flag == 1) {
+        state->silent_side_len += frame_length - STEREO_INTERP_LEN_MS * fs_kHz;
+        if (state->silent_side_len < LA_SHAPE_MS * fs_kHz) {
+            *mid_only_flag = 0;
+        } else {
+            /* Limit to avoid wrapping around */
+            state->silent_side_len = 10000;
+        }
+    } else {
+        state->silent_side_len = 0;
+    }
+
+    if (*mid_only_flag == 0 && mid_side_rates_bps[1] < 1) {
+        mid_side_rates_bps[1] = 1;
+        mid_side_rates_bps[0] = silk_max_int(1, total_rate_bps - mid_side_rates_bps[1]);
+    }
+
+    /* Interpolate predictors and subtract prediction from side channel */
+    pred0_Q13 = -state->pred_prev_Q13[0];
+    pred1_Q13 = -state->pred_prev_Q13[1];
+    w_Q24 = silk_LSHIFT(state->width_prev_Q14, 10);
+    denom_Q16 = silk_DIV32_16((int32_t)1 << 16, STEREO_INTERP_LEN_MS * fs_kHz);
+    delta0_Q13 = -silk_RSHIFT_ROUND(silk_SMULBB(pred_Q13[0] - state->pred_prev_Q13[0], denom_Q16), 16);
+    delta1_Q13 = -silk_RSHIFT_ROUND(silk_SMULBB(pred_Q13[1] - state->pred_prev_Q13[1], denom_Q16), 16);
+    deltaw_Q24 = silk_LSHIFT(silk_SMULWB(width_Q14 - state->width_prev_Q14, denom_Q16), 10);
+    for (n = 0; n < STEREO_INTERP_LEN_MS * fs_kHz; n++) {
+        pred0_Q13 += delta0_Q13;
+        pred1_Q13 += delta1_Q13;
+        w_Q24 += deltaw_Q24;
+        sum = silk_LSHIFT(silk_ADD_LSHIFT(mid[n] + (int32_t)mid[n + 2], mid[n + 1], 1), 9); /* Q11 */
+        sum = silk_SMLAWB(silk_SMULWB(w_Q24, side[n + 1]), sum, pred0_Q13);                 /* Q8  */
+        sum = silk_SMLAWB(sum, silk_LSHIFT((int32_t)mid[n + 1], 11), pred1_Q13);            /* Q8  */
+        x2[n - 1] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(sum, 8));
+    }
+
+    pred0_Q13 = -pred_Q13[0];
+    pred1_Q13 = -pred_Q13[1];
+    w_Q24 = silk_LSHIFT(width_Q14, 10);
+    for (n = STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++) {
+        sum = silk_LSHIFT(silk_ADD_LSHIFT(mid[n] + (int32_t)mid[n + 2], mid[n + 1], 1), 9); /* Q11 */
+        sum = silk_SMLAWB(silk_SMULWB(w_Q24, side[n + 1]), sum, pred0_Q13);                 /* Q8  */
+        sum = silk_SMLAWB(sum, silk_LSHIFT((int32_t)mid[n + 1], 11), pred1_Q13);            /* Q8  */
+        x2[n - 1] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(sum, 8));
+    }
+    state->pred_prev_Q13[0] = (int16_t)pred_Q13[0];
+    state->pred_prev_Q13[1] = (int16_t)pred_Q13[1];
+    state->width_prev_Q14 = (int16_t)width_Q14;
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Convert adaptive Mid/Side representation to Left/Right stereo signal */
+void silk_stereo_MS_to_LR(stereo_dec_state *state,  /* I/O  State                                       */
+                          int16_t x1[],             /* I/O  Left input signal, becomes mid signal       */
+                          int16_t x2[],             /* I/O  Right input signal, becomes side signal     */
+                          const int32_t pred_Q13[], /* I    Predictors                                  */
+                          int32_t fs_kHz,           /* I    Samples rate (kHz)                          */
+                          int32_t frame_length      /* I    Number of samples                           */
+) {
+    int32_t n, denom_Q16, delta0_Q13, delta1_Q13;
+    int32_t sum, diff, pred0_Q13, pred1_Q13;
+
+    /* Buffering */
+    silk_memcpy(x1, state->sMid, 2 * sizeof(int16_t));
+    silk_memcpy(x2, state->sSide, 2 * sizeof(int16_t));
+    silk_memcpy(state->sMid, &x1[frame_length], 2 * sizeof(int16_t));
+    silk_memcpy(state->sSide, &x2[frame_length], 2 * sizeof(int16_t));
+
+    /* Interpolate predictors and add prediction to side channel */
+    pred0_Q13 = state->pred_prev_Q13[0];
+    pred1_Q13 = state->pred_prev_Q13[1];
+    denom_Q16 = silk_DIV32_16((int32_t)1 << 16, STEREO_INTERP_LEN_MS * fs_kHz);
+    delta0_Q13 = silk_RSHIFT_ROUND(silk_SMULBB(pred_Q13[0] - state->pred_prev_Q13[0], denom_Q16), 16);
+    delta1_Q13 = silk_RSHIFT_ROUND(silk_SMULBB(pred_Q13[1] - state->pred_prev_Q13[1], denom_Q16), 16);
+    for (n = 0; n < STEREO_INTERP_LEN_MS * fs_kHz; n++) {
+        pred0_Q13 += delta0_Q13;
+        pred1_Q13 += delta1_Q13;
+        sum = silk_LSHIFT(silk_ADD_LSHIFT(x1[n] + x1[n + 2], x1[n + 1], 1), 9); /* Q11 */
+        sum = silk_SMLAWB(silk_LSHIFT((int32_t)x2[n + 1], 8), sum, pred0_Q13);  /* Q8  */
+        sum = silk_SMLAWB(sum, silk_LSHIFT((int32_t)x1[n + 1], 11), pred1_Q13); /* Q8  */
+        x2[n + 1] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(sum, 8));
+    }
+    pred0_Q13 = pred_Q13[0];
+    pred1_Q13 = pred_Q13[1];
+    for (n = STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++) {
+        sum = silk_LSHIFT(silk_ADD_LSHIFT(x1[n] + x1[n + 2], x1[n + 1], 1), 9); /* Q11 */
+        sum = silk_SMLAWB(silk_LSHIFT((int32_t)x2[n + 1], 8), sum, pred0_Q13);  /* Q8  */
+        sum = silk_SMLAWB(sum, silk_LSHIFT((int32_t)x1[n + 1], 11), pred1_Q13); /* Q8  */
+        x2[n + 1] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(sum, 8));
+    }
+    state->pred_prev_Q13[0] = pred_Q13[0];
+    state->pred_prev_Q13[1] = pred_Q13[1];
+
+    /* Convert to left/right signals */
+    for (n = 0; n < frame_length; n++) {
+        sum = x1[n + 1] + (int32_t)x2[n + 1];
+        diff = x1[n + 1] - (int32_t)x2[n + 1];
+        x1[n + 1] = (int16_t)silk_SAT16(sum);
+        x2[n + 1] = (int16_t)silk_SAT16(diff);
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Initialization of the Silk VAD */
+int32_t silk_VAD_Init(                           /* O    Return value, 0 if success                  */
+                      silk_VAD_state *psSilk_VAD /* I/O  Pointer to Silk VAD state                   */
+) {
+    int32_t b, ret = 0;
+
+    /* reset state memory */
+    silk_memset(psSilk_VAD, 0, sizeof(silk_VAD_state));
+
+    /* init noise levels */
+    /* Initialize array with approx pink noise levels (psd proportional to inverse of frequency) */
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        psSilk_VAD->NoiseLevelBias[b] = silk_max_32(silk_DIV32_16(VAD_NOISE_LEVELS_BIAS, b + 1), 1);
+    }
+
+    /* Initialize state */
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        psSilk_VAD->NL[b] = silk_MUL(100, psSilk_VAD->NoiseLevelBias[b]);
+        psSilk_VAD->inv_NL[b] = silk_DIV32(silk_int32_MAX, psSilk_VAD->NL[b]);
+    }
+    psSilk_VAD->counter = 15;
+
+    /* init smoothed energy-to-noise ratio*/
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        psSilk_VAD->NrgRatioSmth_Q8[b] = 100 * 256; /* 100 * 256 --> 20 dB SNR */
+    }
+
+    return (ret);
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Get the speech activity level in Q8 */
+int32_t silk_VAD_GetSA_Q8_c(                            /* O    Return value, 0 if success                  */
+                            silk_encoder_state *psEncC, /* I/O  Encoder state                               */
+                            const int16_t pIn[]         /* I    PCM input                                   */
+) {
+    int32_t SA_Q15, pSNR_dB_Q7, input_tilt;
+    int32_t decimated_framelength1, decimated_framelength2;
+    int32_t decimated_framelength;
+    int32_t dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
+    int32_t sumSquared, smooth_coef_Q16;
+    int16_t HPstateTmp;
+    VARDECL(int16_t, X);
+    int32_t Xnrg[VAD_N_BANDS];
+    int32_t NrgToNoiseRatio_Q8[VAD_N_BANDS];
+    int32_t speech_nrg, x_tmp;
+    int32_t X_offset[VAD_N_BANDS];
+    int32_t ret = 0;
+    silk_VAD_state *psSilk_VAD = &psEncC->sVAD;
+    SAVE_STACK;
+
+    /* Safety checks */
+    assert(VAD_N_BANDS == 4);
+    assert(MAX_FRAME_LENGTH >= psEncC->frame_length);
+    assert(psEncC->frame_length <= 512);
+    assert(psEncC->frame_length == 8 * silk_RSHIFT(psEncC->frame_length, 3));
+
+    /***********************/
+    /* Filter and Decimate */
+    /***********************/
+    decimated_framelength1 = silk_RSHIFT(psEncC->frame_length, 1);
+    decimated_framelength2 = silk_RSHIFT(psEncC->frame_length, 2);
+    decimated_framelength = silk_RSHIFT(psEncC->frame_length, 3);
+    /* Decimate into 4 bands:
+       0       L      3L       L              3L                             5L
+               -      --       -              --                             --
+               8       8       2               4                              4
+
+       [0-1 kHz| temp. |1-2 kHz|    2-4 kHz    |            4-8 kHz           |
+
+       They're arranged to allow the minimal ( frame_length / 4 ) extra
+       scratch space during the downsampling process */
+    X_offset[0] = 0;
+    X_offset[1] = decimated_framelength + decimated_framelength2;
+    X_offset[2] = X_offset[1] + decimated_framelength;
+    X_offset[3] = X_offset[2] + decimated_framelength2;
+    ALLOC(X, X_offset[3] + decimated_framelength1, int16_t);
+
+    /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
+    silk_ana_filt_bank_1(pIn, &psSilk_VAD->AnaState[0], X, &X[X_offset[3]], psEncC->frame_length);
+
+    /* 0-4 kHz to 0-2 kHz and 2-4 kHz */
+    silk_ana_filt_bank_1(X, &psSilk_VAD->AnaState1[0], X, &X[X_offset[2]], decimated_framelength1);
+
+    /* 0-2 kHz to 0-1 kHz and 1-2 kHz */
+    silk_ana_filt_bank_1(X, &psSilk_VAD->AnaState2[0], X, &X[X_offset[1]], decimated_framelength2);
+
+    /*********************************************/
+    /* HP filter on lowest band (differentiator) */
+    /*********************************************/
+    X[decimated_framelength - 1] = silk_RSHIFT(X[decimated_framelength - 1], 1);
+    HPstateTmp = X[decimated_framelength - 1];
+    for (i = decimated_framelength - 1; i > 0; i--) {
+        X[i - 1] = silk_RSHIFT(X[i - 1], 1);
+        X[i] -= X[i - 1];
+    }
+    X[0] -= psSilk_VAD->HPstate;
+    psSilk_VAD->HPstate = HPstateTmp;
+
+    /*************************************/
+    /* Calculate the energy in each band */
+    /*************************************/
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        /* Find the decimated framelength in the non-uniformly divided bands */
+        decimated_framelength = silk_RSHIFT(psEncC->frame_length, silk_min_int(VAD_N_BANDS - b, VAD_N_BANDS - 1));
+
+        /* Split length into subframe lengths */
+        dec_subframe_length = silk_RSHIFT(decimated_framelength, VAD_INTERNAL_SUBFRAMES_LOG2);
+        dec_subframe_offset = 0;
+
+        /* Compute energy per sub-frame */
+        /* initialize with summed energy of last subframe */
+        Xnrg[b] = psSilk_VAD->XnrgSubfr[b];
+        for (s = 0; s < VAD_INTERNAL_SUBFRAMES; s++) {
+            sumSquared = 0;
+            for (i = 0; i < dec_subframe_length; i++) {
+                /* The energy will be less than dec_subframe_length * ( silk_int16_MIN / 8 ) ^ 2.            */
+                /* Therefore we can accumulate with no risk of overflow (unless dec_subframe_length > 128)  */
+                x_tmp = silk_RSHIFT(X[X_offset[b] + i + dec_subframe_offset], 3);
+                sumSquared = silk_SMLABB(sumSquared, x_tmp, x_tmp);
+
+                /* Safety check */
+                assert(sumSquared >= 0);
+            }
+
+            /* Add/saturate summed energy of current subframe */
+            if (s < VAD_INTERNAL_SUBFRAMES - 1) {
+                Xnrg[b] = silk_ADD_POS_SAT32(Xnrg[b], sumSquared);
+            } else {
+                /* Look-ahead subframe */
+                Xnrg[b] = silk_ADD_POS_SAT32(Xnrg[b], silk_RSHIFT(sumSquared, 1));
+            }
+
+            dec_subframe_offset += dec_subframe_length;
+        }
+        psSilk_VAD->XnrgSubfr[b] = sumSquared;
+    }
+
+    /********************/
+    /* Noise estimation */
+    /********************/
+    silk_VAD_GetNoiseLevels(&Xnrg[0], psSilk_VAD);
+
+    /***********************************************/
+    /* Signal-plus-noise to noise ratio estimation */
+    /***********************************************/
+    sumSquared = 0;
+    input_tilt = 0;
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        speech_nrg = Xnrg[b] - psSilk_VAD->NL[b];
+        if (speech_nrg > 0) {
+            /* Divide, with sufficient resolution */
+            if ((Xnrg[b] & 0xFF800000) == 0) {
+                NrgToNoiseRatio_Q8[b] = silk_DIV32(silk_LSHIFT(Xnrg[b], 8), psSilk_VAD->NL[b] + 1);
+            } else {
+                NrgToNoiseRatio_Q8[b] = silk_DIV32(Xnrg[b], silk_RSHIFT(psSilk_VAD->NL[b], 8) + 1);
+            }
+
+            /* Convert to log domain */
+            SNR_Q7 = silk_lin2log(NrgToNoiseRatio_Q8[b]) - 8 * 128;
+
+            /* Sum-of-squares */
+            sumSquared = silk_SMLABB(sumSquared, SNR_Q7, SNR_Q7); /* Q14 */
+
+            /* Tilt measure */
+            if (speech_nrg < ((int32_t)1 << 20)) {
+                /* Scale down SNR value for small subband speech energies */
+                SNR_Q7 = silk_SMULWB(silk_LSHIFT(silk_SQRT_APPROX(speech_nrg), 6), SNR_Q7);
+            }
+            input_tilt = silk_SMLAWB(input_tilt, tiltWeights[b], SNR_Q7);
+        } else {
+            NrgToNoiseRatio_Q8[b] = 256;
+        }
+    }
+
+    /* Mean-of-squares */
+    sumSquared = silk_DIV32_16(sumSquared, VAD_N_BANDS); /* Q14 */
+
+    /* Root-mean-square approximation, scale to dBs, and write to output pointer */
+    pSNR_dB_Q7 = (int16_t)(3 * silk_SQRT_APPROX(sumSquared)); /* Q7 */
+
+    /*********************************/
+    /* Speech Probability Estimation */
+    /*********************************/
+    SA_Q15 = silk_sigm_Q15(silk_SMULWB(VAD_SNR_FACTOR_Q16, pSNR_dB_Q7) - VAD_NEGATIVE_OFFSET_Q5);
+
+    /**************************/
+    /* Frequency Tilt Measure */
+    /**************************/
+    psEncC->input_tilt_Q15 = silk_LSHIFT(silk_sigm_Q15(input_tilt) - 16384, 1);
+
+    /**************************************************/
+    /* Scale the sigmoid output based on power levels */
+    /**************************************************/
+    speech_nrg = 0;
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        /* Accumulate signal-without-noise energies, higher frequency bands have more weight */
+        speech_nrg += (b + 1) * silk_RSHIFT(Xnrg[b] - psSilk_VAD->NL[b], 4);
+    }
+
+    if (psEncC->frame_length == 20 * psEncC->fs_kHz) {
+        speech_nrg = silk_RSHIFT32(speech_nrg, 1);
+    }
+    /* Power scaling */
+    if (speech_nrg <= 0) {
+        SA_Q15 = silk_RSHIFT(SA_Q15, 1);
+    } else if (speech_nrg < 16384) {
+        speech_nrg = silk_LSHIFT32(speech_nrg, 16);
+
+        /* square-root */
+        speech_nrg = silk_SQRT_APPROX(speech_nrg);
+        SA_Q15 = silk_SMULWB(32768 + speech_nrg, SA_Q15);
+    }
+
+    /* Copy the resulting speech activity in Q8 */
+    psEncC->speech_activity_Q8 = silk_min_int(silk_RSHIFT(SA_Q15, 7), silk_uint8_MAX);
+
+    /***********************************/
+    /* Energy Level and SNR estimation */
+    /***********************************/
+    /* Smoothing coefficient */
+    smooth_coef_Q16 = silk_SMULWB(VAD_SNR_SMOOTH_COEF_Q18, silk_SMULWB((int32_t)SA_Q15, SA_Q15));
+
+    if (psEncC->frame_length == 10 * psEncC->fs_kHz) {
+        smooth_coef_Q16 >>= 1;
+    }
+
+    for (b = 0; b < VAD_N_BANDS; b++) {
+        /* compute smoothed energy-to-noise ratio per band */
+        psSilk_VAD->NrgRatioSmth_Q8[b] = silk_SMLAWB(
+            psSilk_VAD->NrgRatioSmth_Q8[b], NrgToNoiseRatio_Q8[b] - psSilk_VAD->NrgRatioSmth_Q8[b], smooth_coef_Q16);
+
+        /* signal to noise ratio in dB per band */
+        SNR_Q7 = 3 * (silk_lin2log(psSilk_VAD->NrgRatioSmth_Q8[b]) - 8 * 128);
+        /* quality = sigmoid( 0.25 * ( SNR_dB - 16 ) ); */
+        psEncC->input_quality_bands_Q15[b] = silk_sigm_Q15(silk_RSHIFT(SNR_Q7 - 16 * 128, 4));
+    }
+
+    return (ret);
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Noise level estimation */
+static void silk_VAD_GetNoiseLevels(const int32_t pX[VAD_N_BANDS], /* I    subband energies                     */
+                                    silk_VAD_state *psSilk_VAD     /* I/O  Pointer to Silk VAD state            */
+    ) {
+    int32_t k;
+    int32_t nl, nrg, inv_nrg;
+    int32_t coef, min_coef;
+
+    /* Initially faster smoothing */
+    if (psSilk_VAD->counter < 1000) { /* 1000 = 20 sec */
+        min_coef = silk_DIV32_16(silk_int16_MAX, silk_RSHIFT(psSilk_VAD->counter, 4) + 1);
+        /* Increment frame counter */
+        psSilk_VAD->counter++;
+    } else {
+        min_coef = 0;
+    }
+
+    for (k = 0; k < VAD_N_BANDS; k++) {
+        /* Get old noise level estimate for current band */
+        nl = psSilk_VAD->NL[k];
+        assert(nl >= 0);
+
+        /* Add bias */
+        nrg = silk_ADD_POS_SAT32(pX[k], psSilk_VAD->NoiseLevelBias[k]);
+        assert(nrg > 0);
+
+        /* Invert energies */
+        inv_nrg = silk_DIV32(silk_int32_MAX, nrg);
+        assert(inv_nrg >= 0);
+
+        /* Less update when subband energy is high */
+        if (nrg > silk_LSHIFT(nl, 3)) {
+            coef = VAD_NOISE_LEVEL_SMOOTH_COEF_Q16 >> 3;
+        } else if (nrg < nl) {
+            coef = VAD_NOISE_LEVEL_SMOOTH_COEF_Q16;
+        } else {
+            coef = silk_SMULWB(silk_SMULWW(inv_nrg, nl), VAD_NOISE_LEVEL_SMOOTH_COEF_Q16 << 1);
+        }
+
+        /* Initially faster smoothing */
+        coef = silk_max_int(coef, min_coef);
+
+        /* Smooth inverse energies */
+        psSilk_VAD->inv_NL[k] = silk_SMLAWB(psSilk_VAD->inv_NL[k], inv_nrg - psSilk_VAD->inv_NL[k], coef);
+        assert(psSilk_VAD->inv_NL[k] >= 0);
+
+        /* Compute noise level by inverting again */
+        nl = silk_DIV32(silk_int32_MAX, psSilk_VAD->inv_NL[k]);
+        assert(nl >= 0);
+
+        /* Limit noise levels (guarantee 7 bits of head room) */
+        nl = silk_min(nl, 0x00FFFFFF);
+
+        /* Store as part of state */
+        psSilk_VAD->NL[k] = nl;
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------

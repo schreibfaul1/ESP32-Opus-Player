@@ -1042,6 +1042,10 @@ static inline int32_t silk_ROR32(int32_t a32, int32_t rot) {
     }
 }
 
+/* Silk VAD noise level estimation */
+static void silk_VAD_GetNoiseLevels(const int32_t pX[VAD_N_BANDS], /* I    subband energies */
+                                    silk_VAD_state *psSilk_VAD     /* I/O  Pointer to Silk VAD state     */
+);
 
 /* get number of leading zeros and fractional part (the bits right after the leading one */
 static inline void silk_CLZ_FRAC(int32_t in,      /* I  input                               */
@@ -1373,6 +1377,7 @@ void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_
 void silk_insertion_sort_increasing_all_values_int16(int16_t *a, const int32_t L);
 void silk_sum_sqr_shift(int32_t *energy, int32_t *shift, const int16_t *x, int32_t len);
 void silk_k2a(int32_t *A_Q24, const int16_t *rc_Q15, const int32_t order);
+
 #ifdef __cplusplus
 }
 #endif
