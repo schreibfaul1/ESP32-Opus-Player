@@ -463,6 +463,66 @@ const int8_t silk_Lag_range_stage3[SILK_PE_MAX_COMPLEX + 1][PE_MAX_NB_SUBFR][2] 
     /* Lags to search for max number of stage3 cbks */
     {{-9, 12}, {-3, 7}, {-2, 7}, {-7, 13}}};
 
+/* Tables with delay compensation values to equalize total delay for different modes */
+static const int8_t delay_matrix_enc[5][3] = {
+    /* in  \ out  8  12  16 */
+    /*  8 */ {6, 0, 3},
+    /* 12 */ {0, 7, 3},
+    /* 16 */ {0, 1, 10},
+    /* 24 */ {0, 2, 6},
+    /* 48 */ {18, 10, 12}};
+
+static const int8_t delay_matrix_dec[3][5] = {
+    /* in  \ out  8  12  16  24  48 */
+    /*  8 */ {4, 0, 2, 0, 0},
+    /* 12 */ {0, 9, 4, 7, 4},
+    /* 16 */ {0, 3, 12, 7, 7}};
+
+/* Tables with IIR and FIR coefficients for fractional downsamplers (123 Words) */
+silk_DWORD_ALIGN const int16_t silk_Resampler_3_4_COEFS[2 + 3 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
+    -20694, -13867, -49,  64,   17,    -157, 353, -496, 163, 11047, 22205, -39,  6,    91,    -170,
+    186,    23,     -896, 6336, 19928, -19,  -36, 102,  -89, -24,   328,   -951, 2568, 15909,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_2_3_COEFS[2 + 2 * RESAMPLER_DOWN_ORDER_FIR0 / 2] = {
+    -14457, -14019, 64, 128, -122, 36, 310, -768, 584, 9267, 17733, 12, 128, 18, -142, 288, -117, -865, 4123, 14459,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_1_2_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR1 / 2] = {
+    616, -14323, -10, 39, 58, -46, -84, 120, 184, -315, -541, 1284, 5380, 9024,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_1_3_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+    16102, -15162, -13, 0, 20, 26, 5, -31, -43, -4, 65, 90, 7, -157, -248, -44, 593, 1583, 2612, 3271,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_1_4_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+    22500, -15099, 3, -14, -20, -15, 2, 25, 37, 25, -16, -71, -107, -79, 50, 292, 623, 982, 1288, 1464,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_1_6_COEFS[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2] = {
+    27540, -15257, 17, 12, 8, 1, -10, -22, -30, -32, -22, 3, 44, 100, 168, 243, 317, 381, 429, 455,
+};
+
+silk_DWORD_ALIGN const int16_t silk_Resampler_2_3_COEFS_LQ[2 + 2 * 2] = {
+    -2797, -6507, 4697, 10739, 1567, 8276,
+};
+
+/* Table with interplation fractions of 1/24, 3/24, 5/24, ... , 23/24 : 23/24 (46 Words) */
+silk_DWORD_ALIGN const int16_t silk_resampler_frac_FIR_12[12][RESAMPLER_ORDER_FIR_12 / 2] = {
+    {189, -600, 617, 30567},   {117, -159, -1070, 29704}, {52, 221, -2392, 28276},  {-4, 529, -3350, 26341},
+    {-48, 758, -3956, 23973},  {-80, 905, -4235, 21254},  {-99, 972, -4222, 18278}, {-107, 967, -3957, 15143},
+    {-103, 896, -3487, 11950}, {-91, 773, -2865, 8798},   {-71, 611, -2143, 5784},  {-46, 425, -1375, 2996},
+};
+
+/* Tables for 2x downsampler */
+static const int16_t silk_resampler_down2_0 = 9872;
+static const int16_t silk_resampler_down2_1 = 39809 - 65536;
+
+/* Tables for 2x upsampler, high quality */
+static const int16_t silk_resampler_up2_hq_0[ 3 ] = { 1746, 14986, 39083 - 65536 };
+static const int16_t silk_resampler_up2_hq_1[ 3 ] = { 6854, 25769, 55542 - 65536 };
+
 const int8_t silk_nb_cbk_searchs_stage3[SILK_PE_MAX_COMPLEX + 1] = {PE_NB_CBKS_STAGE3_MIN, PE_NB_CBKS_STAGE3_MID,
                                                                     PE_NB_CBKS_STAGE3_MAX};
 
@@ -5882,7 +5942,140 @@ void silk_resampler_private_up2_HQ_wrapper(void *SS,          /* I/O  Resampler 
     silk_resampler_private_up2_HQ(S->sIIR, out, in, len);
 }
 //----------------------------------------------------------------------------------------------------------------------
+/* Initialize/reset the resampler state for a given pair of input/output sampling rates */
+int32_t silk_resampler_init(silk_resampler_state_struct *S, /* I/O  Resampler state */
+                            int32_t Fs_Hz_in,  /* I    Input sampling rate (Hz)                                    */
+                            int32_t Fs_Hz_out, /* I    Output sampling rate (Hz)                                   */
+                            int32_t forEnc     /* I    If 1: encoder; if 0: decoder                                */
+) {
+    int32_t up2x;
 
+    /* Clear state */
+    silk_memset(S, 0, sizeof(silk_resampler_state_struct));
+
+    /* Input checking */
+    if (forEnc) {
+        if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000) ||
+            (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000)) {
+            return -1;
+        }
+        S->inputDelay = delay_matrix_enc[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
+    } else {
+        if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) ||
+            (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 &&
+             Fs_Hz_out != 48000)) {
+            return -1;
+        }
+        S->inputDelay = delay_matrix_dec[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
+    }
+
+    S->Fs_in_kHz = silk_DIV32_16(Fs_Hz_in, 1000);
+    S->Fs_out_kHz = silk_DIV32_16(Fs_Hz_out, 1000);
+
+    /* Number of samples processed per batch */
+    S->batchSize = S->Fs_in_kHz * RESAMPLER_MAX_BATCH_SIZE_MS;
+
+    /* Find resampler with the right sampling ratio */
+    up2x = 0;
+    if (Fs_Hz_out > Fs_Hz_in) {
+        /* Upsample */
+        if (Fs_Hz_out == silk_MUL(Fs_Hz_in, 2)) { /* Fs_out : Fs_in = 2 : 1 */
+            /* Special case: directly use 2x upsampler */
+            S->resampler_function = USE_silk_resampler_private_up2_HQ_wrapper;
+        } else {
+            /* Default resampler */
+            S->resampler_function = USE_silk_resampler_private_IIR_FIR;
+            up2x = 1;
+        }
+    } else if (Fs_Hz_out < Fs_Hz_in) {
+        /* Downsample */
+        S->resampler_function = USE_silk_resampler_private_down_FIR;
+        if (silk_MUL(Fs_Hz_out, 4) == silk_MUL(Fs_Hz_in, 3)) { /* Fs_out : Fs_in = 3 : 4 */
+            S->FIR_Fracs = 3;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
+            S->Coefs = silk_Resampler_3_4_COEFS;
+        } else if (silk_MUL(Fs_Hz_out, 3) == silk_MUL(Fs_Hz_in, 2)) { /* Fs_out : Fs_in = 2 : 3 */
+            S->FIR_Fracs = 2;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
+            S->Coefs = silk_Resampler_2_3_COEFS;
+        } else if (silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 2 */
+            S->FIR_Fracs = 1;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR1;
+            S->Coefs = silk_Resampler_1_2_COEFS;
+        } else if (silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 3 */
+            S->FIR_Fracs = 1;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            S->Coefs = silk_Resampler_1_3_COEFS;
+        } else if (silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 4 */
+            S->FIR_Fracs = 1;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            S->Coefs = silk_Resampler_1_4_COEFS;
+        } else if (silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 6 */
+            S->FIR_Fracs = 1;
+            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            S->Coefs = silk_Resampler_1_6_COEFS;
+        } else {
+            /* None available */
+            return -1;
+        }
+    } else {
+        /* Input and output sampling rates are equal: copy */
+        S->resampler_function = USE_silk_resampler_copy;
+    }
+
+    /* Ratio of input/output samples */
+    S->invRatio_Q16 = silk_LSHIFT32(silk_DIV32(silk_LSHIFT32(Fs_Hz_in, 14 + up2x), Fs_Hz_out), 2);
+    /* Make sure the ratio is rounded up */
+    while (silk_SMULWW(S->invRatio_Q16, Fs_Hz_out) < silk_LSHIFT32(Fs_Hz_in, up2x)) {
+        S->invRatio_Q16++;
+    }
+
+    return 0;
+}
+//----------------------------------------------------------------------------------------------------------------------
+/* Resampler: convert from one sampling rate to another */
+/* Input and output sampling rate are at most 48000 Hz  */
+int32_t silk_resampler(silk_resampler_state_struct *S, /* I/O  Resampler state */
+                       int16_t out[],      /* O    Output signal                                               */
+                       const int16_t in[], /* I    Input signal                                                */
+                       int32_t inLen       /* I    Number of input samples                                     */
+) {
+    int32_t nSamples;
+
+    /* Need at least 1 ms of input data */
+    assert(inLen >= S->Fs_in_kHz);
+    /* Delay can't exceed the 1 ms of buffering */
+    assert(S->inputDelay <= S->Fs_in_kHz);
+
+    nSamples = S->Fs_in_kHz - S->inputDelay;
+
+    /* Copy to delay buffer */
+    silk_memcpy(&S->delayBuf[S->inputDelay], in, nSamples * sizeof(int16_t));
+
+    switch (S->resampler_function) {
+        case USE_silk_resampler_private_up2_HQ_wrapper:
+            silk_resampler_private_up2_HQ_wrapper(S, out, S->delayBuf, S->Fs_in_kHz);
+            silk_resampler_private_up2_HQ_wrapper(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            break;
+        case USE_silk_resampler_private_IIR_FIR:
+            silk_resampler_private_IIR_FIR(S, out, S->delayBuf, S->Fs_in_kHz);
+            silk_resampler_private_IIR_FIR(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            break;
+        case USE_silk_resampler_private_down_FIR:
+            silk_resampler_private_down_FIR(S, out, S->delayBuf, S->Fs_in_kHz);
+            silk_resampler_private_down_FIR(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            break;
+        default:
+            silk_memcpy(out, S->delayBuf, S->Fs_in_kHz * sizeof(int16_t));
+            silk_memcpy(&out[S->Fs_out_kHz], &in[nSamples], (inLen - S->Fs_in_kHz) * sizeof(int16_t));
+    }
+
+    /* Copy to delay buffer */
+    silk_memcpy(S->delayBuf, &in[inLen - S->inputDelay], S->inputDelay * sizeof(int16_t));
+
+    return 0;
+}
+//----------------------------------------------------------------------------------------------------------------------
 
 
 

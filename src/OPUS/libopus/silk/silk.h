@@ -385,10 +385,28 @@ extern "C" {
 #define USE_CELT_FIR                0
 #define MAX_LOOPS                   20
 #define NB_ATT                      2
+#define ORDER_FIR                   4
+#define RESAMPLER_DOWN_ORDER_FIR0   18
+#define RESAMPLER_DOWN_ORDER_FIR1   24
+#define RESAMPLER_DOWN_ORDER_FIR2   36
+#define RESAMPLER_ORDER_FIR_12      8
 #define A_LIMIT                     SILK_FIX_CONST( 0.99975, 24 )
 #define MUL32_FRAC_Q(a32, b32, Q)   ((int32_t)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
+/* Number of input samples to process in the inner loop */
+#define RESAMPLER_MAX_BATCH_SIZE_MS                  10
+#define RESAMPLER_MAX_FS_KHZ                         48
+#define RESAMPLER_MAX_BATCH_SIZE_IN                  ( RESAMPLER_MAX_BATCH_SIZE_MS * RESAMPLER_MAX_FS_KHZ )
+
+/* Simple way to make [8000, 12000, 16000, 24000, 48000] to [0, 1, 2, 3, 4] */
+#define rateID(R) ( ( ( ((R)>>12) - ((R)>16000) ) >> ((R)>24000) ) - 1 )
+
+#define USE_silk_resampler_copy                     (0)
+#define USE_silk_resampler_private_up2_HQ_wrapper   (1)
+#define USE_silk_resampler_private_IIR_FIR          (2)
+#define USE_silk_resampler_private_down_FIR         (3)
+
 /* Error messages */
-#define SILK_NO_ERROR                               0
+#define SILK_NO_ERROR                                0
 #define SILK_ENC_INPUT_INVALID_NO_OF_SAMPLES        -101
 #define SILK_ENC_FS_NOT_SUPPORTED                   -102 /* Sampling frequency not 8000, 12000 or 16000 Hertz */
 #define SILK_ENC_PACKET_SIZE_NOT_SUPPORTED          -103 /* Packet size not 10, 20, 40, or 60 ms */
@@ -491,6 +509,8 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
 
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch) \
     ((void)arch, silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
+
+    
 
 
 static inline int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0, int32_t *data1, const int16_t *coef,
@@ -1281,6 +1301,8 @@ static int16_t *silk_resampler_private_IIR_FIR_INTERPOL(int16_t *out, int16_t *b
 void silk_resampler_private_IIR_FIR(void *SS, int16_t out[], const int16_t in[], int32_t inLen);
 void silk_resampler_private_up2_HQ(int32_t *S, int16_t *out, const int16_t *in, int32_t len);
 void silk_resampler_private_up2_HQ_wrapper(void *SS, int16_t *out, const int16_t *in, int32_t len);
+int32_t silk_resampler_init(silk_resampler_state_struct *S, int32_t Fs_Hz_in, int32_t Fs_Hz_out, int32_t forEnc);
+int32_t silk_resampler(silk_resampler_state_struct *S, int16_t out[], const int16_t in[], int32_t inLen);
 
 #ifdef __cplusplus
 }

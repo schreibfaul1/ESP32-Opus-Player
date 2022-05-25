@@ -36,10 +36,7 @@ extern "C" {
 #include "resampler_structs.h"
 #include "resampler_rom.h"
 
-/* Number of input samples to process in the inner loop */
-#define RESAMPLER_MAX_BATCH_SIZE_MS             10
-#define RESAMPLER_MAX_FS_KHZ                    48
-#define RESAMPLER_MAX_BATCH_SIZE_IN             ( RESAMPLER_MAX_BATCH_SIZE_MS * RESAMPLER_MAX_FS_KHZ )
+
 
 /* Description: Hybrid IIR/FIR polyphase implementation of resampling */
 void silk_resampler_private_IIR_FIR(
