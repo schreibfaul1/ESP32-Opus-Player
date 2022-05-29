@@ -189,6 +189,8 @@ typedef struct OpusSeekRecord {
                         start of the stream.*/
 static int op_get_prev_page_serial(OggOpusFile *_of, OpusSeekRecord_t *_sr, int64_t _offset, uint32_t _serialno,
                                    const uint32_t *_serialnos, int _nserialnos) {
+    
+    log_i("op_get_prev_page_serial");
     OpusSeekRecord_t preferred_sr;
     ogg_page og;
     int64_t begin;
@@ -1248,6 +1250,7 @@ static int op_open_seekable2_impl(OggOpusFile *_of) {
     /*64 seek records should be enough for anybody.
      Actually, with a bisection search in a 63-bit range down to OP_CHUNK_SIZE
      granularity, much more than enough.*/
+    log_i("op_open_seekable2_impl");
     OpusSeekRecord_t *sr = (OpusSeekRecord_t*) malloc(64 * sizeof(OpusSeekRecord_t));
     int64_t data_offset;
     int ret;
@@ -1292,6 +1295,7 @@ static int op_open_seekable2(OggOpusFile *_of) {
     int64_t start_offset;
     int start_op_count;
     int ret;
+    log_i("op_open_seekable2");
     /*We're partially open and have a first link header state in storage in _of.
      Save off that stream state so we can come back to it.
      It would be simpler to just dump all this state and seek back to
@@ -1455,6 +1459,7 @@ static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *
 }
 //----------------------------------------------------------------------------------------------------------------------
 static int op_open2(OggOpusFile *_of) {
+    log_i("op_open2");
     int ret;
     OP_ASSERT(_of->ready_state==OP_PARTOPEN);
     if(_of->seekable) {
@@ -1509,39 +1514,6 @@ OggOpusFile* op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, co
         free(of);
     }
     return NULL;
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*Convenience routine to clean up from failure for the open functions that
- create their own streams.*/
-static OggOpusFile* op_test_close_on_failure(void *_stream, const OpusFileCallbacks_t *_cb, int *_error) {
-    OggOpusFile *of;
-    if(_stream==NULL) {
-        if(_error != NULL) *_error = OP_EFAULT;
-        return NULL;
-    }
-    of = op_test_callbacks(_stream, _cb, NULL, 0, _error);
-    if(of==NULL) (*_cb->close)(_stream);
-    return of;
-}
-//----------------------------------------------------------------------------------------------------------------------
-OggOpusFile* op_test_file(const char *_path, int *_error) {
-    OpusFileCallbacks_t cb;
-    return op_test_close_on_failure(op_fopen(&cb, _path, "rb"), &cb, _error);
-}
-//----------------------------------------------------------------------------------------------------------------------
-OggOpusFile* op_test_memory(const unsigned char *_data, size_t _size, int *_error) {
-    OpusFileCallbacks_t cb;
-    return op_test_close_on_failure(op_mem_stream_create(&cb, _data, _size), &cb, _error);
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_test_open(OggOpusFile *_of) {
-    int ret;
-    if(_of->ready_state!=OP_PARTOPEN) return OP_EINVAL;
-    ret = op_open2(_of);
-    /*op_open2() will clear this structure on failure.
-     Reset its contents to prevent double-frees in op_free().*/
-    if(ret < 0) memset(_of, 0, sizeof(*_of));
-    return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
 void op_free(OggOpusFile *_of) {
@@ -1997,33 +1969,6 @@ static int op_fetch_and_process_page(OggOpusFile *_of, ogg_page *_og, int64_t _p
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int op_raw_seek(OggOpusFile *_of, int64_t _pos) {
-    int ret;
-    if(_of->ready_state < OP_OPENED) return OP_EINVAL;
-    /*Don't dump the decoder state if we can't seek.*/
-    if((!_of->seekable)) return OP_ENOSEEK;
-    if((_pos < 0) || (_pos > _of->end)) return OP_EINVAL;
-    /*Clear out any buffered, decoded data.*/
-    op_decode_clear(_of);
-    _of->bytes_tracked = 0;
-    _of->samples_tracked = 0;
-    ret = op_seek_helper(_of, _pos);
-    if(ret < 0) return OP_EREAD;
-    ret = op_fetch_and_process_page(_of, NULL, -1, 1, 1);
-    /*If we hit EOF, op_fetch_and_process_page() leaves us uninitialized.
-     Instead, jump to the end.*/
-    if(ret == OP_EOF) {
-        int cur_link;
-        op_decode_clear(_of);
-        cur_link = _of->nlinks - 1;
-        _of->cur_link = cur_link;
-        _of->prev_packet_gp = _of->links[cur_link].pcm_end;
-        _of->cur_discard_count = 0;
-        ret = 0;
-    }
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /*Convert a PCM offset relative to the start of the whole stream to a granule
  position in an individual link.*/
 static int64_t op_get_granulepos(const OggOpusFile *_of, int64_t _pcm_offset, int *_li) {
@@ -2421,98 +2366,6 @@ static int op_pcm_seek_page(OggOpusFile *_of, int64_t _target_gp, int _li) {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int op_pcm_seek(OggOpusFile *_of, int64_t _pcm_offset) {
-    const OggOpusLink_t *link;
-    int64_t pcm_start;
-    int64_t target_gp;
-    int64_t prev_packet_gp;
-    int64_t skip;
-    int64_t diff;
-    int op_count;
-    int op_pos;
-    int ret;
-    int li;
-    if(_of->ready_state<OP_OPENED) return OP_EINVAL;
-    if(!_of->seekable) return OP_ENOSEEK;
-    if(_pcm_offset < 0) return OP_EINVAL;
-    target_gp = op_get_granulepos(_of, _pcm_offset, &li);
-    if(target_gp == -1) return OP_EINVAL;
-    link = _of->links + li;
-    pcm_start = link->pcm_start;
-    op_granpos_diff(&_pcm_offset, target_gp, pcm_start);
-
-    /*For small (90 ms or less) forward seeks within the same link, just decode
-     forward.
-     This also optimizes the case of seeking to the current position.*/
-    if(li == _of->cur_link && _of->ready_state >= OP_INITSET) {
-        int64_t gp;
-        gp = _of->prev_packet_gp;
-        if(gp != -1) {
-            int64_t discard_count;
-            int nbuffered;
-            nbuffered = _max(_of->od_buffer_size - _of->od_buffer_pos, 0);
-            op_granpos_add(&gp, gp, -nbuffered);
-            /*We do _not_ add cur_discard_count to gp.
-             Otherwise the total amount to discard could grow without bound, and it
-             would be better just to do a full seek.*/
-            if(!op_granpos_diff(&discard_count, target_gp, gp)) {
-                /*We use a threshold of 90 ms instead of 80, since 80 ms is the
-                 _minimum_ we would have discarded after a full seek.
-                 Assuming 20 ms frames (the default), we'd discard 90 ms on average.*/
-                if(discard_count >= 0 && (discard_count < 90 * 48)) {
-                    _of->cur_discard_count = (int32_t) discard_count;
-                    return 0;
-                }
-            }
-        }
-    }
-    ret = op_pcm_seek_page(_of, target_gp, li);
-    if(ret < 0) return ret;
-    /*Now skip samples until we actually get to our target.*/
-    /*Figure out where we should skip to.*/
-    if(_pcm_offset <= link->head.pre_skip)
-        skip = 0;
-    else
-        skip = _max(_pcm_offset - 80 * 48, 0);
-    OP_ASSERT(_pcm_offset-skip>=0); OP_ASSERT(_pcm_offset-skip<INT32_MAX-120*48);
-    /*Skip packets until we find one with samples past our skip target.*/
-    for(;;) {
-        op_count = _of->op_count;
-        prev_packet_gp = _of->prev_packet_gp;
-        for(op_pos = _of->op_pos; op_pos < op_count; op_pos++) {
-            int64_t cur_packet_gp;
-            cur_packet_gp = _of->op[op_pos].granulepos;
-            if(!op_granpos_diff(&diff,cur_packet_gp,pcm_start) && diff > skip) {
-                break;
-            }
-            prev_packet_gp = cur_packet_gp;
-        }
-        _of->prev_packet_gp = prev_packet_gp;
-        _of->op_pos = op_pos;
-        if(op_pos < op_count) break;
-        /*We skipped all the packets on this page.
-         Fetch another.*/
-        ret = op_fetch_and_process_page(_of, NULL, -1, 0, 1);
-        if(ret < 0) return OP_EBADLINK;
-    }
-    /*We skipped too far, or couldn't get within 2 billion samples of the target.
-     Either the timestamps were illegal or there was a hole in the data.*/
-    if(op_granpos_diff(&diff, prev_packet_gp, pcm_start) || diff > skip || _pcm_offset - diff >= INT32_MAX) {
-        return OP_EBADLINK;
-    }
-    /*TODO: If there are further holes/illegal timestamps, we still won't decode
-     to the correct sample.
-     However, at least op_pcm_tell() will report the correct value immediately
-     after returning.*/
-    _of->cur_discard_count = (int32_t) (_pcm_offset - diff);
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int64_t op_raw_tell(const OggOpusFile *_of) {
-    if(_of->ready_state<OP_OPENED) return OP_EINVAL;
-    return _of->offset;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /*Convert a granule position from a given link to a PCM offset relative to the
  start of the whole stream.
  For unseekable sources, this gets reset to 0 at the beginning of each link.*/
@@ -2545,39 +2398,9 @@ static int64_t op_get_pcm_offset(const OggOpusFile *_of, int64_t _gp, int _li) {
     return pcm_offset;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int64_t op_pcm_tell(const OggOpusFile *_of) {
-    int64_t gp;
-    int nbuffered;
-    int li;
-    if(_of->ready_state<OP_OPENED) return OP_EINVAL;
-    gp = _of->prev_packet_gp;
-    if(gp == -1) return 0;
-    nbuffered = _max(_of->od_buffer_size - _of->od_buffer_pos, 0);
-    op_granpos_add(&gp, gp, -nbuffered);
-    li = _of->seekable ? _of->cur_link : 0;
-    if(op_granpos_add(&gp, gp, _of->cur_discard_count) < 0) {
-        gp = _of->links[li].pcm_end;
-    }
-    return op_get_pcm_offset(_of, gp, li);
-}
-//----------------------------------------------------------------------------------------------------------------------
 void op_set_decode_callback(OggOpusFile *_of, op_decode_cb_func _decode_cb, void *_ctx) {
     _of->decode_cb = _decode_cb;
     _of->decode_cb_ctx = _ctx;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_set_gain_offset(OggOpusFile *_of, int _gain_type, int32_t _gain_offset_q8) {
-    if(_gain_type != OP_HEADER_GAIN && _gain_type != OP_ALBUM_GAIN && _gain_type != OP_TRACK_GAIN
-            && _gain_type != OP_ABSOLUTE_GAIN) {
-        return OP_EINVAL;
-    }
-    _of->gain_type = _gain_type;
-    /*The sum of header gain and track gain lies in the range [-65536,65534].
-     These bounds allow the offset to set the final value to anywhere in the
-     range [-32768,32767], which is what we'll clamp it to before applying.*/
-    _of->gain_offset_q8 = OP_CLAMP(-98302, _gain_offset_q8, 98303);
-    op_update_gain(_of);
-    return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 void op_set_dither_enabled(OggOpusFile *_of, int _enabled) {
@@ -3103,124 +2926,11 @@ int opus_tags_copy(OpusTags_t *_dst, const OpusTags_t *_src) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int opus_tags_add(OpusTags_t *_tags, const char *_tag, const char *_value) {
-    char *comment;
-    size_t tag_len;
-    size_t value_len;
-    int ncomments;
-    int ret;
-    ncomments = _tags->comments;
-    ret = op_tags_ensure_capacity(_tags, ncomments + 1);
-    if(ret < 0) return ret;
-    tag_len = strlen(_tag);
-    value_len = strlen(_value);
-    /*+2 for '=' and '\0'.*/
-    if(tag_len + value_len < tag_len) return OP_EFAULT;
-    if(tag_len + value_len > (size_t) INT_MAX - 2) return OP_EFAULT;
-    comment = (char*) malloc(sizeof(*comment) * (tag_len + value_len + 2));
-    if(comment == NULL) return OP_EFAULT;
-    memcpy(comment, _tag, sizeof(*comment) * tag_len);
-    comment[tag_len] = '=';
-    memcpy(comment + tag_len + 1, _value, sizeof(*comment) * (value_len + 1));
-    _tags->user_comments[ncomments] = comment;
-    _tags->comment_lengths[ncomments] = (int) (tag_len + value_len + 1);
-    _tags->comments = ncomments + 1;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_tags_add_comment(OpusTags_t *_tags, const char *_comment) {
-    char *comment;
-    int comment_len;
-    int ncomments;
-    int ret;
-    ncomments = _tags->comments;
-    ret = op_tags_ensure_capacity(_tags, ncomments + 1);
-    if(ret < 0) return ret;
-    comment_len = (int) strlen(_comment);
-    comment = op_strdup_with_len(_comment, comment_len);
-    if(comment == NULL) return OP_EFAULT;
-    _tags->user_comments[ncomments] = comment;
-    _tags->comment_lengths[ncomments] = comment_len;
-    _tags->comments = ncomments + 1;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_tags_set_binary_suffix(OpusTags_t *_tags, const unsigned char *_data, int _len) {
-    unsigned char *binary_suffix_data;
-    int ncomments;
-    int ret;
-    if((_len < 0) || (((_len > 0) && (_data == NULL)) || !(_data[0] & 1))) return OP_EINVAL;
-    ncomments = _tags->comments;
-    ret = op_tags_ensure_capacity(_tags, ncomments);
-    if(ret < 0) return ret;
-    binary_suffix_data = (unsigned char*) realloc(_tags->user_comments[ncomments], _len);
-    if(binary_suffix_data == NULL) return OP_EFAULT;
-    memcpy(binary_suffix_data, _data, _len);
-    _tags->user_comments[ncomments] = (char*) binary_suffix_data;
-    _tags->comment_lengths[ncomments] = _len;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_tagcompare(const char *_tag_name, const char *_comment) {
-    size_t tag_len;
-    tag_len = strlen(_tag_name);
-    if(tag_len > (size_t) INT_MAX) return -1;
-    return opus_tagncompare(_tag_name, (int) tag_len, _comment);
-}
-//----------------------------------------------------------------------------------------------------------------------
 int opus_tagncompare(const char *_tag_name, int _tag_len, const char *_comment) {
     int ret;
     OP_ASSERT(_tag_len>=0);
     ret = op_strncasecmp(_tag_name, _comment, _tag_len);
     return ret ? ret : '=' - _comment[_tag_len];
-}
-//----------------------------------------------------------------------------------------------------------------------
-const char* opus_tags_query(const OpusTags_t *_tags, const char *_tag, int _count) {
-    char **user_comments;
-    size_t tag_len;
-    int found;
-    int ncomments;
-    int ci;
-    tag_len = strlen(_tag);
-    if(tag_len > (size_t) INT_MAX) return NULL;
-    ncomments = _tags->comments;
-    user_comments = _tags->user_comments;
-    found = 0;
-    for(ci = 0; ci < ncomments; ci++) {
-        if(!opus_tagncompare(_tag, (int) tag_len, user_comments[ci])) {
-            /*We return a pointer to the data, not a copy.*/
-            if(_count == found++) return user_comments[ci] + tag_len + 1;
-        }
-    }
-    /*Didn't find anything.*/
-    return NULL;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_tags_query_count(const OpusTags_t *_tags, const char *_tag) {
-    char **user_comments;
-    size_t tag_len;
-    int found;
-    int ncomments;
-    int ci;
-    tag_len = strlen(_tag);
-    if(tag_len > (size_t) INT_MAX) return 0;
-    ncomments = _tags->comments;
-    user_comments = _tags->user_comments;
-    found = 0;
-    for(ci = 0; ci < ncomments; ci++) {
-        if(!opus_tagncompare(_tag, (int) tag_len, user_comments[ci])) found++;
-    }
-    return found;
-}
-//----------------------------------------------------------------------------------------------------------------------
-const unsigned char* opus_tags_get_binary_suffix(const OpusTags_t *_tags, int *_len) {
-    int ncomments;
-    int len;
-    ncomments = _tags->comments;
-    len = _tags->comment_lengths == NULL ? 0 : _tags->comment_lengths[ncomments];
-    *_len = len;
-    OP_ASSERT(len==0||_tags->user_comments!=NULL);
-    return len > 0 ? (const unsigned char*) _tags->user_comments[ncomments] : NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
 int opus_tags_get_gain(const OpusTags_t *_tags, int *_gain_q8, const char *_tag_name, size_t _tag_len) {
@@ -3556,47 +3266,6 @@ int opus_picture_tag_parse_impl(OpusPictureTag_t *_pic, const char *_tag, unsign
     _pic->data = _buf;
     _pic->format = format;
     return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_picture_tag_parse(OpusPictureTag_t *_pic, const char *_tag) {
-    OpusPictureTag_t pic;
-    unsigned char *buf;
-    size_t base64_sz;
-    size_t buf_sz;
-    size_t tag_length;
-    int ret;
-    if(opus_tagncompare("METADATA_BLOCK_PICTURE", 22, _tag) == 0) _tag += 23;
-    /*Figure out how much BASE64-encoded data we have.*/
-    tag_length = strlen(_tag);
-    if(tag_length & 3) return OP_ENOTFORMAT;
-    base64_sz = tag_length >> 2;
-    buf_sz = 3 * base64_sz;
-    if(buf_sz < 32) return OP_ENOTFORMAT;
-    if(_tag[tag_length - 1] == '=') buf_sz--;
-    if(_tag[tag_length - 2] == '=') buf_sz--;
-    if(buf_sz < 32) return OP_ENOTFORMAT;
-    /*Allocate an extra byte to allow appending a terminating NUL to URL data.*/
-    buf = (unsigned char*) malloc(sizeof(*buf) * (buf_sz + 1));
-    if(buf == NULL) return OP_EFAULT;
-    opus_picture_tag_init(&pic);
-    ret = opus_picture_tag_parse_impl(&pic, _tag, buf, buf_sz, base64_sz);
-    if(ret < 0) {
-        opus_picture_tag_clear(&pic);
-        free(buf);
-    }
-    else
-        *_pic = *&pic;
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
-void opus_picture_tag_init(OpusPictureTag_t *_pic) {
-    memset(_pic, 0, sizeof(*_pic));
-}
-//----------------------------------------------------------------------------------------------------------------------
-void opus_picture_tag_clear(OpusPictureTag_t *_pic) {
-    free(_pic->description);
-    free(_pic->mime_type);
-    free(_pic->data);
 }
 //----------------------------------------------------------------------------------------------------------------------
 int op_fread(void *_stream, unsigned char *_ptr, int _buf_size) {
