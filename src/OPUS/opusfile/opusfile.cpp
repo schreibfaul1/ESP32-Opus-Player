@@ -389,7 +389,7 @@ static int op_fetch_headers_impl(OggOpusFile_t *_of, OpusHead_t *_head, OpusTags
             default: {
                 /*Got a packet.
                  It should be the comment header.*/
-                ret = opus_tags_parse(_tags, op.packet, op.bytes);
+                ret = 0;// opus_tags_parse(_tags, op.packet, op.bytes);
                 if(ret < 0) return ret;
                 /*Make sure the page terminated at the end of the comment header.
                  If there is another packet on the page, or part of a packet, then
@@ -397,11 +397,6 @@ static int op_fetch_headers_impl(OggOpusFile_t *_of, OpusHead_t *_head, OpusTags
                  Otherwise seekable sources won't be able to seek back to the start
                  properly.*/
                 ret = ogg_stream_packetout(&_of->os, &op);
-                if((ret!=0) || (_og->header[_og->header_len - 1] == 255)) {
-                    /*If we fail, the caller assumes our tags are uninitialized.*/
-                    opus_tags_clear(_tags);
-                    return OP_EBADHEADER;
-                }
                 return 0;
             }
         }
@@ -989,10 +984,6 @@ static void op_decode_clear(OggOpusFile_t *_of) {
     _of->od_buffer_size = 0;
     _of->prev_packet_gp = -1;
     _of->prev_page_offset = -1;
-    if(!_of->seekable) {
-        assert(_of->ready_state>=OP_INITSET);
-        opus_tags_clear(&_of->links[0].tags);
-    }
     _of->ready_state = OP_OPENED;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1001,18 +992,6 @@ static void op_clear(OggOpusFile_t *_of) {
     free(_of->od_buffer);
     if(_of->od != NULL) opus_multistream_decoder_destroy(_of->od);
     links = _of->links;
-    if(!_of->seekable) {
-        if(_of->ready_state > OP_OPENED || _of->ready_state == OP_PARTOPEN) {
-            opus_tags_clear(&links[0].tags);
-        }
-    }
-    else if(links!=NULL) {
-        int nlinks;
-        int link;
-        nlinks = _of->nlinks;
-        for(link = 0; link < nlinks; link++)
-            opus_tags_clear(&links[link].tags);
-    }
     free(links);
     free(_of->serialnos);
     ogg_stream_clear(&_of->os);
@@ -1053,10 +1032,6 @@ static int op_open1(OggOpusFile_t *_of, void *_stream, const OpusFileCallbacks_t
         /*Fetch the initial PCM offset.*/
         ret = op_find_initial_pcm_offset(_of, _of->links, &og);
         if(seekable || (ret <= 0)) break;
-        /*This link was empty, but we already have the BOS page for the next one in
-         og.
-         We can't seek, so start processing the next link right now.*/
-        opus_tags_clear(&_of->links[0].tags);
         _of->nlinks = 0;
         if(!seekable) _of->cur_link++;
         pog = &og;
@@ -1109,52 +1084,6 @@ OggOpusFile_t* op_open_callbacks(const OpusFileCallbacks_t *_cb) {
         free(of);
     }
     return NULL;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_seekable(const OggOpusFile_t *_of) {
-    return _of->seekable;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int64_t op_raw_total(const OggOpusFile_t *_of, int _li) {
-    if((_of->ready_state<OP_OPENED) || (!_of->seekable) || (_li >= _of->nlinks)) {
-        return OP_EINVAL;
-    }
-    if(_li < 0) return _of->end;
-    return (_li + 1 >= _of->nlinks ? _of->end : _of->links[_li + 1].offset) - (_li > 0 ? _of->links[_li].offset : 0);
-}
-//----------------------------------------------------------------------------------------------------------------------
-int64_t op_pcm_total(const OggOpusFile_t *_of, int _li) {
-    OggOpusLink_t *links;
-    int64_t pcm_total;
-    int64_t diff;
-    int nlinks;
-    nlinks = _of->nlinks;
-    if((_of->ready_state<OP_OPENED) || (!_of->seekable) || (_li >= nlinks)) {
-        return OP_EINVAL;
-    }
-    links = _of->links;
-    /*We verify that the granule position differences are larger than the
-     pre-skip and that the total duration does not overflow during link
-     enumeration, so we don't have to check here.*/
-    pcm_total = 0;
-    if(_li < 0) {
-        pcm_total = links[nlinks - 1].pcm_file_offset;
-        _li = nlinks - 1;
-    }
-    op_granpos_diff(&diff, links[_li].pcm_end, links[_li].pcm_start);
-    return pcm_total + diff - links[_li].head.pre_skip;
-}
-//----------------------------------------------------------------------------------------------------------------------
-const OpusTags_t* op_tags(const OggOpusFile_t *_of, int _li) {
-    if(_li >= _of->nlinks) _li = _of->nlinks - 1;
-    if(!_of->seekable) {
-        if(_of->ready_state < OP_STREAMSET && _of->ready_state != OP_PARTOPEN) {
-            return NULL;
-        }
-        _li = 0;
-    }
-    else if(_li < 0) _li = _of->ready_state >= OP_STREAMSET ? _of->cur_link : 0;
-    return &_of->links[_li].tags;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Compute an average bitrate given a byte and sample count.
@@ -2251,162 +2180,5 @@ int opus_head_parse(OpusHead_t *_head, const unsigned char *_data, size_t _len) 
         return OP_EBADHEADER;
     if(_head != NULL) memcpy(_head, &head, head.mapping - (unsigned char*) &head);
     return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-void opus_tags_init(OpusTags_t *_tags) {
-    memset(_tags, 0, sizeof(*_tags));
-}
-//----------------------------------------------------------------------------------------------------------------------
-void opus_tags_clear(OpusTags_t *_tags) {
-    int ncomments;
-    int ci;
-    ncomments = _tags->comments;
-    if(_tags->user_comments != NULL)
-        ncomments++;
-    else {
-        assert(ncomments==0);
-    }
-    for(ci = ncomments; ci-- > 0;)
-        free(_tags->user_comments[ci]);
-    free(_tags->user_comments);
-    free(_tags->comment_lengths);
-    free(_tags->vendor);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*Ensure there's room for up to _ncomments comments.*/
-int op_tags_ensure_capacity(OpusTags_t *_tags, size_t _ncomments) {
-    char **user_comments;
-    int *comment_lengths;
-    int cur_ncomments;
-    size_t size;
-    if(_ncomments >= (size_t) INT_MAX) return OP_EFAULT;
-    size = sizeof(*_tags->comment_lengths) * (_ncomments + 1);
-    if(size / sizeof(*_tags->comment_lengths) != _ncomments + 1) return OP_EFAULT;
-    cur_ncomments = _tags->comments;
-    /*We only support growing.
-     Trimming requires cleaning up the allocated strings in the old space, and
-     is best handled separately if it's ever needed.*/
-    assert(_ncomments>=(size_t)cur_ncomments);
-    comment_lengths = (int*) realloc(_tags->comment_lengths, size);
-    if(comment_lengths == NULL) return OP_EFAULT;
-    if(_tags->comment_lengths == NULL) {
-        assert(cur_ncomments==0);
-        comment_lengths[cur_ncomments] = 0;
-    }
-    comment_lengths[_ncomments] = comment_lengths[cur_ncomments];
-    _tags->comment_lengths = comment_lengths;
-    size = sizeof(*_tags->user_comments) * (_ncomments + 1);
-    if(size / sizeof(*_tags->user_comments) != _ncomments + 1) return OP_EFAULT;
-    user_comments = (char**) realloc(_tags->user_comments, size);
-    if(user_comments == NULL) return OP_EFAULT;
-    if(_tags->user_comments == NULL) {
-        assert(cur_ncomments==0);
-        user_comments[cur_ncomments] = NULL;
-    }
-    user_comments[_ncomments] = user_comments[cur_ncomments];
-    _tags->user_comments = user_comments;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*Duplicate a (possibly non-NUL terminated) string with a known length.*/
-char* op_strdup_with_len(const char *_s, size_t _len) {
-    size_t size;
-    char *ret;
-    size = sizeof(*ret) * (_len + 1);
-    if(size < _len) return NULL;
-    ret = (char*) malloc(size);
-    if(ret != NULL) {
-        ret = (char*) memcpy(ret, _s, sizeof(*ret) * _len);
-        ret[_len] = '\0';
-    }
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*The actual implementation of opus_tags_parse().
- Unlike the public API, this function requires _tags to already be
- initialized, modifies its contents before success is guaranteed, and assumes
- the caller will clear it on error.*/
-int opus_tags_parse_impl(OpusTags_t *_tags, const unsigned char *_data, size_t _len) {
-    uint32_t count;
-    size_t len;
-    int ncomments;
-    int ci;
-    len = _len;
-    if(len < 8) return OP_ENOTFORMAT;
-    if(memcmp(_data, "OpusTags", 8) != 0) return OP_ENOTFORMAT;
-    if(len < 16) return OP_EBADHEADER;
-    _data += 8;
-    len -= 8;
-    count = op_parse_uint32le(_data);
-    _data += 4;
-    len -= 4;
-    if(count > len) return OP_EBADHEADER;
-    if(_tags != NULL) {
-        _tags->vendor = op_strdup_with_len((char*) _data, count);
-        if(_tags->vendor == NULL) return OP_EFAULT;
-    }
-    _data += count;
-    len -= count;
-    if(len < 4) return OP_EBADHEADER;
-    count = op_parse_uint32le(_data);
-    _data += 4;
-    len -= 4;
-    /*Check to make sure there's minimally sufficient data left in the packet.*/
-    if(count > len >> 2) return OP_EBADHEADER;
-    /*Check for overflow (the API limits this to an int).*/
-    if(count > (uint32_t) INT_MAX - 1) return OP_EFAULT;
-    if(_tags != NULL) {
-        int ret;
-        ret = op_tags_ensure_capacity(_tags, count);
-        if(ret < 0) return ret;
-    }
-    ncomments = (int) count;
-    for(ci = 0; ci < ncomments; ci++) {
-        /*Check to make sure there's minimally sufficient data left in the packet.*/
-        if((size_t) (ncomments - ci) > len >> 2) return OP_EBADHEADER;
-        count = op_parse_uint32le(_data);
-        _data += 4;
-        len -= 4;
-        if(count > len) return OP_EBADHEADER;
-        /*Check for overflow (the API limits this to an int).*/
-        if(count > (uint32_t) INT_MAX) return OP_EFAULT;
-        if(_tags != NULL) {
-            _tags->user_comments[ci] = op_strdup_with_len((char*) _data, count);
-            if(_tags->user_comments[ci] == NULL) return OP_EFAULT;
-            _tags->comment_lengths[ci] = (int) count;
-            _tags->comments = ci + 1;
-            /*Needed by opus_tags_clear() if we fail before parsing the (optional)
-             binary metadata.*/
-            _tags->user_comments[ci + 1] = NULL;
-        }
-        _data += count;
-        len -= count;
-    }
-    if(len > 0 && (_data[0] & 1)) {
-        if(len > (uint32_t) INT_MAX) return OP_EFAULT;
-        if(_tags != NULL) {
-            _tags->user_comments[ncomments] = (char*) malloc(len);
-            if(_tags->user_comments[ncomments] == NULL) return OP_EFAULT;
-            memcpy(_tags->user_comments[ncomments], _data, len);
-            _tags->comment_lengths[ncomments] = (int) len;
-        }
-    }
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int opus_tags_parse(OpusTags_t *_tags, const unsigned char *_data, size_t _len) {
-    if(_tags != NULL) {
-        OpusTags_t tags;
-        int ret;
-        opus_tags_init(&tags);
-        ret = opus_tags_parse_impl(&tags, _data, _len);
-        if(ret < 0)
-            opus_tags_clear(&tags);
-        else
-            *_tags = *&tags;
-        return ret;
-    }
-    else
-        return opus_tags_parse_impl(NULL, _data, _len);
 }
 //----------------------------------------------------------------------------------------------------------------------

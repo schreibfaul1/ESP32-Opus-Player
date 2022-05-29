@@ -163,17 +163,11 @@ int op_strncasecmp(const char *_a,const char *_b,int _n);
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 int opus_tags_parse(OpusTags_t *_tags, const unsigned char *_data,size_t _len);
 
-void opus_tags_init(OpusTags_t *_tags);
-void opus_tags_clear(OpusTags_t *_tags);
+
 OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *op_open_callbacks(const OpusFileCallbacks_t *_cb);
 OggOpusFile_t *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
-int op_seekable(const OggOpusFile_t *_of);
-int64_t op_raw_total(const OggOpusFile_t *_of,int _li);
-int64_t op_pcm_total(const OggOpusFile_t *_of,int _li);
-const OpusTags_t *op_tags(const OggOpusFile_t *_of,int _li);
-int32_t op_bitrate_instant(OggOpusFile_t *_of);
 
 #define OP_DEC_FORMAT_SHORT (7008)
 #define OP_DEC_FORMAT_FLOAT (7040)
