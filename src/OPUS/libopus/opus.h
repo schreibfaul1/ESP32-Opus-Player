@@ -53,7 +53,7 @@ typedef struct OpusDecoder OpusDecoder;
   *                                    This must be 1 or 2.
   * @returns The size in bytes.
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decoder_get_size(int channels);
+  int opus_decoder_get_size(int channels);
 
 /** Allocates and initializes a decoder state.
   * @param [in] Fs <tt>int32_t</tt>: Sample rate to decode at (Hz).
@@ -70,7 +70,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decoder_get_size(int channels);
   * rate. Likewise, the decoder is capable of filling in either mono or
   * interleaved stereo pcm buffers, at the caller's request.
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT OpusDecoder *opus_decoder_create(
+  OpusDecoder *opus_decoder_create(
     int32_t Fs,
     int channels,
     int *error
@@ -87,7 +87,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT OpusDecoder *opus_decoder_create(
   * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) to decode
   * @retval #OPUS_OK Success or @ref opus_errorcodes
   */
-OPUS_EXPORT int opus_decoder_init(
+ int opus_decoder_init(
     OpusDecoder *st,
     int32_t Fs,
     int channels
@@ -109,7 +109,7 @@ OPUS_EXPORT int opus_decoder_init(
   *  decoded. If no such data is available, the frame is decoded as if it were lost.
   * @returns Number of decoded samples or @ref opus_errorcodes
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decode(
+  int opus_decode(
     OpusDecoder *st,
     const unsigned char *data,
     int32_t len,
@@ -134,7 +134,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decode(
   *  decoded. If no such data is available the frame is decoded as if it were lost.
   * @returns Number of decoded samples or @ref opus_errorcodes
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decode_float(
+  int opus_decode_float(
     OpusDecoder *st,
     const unsigned char *data,
     int32_t len,
@@ -154,12 +154,12 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decode_float(
   * @see opus_genericctls
   * @see opus_decoderctls
   */
-OPUS_EXPORT int opus_decoder_ctl(OpusDecoder *st, int request, ...) OPUS_ARG_NONNULL(1);
+ int opus_decoder_ctl(OpusDecoder *st, int request, ...) OPUS_ARG_NONNULL(1);
 
 /** Frees an <code>OpusDecoder</code> allocated by opus_decoder_create().
   * @param[in] st <tt>OpusDecoder*</tt>: State to be freed.
   */
-OPUS_EXPORT void opus_decoder_destroy(OpusDecoder *st);
+ void opus_decoder_destroy(OpusDecoder *st);
 
 /** Parse an opus packet into one or more frames.
   * Opus_decode will perform this operation internally so most applications do
@@ -174,7 +174,7 @@ OPUS_EXPORT void opus_decoder_destroy(OpusDecoder *st);
   * @param [out] payload_offset <tt>int*</tt>: returns the position of the payload within the packet (in bytes)
   * @returns number of frames
   */
-OPUS_EXPORT int opus_packet_parse(
+ int opus_packet_parse(
    const unsigned char *data,
    int32_t len,
    unsigned char *out_toc,
@@ -192,7 +192,7 @@ OPUS_EXPORT int opus_packet_parse(
   * @retval OPUS_BANDWIDTH_FULLBAND Fullband (20kHz bandpass)
   * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_bandwidth(const unsigned char *data) OPUS_ARG_NONNULL(1);
+  int opus_packet_get_bandwidth(const unsigned char *data) OPUS_ARG_NONNULL(1);
 
 /** Gets the number of samples per frame from an Opus packet.
   * @param [in] data <tt>char*</tt>: Opus packet.
@@ -203,14 +203,14 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_bandwidth(const unsigned
   *                                     inaccurate results will be returned.
   * @returns Number of samples per frame.
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_samples_per_frame(const unsigned char *data, int32_t Fs) OPUS_ARG_NONNULL(1);
+  int opus_packet_get_samples_per_frame(const unsigned char *data, int32_t Fs) OPUS_ARG_NONNULL(1);
 
 /** Gets the number of channels from an Opus packet.
   * @param [in] data <tt>char*</tt>: Opus packet
   * @returns Number of channels
   * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_channels(const unsigned char *data) OPUS_ARG_NONNULL(1);
+  int opus_packet_get_nb_channels(const unsigned char *data) OPUS_ARG_NONNULL(1);
 
 /** Gets the number of frames in an Opus packet.
   * @param [in] packet <tt>char*</tt>: Opus packet
@@ -219,7 +219,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_channels(const unsign
   * @retval OPUS_BAD_ARG Insufficient data was passed to the function
   * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_frames(const unsigned char packet[], int32_t len) OPUS_ARG_NONNULL(1);
+  int opus_packet_get_nb_frames(const unsigned char packet[], int32_t len) OPUS_ARG_NONNULL(1);
 
 /** Gets the number of samples of an Opus packet.
   * @param [in] packet <tt>char*</tt>: Opus packet
@@ -231,7 +231,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_frames(const unsigned
   * @retval OPUS_BAD_ARG Insufficient data was passed to the function
   * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_samples(const unsigned char packet[], int32_t len, int32_t Fs) OPUS_ARG_NONNULL(1);
+  int opus_packet_get_nb_samples(const unsigned char packet[], int32_t len, int32_t Fs) OPUS_ARG_NONNULL(1);
 
 /** Gets the number of samples of an Opus packet.
   * @param [in] dec <tt>OpusDecoder*</tt>: Decoder state
@@ -241,19 +241,9 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_packet_get_nb_samples(const unsigne
   * @retval OPUS_BAD_ARG Insufficient data was passed to the function
   * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
   */
-OPUS_EXPORT OPUS_WARN_UNUSED_RESULT int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char packet[], int32_t len) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2);
+  int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char packet[], int32_t len) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2);
 
-/** Applies soft-clipping to bring a float signal within the [-1,1] range. If
-  * the signal is already in that range, nothing is done. If there are values
-  * outside of [-1,1], then the signal is clipped as smoothly as possible to
-  * both fit in the range and avoid creating excessive distortion in the
-  * process.
-  * @param [in,out] pcm <tt>float*</tt>: Input PCM and modified PCM
-  * @param [in] frame_size <tt>int</tt> Number of samples per channel to process
-  * @param [in] channels <tt>int</tt>: Number of channels
-  * @param [in,out] softclip_mem <tt>float*</tt>: State memory for the soft clipping process (one float per channel, initialized to zero)
-  */
-OPUS_EXPORT void opus_pcm_soft_clip(float *pcm, int frame_size, int channels, float *softclip_mem);
+
 
 
 

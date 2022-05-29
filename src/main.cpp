@@ -11,14 +11,7 @@
 
 // Digital I/O used
 
-#ifdef CONFIG_IDF_TARGET_ESP32
-    #define SD_MMC_D0     11
-    #define SD_MMC_CLK    13
-    #define SD_MMC_CMD    14
-    #define I2S_DOUT      25
-    #define I2S_BCLK      27
-    #define I2S_LRC       26
-#endif
+
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
     #define SD_MMC_D0     11
@@ -29,7 +22,14 @@
     #define I2S_LRC        1
 #endif
 
-
+#ifdef CONFIG_IDF_TARGET_ESP32
+    #define SD_MMC_D0     11
+    #define SD_MMC_CLK    13
+    #define SD_MMC_CMD    14
+    #define I2S_DOUT      25
+    #define I2S_BCLK      27
+    #define I2S_LRC       26
+#endif
 
 uint8_t             m_i2s_num = I2S_NUM_0;          // I2S_NUM_0 or I2S_NUM_1
 i2s_config_t        m_i2s_config;                   // stores values for I2S driver

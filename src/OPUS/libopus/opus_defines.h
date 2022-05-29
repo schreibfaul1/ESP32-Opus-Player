@@ -63,16 +63,11 @@ extern "C" {
 /** @cond OPUS_INTERNAL_DOC */
 /**Export control for opus functions */
 
-#  define OPUS_EXPORT
-
 #   define OPUS_GNUC_PREREQ(_maj,_min) \
  ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
 
 
 //#  define OPUS_RESTRICT __restrict__
-
-
-# define OPUS_WARN_UNUSED_RESULT __attribute__ ((__warn_unused_result__))
 
 # define OPUS_ARG_NONNULL(_x)  __attribute__ ((__nonnull__(_x)))
 
@@ -732,7 +727,7 @@ extern "C" {
   * @param[in] error <tt>int</tt>: Error number
   * @returns Error string
   */
-OPUS_EXPORT const char *opus_strerror(int error);
+ const char *opus_strerror(int error);
 
 /** Gets the libopus version string.
   *
@@ -742,7 +737,7 @@ OPUS_EXPORT const char *opus_strerror(int error);
   *
   * @returns Version string
   */
-OPUS_EXPORT const char *opus_get_version_string(void);
+ const char *opus_get_version_string(void);
 /**@}*/
 
 #ifdef __cplusplus

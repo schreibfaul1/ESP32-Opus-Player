@@ -43,11 +43,6 @@ extern "C" {
 #endif
 
 
-# define OPUS_CUSTOM_EXPORT
-# define OPUS_CUSTOM_EXPORT_STATIC static inline
-
-
-
 /** @defgroup opus_custom Opus Custom
   * @{
   *  Opus Custom is an optional part of the Opus specification and
@@ -113,13 +108,13 @@ typedef struct CELTMode CELTMode;
   * @param [out] error <tt>int*</tt>: Returned error code (if NULL, no error will be returned)
   * @return A newly created mode
   */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
+  CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
 
 /** Destroys a mode struct. Only call this after all encoders and
   * decoders using this mode are destroyed as well.
   * @param [in] mode <tt>CELTMode*</tt>: Mode to be freed.
   */
-OPUS_CUSTOM_EXPORT void opus_custom_mode_destroy(CELTMode *mode);
+ void opus_custom_mode_destroy(CELTMode *mode);
 
 /** Creates a new encoder state. Each stream needs its own encoder
   * state (can't be shared across simultaneous streams).
@@ -130,7 +125,7 @@ OPUS_CUSTOM_EXPORT void opus_custom_mode_destroy(CELTMode *mode);
   * @param [out] error <tt>int*</tt>: Returns an error code
   * @return Newly created encoder state.
 */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT CELTEncoder *opus_custom_encoder_create(
+  CELTEncoder *opus_custom_encoder_create(
     const CELTMode *mode,
     int channels,
     int *error
@@ -140,7 +135,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT CELTEncoder *opus_custom_encoder_crea
 /** Destroys a an encoder state.
   * @param[in] st <tt>CELTEncoder*</tt>: State to be freed.
   */
-OPUS_CUSTOM_EXPORT void opus_custom_encoder_destroy(CELTEncoder *st);
+ void opus_custom_encoder_destroy(CELTEncoder *st);
 
 /** Encodes a frame of audio.
   * @param [in] st <tt>CELTEncoder*</tt>: Encoder state
@@ -159,7 +154,7 @@ OPUS_CUSTOM_EXPORT void opus_custom_encoder_destroy(CELTEncoder *st);
   *       the length returned be somehow transmitted to the decoder. Otherwise, no
   *       decoding is possible.
   */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode_float(
+  int opus_custom_encode_float(
     CELTEncoder *st,
     const float *pcm,
     int frame_size,
@@ -180,7 +175,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode_float(
   *       the length returned be somehow transmitted to the decoder. Otherwise, no
   *       decoding is possible.
  */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode(
+  int opus_custom_encode(
     CELTEncoder *st,
     const int16_t *pcm,
     int frame_size,
@@ -194,7 +189,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_encode(
   * by a convenience macro.
   * @see opus_encoderctls
   */
-OPUS_CUSTOM_EXPORT int celt_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+ int celt_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
 
 
 /** Creates a new decoder state. Each stream needs its own decoder state (can't
@@ -205,7 +200,7 @@ OPUS_CUSTOM_EXPORT int celt_encoder_ctl(CELTEncoder * __restrict__ st, int reque
   * @param [out] error <tt>int*</tt>: Returns an error code
   * @return Newly created decoder state.
   */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT CELTDecoder *opus_custom_decoder_create(
+  CELTDecoder *opus_custom_decoder_create(
     const CELTMode *mode,
     int channels,
     int *error
@@ -214,7 +209,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT CELTDecoder *opus_custom_decoder_crea
 /** Destroys a an decoder state.
   * @param[in] st <tt>CELTDecoder*</tt>: State to be freed.
   */
-OPUS_CUSTOM_EXPORT void opus_custom_decoder_destroy(CELTDecoder *st);
+ void opus_custom_decoder_destroy(CELTDecoder *st);
 
 /** Decode an opus custom frame with floating point output
   * @param [in] st <tt>CELTDecoder*</tt>: Decoder state
@@ -225,7 +220,7 @@ OPUS_CUSTOM_EXPORT void opus_custom_decoder_destroy(CELTDecoder *st);
   * @param [in] frame_size Number of samples per channel of available space in *pcm.
   * @returns Number of decoded samples or @ref opus_errorcodes
   */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode_float(
+  int opus_custom_decode_float(
     CELTDecoder *st,
     const unsigned char *data,
     int len,
@@ -242,7 +237,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode_float(
   * @param [in] frame_size Number of samples per channel of available space in *pcm.
   * @returns Number of decoded samples or @ref opus_errorcodes
   */
-OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode(
+  int opus_custom_decode(
     CELTDecoder *st,
     const unsigned char *data,
     int len,
@@ -256,7 +251,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT int opus_custom_decode(
   * by a convenience macro.
   * @see opus_genericctls
   */
-OPUS_CUSTOM_EXPORT int celt_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+ int celt_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
 
 /**@}*/
 
