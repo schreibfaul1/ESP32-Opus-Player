@@ -184,73 +184,6 @@ typedef struct kiss_fft_state{
     arch_fft_state *arch_fft;
 } kiss_fft_state;
 
-
-
-
-
-// struct CELTEncoder{
-//     const CELTMode *mode; /**< Mode used by the encoder */
-//     int channels;
-//     int stream_channels;
-
-//     int force_intra;
-//     int clip;
-//     int disable_pf;
-//     int complexity;
-//     int upsample;
-//     int start, end;
-
-//     int32_t bitrate;
-//     int vbr;
-//     int signalling;
-//     int constrained_vbr; /* If zero, VBR can do whatever it likes with the rate */
-//     int loss_rate;
-//     int lsb_depth;
-//     int lfe;
-//     int disable_inv;
-//     int arch;
-
-//     /* Everything beyond this point gets cleared on a reset */
-// #define ENCODER_RESET_START rng
-
-//     uint32_t rng;
-//     int spread_decision;
-//     int32_t delayedIntra;
-//     int tonal_average;
-//     int lastCodedBands;
-//     int hf_average;
-//     int tapset_decision;
-
-//     int prefilter_period;
-//     int16_t prefilter_gain;
-//     int prefilter_tapset;
-
-//     int consec_transient;
-//     AnalysisInfo analysis;
-//     SILKInfo silk_info;
-
-//     int32_t preemph_memE[2];
-//     int32_t preemph_memD[2];
-
-//     /* VBR-related parameters */
-//     int32_t vbr_reservoir;
-//     int32_t vbr_drift;
-//     int32_t vbr_offset;
-//     int32_t vbr_count;
-//     int32_t overlap_max;
-//     int16_t stereo_saving;
-//     int intensity;
-//     int16_t *energy_mask;
-//     int16_t spec_avg;
-
-//     int32_t in_mem[1]; /* Size = channels*mode->overlap */
-//                        /* int32_t prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
-//                        /* int16_t oldBandE[],     Size = channels*mode->nbEBands */
-//                        /* int16_t oldLogE[],      Size = channels*mode->nbEBands */
-//                        /* int16_t oldLogE2[],     Size = channels*mode->nbEBands */
-//                        /* int16_t energyError[],  Size = channels*mode->nbEBands */
-// };
-
 typedef struct {
    int n;
    int maxshift;
@@ -319,7 +252,6 @@ struct CELTMode {
 // #define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
 // #define __celt_check_silkinfo_ptr(ptr) ((ptr) + ((ptr) - (const SILKInfo*)(ptr)))
 
-/* Encoder/decoder Requests */
 #define CELT_SET_PREDICTION_REQUEST    10002
 
 /** Controls the use of interframe prediction.
@@ -645,9 +577,6 @@ static inline int16_t sig2word16(int32_t x){
    return EXTRACT16(x);
 }
 
-/*Returns the number of bits "used" by the encoded or decoded symbols so far. This same number can be computed in
-  either the encoder or the decoder, and is suitable for making coding decisions. Return: The number of bits.
-  This will always be slightly larger than the exact value (e.g., all rounding error is in the positive direction).*/
 static inline int ec_tell(ec_ctx *_this){
   return _this->nbits_total-EC_ILOG(_this->rng);
 }
@@ -870,8 +799,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 int opus_custom_encoder_get_size(const CELTMode *mode, int channels);
 int celt_encoder_get_size(int channels);
-static int opus_custom_encoder_init_arch(CELTEncoder *st, const CELTMode *mode, int channels, int arch);
-int celt_encoder_init(CELTEncoder *st, int32_t sampling_rate, int channels,  int arch);
+
 static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
                               int allow_weak_transients, int *weak_transient);
 static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);
@@ -894,16 +822,6 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
                                  int constrained_vbr, const int16_t *eBands, int LM, int effectiveBytes,
                                  int32_t *tot_boost_, int lfe, int16_t *surround_dynalloc, AnalysisInfo *analysis,
                                  int *importance, int *spread_weight);
-static int run_prefilter(CELTEncoder *st, int32_t *in, int32_t *prefilter_mem, int CC, int N, int prefilter_tapset,
-                         int *pitch, int16_t *gain, int *qgain, int enabled, int nbAvailableBytes,
-                         AnalysisInfo *analysis);
-static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t base_target, int LM, int32_t bitrate,
-                       int lastCodedBands, int C, int intensity, int constrained_vbr, int16_t stereo_saving,
-                       int tot_boost, int16_t tf_estimate, int pitch_change, int16_t maxDepth, int lfe,
-                       int has_surround_mask, int16_t surround_masking, int16_t temporal_vbr);
-int celt_encode_with_ec(CELTEncoder *__restrict__ st, const int16_t *pcm, int frame_size, unsigned char *compressed,
-                        int nbCompressedBytes, ec_enc *enc);
-int celt_encoder_ctl(CELTEncoder *__restrict__ st, int request, ...);
 void _celt_lpc(int16_t *_lpc, const int32_t *ac, int p);
 void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord, int16_t *mem, int arch);

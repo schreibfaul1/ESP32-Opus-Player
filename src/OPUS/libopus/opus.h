@@ -42,7 +42,6 @@ extern "C" {
 #endif
 
 typedef struct OpusDecoder OpusDecoder;
-typedef struct CELTEncoder CELTEncoder;
 typedef struct CELTDecoder CELTDecoder;
 typedef struct CELTMode CELTMode;
 
@@ -65,13 +64,6 @@ int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char pack
 
 CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
 void opus_custom_mode_destroy(CELTMode *mode);
-CELTEncoder *opus_custom_encoder_create(const CELTMode *mode, int channels, int *error);
-void opus_custom_encoder_destroy(CELTEncoder *st);
-int opus_custom_encode_float(CELTEncoder *st, const float *pcm, int frame_size, unsigned char *compressed,
-                             int maxCompressedBytes);
-int opus_custom_encode(CELTEncoder *st, const int16_t *pcm, int frame_size, unsigned char *compressed,
-                       int maxCompressedBytes);
-int celt_encoder_ctl(CELTEncoder *__restrict__ st, int request, ...);
 CELTDecoder *opus_custom_decoder_create(const CELTMode *mode, int channels, int *error);
 void opus_custom_decoder_destroy(CELTDecoder *st);
 int opus_custom_decode_float(CELTDecoder *st, const unsigned char *data, int len, float *pcm, int frame_size);

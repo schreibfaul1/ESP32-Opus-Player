@@ -1198,7 +1198,6 @@ void silk_bwexpander_32(int32_t *ar, const int32_t d, int32_t chirp_Q16);
 void silk_bwexpander(int16_t *ar, const int32_t d, int32_t chirp_Q16);
 void silk_stereo_decode_pred(ec_dec *psRangeDec, int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(ec_dec *psRangeDec, int32_t *decode_only_mid);
-int32_t check_control_input(silk_EncControlStruct *encControl);
 void silk_PLC_Reset(silk_decoder_state *psDec);
 void silk_PLC(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost, int arch);
 void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t length);
@@ -1289,15 +1288,6 @@ void silk_CNG(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_
 void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR,
                          int32_t condCoding);
 void silk_CNG_Reset(silk_decoder_state *psDec);
-int32_t check_control_input(silk_EncControlStruct *encControl);
-int32_t silk_control_audio_bandwidth(silk_encoder_state *psEncC, silk_EncControlStruct *encControl);
-
-int32_t silk_Get_Encoder_Size(int32_t *encSizeBytes);
-
-int32_t silk_InitEncoder(void *encState, int arch, silk_EncControlStruct *encStatus);
-
-int32_t silk_Encode(void *encState, silk_EncControlStruct  *encControl, const int16_t *samplesIn, int32_t  nSamplesIn,
-                   ec_enc *psRangeEnc, int32_t *nBytesOut, const int32_t prefillFlag, int  activity);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder(void *decState);
 int32_t silk_Decode(void* decState, silk_DecControlStruct* decControl, int32_t lostFlag, int32_t newPacketFlag,

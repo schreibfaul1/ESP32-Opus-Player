@@ -987,56 +987,56 @@ void silk_stereo_decode_mid_only(ec_dec *psRangeDec,      /* I/O  Compressor dat
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Check encoder control struct */
-int32_t check_control_input(silk_EncControlStruct *encControl /* I    Control structure                           */
-) {
-    assert(encControl != NULL);
+// int32_t check_control_input(silk_EncControlStruct *encControl /* I    Control structure                           */
+// ) {
+//     assert(encControl != NULL);
 
-    if (((encControl->API_sampleRate != 8000) && (encControl->API_sampleRate != 12000) &&
-         (encControl->API_sampleRate != 16000) && (encControl->API_sampleRate != 24000) &&
-         (encControl->API_sampleRate != 32000) && (encControl->API_sampleRate != 44100) &&
-         (encControl->API_sampleRate != 48000)) ||
-        ((encControl->desiredInternalSampleRate != 8000) && (encControl->desiredInternalSampleRate != 12000) &&
-         (encControl->desiredInternalSampleRate != 16000)) ||
-        ((encControl->maxInternalSampleRate != 8000) && (encControl->maxInternalSampleRate != 12000) &&
-         (encControl->maxInternalSampleRate != 16000)) ||
-        ((encControl->minInternalSampleRate != 8000) && (encControl->minInternalSampleRate != 12000) &&
-         (encControl->minInternalSampleRate != 16000)) ||
-        (encControl->minInternalSampleRate > encControl->desiredInternalSampleRate) ||
-        (encControl->maxInternalSampleRate < encControl->desiredInternalSampleRate) ||
-        (encControl->minInternalSampleRate > encControl->maxInternalSampleRate)) {
-        return SILK_ENC_FS_NOT_SUPPORTED;
-    }
-    if (encControl->payloadSize_ms != 10 && encControl->payloadSize_ms != 20 && encControl->payloadSize_ms != 40 &&
-        encControl->payloadSize_ms != 60) {
-        return SILK_ENC_PACKET_SIZE_NOT_SUPPORTED;
-    }
-    if (encControl->packetLossPercentage < 0 || encControl->packetLossPercentage > 100) {
-        return SILK_ENC_INVALID_LOSS_RATE;
-    }
-    if (encControl->useDTX < 0 || encControl->useDTX > 1) {
-        return SILK_ENC_INVALID_DTX_SETTING;
-    }
-    if (encControl->useCBR < 0 || encControl->useCBR > 1) {
-        return SILK_ENC_INVALID_CBR_SETTING;
-    }
-    if (encControl->useInBandFEC < 0 || encControl->useInBandFEC > 1) {
-        return SILK_ENC_INVALID_INBAND_FEC_SETTING;
-    }
-    if (encControl->nChannelsAPI < 1 || encControl->nChannelsAPI > ENCODER_NUM_CHANNELS) {
-        return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
-    }
-    if (encControl->nChannelsInternal < 1 || encControl->nChannelsInternal > ENCODER_NUM_CHANNELS) {
-        return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
-    }
-    if (encControl->nChannelsInternal > encControl->nChannelsAPI) {
-        return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
-    }
-    if (encControl->complexity < 0 || encControl->complexity > 10) {
-        return SILK_ENC_INVALID_COMPLEXITY_SETTING;
-    }
+//     if (((encControl->API_sampleRate != 8000) && (encControl->API_sampleRate != 12000) &&
+//          (encControl->API_sampleRate != 16000) && (encControl->API_sampleRate != 24000) &&
+//          (encControl->API_sampleRate != 32000) && (encControl->API_sampleRate != 44100) &&
+//          (encControl->API_sampleRate != 48000)) ||
+//         ((encControl->desiredInternalSampleRate != 8000) && (encControl->desiredInternalSampleRate != 12000) &&
+//          (encControl->desiredInternalSampleRate != 16000)) ||
+//         ((encControl->maxInternalSampleRate != 8000) && (encControl->maxInternalSampleRate != 12000) &&
+//          (encControl->maxInternalSampleRate != 16000)) ||
+//         ((encControl->minInternalSampleRate != 8000) && (encControl->minInternalSampleRate != 12000) &&
+//          (encControl->minInternalSampleRate != 16000)) ||
+//         (encControl->minInternalSampleRate > encControl->desiredInternalSampleRate) ||
+//         (encControl->maxInternalSampleRate < encControl->desiredInternalSampleRate) ||
+//         (encControl->minInternalSampleRate > encControl->maxInternalSampleRate)) {
+//         return SILK_ENC_FS_NOT_SUPPORTED;
+//     }
+//     if (encControl->payloadSize_ms != 10 && encControl->payloadSize_ms != 20 && encControl->payloadSize_ms != 40 &&
+//         encControl->payloadSize_ms != 60) {
+//         return SILK_ENC_PACKET_SIZE_NOT_SUPPORTED;
+//     }
+//     if (encControl->packetLossPercentage < 0 || encControl->packetLossPercentage > 100) {
+//         return SILK_ENC_INVALID_LOSS_RATE;
+//     }
+//     if (encControl->useDTX < 0 || encControl->useDTX > 1) {
+//         return SILK_ENC_INVALID_DTX_SETTING;
+//     }
+//     if (encControl->useCBR < 0 || encControl->useCBR > 1) {
+//         return SILK_ENC_INVALID_CBR_SETTING;
+//     }
+//     if (encControl->useInBandFEC < 0 || encControl->useInBandFEC > 1) {
+//         return SILK_ENC_INVALID_INBAND_FEC_SETTING;
+//     }
+//     if (encControl->nChannelsAPI < 1 || encControl->nChannelsAPI > ENCODER_NUM_CHANNELS) {
+//         return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
+//     }
+//     if (encControl->nChannelsInternal < 1 || encControl->nChannelsInternal > ENCODER_NUM_CHANNELS) {
+//         return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
+//     }
+//     if (encControl->nChannelsInternal > encControl->nChannelsAPI) {
+//         return SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
+//     }
+//     if (encControl->complexity < 0 || encControl->complexity > 10) {
+//         return SILK_ENC_INVALID_COMPLEXITY_SETTING;
+//     }
 
-    return SILK_NO_ERROR;
-}
+//     return SILK_NO_ERROR;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 /* helper function for NLSF2A(..) */
 static void silk_NLSF2A_find_poly(int32_t *out,        /* O    intermediate polynomial, Q[dd+1]        */
@@ -2337,96 +2337,96 @@ void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data st
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Control internal sampling rate */
-int32_t silk_control_audio_bandwidth(silk_encoder_state *psEncC, /* I/O  Pointer to Silk encoder state               */
-                                     silk_EncControlStruct *encControl /* I    Control structure */
-) {
-    int32_t fs_kHz;
-    int32_t orig_kHz;
-    int32_t fs_Hz;
+// int32_t silk_control_audio_bandwidth(silk_encoder_state *psEncC, /* I/O  Pointer to Silk encoder state               */
+//                                      silk_EncControlStruct *encControl /* I    Control structure */
+// ) {
+//     int32_t fs_kHz;
+//     int32_t orig_kHz;
+//     int32_t fs_Hz;
 
-    orig_kHz = psEncC->fs_kHz;
-    /* Handle a bandwidth-switching reset where we need to be aware what the last sampling rate was. */
-    if (orig_kHz == 0) {
-        orig_kHz = psEncC->sLP.saved_fs_kHz;
-    }
-    fs_kHz = orig_kHz;
-    fs_Hz = silk_SMULBB(fs_kHz, 1000);
-    if (fs_Hz == 0) {
-        /* Encoder has just been initialized */
-        fs_Hz = silk_min(psEncC->desiredInternal_fs_Hz, psEncC->API_fs_Hz);
-        fs_kHz = silk_DIV32_16(fs_Hz, 1000);
-    } else if (fs_Hz > psEncC->API_fs_Hz || fs_Hz > psEncC->maxInternal_fs_Hz || fs_Hz < psEncC->minInternal_fs_Hz) {
-        /* Make sure internal rate is not higher than external rate or maximum allowed, or lower than minimum allowed */
-        fs_Hz = psEncC->API_fs_Hz;
-        fs_Hz = silk_min(fs_Hz, psEncC->maxInternal_fs_Hz);
-        fs_Hz = silk_max(fs_Hz, psEncC->minInternal_fs_Hz);
-        fs_kHz = silk_DIV32_16(fs_Hz, 1000);
-    } else {
-        /* State machine for the internal sampling rate switching */
-        if (psEncC->sLP.transition_frame_no >= TRANSITION_FRAMES) {
-            /* Stop transition phase */
-            psEncC->sLP.mode = 0;
-        }
-        if (psEncC->allow_bandwidth_switch || encControl->opusCanSwitch) {
-            /* Check if we should switch down */
-            if (silk_SMULBB(orig_kHz, 1000) > psEncC->desiredInternal_fs_Hz) {
-                /* Switch down */
-                if (psEncC->sLP.mode == 0) {
-                    /* New transition */
-                    psEncC->sLP.transition_frame_no = TRANSITION_FRAMES;
+//     orig_kHz = psEncC->fs_kHz;
+//     /* Handle a bandwidth-switching reset where we need to be aware what the last sampling rate was. */
+//     if (orig_kHz == 0) {
+//         orig_kHz = psEncC->sLP.saved_fs_kHz;
+//     }
+//     fs_kHz = orig_kHz;
+//     fs_Hz = silk_SMULBB(fs_kHz, 1000);
+//     if (fs_Hz == 0) {
+//         /* Encoder has just been initialized */
+//         fs_Hz = silk_min(psEncC->desiredInternal_fs_Hz, psEncC->API_fs_Hz);
+//         fs_kHz = silk_DIV32_16(fs_Hz, 1000);
+//     } else if (fs_Hz > psEncC->API_fs_Hz || fs_Hz > psEncC->maxInternal_fs_Hz || fs_Hz < psEncC->minInternal_fs_Hz) {
+//         /* Make sure internal rate is not higher than external rate or maximum allowed, or lower than minimum allowed */
+//         fs_Hz = psEncC->API_fs_Hz;
+//         fs_Hz = silk_min(fs_Hz, psEncC->maxInternal_fs_Hz);
+//         fs_Hz = silk_max(fs_Hz, psEncC->minInternal_fs_Hz);
+//         fs_kHz = silk_DIV32_16(fs_Hz, 1000);
+//     } else {
+//         /* State machine for the internal sampling rate switching */
+//         if (psEncC->sLP.transition_frame_no >= TRANSITION_FRAMES) {
+//             /* Stop transition phase */
+//             psEncC->sLP.mode = 0;
+//         }
+//         if (psEncC->allow_bandwidth_switch || encControl->opusCanSwitch) {
+//             /* Check if we should switch down */
+//             if (silk_SMULBB(orig_kHz, 1000) > psEncC->desiredInternal_fs_Hz) {
+//                 /* Switch down */
+//                 if (psEncC->sLP.mode == 0) {
+//                     /* New transition */
+//                     psEncC->sLP.transition_frame_no = TRANSITION_FRAMES;
 
-                    /* Reset transition filter state */
-                    silk_memset(psEncC->sLP.In_LP_State, 0, sizeof(psEncC->sLP.In_LP_State));
-                }
-                if (encControl->opusCanSwitch) {
-                    /* Stop transition phase */
-                    psEncC->sLP.mode = 0;
+//                     /* Reset transition filter state */
+//                     silk_memset(psEncC->sLP.In_LP_State, 0, sizeof(psEncC->sLP.In_LP_State));
+//                 }
+//                 if (encControl->opusCanSwitch) {
+//                     /* Stop transition phase */
+//                     psEncC->sLP.mode = 0;
 
-                    /* Switch to a lower sample frequency */
-                    fs_kHz = orig_kHz == 16 ? 12 : 8;
-                } else {
-                    if (psEncC->sLP.transition_frame_no <= 0) {
-                        encControl->switchReady = 1;
-                        /* Make room for redundancy */
-                        encControl->maxBits -= encControl->maxBits * 5 / (encControl->payloadSize_ms + 5);
-                    } else {
-                        /* Direction: down (at double speed) */
-                        psEncC->sLP.mode = -2;
-                    }
-                }
-            } else
-                /* Check if we should switch up */
-                if (silk_SMULBB(orig_kHz, 1000) < psEncC->desiredInternal_fs_Hz) {
-                    /* Switch up */
-                    if (encControl->opusCanSwitch) {
-                        /* Switch to a higher sample frequency */
-                        fs_kHz = orig_kHz == 8 ? 12 : 16;
+//                     /* Switch to a lower sample frequency */
+//                     fs_kHz = orig_kHz == 16 ? 12 : 8;
+//                 } else {
+//                     if (psEncC->sLP.transition_frame_no <= 0) {
+//                         encControl->switchReady = 1;
+//                         /* Make room for redundancy */
+//                         encControl->maxBits -= encControl->maxBits * 5 / (encControl->payloadSize_ms + 5);
+//                     } else {
+//                         /* Direction: down (at double speed) */
+//                         psEncC->sLP.mode = -2;
+//                     }
+//                 }
+//             } else
+//                 /* Check if we should switch up */
+//                 if (silk_SMULBB(orig_kHz, 1000) < psEncC->desiredInternal_fs_Hz) {
+//                     /* Switch up */
+//                     if (encControl->opusCanSwitch) {
+//                         /* Switch to a higher sample frequency */
+//                         fs_kHz = orig_kHz == 8 ? 12 : 16;
 
-                        /* New transition */
-                        psEncC->sLP.transition_frame_no = 0;
+//                         /* New transition */
+//                         psEncC->sLP.transition_frame_no = 0;
 
-                        /* Reset transition filter state */
-                        silk_memset(psEncC->sLP.In_LP_State, 0, sizeof(psEncC->sLP.In_LP_State));
+//                         /* Reset transition filter state */
+//                         silk_memset(psEncC->sLP.In_LP_State, 0, sizeof(psEncC->sLP.In_LP_State));
 
-                        /* Direction: up */
-                        psEncC->sLP.mode = 1;
-                    } else {
-                        if (psEncC->sLP.mode == 0) {
-                            encControl->switchReady = 1;
-                            /* Make room for redundancy */
-                            encControl->maxBits -= encControl->maxBits * 5 / (encControl->payloadSize_ms + 5);
-                        } else {
-                            /* Direction: up */
-                            psEncC->sLP.mode = 1;
-                        }
-                    }
-                } else {
-                    if (psEncC->sLP.mode < 0) psEncC->sLP.mode = 1;
-                }
-        }
-    }
-    return fs_kHz;
-}
+//                         /* Direction: up */
+//                         psEncC->sLP.mode = 1;
+//                     } else {
+//                         if (psEncC->sLP.mode == 0) {
+//                             encControl->switchReady = 1;
+//                             /* Make room for redundancy */
+//                             encControl->maxBits -= encControl->maxBits * 5 / (encControl->payloadSize_ms + 5);
+//                         } else {
+//                             /* Direction: up */
+//                             psEncC->sLP.mode = 1;
+//                         }
+//                     }
+//                 } else {
+//                     if (psEncC->sLP.mode < 0) psEncC->sLP.mode = 1;
+//                 }
+//         }
+//     }
+//     return fs_kHz;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 /* Control SNR of redidual quantizer */
 int32_t silk_control_SNR(silk_encoder_state *psEncC, /* I/O  Pointer to Silk encoder state               */
