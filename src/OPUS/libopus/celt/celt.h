@@ -797,9 +797,6 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM);
 int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data, int len, int16_t *__restrict__ pcm,
                         int frame_size, ec_dec *dec, int accum);
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
-int opus_custom_encoder_get_size(const CELTMode *mode, int channels);
-int celt_encoder_get_size(int channels);
-
 static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
                               int allow_weak_transients, int *weak_transient);
 static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);

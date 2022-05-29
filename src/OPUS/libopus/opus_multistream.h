@@ -39,11 +39,8 @@
 extern "C" {
 #endif
 
-#define __opus_check_encstate_ptr(ptr) ((ptr) + ((ptr) - (OpusEncoder **)(ptr)))
 #define __opus_check_decstate_ptr(ptr) ((ptr) + ((ptr) - (OpusDecoder **)(ptr)))
 #define OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST 5122
-#define OPUS_MULTISTREAM_GET_DECODER_STATE(x, y) \
-    OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST, (int32_t)(x), __opus_check_decstate_ptr(y)
 typedef struct OpusMSDecoder OpusMSDecoder;
 
 int32_t opus_multistream_decoder_get_size(int streams, int coupled_streams);

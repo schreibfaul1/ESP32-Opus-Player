@@ -1301,7 +1301,6 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, ec_dec *psRangeDec, int16_t
                           int32_t condCoding, int arch);
 void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz,
                        const int32_t nb_subfr);
-void silk_HP_variable_cutoff(silk_encoder_state_Fxx state_Fxx[]);
 int32_t silk_init_encoder(silk_encoder_state_Fxx *psEnc, int arch);
 int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t *const inVec2, const int32_t scale,
                                       const int32_t len);
