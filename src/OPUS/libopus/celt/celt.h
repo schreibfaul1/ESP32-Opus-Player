@@ -40,7 +40,7 @@
 #include <assert.h>
 #include <string.h>
 #include "../opus_defines.h"
-#include "../opus_custom.h"
+#include "../opus.h"
 
 
 #ifdef __cplusplus
