@@ -93,9 +93,6 @@ typedef struct OpusServerInfo{
 
 typedef struct OpusFileCallbacks{
   op_read_func  read;
-  op_seek_func  seek;
-  op_tell_func  tell;
-  op_close_func close;
 } OpusFileCallbacks_t;
 
 typedef struct OggOpusLink{

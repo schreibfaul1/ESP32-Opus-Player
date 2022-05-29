@@ -44,9 +44,6 @@ static int op_get_data(OggOpusFile *_of, int _nbytes) {
 /*Save a tiny smidge of verbosity to make the code more readable.*/
 static int op_seek_helper(OggOpusFile *_of, int64_t _offset) {
     if(_offset == _of->offset) return 0;
-    if(_of->callbacks.seek == NULL || (*_of->callbacks.seek)(_of->stream, _offset, SEEK_SET)) {
-        return OP_EREAD;
-    }
     _of->offset = _offset;
     ogg_sync_reset(&_of->oy);
     return 0;
@@ -1255,8 +1252,7 @@ static int op_open_seekable2_impl(OggOpusFile *_of) {
     int64_t data_offset;
     int ret;
     /*We can seek, so set out learning all about this file.*/
-    (*_of->callbacks.seek)(_of->stream, 0, SEEK_END);
-    _of->offset = _of->end = (*_of->callbacks.tell)(_of->stream);
+
     if(_of->end < 0) {
         free(sr);
         return OP_EREAD;
@@ -1318,7 +1314,7 @@ static int op_open_seekable2(OggOpusFile *_of) {
     prev_page_offset = _of->prev_page_offset;
     start_offset = _of->offset;
     memcpy(op_start, _of->op, sizeof(*op_start) * start_op_count);
-    assert((*_of->callbacks.tell)(_of->stream)==op_position(_of));
+
     ogg_sync_init(&_of->oy);
     ogg_stream_init(&_of->os, -1);
     ret = op_open_seekable2_impl(_of);
@@ -1338,8 +1334,6 @@ static int op_open_seekable2(OggOpusFile *_of) {
         free(os_start);
         return ret;
     }
-    /*And restore the position indicator.*/
-    ret = (*_of->callbacks.seek)(_of->stream, op_position(_of), SEEK_SET);
     free(os_start);
     return (ret<0) ? OP_EREAD : 0;
 }
@@ -1380,7 +1374,6 @@ static void op_clear(OggOpusFile *_of) {
     free(_of->serialnos);
     ogg_stream_clear(&_of->os);
     ogg_sync_clear(&_of->oy);
-    if(_of->callbacks.close != NULL) (*_of->callbacks.close)(_of->stream);
 }
 //----------------------------------------------------------------------------------------------------------------------
 static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *_cb) {
@@ -1396,21 +1389,7 @@ static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *
     if(_of->callbacks.read==NULL) return OP_EREAD;
     /*Initialize the framing state.*/
     ogg_sync_init(&_of->oy);
-    /*Can we seek?
-     Stevens suggests the seek test is portable.
-     It's actually not for files on win32, but we address that by fixing it in
-     our callback implementation (see stream.c).*/
-    seekable = _cb->seek != NULL && (*_cb->seek)(_stream, 0, SEEK_CUR) != -1;
-    /*If seek is implemented, tell must also be implemented.*/
-    if(seekable) {
-        int64_t pos;
-        if(_of->callbacks.tell==NULL) return OP_EINVAL;
-        pos = (*_of->callbacks.tell)(_of->stream);
-        /*If the current position is not equal to the initial bytes consumed,
-         absolute seeking will not work.*/
-        if(pos != (int64_t )0) return OP_EINVAL;
-    }
-    _of->seekable = seekable;
+
     /*Don't seek yet.
      Set up a 'single' (current) logical bitstream entry for partial open.*/
     _of->links = (OggOpusLink_t*) malloc(sizeof(*_of->links));
@@ -1460,8 +1439,6 @@ static int op_open2(OggOpusFile *_of) {
         ret = op_make_decode_ready(_of);
         if(ret >= 0) return 0;
     }
-    /*Don't auto-close the stream on failure.*/
-    _of->callbacks.close = NULL;
     op_clear(_of);
     return ret;
 }
@@ -1476,8 +1453,7 @@ OggOpusFile* op_test_callbacks(const OpusFileCallbacks_t *_cb) {
         if(ret >= 0) {
             return of;
         }
-        /*Don't auto-close the stream on failure.*/
-        of->callbacks.close = NULL;
+
         op_clear(of);
         free(of);
     }
@@ -1487,7 +1463,7 @@ OggOpusFile* op_test_callbacks(const OpusFileCallbacks_t *_cb) {
 OggOpusFile* op_open_callbacks(const OpusFileCallbacks_t *_cb) {
     OggOpusFile *of;
     of = op_test_callbacks(_cb);
-    
+
     if(of!=NULL) {
         int ret;
         ret = op_open2(of);
