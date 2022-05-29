@@ -326,8 +326,8 @@ struct CELTMode {
 #define USUB32(a,b) ((a)-(b))
 
 #define __celt_check_mode_ptr_ptr(ptr) ((ptr) + ((ptr) - (const CELTMode**)(ptr)))
-#define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
-#define __celt_check_silkinfo_ptr(ptr) ((ptr) + ((ptr) - (const SILKInfo*)(ptr)))
+// #define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
+// #define __celt_check_silkinfo_ptr(ptr) ((ptr) + ((ptr) - (const SILKInfo*)(ptr)))
 
 /* Encoder/decoder Requests */
 #define CELT_SET_PREDICTION_REQUEST    10002
@@ -337,101 +337,55 @@ struct CELTMode {
     1=Short term interframe prediction allowed
     2=Long term prediction allowed
  */
-#define CELT_SET_PREDICTION(x) CELT_SET_PREDICTION_REQUEST, __opus_check_int(x)
+#define CELT_SET_PREDICTION(x) CELT_SET_PREDICTION_REQUEST, (int32_t)(x)
 
 #define CELT_SET_INPUT_CLIPPING_REQUEST    10004
-#define CELT_SET_INPUT_CLIPPING(x) CELT_SET_INPUT_CLIPPING_REQUEST, __opus_check_int(x)
+#define CELT_SET_INPUT_CLIPPING(x) CELT_SET_INPUT_CLIPPING_REQUEST, (int32_t)(x)
 
 #define CELT_GET_AND_CLEAR_ERROR_REQUEST   10007
-#define CELT_GET_AND_CLEAR_ERROR(x) CELT_GET_AND_CLEAR_ERROR_REQUEST, __opus_check_int_ptr(x)
+#define CELT_GET_AND_CLEAR_ERROR(x) CELT_GET_AND_CLEAR_ERROR_REQUEST, (int32_t*)(x)
 
 #define CELT_SET_CHANNELS_REQUEST    10008
-#define CELT_SET_CHANNELS(x) CELT_SET_CHANNELS_REQUEST, __opus_check_int(x)
+#define CELT_SET_CHANNELS(x) CELT_SET_CHANNELS_REQUEST, (int32_t)(x)
 
 
 /* Internal */
 #define CELT_SET_START_BAND_REQUEST    10010
-#define CELT_SET_START_BAND(x) CELT_SET_START_BAND_REQUEST, __opus_check_int(x)
-
+#define CELT_SET_START_BAND(x) CELT_SET_START_BAND_REQUEST, (int32_t)(x)
 #define CELT_SET_END_BAND_REQUEST    10012
-#define CELT_SET_END_BAND(x) CELT_SET_END_BAND_REQUEST, __opus_check_int(x)
-
+#define CELT_SET_END_BAND(x) CELT_SET_END_BAND_REQUEST, (int32_t)(x)
 #define CELT_GET_MODE_REQUEST    10015
-/** Get the CELTMode used by an encoder or decoder */
-#define CELT_GET_MODE(x) CELT_GET_MODE_REQUEST, __celt_check_mode_ptr_ptr(x)
-
 #define CELT_SET_SIGNALLING_REQUEST    10016
-#define CELT_SET_SIGNALLING(x) CELT_SET_SIGNALLING_REQUEST, __opus_check_int(x)
-
 #define CELT_SET_TONALITY_REQUEST    10018
-#define CELT_SET_TONALITY(x) CELT_SET_TONALITY_REQUEST, __opus_check_int(x)
 #define CELT_SET_TONALITY_SLOPE_REQUEST    10020
-#define CELT_SET_TONALITY_SLOPE(x) CELT_SET_TONALITY_SLOPE_REQUEST, __opus_check_int(x)
-
 #define CELT_SET_ANALYSIS_REQUEST    10022
-#define CELT_SET_ANALYSIS(x) CELT_SET_ANALYSIS_REQUEST, __celt_check_analysis_ptr(x)
-
 #define OPUS_SET_LFE_REQUEST    10024
-#define OPUS_SET_LFE(x) OPUS_SET_LFE_REQUEST, __opus_check_int(x)
-
 #define OPUS_SET_ENERGY_MASK_REQUEST    10026
-#define OPUS_SET_ENERGY_MASK(x) OPUS_SET_ENERGY_MASK_REQUEST, __opus_check_val16_ptr(x)
-
 #define CELT_SET_SILK_INFO_REQUEST    10028
-#define CELT_SET_SILK_INFO(x) CELT_SET_SILK_INFO_REQUEST, __celt_check_silkinfo_ptr(x)
-
-/* The maximum pitch lag to allow in the pitch-based PLC. It's possible to save CPU time in the PLC pitch search by
-   making this smaller than MAX_PERIOD. The current value corresponds to a pitch of 66.67 Hz. */
 #define PLC_PITCH_LAG_MAX (720)
-
-/* The minimum pitch lag to allow in the pitch-based PLC. This corresponds to a pitch of 480 Hz. */
 #define PLC_PITCH_LAG_MIN (100)
-
-/*The number of bits to output at a time.*/
-# define EC_SYM_BITS   (8)
-
-/*The total number of bits in each of the state registers.*/
-# define EC_CODE_BITS  (32)
-
-/*The maximum symbol value.*/
-# define EC_SYM_MAX    ((1U<<EC_SYM_BITS)-1)
-
-/*Bits to shift by to move a symbol into the high-order position.*/
-# define EC_CODE_SHIFT (EC_CODE_BITS-EC_SYM_BITS-1)
-
-/*Carry bit of the high-order range symbol.*/
-# define EC_CODE_TOP   (((uint32_t)1U)<<(EC_CODE_BITS-1))
-
-/*Low-order bit of the high-order range symbol.*/
-# define EC_CODE_BOT   (EC_CODE_TOP>>EC_SYM_BITS)
-
-/*The number of bits available for the last, partial symbol in the code field.*/
-# define EC_CODE_EXTRA ((EC_CODE_BITS-2)%EC_SYM_BITS+1)
-
+#define EC_SYM_BITS   (8)
+#define EC_CODE_BITS  (32)
+#define EC_SYM_MAX    ((1U<<EC_SYM_BITS)-1)
+#define EC_CODE_SHIFT (EC_CODE_BITS-EC_SYM_BITS-1)
+#define EC_CODE_TOP   (((uint32_t)1U)<<(EC_CODE_BITS-1))
+#define EC_CODE_BOT   (EC_CODE_TOP>>EC_SYM_BITS)
+#define EC_CODE_EXTRA ((EC_CODE_BITS-2)%EC_SYM_BITS+1)
 #define DECODE_BUFFER_SIZE 2048
-
-/*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
 #define CELT_PVQ_U(_n, _k) (CELT_PVQ_U_ROW[IMIN(_n, _k)][IMAX(_n, _k)])
-/*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
-   with K pulses allocated to it.*/
 #define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
-
 #define opus_likely(x)       (__builtin_expect(!!(x), 1))
 #define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
-
 #define CELT_SIG_SCALE 32768.f
 #define CELT_FATAL(str) celt_fatal(str, __FILE__, __LINE__);
 #define assert2(cond, message)
 #define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/**/; return OPUS_INTERNAL_ERROR;} } while (0)
-
 #define SAMP_MAX 2147483647
 #define TWID_MAX 32767
 #define TRIG_UPSCALE 1
 #define LPC_ORDER 24
-
 #define SAMP_MIN -SAMP_MAX
 #define celt_fir(x, num, y, N, ord, arch) (celt_fir_c(x, num, y, N, ord, arch))
-
 #define S_MUL(a,b) MULT16_32_Q15(b, a)
 #define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
                           (m).i = ADD32_ovflw(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
@@ -454,8 +408,6 @@ struct CELTMode {
 
 #define CHECK_OVERFLOW_OP(a,op,b) /* noop */
 
-/*#  define KISS_FFT_COS(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * cos (phase))))
-#  define KISS_FFT_SIN(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * sin (phase))))*/
 #  define KISS_FFT_COS(phase)  floor(.5+TWID_MAX*cos (phase))
 #  define KISS_FFT_SIN(phase)  floor(.5+TWID_MAX*sin (phase))
 #  define HALF_OF(x) ((x)>>1)
@@ -465,11 +417,8 @@ struct CELTMode {
 #define  kf_cexp2(x,phase) do{ (x)->r = TRIG_UPSCALE*celt_cos_norm((phase));\
                                (x)->i = TRIG_UPSCALE*celt_cos_norm((phase)-32768); }while(0)
 
-/* The minimum probability of an energy delta (out of 32768). */
 #define LAPLACE_LOG_MINP (0)
 #define LAPLACE_MINP (1<<LAPLACE_LOG_MINP)
-/* The minimum number of guaranteed representable energy deltas (in one
-    direction). */
 #define LAPLACE_NMIN (16)
 #define COMBFILTER_MAXPERIOD 1024
 #define COMBFILTER_MINPERIOD 15
@@ -502,28 +451,11 @@ struct CELTMode {
 #define SCALEOUT(a)     (a)
 
 # define EC_WINDOW_SIZE ((int)sizeof(ec_window)*CHAR_BIT)
-
-/*The number of bits to use for the range-coded part of unsigned integers.*/
 # define EC_UINT_BITS   (8)
-
-/*The resolution of fractional-precision bit usage measurements, i.e., 3 => 1/8th bits.*/
 # define BITRES 3
-
-/*Modern gcc (4.x) can compile the naive versions of min and max with cmov if given an appropriate architecture, but
-  the branchless bit-twiddling versions are just as fast, and do not require any special target architecture.
-  Earlier gcc versions (3.x) compiled both code to the same assembly instructions, because of the way they
-  represented ((_b)>(_a)) internally.*/
 #define EC_MINI(_a,_b)      ((_a)+(((_b)-(_a))&-((_b)<(_a))))
-
-/*Count leading zeros. This macro should only be used for implementing ec_ilog(), if it is defined.
-  All other code should use EC_ILOG() instead.*/
 #define EC_CLZ0    ((int)sizeof(unsigned)*CHAR_BIT)
 #define EC_CLZ(_x) (__builtin_clz(_x))
-
-
-/*Note that __builtin_clz is not defined when _x==0, according to the gcc documentation (and that of the BSR
-  instruction that implements it on x86). The majority of the time we can never pass it zero. When we need to,
-  it can be special cased.*/
 #define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
 
 /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */

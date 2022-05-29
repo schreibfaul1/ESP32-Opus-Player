@@ -116,7 +116,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    ret = celt_decoder_init(celt_dec, Fs, channels);
    if(ret!=OPUS_OK)return OPUS_INTERNAL_ERROR;
 
-   celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING(0));
+   celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING_REQUEST, 0);
 
    st->prev_mode = 0;
    st->frame_size = Fs/400;
@@ -425,13 +425,8 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     /* 5 ms redundant frame for CELT->SILK*/
     if (redundancy && celt_to_silk) {
-        // MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
         celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
-        // MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE(&redundant_rng)));
     }
-
-    /* MUST be after PLC */
-    // MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(start_band)));
 
     if (mode != MODE_SILK_ONLY) {
         int celt_frame_size = IMIN(F20, frame_size);
@@ -459,7 +454,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     {
         const CELTMode *celt_mode;
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_GET_MODE(&celt_mode)));
+        MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode**)(&celt_mode)));
         window = celt_mode->window;
     }
 
@@ -469,7 +464,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
 
         celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE(&redundant_rng)));
+        MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE_REQUEST, &redundant_rng));
         smooth_fade(pcm + st->channels * (frame_size - F2_5), redundant_audio + st->channels * F2_5,
                     pcm + st->channels * (frame_size - F2_5), F2_5, st->channels, window, st->Fs);
     }
@@ -774,7 +769,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...)
        {
           goto bad_arg;
        }
-       ret = celt_decoder_ctl(celt_dec, value);
+       ret = celt_decoder_ctl(celt_dec, (int32_t)value);
    }
    break;
    default:

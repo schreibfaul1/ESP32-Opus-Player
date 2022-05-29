@@ -83,7 +83,7 @@ extern "C" {
   * @retval OPUS_BAD_ARG The index of the requested stream was out of range.
   * @hideinitializer
   */
-#define OPUS_MULTISTREAM_GET_ENCODER_STATE(x,y) OPUS_MULTISTREAM_GET_ENCODER_STATE_REQUEST, __opus_check_int(x), __opus_check_encstate_ptr(y)
+#define OPUS_MULTISTREAM_GET_ENCODER_STATE(x,y) OPUS_MULTISTREAM_GET_ENCODER_STATE_REQUEST, (int32_t)(x), __opus_check_encstate_ptr(y)
 
 /** Gets the decoder state for an individual stream of a multistream decoder.
   * @param[in] x <tt>int32_t</tt>: The index of the stream whose decoder you
@@ -96,7 +96,7 @@ extern "C" {
   * @retval OPUS_BAD_ARG The index of the requested stream was out of range.
   * @hideinitializer
   */
-#define OPUS_MULTISTREAM_GET_DECODER_STATE(x,y) OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST, __opus_check_int(x), __opus_check_decstate_ptr(y)
+#define OPUS_MULTISTREAM_GET_DECODER_STATE(x,y) OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST, (int32_t)(x), __opus_check_decstate_ptr(y)
 
 /**@}*/
 
