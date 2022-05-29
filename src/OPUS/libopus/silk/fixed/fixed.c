@@ -1011,21 +1011,14 @@ void silk_find_LTP_FIX(int32_t XXLTP_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER], 
         temp = silk_SMLAWB(1, nrg, SILK_FIX_CONST(LTP_CORR_INV_MAX, 16));
         temp = silk_max(temp, xx);
         TIC(div)
-#if 0
-        for( i = 0; i < LTP_ORDER * LTP_ORDER; i++ ) {
-            XXLTP_Q17_ptr[ i ] = silk_DIV32_varQ( XXLTP_Q17_ptr[ i ], temp, 17 );
-        }
-        for( i = 0; i < LTP_ORDER; i++ ) {
-            xXLTP_Q17_ptr[ i ] = silk_DIV32_varQ( xXLTP_Q17_ptr[ i ], temp, 17 );
-        }
-#else
+
         for (i = 0; i < LTP_ORDER * LTP_ORDER; i++) {
             XXLTP_Q17_ptr[i] = (int32_t)(silk_LSHIFT64((int64_t)XXLTP_Q17_ptr[i], 17) / temp);
         }
         for (i = 0; i < LTP_ORDER; i++) {
             xXLTP_Q17_ptr[i] = (int32_t)(silk_LSHIFT64((int64_t)xXLTP_Q17_ptr[i], 17) / temp);
         }
-#endif
+
         TOC(div)
         r_ptr += subfr_length;
         XXLTP_Q17_ptr += LTP_ORDER * LTP_ORDER;

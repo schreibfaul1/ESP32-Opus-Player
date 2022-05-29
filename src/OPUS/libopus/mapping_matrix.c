@@ -25,9 +25,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#ifdef HAVE_CONFIG_H
 #include "config.h"
-//#endif
 #include "opus_private.h"
 #include "opus_defines.h"
 #include "mapping_matrix.h"

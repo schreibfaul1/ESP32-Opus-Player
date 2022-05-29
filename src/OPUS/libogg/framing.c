@@ -19,10 +19,7 @@
 
  ********************************************************************/
 
-//#ifdef HAVE_CONFIG_H
 #include "config.h"
-//#endif
-
 #include <pgmspace.h>
 #include <stdint.h>
 #include <string.h>
@@ -212,6 +209,7 @@ static int _os_lacing_expand(ogg_stream_state *os,long needed){
    perform the checksum simultaneously with other copies */
 
 static uint32_t _os_update_crc(uint32_t crc, unsigned char *buffer, int size){
+
   while (size>=8){
     crc^=((uint32_t)buffer[0]<<24)|((uint32_t)buffer[1]<<16)|((uint32_t)buffer[2]<<8)|((uint32_t)buffer[3]);
 

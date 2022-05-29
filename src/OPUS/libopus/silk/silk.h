@@ -500,7 +500,7 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
 
 /* Column based */
 #ifndef matrix_c_ptr
-#   define matrix_c_ptr(Matrix_base_adr, row, column, M) \
+#define matrix_c_ptr(Matrix_base_adr, row, column, M) \
     (*((Matrix_base_adr) + ((row)+(M)*(column))))
 #endif
 
