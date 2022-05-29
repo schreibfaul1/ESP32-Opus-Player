@@ -26,7 +26,7 @@
 */
 
 #include "config.h"
-#include "opus.h"
+#include "opus_decoder.h"
 
 int encode_size(int size, unsigned char *data)
 {

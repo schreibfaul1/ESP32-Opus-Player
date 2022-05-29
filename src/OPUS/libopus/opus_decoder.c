@@ -30,7 +30,7 @@
 #include "Arduino.h"
 #include <stdarg.h>
 #include "celt/celt.h"
-#include "opus.h"
+#include "opus_decoder.h"
 #include "silk/silk.h"
 
 struct OpusDecoder {

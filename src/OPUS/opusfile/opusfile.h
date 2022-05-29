@@ -14,7 +14,7 @@
 
 #include "Arduino.h"
 #include "../libogg/ogg.h"
-#include "../libopus/opus.h"
+#include "../libopus/opus_decoder.h"
 
 
 

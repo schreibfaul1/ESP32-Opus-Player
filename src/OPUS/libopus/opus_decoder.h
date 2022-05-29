@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include <stdarg.h> /* va_list */
 #include <stddef.h> /* offsetof */
-#include "opus.h"
 
 
 #ifdef __cplusplus

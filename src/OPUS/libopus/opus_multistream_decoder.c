@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "config.h"
-#include "opus.h"
+#include "opus_decoder.h"
 
 /* DECODER */
 
