@@ -10,9 +10,6 @@
 
 
 // Digital I/O used
-
-
-
 #ifdef CONFIG_IDF_TARGET_ESP32S3
     #define SD_MMC_D0     11
     #define SD_MMC_CLK    13
@@ -66,17 +63,13 @@ void setupI2S(){
     m_i2s_config.sample_rate          = 16000;
     m_i2s_config.bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT;
     m_i2s_config.channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT;
-//    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S | I2S_COMM_FORMAT_STAND_I2S);
     m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
     m_i2s_config.intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1; // high interrupt priority
     m_i2s_config.dma_buf_count        = 8;      // max buffers
     m_i2s_config.dma_buf_len          = 1024;   // max value
-//   m_i2s_config.use_apll             = APLL_ENABLE;
     m_i2s_config.tx_desc_auto_clear   = true;   // new in V1.0.1
     m_i2s_config.fixed_mclk           = I2S_PIN_NO_CHANGE;
-
     i2s_driver_install((i2s_port_t)m_i2s_num, &m_i2s_config, 0, NULL);
-
 }
 //---------------------------------------------------------------------------------------------------------------------
 esp_err_t I2Sstart(uint8_t i2s_num) {
@@ -95,7 +88,6 @@ bool setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t DIN) {
     m_pin_config.ws_io_num    = LRC; //  wclk
     m_pin_config.data_out_num = DOUT;
     m_pin_config.data_in_num  = DIN;
-
     const esp_err_t result = i2s_set_pin((i2s_port_t) m_i2s_num, &m_pin_config);
     return (result == ESP_OK);
 }
@@ -286,12 +278,11 @@ void setup() {
         while(true){;}
     }
 
-    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+//    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     file = SD_MMC.open("/opus/testfile.opus");
 
-
     cb = { OPUS_read, NULL, NULL, NULL };
-    of = op_open_callbacks(NULL, &cb, NULL, 0, NULL);
+    of = op_open_callbacks(&cb);
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */

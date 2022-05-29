@@ -1383,14 +1383,12 @@ static void op_clear(OggOpusFile *_of) {
     if(_of->callbacks.close != NULL) (*_of->callbacks.close)(_of->stream);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *_cb, const unsigned char *_initial_data,
-        size_t _initial_bytes) {
+static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *_cb) {
     ogg_page og;
     ogg_page *pog;
     int seekable;
     int ret;
     memset(_of, 0, sizeof(*_of));
-    if(_initial_bytes>(size_t)LONG_MAX) return OP_EFAULT;
     _of->end = -1;
     _of->stream = _stream;
     *&_of->callbacks = *_cb;
@@ -1398,19 +1396,6 @@ static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *
     if(_of->callbacks.read==NULL) return OP_EREAD;
     /*Initialize the framing state.*/
     ogg_sync_init(&_of->oy);
-    /*Perhaps some data was previously read into a buffer for testing against
-     other stream types.
-     Allow initialization from this previously read data (especially as we may
-     be reading from a non-seekable stream).
-     This requires copying it into a buffer allocated by ogg_sync_buffer() and
-     doesn't support seeking, so this is not a good mechanism to use for
-     decoding entire files from RAM.*/
-    if(_initial_bytes > 0) {
-        char *buffer;
-        buffer = ogg_sync_buffer(&_of->oy, (long) _initial_bytes);
-        memcpy(buffer, _initial_data, _initial_bytes * sizeof(*buffer));
-        ogg_sync_wrote(&_of->oy, (long) _initial_bytes);
-    }
     /*Can we seek?
      Stevens suggests the seek test is portable.
      It's actually not for files on win32, but we address that by fixing it in
@@ -1423,7 +1408,7 @@ static int op_open1(OggOpusFile *_of, void *_stream, const OpusFileCallbacks_t *
         pos = (*_of->callbacks.tell)(_of->stream);
         /*If the current position is not equal to the initial bytes consumed,
          absolute seeking will not work.*/
-        if(pos != (int64_t )_initial_bytes) return OP_EINVAL;
+        if(pos != (int64_t )0) return OP_EINVAL;
     }
     _of->seekable = seekable;
     /*Don't seek yet.
@@ -1481,16 +1466,14 @@ static int op_open2(OggOpusFile *_of) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile* op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, const unsigned char *_initial_data,
-        size_t _initial_bytes, int *_error) {
+OggOpusFile* op_test_callbacks(const OpusFileCallbacks_t *_cb) {
     OggOpusFile *of;
     int ret;
     of = (OggOpusFile*) malloc(sizeof(*of));
     ret = OP_EFAULT;
     if(of!=NULL) {
-        ret = op_open1(of, _stream, _cb, _initial_data, _initial_bytes);
+        ret = op_open1(of,NULL, _cb);
         if(ret >= 0) {
-            if(_error != NULL) *_error = 0;
             return of;
         }
         /*Don't auto-close the stream on failure.*/
@@ -1498,19 +1481,17 @@ OggOpusFile* op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, co
         op_clear(of);
         free(of);
     }
-    if(_error != NULL) *_error = ret;
     return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile* op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, const unsigned char *_initial_data,
-        size_t _initial_bytes, int *_error) {
+OggOpusFile* op_open_callbacks(const OpusFileCallbacks_t *_cb) {
     OggOpusFile *of;
-    of = op_test_callbacks(_stream, _cb, _initial_data, _initial_bytes, _error);
+    of = op_test_callbacks(_cb);
+    
     if(of!=NULL) {
         int ret;
         ret = op_open2(of);
         if(ret >= 0) return of;
-        if(_error != NULL) *_error = ret;
         free(of);
     }
     return NULL;

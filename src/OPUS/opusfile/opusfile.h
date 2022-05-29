@@ -203,8 +203,7 @@ int opus_tags_get_track_gain(const OpusTags_t *_tags,int *_gain_q8);
 void opus_tags_clear(OpusTags_t *_tags);
 int opus_tagncompare(const char *_tag_name,int _tag_len,const char *_comment);
 OggOpusFile *op_open_file(const char *_path,int *_error);
-OggOpusFile *op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, const unsigned char *_initial_data,
-                               size_t _initial_bytes, int *_error);
+OggOpusFile *op_open_callbacks(const OpusFileCallbacks_t *_cb);
 OggOpusFile *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
 int op_seekable(const OggOpusFile *_of);
