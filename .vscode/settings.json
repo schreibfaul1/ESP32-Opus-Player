@@ -273,7 +273,8 @@
     "typedef.h": "c",
     "silk.h": "c",
     "random": "c",
-    "memory": "c"
+    "memory": "c",
+    "config.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
