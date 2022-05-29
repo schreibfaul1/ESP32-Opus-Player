@@ -46,19 +46,6 @@ typedef struct ChannelLayout {
 
 typedef enum { MAPPING_TYPE_NONE, MAPPING_TYPE_SURROUND, MAPPING_TYPE_AMBISONICS } MappingType;
 
-// struct OpusMSEncoder {
-//     ChannelLayout layout;
-//     int arch;
-//     int lfe_stream;
-//     int application;
-//     int variable_duration;
-//     MappingType mapping_type;
-//     int32_t bitrate_bps;
-//     /* Encoder states go here */
-//     /* then int32_t window_mem[channels*120]; */
-//     /* then int32_t preemph_mem[channels]; */
-// };
-
 struct OpusMSDecoder {
     ChannelLayout layout;
     /* Decoder states go here */
@@ -84,22 +71,6 @@ typedef void (*opus_copy_channel_out_func)(void *dst, int dst_stride, int dst_ch
 
 #define OPUS_SET_VOICE_RATIO_REQUEST 11018
 #define OPUS_GET_VOICE_RATIO_REQUEST 11019
-
-/** Configures the encoder's expected percentage of voice
- * opposed to music or other signals.
- *
- * @note This interface is currently more aspiration than actuality. It's
- * ultimately expected to bias an automatic signal classifier, but it currently
- * just shifts the static bitrate to mode mapping around a little bit.
- *
- * @param[in] x <tt>int</tt>:   Voice percentage in the range 0-100, inclusive.
- * @hideinitializer */
-#define OPUS_SET_VOICE_RATIO(x) OPUS_SET_VOICE_RATIO_REQUEST, (int32_t)(x)
-/** Gets the encoder's configured voice ratio value, @see OPUS_SET_VOICE_RATIO
- *
- * @param[out] x <tt>int*</tt>:  Voice percentage in the range 0-100, inclusive.
- * @hideinitializer */
-#define OPUS_GET_VOICE_RATIO(x) OPUS_GET_VOICE_RATIO_REQUEST, (int32_t *)(x)
 
 #define OPUS_SET_FORCE_MODE_REQUEST 11002
 #define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, (int32_t)(x)

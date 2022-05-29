@@ -77,26 +77,16 @@ typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
 typedef struct ec_ctx         ec_dec;
 
-/*The entropy encoder/decoder context.
-  We use the same structure for both, so that common functions like ec_tell()
-   can be used on either one.*/
 struct ec_ctx {
     unsigned char *buf; /*Buffered input/output.*/
     uint32_t storage; /*The size of the buffer.*/
     uint32_t end_offs; /*The offset at which the last byte containing raw bits was read/written.*/
     ec_window end_window; /*Bits that will be read from/written at the end.*/
     int nend_bits; /*Number of valid bits in end_window.*/
-    /*The total number of whole bits read/written.
-      This does not include partial bits currently in the range coder.*/
     int nbits_total;
     uint32_t offs; /*The offset at which the next range coder byte will be read/written.*/
     uint32_t rng; /*The number of values in the current range.*/
-    /*In the decoder: the difference between the top of the current range and
-       the input value, minus one.
-      In the encoder: the low end of the current range.*/
     uint32_t val;
-    /*In the decoder: the saved normalization factor from ec_decode().
-      In the encoder: the number of oustanding carry propagating symbols.*/
     uint32_t ext;
     int rem; /*A buffered input/output symbol, awaiting carry propagation.*/
     int error; /*Nonzero if an error occurred.*/
@@ -198,68 +188,68 @@ typedef struct kiss_fft_state{
 
 
 
-struct CELTEncoder{
-    const CELTMode *mode; /**< Mode used by the encoder */
-    int channels;
-    int stream_channels;
+// struct CELTEncoder{
+//     const CELTMode *mode; /**< Mode used by the encoder */
+//     int channels;
+//     int stream_channels;
 
-    int force_intra;
-    int clip;
-    int disable_pf;
-    int complexity;
-    int upsample;
-    int start, end;
+//     int force_intra;
+//     int clip;
+//     int disable_pf;
+//     int complexity;
+//     int upsample;
+//     int start, end;
 
-    int32_t bitrate;
-    int vbr;
-    int signalling;
-    int constrained_vbr; /* If zero, VBR can do whatever it likes with the rate */
-    int loss_rate;
-    int lsb_depth;
-    int lfe;
-    int disable_inv;
-    int arch;
+//     int32_t bitrate;
+//     int vbr;
+//     int signalling;
+//     int constrained_vbr; /* If zero, VBR can do whatever it likes with the rate */
+//     int loss_rate;
+//     int lsb_depth;
+//     int lfe;
+//     int disable_inv;
+//     int arch;
 
-    /* Everything beyond this point gets cleared on a reset */
-#define ENCODER_RESET_START rng
+//     /* Everything beyond this point gets cleared on a reset */
+// #define ENCODER_RESET_START rng
 
-    uint32_t rng;
-    int spread_decision;
-    int32_t delayedIntra;
-    int tonal_average;
-    int lastCodedBands;
-    int hf_average;
-    int tapset_decision;
+//     uint32_t rng;
+//     int spread_decision;
+//     int32_t delayedIntra;
+//     int tonal_average;
+//     int lastCodedBands;
+//     int hf_average;
+//     int tapset_decision;
 
-    int prefilter_period;
-    int16_t prefilter_gain;
-    int prefilter_tapset;
+//     int prefilter_period;
+//     int16_t prefilter_gain;
+//     int prefilter_tapset;
 
-    int consec_transient;
-    AnalysisInfo analysis;
-    SILKInfo silk_info;
+//     int consec_transient;
+//     AnalysisInfo analysis;
+//     SILKInfo silk_info;
 
-    int32_t preemph_memE[2];
-    int32_t preemph_memD[2];
+//     int32_t preemph_memE[2];
+//     int32_t preemph_memD[2];
 
-    /* VBR-related parameters */
-    int32_t vbr_reservoir;
-    int32_t vbr_drift;
-    int32_t vbr_offset;
-    int32_t vbr_count;
-    int32_t overlap_max;
-    int16_t stereo_saving;
-    int intensity;
-    int16_t *energy_mask;
-    int16_t spec_avg;
+//     /* VBR-related parameters */
+//     int32_t vbr_reservoir;
+//     int32_t vbr_drift;
+//     int32_t vbr_offset;
+//     int32_t vbr_count;
+//     int32_t overlap_max;
+//     int16_t stereo_saving;
+//     int intensity;
+//     int16_t *energy_mask;
+//     int16_t spec_avg;
 
-    int32_t in_mem[1]; /* Size = channels*mode->overlap */
-                       /* int32_t prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
-                       /* int16_t oldBandE[],     Size = channels*mode->nbEBands */
-                       /* int16_t oldLogE[],      Size = channels*mode->nbEBands */
-                       /* int16_t oldLogE2[],     Size = channels*mode->nbEBands */
-                       /* int16_t energyError[],  Size = channels*mode->nbEBands */
-};
+//     int32_t in_mem[1]; /* Size = channels*mode->overlap */
+//                        /* int32_t prefilter_mem[],  Size = channels*COMBFILTER_MAXPERIOD */
+//                        /* int16_t oldBandE[],     Size = channels*mode->nbEBands */
+//                        /* int16_t oldLogE[],      Size = channels*mode->nbEBands */
+//                        /* int16_t oldLogE2[],     Size = channels*mode->nbEBands */
+//                        /* int16_t energyError[],  Size = channels*mode->nbEBands */
+// };
 
 typedef struct {
    int n;
