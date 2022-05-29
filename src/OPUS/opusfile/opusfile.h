@@ -18,7 +18,7 @@
 
 
 
-#define OP_ASSERT(_cond)
+#define assert(_cond)
 
 #define OP_CLAMP(_lo,_x,_hi) (_max(_lo,_min(_x,_hi)))
 
