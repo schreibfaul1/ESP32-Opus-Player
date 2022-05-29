@@ -207,10 +207,10 @@ void silk_warped_autocorrelation_FIX_c(int32_t *corr,             /* O    Result
                                        const int32_t order        /* I    Correlation order (even) */
 );
 
-#if !defined(OVERRIDE_silk_warped_autocorrelation_FIX)
+
 #define silk_warped_autocorrelation_FIX(corr, scale, input, warping_Q16, length, order, arch) \
     ((void)(arch), silk_warped_autocorrelation_FIX_c(corr, scale, input, warping_Q16, length, order))
-#endif
+
 
 /* Calculation of LTP state scaling */
 void silk_LTP_scale_ctrl_FIX(silk_encoder_state_FIX *psEnc,       /* I/O  encoder state */

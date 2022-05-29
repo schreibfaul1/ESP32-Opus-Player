@@ -25,6 +25,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "Arduino.h"
 #include <stdlib.h>
 #include "config.h"
 #include "opus_multistream.h"
@@ -35,6 +36,7 @@
 /* DECODER */
 
 int32_t opus_multistream_decoder_get_size(int nb_streams, int nb_coupled_streams) {
+    log_i("opus_multistream_decoder_get_size %i, %i", nb_streams, nb_coupled_streams);
     int coupled_size;
     int mono_size;
 
