@@ -66,31 +66,6 @@ typedef struct OpusTags{
   char         *vendor;
 } OpusTags_t;
 
-typedef struct OpusPictureTag{
-  int32_t       type;
-  char         *mime_type;
-  char         *description;
-  uint32_t      width;
-  uint32_t      height;
-  uint32_t      depth;
-  uint32_t      colors;
-  uint32_t      data_length;
-  unsigned char *data;
-  int           format;
-} OpusPictureTag_t;
-
-typedef struct OpusServerInfo{
-  char        *name;
-  char        *description;
-  char        *genre;
-  char        *url;
-  char        *server;
-  char        *content_type;
-  int32_t      bitrate_kbps;
-  int          is_public;
-  int          is_ssl;
-}OpusServerInfo_t;
-
 typedef struct OpusFileCallbacks{
   op_read_func  read;
 } OpusFileCallbacks_t;
@@ -149,9 +124,6 @@ typedef struct OggOpusFile{
 
 int op_strncasecmp(const char *_a,const char *_b,int _n);
 
-typedef struct OggOpusFile       OggOpusFile;
-
-
 #define OP_FALSE         (-1)
 #define OP_EOF           (-2)
 #define OP_HOLE          (-3)
@@ -188,26 +160,20 @@ typedef struct OggOpusFile       OggOpusFile;
 #define OP_PIC_FORMAT_PNG     (2)
 #define OP_PIC_FORMAT_GIF     (3)
 
-
-
-
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 int opus_tags_parse(OpusTags_t *_tags, const unsigned char *_data,size_t _len);
-int opus_tags_copy(OpusTags_t *_dst,const OpusTags_t *_src);
+
 void opus_tags_init(OpusTags_t *_tags);
-int opus_tags_get_album_gain(const OpusTags_t *_tags,int *_gain_q8);
-int opus_tags_get_track_gain(const OpusTags_t *_tags,int *_gain_q8);
 void opus_tags_clear(OpusTags_t *_tags);
-int opus_tagncompare(const char *_tag_name,int _tag_len,const char *_comment);
-OggOpusFile *op_open_file(const char *_path,int *_error);
-OggOpusFile *op_open_callbacks(const OpusFileCallbacks_t *_cb);
-OggOpusFile *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
+OggOpusFile_t *op_open_file(const char *_path,int *_error);
+OggOpusFile_t *op_open_callbacks(const OpusFileCallbacks_t *_cb);
+OggOpusFile_t *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
-int op_seekable(const OggOpusFile *_of);
-int64_t op_raw_total(const OggOpusFile *_of,int _li);
-int64_t op_pcm_total(const OggOpusFile *_of,int _li);
-const OpusTags_t *op_tags(const OggOpusFile *_of,int _li);
-int32_t op_bitrate_instant(OggOpusFile *_of);
+int op_seekable(const OggOpusFile_t *_of);
+int64_t op_raw_total(const OggOpusFile_t *_of,int _li);
+int64_t op_pcm_total(const OggOpusFile_t *_of,int _li);
+const OpusTags_t *op_tags(const OggOpusFile_t *_of,int _li);
+int32_t op_bitrate_instant(OggOpusFile_t *_of);
 
 #define OP_DEC_FORMAT_SHORT (7008)
 #define OP_DEC_FORMAT_FLOAT (7040)
@@ -219,8 +185,8 @@ int32_t op_bitrate_instant(OggOpusFile *_of);
 #define OP_TRACK_GAIN    (3008)
 #define OP_ABSOLUTE_GAIN (3009)
 
-int op_read(OggOpusFile *_of, int16_t *_pcm,int _buf_size,int *_li);
-int op_read_stereo(OggOpusFile *_of, int16_t *_pcm,int _buf_size);
-int op_read_float_stereo(OggOpusFile *_of, float *_pcm,int _buf_size);
+int op_read(OggOpusFile_t *_of, int16_t *_pcm,int _buf_size,int *_li);
+int op_read_stereo(OggOpusFile_t *_of, int16_t *_pcm,int _buf_size);
+int op_read_float_stereo(OggOpusFile_t *_of, float *_pcm,int _buf_size);
 
 
