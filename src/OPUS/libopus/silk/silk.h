@@ -1225,9 +1225,6 @@ int32_t silk_NLSF_del_dec_quant(int8_t indices[], const int16_t x_Q10[], const i
                                 const int32_t mu_Q20, const int16_t order);
 void silk_process_NLSFs(silk_encoder_state *psEncC, int16_t PredCoef_Q12[2][MAX_LPC_ORDER],
                         int16_t pNLSF_Q15[MAX_LPC_ORDER], const int16_t prev_NLSFq_Q15[MAX_LPC_ORDER]);
-int32_t silk_NLSF_encode(int8_t *NLSFIndices, int16_t *pNLSF_Q15, const silk_NLSF_CB_struct *psNLSF_CB,
-                         const int16_t *pW_QW, const int32_t NLSF_mu_Q20, const int32_t nSurvivors,
-                         const int32_t signalType);
 void silk_NLSF_VQ(int32_t err_Q26[], const int16_t in_Q15[], const uint8_t pCB_Q8[], const int16_t pWght_Q9[],
                   const int32_t K, const int32_t LPC_order);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
