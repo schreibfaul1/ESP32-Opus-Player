@@ -161,8 +161,6 @@ int op_strncasecmp(const char *_a,const char *_b,int _n);
 #define OP_PIC_FORMAT_GIF     (3)
 
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
-int opus_tags_parse(OpusTags_t *_tags, const unsigned char *_data,size_t _len);
-
 
 OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *op_open_callbacks(const OpusFileCallbacks_t *_cb);
