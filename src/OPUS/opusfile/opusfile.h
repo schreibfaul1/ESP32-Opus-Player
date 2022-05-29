@@ -41,11 +41,11 @@
 # define  OP_INITSET   (4)
 
 typedef int (*op_read_func)(void *_stream,unsigned char *_ptr,int _nbytes);
-typedef int (*op_seek_func)(void *_stream,int64_t _offset,int _whence);
-typedef int64_t (*op_tell_func)(void *_stream);
-typedef int (*op_close_func)(void *_stream);
-typedef int (*op_decode_cb_func)(void *_ctx,OpusMSDecoder *_decoder,void *_pcm, const ogg_packet *_op,
-             int _nsamples,int _nchannels,int _format,int _li);
+// typedef int (*op_seek_func)(void *_stream,int64_t _offset,int _whence);
+// typedef int64_t (*op_tell_func)(void *_stream);
+// typedef int (*op_close_func)(void *_stream);
+// typedef int (*op_decode_cb_func)(void *_ctx,OpusMSDecoder *_decoder,void *_pcm, const ogg_packet *_op,
+//              int _nsamples,int _nchannels,int _format,int _li);
 
 typedef struct OpusHead{
   int           version;
@@ -106,7 +106,7 @@ typedef struct OggOpusFile{
   int               op_pos;
   int               op_count;
   OpusMSDecoder    *od;
-  op_decode_cb_func decode_cb;
+  //op_decode_cb_func decode_cb;
   void             *decode_cb_ctx;
   int               od_stream_count;
   int               od_coupled_count;

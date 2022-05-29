@@ -148,7 +148,7 @@ struct OpusMSDecoder {
 int opus_decoder_get_size(int channels);
 OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error);
 int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels);
-int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size, int decode_fec);
+int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size);
 int opus_decode_float(OpusDecoder *st, const unsigned char *data, int32_t len, float *pcm, int frame_size,
                       int decode_fec);
 int opus_decoder_ctl(OpusDecoder *st, int request, ...);
@@ -176,7 +176,7 @@ int is_digital_silence(const int16_t *pcm, int frame_size, int channels, int lsb
 int encode_size(int size, unsigned char *data);
 int32_t frame_size_select(int32_t frame_size, int variable_duration, int32_t Fs);
 int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
-                       int decode_fec, int self_delimited, int32_t *packet_offset, int soft_clip);
+                       int self_delimited, int32_t *packet_offset);
 
 /* Make sure everything is properly aligned. */
 static inline int align(int i) {
@@ -200,8 +200,7 @@ int opus_packet_parse_impl(const unsigned char *data, int32_t len, int self_deli
                            int32_t *packet_offset);
 int pad_frame(unsigned char *data, int32_t len, int32_t new_len);
 int opus_multistream_decode_native(struct OpusMSDecoder *st, const unsigned char *data, int32_t len, void *pcm,
-                                   opus_copy_channel_out_func copy_channel_out, int frame_size, int decode_fec,
-                                   int soft_clip, void *user_data);
+                                   opus_copy_channel_out_func copy_channel_out, int frame_size);
 int opus_multistream_decoder_ctl_va_list(struct OpusMSDecoder *st, int request, va_list ap);
 int validate_layout(const ChannelLayout *layout);
 int get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
@@ -212,8 +211,7 @@ OpusMSDecoder *opus_multistream_decoder_create(int32_t Fs, int channels, int str
                                                const unsigned char *mapping, int *error);
 int opus_multistream_decoder_init(OpusMSDecoder *st, int32_t Fs, int channels, int streams, int coupled_streams,
                                   const unsigned char *mapping);
-int opus_multistream_decode(OpusMSDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
-                            int decode_fec);
+int opus_multistream_decode(OpusMSDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size);
 int opus_multistream_decoder_ctl(OpusMSDecoder *st, int request, ...);
 void opus_multistream_decoder_destroy(OpusMSDecoder *st);
 

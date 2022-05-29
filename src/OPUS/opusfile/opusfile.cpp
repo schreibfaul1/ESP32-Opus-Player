@@ -1397,25 +1397,9 @@ static int op_init_buffer(OggOpusFile_t *_of) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Decode a single packet into the target buffer.*/
-static int op_decode(OggOpusFile_t *_of, int16_t *_pcm, const ogg_packet *_op, int _nsamples, int _nchannels) {
-    int ret;
-    /*First we try using the application-provided decode callback.*/
-    if(_of->decode_cb != NULL) {
-        log_i("_nsamples %i, _nchannels %i _of->cur_link %i",_nsamples, _nchannels, _of->cur_link);
-        ret = (*_of->decode_cb)(_of->decode_cb_ctx, _of->od, _pcm, _op, _nsamples, _nchannels, OP_DEC_FORMAT_SHORT,
-                _of->cur_link);
-
-    }
-    else
-        ret = OP_DEC_USE_DEFAULT;
-    /*If the application didn't want to handle decoding, do it ourselves.*/
-    if(ret == OP_DEC_USE_DEFAULT) {
-        ret = opus_multistream_decode(_of->od, _op->packet, _op->bytes, _pcm, _nsamples, 0);
-        assert(ret < 0 || ret == _nsamples);
-    }
-    /*If the application returned a positive value other than 0 or
-     OP_DEC_USE_DEFAULT, fail.*/
-    else if(ret > 0) return OP_EBADPACKET;
+static int op_decode(OggOpusFile_t *_of, int16_t *_pcm, const ogg_packet *_op, int _nsamples) {
+    int ret = opus_multistream_decode(_of->od, _op->packet, _op->bytes, _pcm, _nsamples);
+    assert(ret < 0 || ret == _nsamples);
     if(ret < 0) return OP_EBADPACKET;
     return ret;
 }
@@ -1484,7 +1468,7 @@ static int op_read_native(OggOpusFile_t *_of, int16_t *_pcm, int _buf_size, int 
                         if(ret < 0) return ret;
                         buf = _of->od_buffer;
                     }
-                    ret = op_decode(_of, buf, pop, duration, nchannels);
+                    ret = op_decode(_of, buf, pop, duration);
                     if(ret < 0) return ret;
                     /*Perform pre-skip/pre-roll.*/
                     od_buffer_pos = (int) _min(trimmed_duration, cur_discard_count);
@@ -1500,7 +1484,7 @@ static int op_read_native(OggOpusFile_t *_of, int16_t *_pcm, int _buf_size, int 
                 else {
                     assert(_pcm!=NULL);
                     /*Otherwise decode directly into the user's buffer.*/
-                    ret = op_decode(_of, _pcm, pop, duration, nchannels);
+                    ret = op_decode(_of, _pcm, pop, duration);
                     if(ret < 0) return ret;
                     if(trimmed_duration > 0) {
                         /*Perform pre-skip/pre-roll.*/

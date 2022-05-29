@@ -512,7 +512,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 }
 //----------------------------------------------------------------------------------------------------------------------
 int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
-                       int decode_fec, int self_delimited, int32_t *packet_offset, int soft_clip) {
+                       int self_delimited, int32_t *packet_offset) {
     int i, nb_samples;
     int count, offset;
     unsigned char toc;
@@ -520,9 +520,8 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, 
     /* 48 x 2.5 ms = 120 ms */
     int16_t size[48];
     VALIDATE_OPUS_DECODER(st);
-    if (decode_fec < 0 || decode_fec > 1) return OPUS_BAD_ARG;
     /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
-    if ((decode_fec || len == 0 || data == NULL) && frame_size % (st->Fs / 400) != 0) {
+    if ((len == 0 || data == NULL) && frame_size % (st->Fs / 400) != 0) {
         return OPUS_BAD_ARG;
     }
 
@@ -555,42 +554,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, 
     }
     data += offset;
 
-    if (decode_fec) {
-        int duration_copy;
-        int ret;
-        /* If no FEC can be present, run the PLC (recursive call) */
-        if (frame_size < packet_frame_size || packet_mode == MODE_CELT_ONLY || st->mode == MODE_CELT_ONLY) {
-            ret = opus_decode_native(st, NULL, 0, pcm, frame_size, 0, 0, NULL, soft_clip);
-            return ret;
-        }
-        /* Otherwise, run the PLC on everything except the size for which we might have FEC */
-        duration_copy = st->last_packet_duration;
-        if (frame_size - packet_frame_size != 0) {
-            ret = opus_decode_native(st, NULL, 0, pcm, frame_size - packet_frame_size, 0, 0, NULL, soft_clip);
-            if (ret < 0) {
-                st->last_packet_duration = duration_copy;
-                return ret;
-            }
-            assert(ret == frame_size - packet_frame_size);
-        }
-        /* Complete with FEC */
-        st->mode = packet_mode;
-        st->bandwidth = packet_bandwidth;
-        st->frame_size = packet_frame_size;
-        st->stream_channels = packet_stream_channels;
-        ret = opus_decode_frame(st, data, size[0], pcm + st->channels * (frame_size - packet_frame_size),
-                                packet_frame_size, 1);
-        if (ret < 0) {
-            return ret;
-        }
-
-        else {
-            if (OPUS_CHECK_ARRAY(pcm, frame_size * st->channels)) OPUS_PRINT_INT(frame_size);
-            st->last_packet_duration = frame_size;
-            return frame_size;
-        }
-    }
-
     if (count * packet_frame_size > frame_size) {
         return OPUS_BUFFER_TOO_SMALL;
     }
@@ -619,11 +582,11 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size, int decode_fec) {
+int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size) {
     if (frame_size <= 0) return OPUS_BAD_ARG;
-    int ret = opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, NULL, 0);
+    int ret = opus_decode_native(st, data, len, pcm, frame_size, 0, 0);
     log_i("bytes_decoded = %i", ret);
-    ESP_LOGE("opus decode", "len=%i, frame_size=%i, decode_fec=%i", len, frame_size, decode_fec);
+    ESP_LOGE("opus decode", "len=%i, frame_size=%i, decode_fec=%i", len, frame_size);
 
     return ret;
 }
@@ -1099,8 +1062,7 @@ static int opus_multistream_packet_validate(const unsigned char *data, int32_t l
 //----------------------------------------------------------------------------------------------------------------------
 
 int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data, int32_t len, void *pcm,
-                                   opus_copy_channel_out_func copy_channel_out, int frame_size, int decode_fec,
-                                   int soft_clip, void *user_data) {
+                                   opus_copy_channel_out_func copy_channel_out, int frame_size) {
     //   log_i("opus_multistream_decode_native len %i", len);
     int32_t Fs;
     int coupled_size;
@@ -1147,8 +1109,7 @@ int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data,
             return OPUS_INTERNAL_ERROR;
         }
         packet_offset = 0;
-        ret = opus_decode_native(dec, data, len, buf, frame_size, decode_fec, s != st->layout.nb_streams - 1,
-                                 &packet_offset, soft_clip);
+        ret = opus_decode_native(dec, data, len, buf, frame_size, s != st->layout.nb_streams - 1, &packet_offset);
         data += packet_offset;
         len -= packet_offset;
         if (ret <= 0) {
@@ -1160,13 +1121,13 @@ int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data,
             prev = -1;
             /* Copy "left" audio to the channel(s) where it belongs */
             while ((chan = get_left_channel(&st->layout, s, prev)) != -1) {
-                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf, 2, frame_size, user_data);
+                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf, 2, frame_size, NULL);
                 prev = chan;
             }
             prev = -1;
             /* Copy "right" audio to the channel(s) where it belongs */
             while ((chan = get_right_channel(&st->layout, s, prev)) != -1) {
-                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf + 1, 2, frame_size, user_data);
+                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf + 1, 2, frame_size, NULL);
                 prev = chan;
             }
         } else {
@@ -1174,7 +1135,7 @@ int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data,
             prev = -1;
             /* Copy audio to the channel(s) where it belongs */
             while ((chan = get_mono_channel(&st->layout, s, prev)) != -1) {
-                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf, 1, frame_size, user_data);
+                (*copy_channel_out)(pcm, st->layout.nb_channels, chan, buf, 1, frame_size, NULL);
                 prev = chan;
             }
         }
@@ -1182,7 +1143,7 @@ int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data,
     /* Handle muted channels */
     for (c = 0; c < st->layout.nb_channels; c++) {
         if (st->layout.mapping[c] == 255) {
-            (*copy_channel_out)(pcm, st->layout.nb_channels, c, NULL, 0, frame_size, user_data);
+            (*copy_channel_out)(pcm, st->layout.nb_channels, c, NULL, 0, frame_size, NULL);
         }
     }
 
@@ -1205,11 +1166,8 @@ static void opus_copy_channel_out_short(void *dst, int dst_stride, int dst_chann
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int opus_multistream_decode(OpusMSDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
-                            int decode_fec) {
-    //   log_i("len %i", len);
-    return opus_multistream_decode_native(st, data, len, pcm, opus_copy_channel_out_short, frame_size, decode_fec, 0,
-                                          NULL);
+int opus_multistream_decode(OpusMSDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size) {
+    return opus_multistream_decode_native(st, data, len, pcm, opus_copy_channel_out_short, frame_size);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
