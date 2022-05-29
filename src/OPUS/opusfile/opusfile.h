@@ -14,7 +14,8 @@
 
 #include "Arduino.h"
 #include "../libogg/ogg.h"
-#include "../libopus/opus_multistream.h"
+#include "../libopus/opus.h"
+
 
 
 typedef int16_t op_sample;

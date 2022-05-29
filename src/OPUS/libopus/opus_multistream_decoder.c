@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "config.h"
-#include "opus_multistream.h"
 #include "opus.h"
 
 /* DECODER */

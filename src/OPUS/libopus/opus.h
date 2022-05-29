@@ -55,7 +55,9 @@ extern "C" {
 #define OPUS_INVALID_STATE    -6
 #define OPUS_ALLOC_FAIL       -7
 
-#   define OPUS_GNUC_PREREQ(_maj,_min) \
+#define OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST 5122
+
+#define OPUS_GNUC_PREREQ(_maj,_min) \
  ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
 
 #define OPUS_SET_APPLICATION_REQUEST 4000
@@ -120,7 +122,7 @@ extern "C" {
 #define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, (int32_t)(x)
 
 
-
+typedef struct OpusMSDecoder OpusMSDecoder;
 typedef struct OpusDecoder OpusDecoder;
 typedef struct CELTDecoder CELTDecoder;
 typedef struct CELTMode CELTMode;
@@ -207,7 +209,15 @@ int validate_layout(const ChannelLayout *layout);
 int get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
 int get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
 int get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
-
+int32_t opus_multistream_decoder_get_size(int streams, int coupled_streams);
+OpusMSDecoder *opus_multistream_decoder_create(int32_t Fs, int channels, int streams, int coupled_streams,
+                                               const unsigned char *mapping, int *error);
+int opus_multistream_decoder_init(OpusMSDecoder *st, int32_t Fs, int channels, int streams, int coupled_streams,
+                                  const unsigned char *mapping);
+int opus_multistream_decode(OpusMSDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
+                            int decode_fec);
+int opus_multistream_decoder_ctl(OpusMSDecoder *st, int request, ...);
+void opus_multistream_decoder_destroy(OpusMSDecoder *st);
 
 
 
