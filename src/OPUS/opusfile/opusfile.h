@@ -16,6 +16,12 @@
 #include "../libogg/ogg.h"
 #include "../libopus/opus_decoder.h"
 
+struct OpusMemStream {
+    const unsigned char *data;
+    ptrdiff_t size;
+    ptrdiff_t pos;
+};
+
 typedef struct OpusMemStream OpusMemStream;
 
 #define OP_MEM_SIZE_MAX (~(size_t)0>>1)
@@ -152,11 +158,7 @@ typedef struct OggOpusFile{
   int32_t           gain_offset_q8;
 } OggOpusFile_t;
 
-struct OpusMemStream {
-    const unsigned char *data;
-    ptrdiff_t size;
-    ptrdiff_t pos;
-};
+
 
 
 int op_strncasecmp(const char *_a,const char *_b,int _n);

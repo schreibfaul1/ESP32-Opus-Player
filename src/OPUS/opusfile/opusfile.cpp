@@ -3244,32 +3244,6 @@ int64_t op_ftell(void *_stream) {
     return ftello((FILE*) _stream);
 }
 //----------------------------------------------------------------------------------------------------------------------
-const OpusFileCallbacks_t OP_FILE_CALLBACKS = { op_fread, op_fseek, op_ftell, (op_close_func) fclose };
-
-const OpusFileCallbacks_t* op_get_file_callbacks(FILE *_fp) {
-    (void) _fp;
-    return &OP_FILE_CALLBACKS;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_mem_read(void *_stream, unsigned char *_ptr, int _buf_size) {
-    OpusMemStream *stream;
-    ptrdiff_t size;
-    ptrdiff_t pos;
-    stream = (OpusMemStream*) _stream;
-    /*Check for empty read.*/
-    if(_buf_size <= 0) return 0;
-    size = stream->size;
-    pos = stream->pos;
-    /*Check for EOF.*/
-    if(pos >= size) return 0;
-    /*Check for a short read.*/
-    _buf_size = (int) _min(size - pos, _buf_size);
-    memcpy(_ptr, stream->data + pos, _buf_size);
-    pos += _buf_size;
-    stream->pos = pos;
-    return _buf_size;
-}
-//----------------------------------------------------------------------------------------------------------------------
 int op_mem_seek(void *_stream, int64_t _offset, int _whence) {
     OpusMemStream *stream;
     ptrdiff_t pos;
@@ -3315,6 +3289,4 @@ int op_mem_close(void *_stream) {
     free(_stream);
     return 0;
 }
-//----------------------------------------------------------------------------------------------------------------------
-const OpusFileCallbacks_t OP_MEM_CALLBACKS = { op_mem_read, op_mem_seek, op_mem_tell, op_mem_close };
 //----------------------------------------------------------------------------------------------------------------------
