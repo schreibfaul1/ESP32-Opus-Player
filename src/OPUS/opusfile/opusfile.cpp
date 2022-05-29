@@ -1203,7 +1203,7 @@ static void op_update_gain(OggOpusFile *_of) {
         default:
             assert(0);
     }
-    gain_q8 = OP_CLAMP(-32768, gain_q8, 32767);
+    gain_q8 = max(-32768, min(gain_q8, 32767));
     assert(_of->od!=NULL);
     opus_multistream_decoder_ctl(_of->od, OPUS_SET_GAIN_REQUEST, gain_q8);
 

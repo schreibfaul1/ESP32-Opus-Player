@@ -16,12 +16,6 @@
 #include "../libogg/ogg.h"
 #include "../libopus/opus_decoder.h"
 
-
-
-#define assert(_cond)
-
-#define OP_CLAMP(_lo,_x,_hi) (_max(_lo,_min(_x,_hi)))
-
 typedef struct OpusMemStream OpusMemStream;
 
 #define OP_MEM_SIZE_MAX (~(size_t)0>>1)
