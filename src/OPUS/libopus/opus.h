@@ -34,6 +34,8 @@
 #define OPUS_H
 
 #include <stdint.h>
+#include <stdarg.h> /* va_list */
+#include <stddef.h> /* offsetof */
 #include "opus.h"
 
 
@@ -41,6 +43,9 @@
 extern "C" {
 #endif
 
+#define VARDECL(type, var)
+#define ALLOC(var, size, type) type var[size]
+#define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
 #define OPUS_OK                0
 #define OPUS_BAD_ARG          -1
 #define OPUS_BUFFER_TOO_SMALL -2
@@ -106,11 +111,39 @@ extern "C" {
 #define OPUS_BANDWIDTH_SUPERWIDEBAND 1104 /**<12 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_FULLBAND 1105      /**<20 kHz bandpass @hideinitializer*/
 #define OPUS_RESET_STATE 4028
+#define MODE_SILK_ONLY 1000
+#define MODE_HYBRID 1001
+#define MODE_CELT_ONLY 1002
+#define OPUS_SET_VOICE_RATIO_REQUEST 11018
+#define OPUS_GET_VOICE_RATIO_REQUEST 11019
+#define OPUS_SET_FORCE_MODE_REQUEST 11002
+#define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, (int32_t)(x)
+
 
 
 typedef struct OpusDecoder OpusDecoder;
 typedef struct CELTDecoder CELTDecoder;
 typedef struct CELTMode CELTMode;
+typedef enum { MAPPING_TYPE_NONE, MAPPING_TYPE_SURROUND, MAPPING_TYPE_AMBISONICS } MappingType;
+typedef void (*downmix_func)(const void *, int32_t *, int, int, int, int, int);
+typedef void (*opus_copy_channel_in_func)(int16_t *dst, int dst_stride, const void *src, int src_stride,
+                                          int src_channel, int frame_size, void *user_data);
+typedef void (*opus_copy_channel_out_func)(void *dst, int dst_stride, int dst_channel, const int16_t *src,
+                                           int src_stride, int frame_size, void *user_data);
+
+typedef struct ChannelLayout {
+    int nb_channels;
+    int nb_streams;
+    int nb_coupled_streams;
+    unsigned char mapping[256];
+} ChannelLayout;
+
+struct OpusMSDecoder {
+    ChannelLayout layout;
+    /* Decoder states go here */
+};
+
+
 
 int opus_decoder_get_size(int channels);
 OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error);
@@ -137,8 +170,43 @@ int opus_custom_decode_float(CELTDecoder *st, const unsigned char *data, int len
 int opus_custom_decode(CELTDecoder *st, const unsigned char *data, int len, int16_t *pcm, int frame_size);
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 
+void downmix_float(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+void downmix_int(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+int is_digital_silence(const int16_t *pcm, int frame_size, int channels, int lsb_depth);
+int encode_size(int size, unsigned char *data);
+int32_t frame_size_select(int32_t frame_size, int variable_duration, int32_t Fs);
+int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
+                       int decode_fec, int self_delimited, int32_t *packet_offset, int soft_clip);
 
+/* Make sure everything is properly aligned. */
+static inline int align(int i) {
+    struct foo {
+        char c;
+        union {
+            void *p;
+            int32_t i;
+            int32_t v;
+        } u;
+    };
+    unsigned int alignment = offsetof(struct foo, u);
 
+    /* Optimizing compilers should optimize div and multiply into and
+       for all sensible alignment values. */
+    return ((i + alignment - 1) / alignment) * alignment;
+}
+
+int opus_packet_parse_impl(const unsigned char *data, int32_t len, int self_delimited, unsigned char *out_toc,
+                           const unsigned char *frames[48], int16_t size[48], int *payload_offset,
+                           int32_t *packet_offset);
+int pad_frame(unsigned char *data, int32_t len, int32_t new_len);
+int opus_multistream_decode_native(struct OpusMSDecoder *st, const unsigned char *data, int32_t len, void *pcm,
+                                   opus_copy_channel_out_func copy_channel_out, int frame_size, int decode_fec,
+                                   int soft_clip, void *user_data);
+int opus_multistream_decoder_ctl_va_list(struct OpusMSDecoder *st, int request, va_list ap);
+int validate_layout(const ChannelLayout *layout);
+int get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
+int get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
+int get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
 
 
 

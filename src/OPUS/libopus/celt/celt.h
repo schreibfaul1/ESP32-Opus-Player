@@ -300,7 +300,6 @@ struct CELTMode {
 #define CELT_SIG_SCALE 32768.f
 #define CELT_FATAL(str) celt_fatal(str, __FILE__, __LINE__);
 #define assert2(cond, message)
-#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {/**/; return OPUS_INTERNAL_ERROR;} } while (0)
 #define SAMP_MAX 2147483647
 #define TWID_MAX 32767
 #define TRIG_UPSCALE 1

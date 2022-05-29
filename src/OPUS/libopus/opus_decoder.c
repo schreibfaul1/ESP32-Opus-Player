@@ -32,9 +32,6 @@
 #include "celt/celt.h"
 #include "opus.h"
 #include "silk/silk.h"
-#include "opus_private.h"
-
-
 
 struct OpusDecoder {
    int          celt_dec_offset;
@@ -415,9 +412,9 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
             default:
                 break;
         }
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_END_BAND(endband)));
+        celt_decoder_ctl(celt_dec, CELT_SET_END_BAND(endband));
     }
-    // MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS(st->stream_channels)));
+    // celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS(st->stream_channels)));
 
     /* Only allocation memory for redundancy if/when needed */
     redundant_audio_size = redundancy ? F5 * st->channels : ALLOC_NONE;
@@ -432,7 +429,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         int celt_frame_size = IMIN(F20, frame_size);
         /* Make sure to discard any previous CELT state */
         if (mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy)
-            MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_RESET_STATE));
+            celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
         /* Decode CELT */
         celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, celt_accum);
     } else {
@@ -443,7 +440,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID && !(redundancy && celt_to_silk && st->prev_redundancy)) {
-            MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
+            celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0));
             celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, celt_accum);
         }
     }
@@ -454,17 +451,17 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     {
         const CELTMode *celt_mode;
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode**)(&celt_mode)));
+        celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode**)(&celt_mode));
         window = celt_mode->window;
     }
 
     /* 5 ms redundant frame for SILK->CELT */
     if (redundancy && !celt_to_silk) {
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_RESET_STATE));
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
+        celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+        celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0));
 
         celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
-        MUST_SUCCEED(celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE_REQUEST, &redundant_rng));
+        celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE_REQUEST, &redundant_rng);
         smooth_fade(pcm + st->channels * (frame_size - F2_5), redundant_audio + st->channels * F2_5,
                     pcm + st->channels * (frame_size - F2_5), F2_5, st->channels, window, st->Fs);
     }

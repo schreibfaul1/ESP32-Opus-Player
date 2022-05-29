@@ -28,7 +28,6 @@
 #include "config.h"
 #include "opus_multistream.h"
 #include "opus.h"
-#include "opus_private.h"
 #include <stdarg.h>
 
 

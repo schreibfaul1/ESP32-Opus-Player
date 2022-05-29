@@ -27,11 +27,10 @@
 
 #include "Arduino.h"
 #include <stdlib.h>
+#include <stdint.h>
 #include "config.h"
 #include "opus_multistream.h"
 #include "opus.h"
-#include "opus_private.h"
-
 
 /* DECODER */
 
@@ -138,12 +137,11 @@ int opus_multistream_decode_native(OpusMSDecoder *st, const unsigned char *data,
     char *ptr;
     int do_plc = 0;
     VARDECL(int16_t, buf);
-    ALLOC_STACK;
     if (frame_size <= 0) {
         return OPUS_BAD_ARG;
     }
     /* Limit frame_size to avoid excessive stack allocations. */
-    MUST_SUCCEED(opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE_REQUEST, &Fs));
+    opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
     frame_size = IMIN(frame_size, Fs / 25 * 3);
     ALLOC(buf, 2 * frame_size, int16_t);
     ptr = (char *)st + align(sizeof(OpusMSDecoder));
