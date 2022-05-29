@@ -39,7 +39,6 @@
 #include <limits.h>
 #include <assert.h>
 #include <string.h>
-#include "../opus_defines.h"
 #include "../opus.h"
 
 
