@@ -18,8 +18,6 @@
 
 
 
-typedef int16_t op_sample;
-
 #define OP_ASSERT(_cond)
 
 #define OP_CLAMP(_lo,_x,_hi) (_max(_lo,_min(_x,_hi)))
@@ -153,7 +151,7 @@ typedef struct OggOpusFile{
   int               od_coupled_count;
   int               od_channel_count;
   unsigned char     od_mapping[OP_NCHANNELS_MAX];
-  op_sample        *od_buffer;
+  int16_t          *od_buffer;
   int               od_buffer_pos;
   int               od_buffer_size;
   int               gain_type;
@@ -241,15 +239,9 @@ OggOpusFile *op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, co
 OggOpusFile *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
 int op_seekable(const OggOpusFile *_of);
-int op_link_count(const OggOpusFile *_of);
-uint32_t op_serialno(const OggOpusFile *_of,int _li);
-int op_channel_count(const OggOpusFile *_of,int _li);
 int64_t op_raw_total(const OggOpusFile *_of,int _li);
 int64_t op_pcm_total(const OggOpusFile *_of,int _li);
-const OpusHead_t *op_head(const OggOpusFile *_of,int _li);
 const OpusTags_t *op_tags(const OggOpusFile *_of,int _li);
-int op_current_link(const OggOpusFile *_of);
-int32_t op_bitrate(const OggOpusFile *_of,int _li);
 int32_t op_bitrate_instant(OggOpusFile *_of);
 
 #define OP_DEC_FORMAT_SHORT (7008)
@@ -257,17 +249,12 @@ int32_t op_bitrate_instant(OggOpusFile *_of);
 #define OP_DEC_USE_DEFAULT  (6720)
 
 
-
-void op_set_decode_callback(OggOpusFile *_of, op_decode_cb_func _decode_cb,void *_ctx);
-
 #define OP_HEADER_GAIN   (0)
 #define OP_ALBUM_GAIN    (3007)
 #define OP_TRACK_GAIN    (3008)
 #define OP_ABSOLUTE_GAIN (3009)
 
-void op_set_dither_enabled(OggOpusFile *_of,int _enabled);
 int op_read(OggOpusFile *_of, int16_t *_pcm,int _buf_size,int *_li);
-int op_read_float(OggOpusFile *_of, float *_pcm,int _buf_size,int *_li);
 int op_read_stereo(OggOpusFile *_of, int16_t *_pcm,int _buf_size);
 int op_read_float_stereo(OggOpusFile *_of, float *_pcm,int _buf_size);
 

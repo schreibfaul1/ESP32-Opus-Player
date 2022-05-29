@@ -1520,20 +1520,6 @@ int op_seekable(const OggOpusFile *_of) {
     return _of->seekable;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int op_link_count(const OggOpusFile *_of) {
-    return _of->nlinks;
-}
-//----------------------------------------------------------------------------------------------------------------------
-uint32_t op_serialno(const OggOpusFile *_of, int _li) {
-    if(_li >= _of->nlinks) _li = _of->nlinks - 1;
-    if(!_of->seekable) _li = 0;
-    return _of->links[_li < 0 ? _of->cur_link : _li].serialno;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_channel_count(const OggOpusFile *_of, int _li) {
-    return op_head(_of, _li)->channel_count;
-}
-//----------------------------------------------------------------------------------------------------------------------
 int64_t op_raw_total(const OggOpusFile *_of, int _li) {
     if((_of->ready_state<OP_OPENED) || (!_of->seekable) || (_li >= _of->nlinks)) {
         return OP_EINVAL;
@@ -1564,12 +1550,6 @@ int64_t op_pcm_total(const OggOpusFile *_of, int _li) {
     return pcm_total + diff - links[_li].head.pre_skip;
 }
 //----------------------------------------------------------------------------------------------------------------------
-const OpusHead_t* op_head(const OggOpusFile *_of, int _li) {
-    if(_li >= _of->nlinks) _li = _of->nlinks - 1;
-    if(!_of->seekable) _li = 0;
-    return &_of->links[_li < 0 ? _of->cur_link : _li].head;
-}
-//----------------------------------------------------------------------------------------------------------------------
 const OpusTags_t* op_tags(const OggOpusFile *_of, int _li) {
     if(_li >= _of->nlinks) _li = _of->nlinks - 1;
     if(!_of->seekable) {
@@ -1580,11 +1560,6 @@ const OpusTags_t* op_tags(const OggOpusFile *_of, int _li) {
     }
     else if(_li < 0) _li = _of->ready_state >= OP_STREAMSET ? _of->cur_link : 0;
     return &_of->links[_li].tags;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_current_link(const OggOpusFile *_of) {
-    if(_of->ready_state<OP_OPENED) return OP_EINVAL;
-    return _of->cur_link;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Compute an average bitrate given a byte and sample count.
@@ -1608,13 +1583,6 @@ static int32_t op_calc_bitrate(int64_t _bytes, int64_t _samples) {
      padding, more encoded streams than output channels, or lots and lots of
      Ogg pages with no packets on them.*/
     return (int32_t) _min((_bytes * 48000 * 8 + (_samples >> 1)) / _samples, INT32_MAX);
-}
-//----------------------------------------------------------------------------------------------------------------------
-int32_t op_bitrate(const OggOpusFile *_of, int _li) {
-    if((_of->ready_state<OP_OPENED) || (!_of->seekable) || (_li >= _of->nlinks)) {
-        return OP_EINVAL;
-    }
-    return op_calc_bitrate(op_raw_total(_of, _li), op_pcm_total(_of, _li));
 }
 //----------------------------------------------------------------------------------------------------------------------
 int32_t op_bitrate_instant(OggOpusFile *_of) {
@@ -2391,17 +2359,6 @@ static int64_t op_get_pcm_offset(const OggOpusFile *_of, int64_t _gp, int _li) {
     return pcm_offset;
 }
 //----------------------------------------------------------------------------------------------------------------------
-void op_set_decode_callback(OggOpusFile *_of, op_decode_cb_func _decode_cb, void *_ctx) {
-    _of->decode_cb = _decode_cb;
-    _of->decode_cb_ctx = _ctx;
-}
-//----------------------------------------------------------------------------------------------------------------------
-void op_set_dither_enabled(OggOpusFile *_of, int _enabled) {
-
-    (void) _of;
-    (void) _enabled;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /*Allocate the decoder scratch buffer.
  This is done lazily, since if the user provides large enough buffers, we'll
  never need it.*/
@@ -2420,13 +2377,13 @@ static int op_init_buffer(OggOpusFile *_of) {
     }
     else
         nchannels_max = OP_NCHANNELS_MAX;
-    _of->od_buffer = (op_sample*) malloc(sizeof(*_of->od_buffer) * nchannels_max * 120 * 48);
+    _of->od_buffer = (int16_t*) malloc(sizeof(*_of->od_buffer) * nchannels_max * 120 * 48);
     if(_of->od_buffer == NULL) return OP_EFAULT;
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Decode a single packet into the target buffer.*/
-static int op_decode(OggOpusFile *_of, op_sample *_pcm, const ogg_packet *_op, int _nsamples, int _nchannels) {
+static int op_decode(OggOpusFile *_of, int16_t *_pcm, const ogg_packet *_op, int _nsamples, int _nchannels) {
     int ret;
     /*First we try using the application-provided decode callback.*/
     if(_of->decode_cb != NULL) {
@@ -2450,7 +2407,7 @@ static int op_decode(OggOpusFile *_of, op_sample *_pcm, const ogg_packet *_op, i
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Read more samples from the stream, using the same API as op_read() or op_read_float().*/
-static int op_read_native(OggOpusFile *_of, op_sample *_pcm, int _buf_size, int *_li) {
+static int op_read_native(OggOpusFile *_of, int16_t *_pcm, int _buf_size, int *_li) {
 
     if(_of->ready_state<OP_OPENED) return OP_EINVAL;
     for(;;) {
@@ -2505,7 +2462,7 @@ static int op_read_native(OggOpusFile *_of, op_sample *_pcm, int _buf_size, int 
                 }
                 _of->prev_packet_gp = pop->granulepos;
                 if(duration * nchannels > _buf_size) {
-                    op_sample *buf;
+                    int16_t *buf;
                     /*If the user's buffer is too small, decode into a scratch buffer.*/
                     buf = _of->od_buffer;
                     if(buf==NULL) {
@@ -2570,7 +2527,7 @@ static int op_read_native(OggOpusFile *_of, op_sample *_pcm, int _buf_size, int 
 /*A generic filter to apply to the decoded audio data.
  _src is non-const because we will destructively modify the contents of the
  source buffer that we consume in some cases.*/
-typedef int (*op_read_filter_func)(OggOpusFile *_of, void *_dst, int _dst_sz, op_sample *_src, int _nsamples,
+typedef int (*op_read_filter_func)(OggOpusFile *_of, void *_dst, int _dst_sz, int16_t *_src, int _nsamples,
         int _nchannels);
 //----------------------------------------------------------------------------------------------------------------------
 /*Decode some samples and then apply a custom filter to them.
@@ -2600,7 +2557,7 @@ static int op_filter_read_native(OggOpusFile *_of, void *_dst, int _dst_sz, op_r
 //    return op_read_native(_of, _pcm, _buf_size, _li);
 //}
 //----------------------------------------------------------------------------------------------------------------------
-static int op_stereo_filter(OggOpusFile *_of, void *_dst, int _dst_sz, op_sample *_src, int _nsamples, int _nchannels) {
+static int op_stereo_filter(OggOpusFile *_of, void *_dst, int _dst_sz, int16_t *_src, int _nsamples, int _nchannels) {
     (void) _of;
     _nsamples = _min(_nsamples, _dst_sz >> 1);
     if(_nchannels == 2)
