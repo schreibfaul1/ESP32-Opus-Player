@@ -67,9 +67,6 @@ extern "C" {
  ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
 
 
-//#  define OPUS_RESTRICT __restrict__
-
-# define OPUS_ARG_NONNULL(_x)  __attribute__ ((__nonnull__(_x)))
 
 
 /** These are the actual Encoder CTL ID numbers.

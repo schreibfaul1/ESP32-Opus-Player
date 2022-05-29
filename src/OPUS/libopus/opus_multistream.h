@@ -262,7 +262,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       const unsigned char *mapping,
       int application,
       int *error
-) OPUS_ARG_NONNULL(5);
+);
 
   OpusMSEncoder *opus_multistream_surround_encoder_create(
       int32_t Fs,
@@ -273,7 +273,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       unsigned char *mapping,
       int application,
       int *error
-) OPUS_ARG_NONNULL(4) OPUS_ARG_NONNULL(5) OPUS_ARG_NONNULL(6);
+);
 
 /** Initialize a previously allocated multistream encoder state.
   * The memory pointed to by \a st must be at least the size returned by
@@ -331,7 +331,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       int coupled_streams,
       const unsigned char *mapping,
       int application
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(6);
+);
 
  int opus_multistream_surround_encoder_init(
       OpusMSEncoder *st,
@@ -342,7 +342,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       int *coupled_streams,
       unsigned char *mapping,
       int application
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(5) OPUS_ARG_NONNULL(6) OPUS_ARG_NONNULL(7);
+);
 
 /** Encodes a multistream Opus frame.
   * @param st <tt>OpusMSEncoder*</tt>: Multistream encoder state.
@@ -380,7 +380,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
     int frame_size,
     unsigned char *data,
     int32_t max_data_bytes
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2) OPUS_ARG_NONNULL(4);
+);
 
 /** Encodes a multistream Opus frame from floating point input.
   * @param st <tt>OpusMSEncoder*</tt>: Multistream encoder state.
@@ -425,7 +425,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       int frame_size,
       unsigned char *data,
       int32_t max_data_bytes
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2) OPUS_ARG_NONNULL(4);
+);
 
 /** Frees an <code>OpusMSEncoder</code> allocated by
   * opus_multistream_encoder_create().
@@ -445,7 +445,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
   * @see opus_encoderctls
   * @see opus_multistream_ctls
   */
- int opus_multistream_encoder_ctl(OpusMSEncoder *st, int request, ...) OPUS_ARG_NONNULL(1);
+ int opus_multistream_encoder_ctl(OpusMSEncoder *st, int request, ...);
 
 /**@}*/
 
@@ -508,7 +508,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       int coupled_streams,
       const unsigned char *mapping,
       int *error
-) OPUS_ARG_NONNULL(5);
+);
 
 /** Intialize a previously allocated decoder state object.
   * The memory pointed to by \a st must be at least the size returned by
@@ -551,7 +551,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
       int streams,
       int coupled_streams,
       const unsigned char *mapping
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(6);
+);
 
 /** Decode a multistream Opus packet.
   * @param st <tt>OpusMSDecoder*</tt>: Multistream decoder state.
@@ -589,7 +589,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
     int16_t *pcm,
     int frame_size,
     int decode_fec
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+);
 
 /** Decode a multistream Opus packet with floating point output.
   * @param st <tt>OpusMSDecoder*</tt>: Multistream decoder state.
@@ -627,7 +627,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
     float *pcm,
     int frame_size,
     int decode_fec
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+);
 
 /** Perform a CTL function on a multistream Opus decoder.
   *
@@ -641,7 +641,7 @@ typedef struct OpusMSDecoder OpusMSDecoder;
   * @see opus_decoderctls
   * @see opus_multistream_ctls
   */
- int opus_multistream_decoder_ctl(OpusMSDecoder *st, int request, ...) OPUS_ARG_NONNULL(1);
+ int opus_multistream_decoder_ctl(OpusMSDecoder *st, int request, ...);
 
 /** Frees an <code>OpusMSDecoder</code> allocated by
   * opus_multistream_decoder_create().

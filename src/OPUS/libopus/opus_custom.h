@@ -129,7 +129,7 @@ typedef struct CELTMode CELTMode;
     const CELTMode *mode,
     int channels,
     int *error
-) OPUS_ARG_NONNULL(1);
+);
 
 
 /** Destroys a an encoder state.
@@ -160,7 +160,7 @@ typedef struct CELTMode CELTMode;
     int frame_size,
     unsigned char *compressed,
     int maxCompressedBytes
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2) OPUS_ARG_NONNULL(4);
+);
 
 /** Encodes a frame of audio.
   * @param [in] st <tt>CELTEncoder*</tt>: Encoder state
@@ -181,7 +181,7 @@ typedef struct CELTMode CELTMode;
     int frame_size,
     unsigned char *compressed,
     int maxCompressedBytes
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(2) OPUS_ARG_NONNULL(4);
+);
 
 /** Perform a CTL function on an Opus custom encoder.
   *
@@ -189,7 +189,7 @@ typedef struct CELTMode CELTMode;
   * by a convenience macro.
   * @see opus_encoderctls
   */
- int celt_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+ int celt_encoder_ctl(CELTEncoder * __restrict__ st, int request, ...);
 
 
 /** Creates a new decoder state. Each stream needs its own decoder state (can't
@@ -204,7 +204,7 @@ typedef struct CELTMode CELTMode;
     const CELTMode *mode,
     int channels,
     int *error
-) OPUS_ARG_NONNULL(1);
+);
 
 /** Destroys a an decoder state.
   * @param[in] st <tt>CELTDecoder*</tt>: State to be freed.
@@ -226,7 +226,7 @@ typedef struct CELTMode CELTMode;
     int len,
     float *pcm,
     int frame_size
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+);
 
 /** Decode an opus custom frame
   * @param [in] st <tt>CELTDecoder*</tt>: Decoder state
@@ -243,7 +243,7 @@ typedef struct CELTMode CELTMode;
     int len,
     int16_t *pcm,
     int frame_size
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+);
 
 /** Perform a CTL function on an Opus custom decoder.
   *
@@ -251,7 +251,7 @@ typedef struct CELTMode CELTMode;
   * by a convenience macro.
   * @see opus_genericctls
   */
- int celt_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...) OPUS_ARG_NONNULL(1);
+ int celt_decoder_ctl(CELTDecoder * __restrict__ st, int request, ...);
 
 /**@}*/
 

@@ -722,7 +722,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...)
          goto bad_arg;
       }
       if (st->prev_mode == MODE_CELT_ONLY)
-         ret = celt_decoder_ctl(celt_dec, OPUS_GET_PITCH(value));
+         ret = celt_decoder_ctl(celt_dec, (int)value);
       else
          *value = st->DecControl.prevPitchLag;
    }
@@ -764,7 +764,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...)
        {
           goto bad_arg;
        }
-       ret = celt_decoder_ctl(celt_dec, OPUS_SET_PHASE_INVERSION_DISABLED(value));
+       ret = celt_decoder_ctl(celt_dec, value);
    }
    break;
    case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
@@ -774,7 +774,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...)
        {
           goto bad_arg;
        }
-       ret = celt_decoder_ctl(celt_dec, OPUS_GET_PHASE_INVERSION_DISABLED(value));
+       ret = celt_decoder_ctl(celt_dec, value);
    }
    break;
    default:
