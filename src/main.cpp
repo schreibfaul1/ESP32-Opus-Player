@@ -10,13 +10,23 @@
 
 
 // Digital I/O used
-#define SD_CS         13
-#define SPI_MOSI      15
-#define SPI_MISO       2
-#define SPI_SCK       14
-#define I2S_DOUT      25
-#define I2S_BCLK      27
-#define I2S_LRC       26
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    #define SD_MMC_D0     11
+    #define SD_MMC_CLK    13
+    #define SD_MMC_CMD    14
+    #define I2S_DOUT       9
+    #define I2S_BCLK       3
+    #define I2S_LRC        1
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32
+    #define SD_MMC_D0     11
+    #define SD_MMC_CLK    13
+    #define SD_MMC_CMD    14
+    #define I2S_DOUT      25
+    #define I2S_BCLK      27
+    #define I2S_LRC       26
+#endif
 
 uint8_t             m_i2s_num = I2S_NUM_0;          // I2S_NUM_0 or I2S_NUM_1
 i2s_config_t        m_i2s_config;                   // stores values for I2S driver
@@ -40,7 +50,6 @@ OggOpusFile *of;
 OpusFileCallbacks cb;
 TaskHandle_t opus_task;
 File file;
-File file1;
 
 // prototypes
 bool playSample(int16_t sample[2]);
@@ -243,7 +252,6 @@ int OPUS_read(void *_stream, unsigned char* ptr, int nbytes) {
     if (nbytes == 0) return -1;
     return nbytes;
 }
-
 void opusTask(void *parameter) {
     int ret;
     do {
@@ -266,16 +274,21 @@ void setup() {
     I2Sstart(m_i2s_num);
     Serial.begin(115200);
     delay(1000);
-    // SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-    pinMode(2, INPUT_PULLUP);
-    SD_MMC.begin("/sdcard", true);
-//    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+    pinMode(SD_MMC_D0, INPUT_PULLUP);
+    #ifdef CONFIG_IDF_TARGET_ESP32S3
+        SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
+    #endif
+    if(!SD_MMC.begin("/sdcard", true)){
+        log_i("SD card not found,");
+        while(true){;}
+    }
+
+    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     file = SD_MMC.open("/opus/testfile.opus");
 
 
     cb = { OPUS_read, NULL, NULL, NULL };
     of = op_open_callbacks(NULL, &cb, NULL, 0, NULL);
-
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */
