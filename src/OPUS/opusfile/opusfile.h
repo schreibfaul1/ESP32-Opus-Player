@@ -16,18 +16,8 @@
 #include "../libogg/ogg.h"
 #include "../libopus/opus_decoder.h"
 
-struct OpusMemStream {
-    const unsigned char *data;
-    ptrdiff_t size;
-    ptrdiff_t pos;
-};
-
-typedef struct OpusMemStream OpusMemStream;
-
 #define OP_MEM_SIZE_MAX (~(size_t)0>>1)
 #define OP_MEM_DIFF_MAX ((ptrdiff_t)OP_MEM_SIZE_MAX)
-
-
 
 /*Advance a file offset by the given amount, clamping against INT64_MAX.
   This is used to advance a known offset by things like OP_CHUNK_SIZE or
@@ -54,7 +44,6 @@ typedef int (*op_read_func)(void *_stream,unsigned char *_ptr,int _nbytes);
 typedef int (*op_seek_func)(void *_stream,int64_t _offset,int _whence);
 typedef int64_t (*op_tell_func)(void *_stream);
 typedef int (*op_close_func)(void *_stream);
-
 typedef int (*op_decode_cb_func)(void *_ctx,OpusMSDecoder *_decoder,void *_pcm, const ogg_packet *_op,
              int _nsamples,int _nchannels,int _format,int _li);
 
@@ -163,20 +152,6 @@ typedef struct OggOpusFile{
 
 int op_strncasecmp(const char *_a,const char *_b,int _n);
 
-
-/**@cond PRIVATE*/
-
-/*Enable special features for gcc and gcc-compatible compilers.*/
-//
-//#  if defined(__GNUC__)&&defined(__GNUC_MINOR__)
-//#   define OP_GNUC_PREREQ(_maj,_min) \
-// ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
-//
-//
-//# if OP_GNUC_PREREQ(4,0)
-//#  pragma GCC visibility push(default)
-//# endif
-
 typedef struct OggOpusFile       OggOpusFile;
 
 
@@ -190,10 +165,8 @@ typedef struct OggOpusFile       OggOpusFile;
 #define OP_EINVAL        (-131)
 #define OP_ENOTFORMAT    (-132)
 #define OP_EBADHEADER    (-133)
-/**The ID header contained an unrecognized version number.*/
-#define OP_EVERSION      (-134)
-/*Currently not used at all.*/
-#define OP_ENOTAUDIO     (-135)
+#define OP_EVERSION      (-134) /**The ID header contained an unrecognized version number.*/
+#define OP_ENOTAUDIO     (-135) /*Currently not used at all.*/
 /**An audio packet failed to decode properly.
    This is usually caused by a multistream Ogg packet where the durations of
     the individual Opus packets contained in it are not all the same.*/
