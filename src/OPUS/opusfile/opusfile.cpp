@@ -1516,13 +1516,6 @@ OggOpusFile* op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, co
     return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
-void op_free(OggOpusFile *_of) {
-    if(_of!=NULL) {
-        op_clear(_of);
-        free(_of);
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
 int op_seekable(const OggOpusFile *_of) {
     return _of->seekable;
 }
@@ -3301,30 +3294,6 @@ const OpusFileCallbacks_t* op_get_file_callbacks(FILE *_fp) {
     return &OP_FILE_CALLBACKS;
 }
 //----------------------------------------------------------------------------------------------------------------------
-void* op_fopen(OpusFileCallbacks_t *_cb, const char *_path, const char *_mode) {
-    FILE *fp;
-    fp = fopen(_path, _mode);
-
-    if(fp != NULL) *_cb = *op_get_file_callbacks(fp);
-    return fp;
-}
-//----------------------------------------------------------------------------------------------------------------------
-//void* op_fdopen(OpusFileCallbacks_t *_cb, int _fd, const char *_mode) {
-//    FILE *fp;
-//    fp = fdopen(_fd, _mode);
-//    if(fp != NULL) *_cb = *op_get_file_callbacks(fp);
-//    return fp;
-//}
-//----------------------------------------------------------------------------------------------------------------------
-//void* op_freopen(OpusFileCallbacks_t *_cb, const char *_path, const char *_mode, void *_stream) {
-//    FILE *fp;
-//
-//    fp = freopen(_path, _mode, (FILE*) _stream);
-//
-//    if(fp != NULL) *_cb = *op_get_file_callbacks(fp);
-//    return fp;
-//}
-//----------------------------------------------------------------------------------------------------------------------
 int op_mem_read(void *_stream, unsigned char *_ptr, int _buf_size) {
     OpusMemStream *stream;
     ptrdiff_t size;
@@ -3391,17 +3360,4 @@ int op_mem_close(void *_stream) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 const OpusFileCallbacks_t OP_MEM_CALLBACKS = { op_mem_read, op_mem_seek, op_mem_tell, op_mem_close };
-//----------------------------------------------------------------------------------------------------------------------
-void* op_mem_stream_create(OpusFileCallbacks_t *_cb, const unsigned char *_data, size_t _size) {
-    OpusMemStream *stream;
-    if(_size > OP_MEM_SIZE_MAX) return NULL;
-    stream = (OpusMemStream*) malloc(sizeof(*stream));
-    if(stream != NULL) {
-        *_cb = *&OP_MEM_CALLBACKS;
-        stream->data = _data;
-        stream->size = _size;
-        stream->pos = 0;
-    }
-    return stream;
-}
 //----------------------------------------------------------------------------------------------------------------------

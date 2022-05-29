@@ -228,7 +228,6 @@ typedef struct OggOpusFile       OggOpusFile;
 
 
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
-int64_t opus_granule_sample(const OpusHead_t *_head,int64_t _gp);
 int opus_tags_parse(OpusTags_t *_tags, const unsigned char *_data,size_t _len);
 int opus_tags_copy(OpusTags_t *_dst,const OpusTags_t *_src);
 void opus_tags_init(OpusTags_t *_tags);
@@ -236,24 +235,11 @@ int opus_tags_get_album_gain(const OpusTags_t *_tags,int *_gain_q8);
 int opus_tags_get_track_gain(const OpusTags_t *_tags,int *_gain_q8);
 void opus_tags_clear(OpusTags_t *_tags);
 int opus_tagncompare(const char *_tag_name,int _tag_len,const char *_comment);
-void *op_fopen(OpusFileCallbacks_t *_cb, const char *_path,const char *_mode);
-void *op_fdopen(OpusFileCallbacks_t *_cb, int _fd,const char *_mode);
-void *op_freopen(OpusFileCallbacks_t *_cb, const char *_path,const char *_mode,void *_stream);
-void *op_mem_stream_create(OpusFileCallbacks_t *_cb, const unsigned char *_data,size_t _size);
-void *op_url_stream_vcreate(OpusFileCallbacks_t *_cb, const char *_url,va_list _ap);
-void *op_url_stream_create(OpusFileCallbacks_t *_cb, const char *_url,...);
 OggOpusFile *op_open_file(const char *_path,int *_error);
-OggOpusFile *op_open_memory(const unsigned char *_data, size_t _size,int *_error);
-OggOpusFile *op_vopen_url(const char *_url, int *_error,va_list _ap);
-OggOpusFile *op_open_url(const char *_url, int *_error,...);
-OggOpusFile *op_open_callbacks(void *_stream,
-const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data, size_t _initial_bytes,int *_error);
-int op_test(OpusHead_t *_head, const unsigned char *_initial_data,size_t _initial_bytes);
-OggOpusFile *op_vtest_url(const char *_url, int *_error,va_list _ap);
-OggOpusFile *op_test_url(const char *_url, int *_error,...);
+OggOpusFile *op_open_callbacks(void *_stream, const OpusFileCallbacks_t *_cb, const unsigned char *_initial_data,
+                               size_t _initial_bytes, int *_error);
 OggOpusFile *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
-void op_free(OggOpusFile *_of);
 int op_seekable(const OggOpusFile *_of);
 int op_link_count(const OggOpusFile *_of);
 uint32_t op_serialno(const OggOpusFile *_of,int _li);
