@@ -16,6 +16,8 @@
 #include "../libogg/ogg.h"
 #include "../libopus/opus_decoder.h"
 
+extern __attribute__((weak)) int SD_read(unsigned char* buff, int nbytes);
+
 #define OP_MEM_SIZE_MAX (~(size_t)0>>1)
 #define OP_MEM_DIFF_MAX ((ptrdiff_t)OP_MEM_SIZE_MAX)
 
@@ -40,12 +42,7 @@
    link.*/
 # define  OP_INITSET   (4)
 
-typedef int (*op_read_func)(void *_stream,unsigned char *_ptr,int _nbytes);
-// typedef int (*op_seek_func)(void *_stream,int64_t _offset,int _whence);
-// typedef int64_t (*op_tell_func)(void *_stream);
-// typedef int (*op_close_func)(void *_stream);
-// typedef int (*op_decode_cb_func)(void *_ctx,OpusMSDecoder *_decoder,void *_pcm, const ogg_packet *_op,
-//              int _nsamples,int _nchannels,int _format,int _li);
+typedef int (*op_read_func)(unsigned char *_ptr,int _nbytes);
 
 typedef struct OpusHead{
   int           version;
@@ -66,24 +63,20 @@ typedef struct OpusTags{
   char         *vendor;
 } OpusTags_t;
 
-// typedef struct OpusFileCallbacks{
-//   op_read_func  read;
-// }   op_read_func  read;
-
 typedef struct OggOpusLink{
   int64_t           offset;
   int64_t           data_offset;
   int64_t           end_offset;
-  int64_t       pcm_file_offset;
-  int64_t       pcm_end;
-  int64_t       pcm_start;
-  uint32_t      serialno;
+  int64_t           pcm_file_offset;
+  int64_t           pcm_end;
+  int64_t           pcm_start;
+  uint32_t          serialno;
   OpusHead_t        head;
   OpusTags_t        tags;
 } OggOpusLink_t;
 
 typedef struct OggOpusFile{
-    op_read_func callbacks;
+  op_read_func      callbacks;
   void             *stream;
   int               seekable;
   int               nlinks;
@@ -162,7 +155,7 @@ int op_strncasecmp(const char *_a,const char *_b,int _n);
 
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 
-OggOpusFile_t *op_open_file(const char *_path,int *_error);
+//OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *op_open_callbacks(const   op_read_func *_cb);
 OggOpusFile_t *op_test_callbacks(void *_stream, const   op_read_func *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;

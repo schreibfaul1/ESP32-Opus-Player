@@ -241,9 +241,9 @@ bool playSample(int16_t sample[2]) {
 //---------------------------------------------------------------------------------------------------------------------
 //   O P U S   S t u f f
 //---------------------------------------------------------------------------------------------------------------------
-int OPUS_read(void *_stream, unsigned char* ptr, int nbytes) {
+int SD_read(unsigned char* buff, int nbytes){
     if (nbytes == 0) return 0;
-    nbytes = file.read(ptr, nbytes);
+    nbytes = file.read(buff, nbytes);
     if (nbytes == 0) return -1;
     return nbytes;
 }
@@ -281,7 +281,7 @@ void setup() {
 //    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     file = SD_MMC.open("/opus/testfile.opus");
 
-    cb = {OPUS_read};
+    cb = {SD_read};
     of = op_open_callbacks(&cb);
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */

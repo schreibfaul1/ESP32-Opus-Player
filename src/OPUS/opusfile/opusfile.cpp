@@ -34,7 +34,7 @@ static int op_get_data(OggOpusFile_t *_of, int _nbytes) {
     int nbytes;
     assert(_nbytes>0);
     buffer = (unsigned char*) ogg_sync_buffer(&_of->oy, _nbytes);
-    nbytes = (int) (*_of->callbacks)(_of->stream, buffer, _nbytes);
+    if(SD_read) nbytes = SD_read(buffer, _nbytes);
 //    log_i("nbytes gelesen %i", nbytes);
     assert(nbytes<=_nbytes);
     if(nbytes > 0) ogg_sync_wrote(&_of->oy, nbytes);
@@ -156,165 +156,6 @@ typedef struct OpusSeekRecord {
     uint32_t serialno;  /*The serial number of this page.*/
     int64_t gp;         /*The granule position of this page.*/
 }OpusSeekRecord_t;
-//----------------------------------------------------------------------------------------------------------------------
-/*Find the last page beginning before _offset with a valid granule position.
-  There is no '_boundary' parameter as it will always have to read more data.
-  This is much dirtier than the above, as Ogg doesn't have any backward search
-   linkage.
-  This search prefers pages of the specified serial number.
-  If a page of the specified serial number is spotted during the
-   seek-back-and-read-forward, it will return the info of last page of the
-   matching serial number, instead of the very last page, unless the very last
-   page belongs to a different link than preferred serial number.
-  If no page of the specified serial number is seen, it will return the info of
-   the last page.
-  [out] _sr:   Returns information about the page that was found on success.
-  _offset:     The _offset before which to find a page.
-               Any page returned will consist of data entirely before _offset.
-  _serialno:   The preferred serial number.
-               If a page with this serial number is found, it will be returned
-                even if another page in the same link is found closer to
-                _offset.
-               This is purely opportunistic: there is no guarantee such a page
-                will be found if it exists.
-  _serialnos:  The list of serial numbers in the link that contains the
-                preferred serial number.
-  _nserialnos: The number of serial numbers in the current link.
-  Return: 0 on success, or a negative value on failure.
-          OP_EREAD:    Failed to read more data (error or EOF).
-          OP_EBADLINK: We couldn't find a page even after seeking back to the
-                        start of the stream.*/
-static int op_get_prev_page_serial(OggOpusFile_t *_of, OpusSeekRecord_t *_sr, int64_t _offset, uint32_t _serialno,
-                                   const uint32_t *_serialnos, int _nserialnos) {
-
-    OpusSeekRecord_t preferred_sr;
-    ogg_page og;
-    int64_t begin;
-    int64_t end;
-    int64_t original_end;
-    int32_t chunk_size;
-    int preferred_found;
-    original_end = end = begin = _offset;
-    preferred_found = 0;
-    _offset = -1;
-    chunk_size = OP_CHUNK_SIZE;
-    do {
-        int64_t search_start;
-        int ret;
-        assert(chunk_size>=OP_PAGE_SIZE_MAX);
-        begin = _max(begin - chunk_size, 0);
-        ret = op_seek_helper(_of, begin);
-        if(ret < 0) return ret;
-        search_start = begin;
-        while(_of->offset < end) {
-            int64_t llret;
-            uint32_t serialno;
-            llret = op_get_next_page(_of, &og, end);
-            if(llret<OP_FALSE)
-                return (int) llret;
-            else if(llret == OP_FALSE) break;
-            serialno = ogg_page_serialno(&og);
-            /*Save the information for this page.
-             We're not interested in the page itself... just the serial number, byte
-             offset, page size, and granule position.*/
-            _sr->search_start = search_start;
-            _sr->offset = _offset = llret;
-            _sr->serialno = serialno;
-            assert(_of->offset-_offset>=0); assert(_of->offset-_offset<=OP_PAGE_SIZE_MAX);
-            _sr->size = (int32_t) (_of->offset - _offset);
-            _sr->gp = ogg_page_granulepos(&og);
-            /*If this page is from the stream we're looking for, remember it.*/
-            if(serialno == _serialno) {
-                preferred_found = 1;
-                *&preferred_sr = *_sr;
-            }
-            if(!op_lookup_serialno(serialno, _serialnos, _nserialnos)) {
-                /*We fell off the end of the link, which means we seeked back too far
-                 and shouldn't have been looking in that link to begin with.
-                 If we found the preferred serial number, forget that we saw it.*/
-                preferred_found = 0;
-            }
-            search_start = llret + 1;
-        }
-        /*We started from the beginning of the stream and found nothing.
-         This should be impossible unless the contents of the stream changed out
-         from under us after we read from it.*/
-        if((!begin) && (_offset < 0)) return OP_EBADLINK;
-        /*Bump up the chunk size.
-         This is mildly helpful when seeks are very expensive (http).*/
-        chunk_size = _min(2 * chunk_size, OP_CHUNK_SIZE_MAX);
-        /*Avoid quadratic complexity if we hit an invalid patch of the file.*/
-        end = _min(begin+OP_PAGE_SIZE_MAX-1, original_end);
-    } while(_offset < 0);
-    if(preferred_found) *_sr = *&preferred_sr;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static int64_t op_get_last_page(OggOpusFile_t *_of, int64_t *_gp, int64_t _offset, uint32_t _serialno,
-                                const uint32_t *_serialnos, int _nserialnos) {
-    ogg_page og;
-    int64_t gp;
-    int64_t begin;
-    int64_t end;
-    int64_t original_end;
-    int32_t chunk_size;
-    /*The target serial number must belong to the current link.*/
-    assert(op_lookup_serialno(_serialno,_serialnos,_nserialnos));
-    original_end = end = begin = _offset;
-    _offset = -1;
-    /*We shouldn't have to initialize gp, but gcc is too dumb to figure out that
-     ret>=0 implies we entered the if(page_gp!=-1) block at least once.*/
-    gp = -1;
-    chunk_size = OP_CHUNK_SIZE;
-    do {
-        int left_link;
-        int ret;
-        assert(chunk_size>=OP_PAGE_SIZE_MAX);
-        begin = _max(begin - chunk_size, 0);
-        ret = op_seek_helper(_of, begin);
-        if(ret < 0) return ret;
-        left_link = 0;
-        while(_of->offset < end) {
-            int64_t llret;
-            uint32_t serialno;
-            llret = op_get_next_page(_of, &og, end);
-            if(llret<OP_FALSE)
-                return llret;
-            else if(llret == OP_FALSE) break;
-            serialno = ogg_page_serialno(&og);
-            if(serialno == _serialno) {
-                int64_t page_gp;
-                /*The page is from the right stream...*/
-                page_gp = ogg_page_granulepos(&og);
-                if(page_gp != -1) {
-                    /*And has a valid granule position.
-                     Let's remember it.*/
-                    _offset = llret;
-                    gp = page_gp;
-                }
-            }
-            else if(!op_lookup_serialno(serialno, _serialnos, _nserialnos)) {
-                /*We fell off the start of the link, which means we don't need to keep
-                 seeking any farther back.*/
-                left_link = 1;
-            }
-        }
-        /*We started from at or before the beginning of the link and found nothing.
-         This should be impossible unless the contents of the stream changed out
-         from under us after we read from it.*/
-        if(((left_link) || (!begin)) && (_offset < 0)) {
-            return OP_EBADLINK;
-        }
-        /*Bump up the chunk size.
-         This is mildly helpful when seeks are very expensive (http).*/
-        chunk_size = _min(2 * chunk_size, OP_CHUNK_SIZE_MAX);
-        /*Avoid quadratic complexity if we hit an invalid patch of the file.*/
-        end = _min(begin+OP_PAGE_SIZE_MAX-1, original_end);
-    } while(_offset < 0);
-    *_gp = gp;
-    return _offset;
-}
 //----------------------------------------------------------------------------------------------------------------------
 /*Uses the local ogg_stream storage in _of.  This is important for non-streaming input sources.*/
 static int op_fetch_headers_impl(OggOpusFile_t *_of, OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos,
@@ -892,19 +733,19 @@ static void op_clear(OggOpusFile_t *_of) {
     ogg_sync_clear(&_of->oy);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open1(OggOpusFile_t *_of, void *_stream, const   op_read_func *_cb) {
+static int op_open1(OggOpusFile_t *_of, const op_read_func *_cb) {
     ogg_page og;
     ogg_page *pog;
     int seekable;
     int ret;
     memset(_of, 0, sizeof(*_of));
     _of->end = -1;
-    _of->stream = _stream;
     *&_of->callbacks = *_cb;
     /*At a minimum, we need to be able to read data.*/
     if(_of->callbacks == NULL) return OP_EREAD;
     /*Initialize the framing state.*/
-    ogg_sync_init(&_of->oy);
+    _of->oy.storage = -1;
+    memset(&_of->oy, 0, sizeof(_of->oy));
 
     /*Don't seek yet.
      Set up a 'single' (current) logical bitstream entry for partial open.*/
@@ -950,13 +791,13 @@ static int op_open2(OggOpusFile_t *_of) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile_t* op_test_callbacks(const   op_read_func *_cb) {
+OggOpusFile_t* op_test_callbacks(const op_read_func *_cb) {
     OggOpusFile_t *of;
     int ret;
     of = (OggOpusFile_t*) malloc(sizeof(*of));
     ret = OP_EFAULT;
     if(of!=NULL) {
-        ret = op_open1(of,NULL, _cb);
+        ret = op_open1(of, _cb);
         if(ret >= 0) {
             return of;
         }
