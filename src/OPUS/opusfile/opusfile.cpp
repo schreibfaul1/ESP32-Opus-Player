@@ -1396,14 +1396,6 @@ static int op_init_buffer(OggOpusFile_t *_of) {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/*Decode a single packet into the target buffer.*/
-static int op_decode(OggOpusFile_t *_of, int16_t *_pcm, const ogg_packet *_op, int _nsamples) {
-    int ret = opus_multistream_decode(_of->od, _op->packet, _op->bytes, _pcm, _nsamples);
-    assert(ret < 0 || ret == _nsamples);
-    if(ret < 0) return OP_EBADPACKET;
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /*Read more samples from the stream, using the same API as op_read() or op_read_float().*/
 static int op_read_native(OggOpusFile_t *_of, int16_t *_pcm, int _buf_size, int *_li) {
 
@@ -1468,8 +1460,9 @@ static int op_read_native(OggOpusFile_t *_of, int16_t *_pcm, int _buf_size, int 
                         if(ret < 0) return ret;
                         buf = _of->od_buffer;
                     }
-                    ret = op_decode(_of, buf, pop, duration);
-                    if(ret < 0) return ret;
+                    ret = opus_multistream_decode(_of->od, pop->packet, pop->bytes, buf, duration);
+                    if(ret < 0) return OP_EBADPACKET;
+                    //if(ret < 0) return ret;
                     /*Perform pre-skip/pre-roll.*/
                     od_buffer_pos = (int) _min(trimmed_duration, cur_discard_count);
                     cur_discard_count -= od_buffer_pos;
@@ -1484,8 +1477,8 @@ static int op_read_native(OggOpusFile_t *_of, int16_t *_pcm, int _buf_size, int 
                 else {
                     assert(_pcm!=NULL);
                     /*Otherwise decode directly into the user's buffer.*/
-                    ret = op_decode(_of, _pcm, pop, duration);
-                    if(ret < 0) return ret;
+                    ret = opus_multistream_decode(_of->od, pop->packet, pop->bytes, _pcm, duration);
+                    if(ret < 0) return OP_EBADPACKET;
                     if(trimmed_duration > 0) {
                         /*Perform pre-skip/pre-roll.*/
                         od_buffer_pos = (int) _min(trimmed_duration, cur_discard_count);
