@@ -14,6 +14,9 @@
 #include "internal.h"
 #include "opusfile.h"
 
+OggOpusFile_t *m_OggOpusFile;
+
+
 #define OP_PAGE_SIZE_MAX  (65307)
 
 #define OP_CHUNK_SIZE     (65536)
@@ -732,10 +735,6 @@ static int op_open1(OggOpusFile_t *_of) {
     int ret;
     memset(_of, 0, sizeof(*_of));
     _of->end = -1;
-    //*&_of->callbacks = *_cb;
-    /*At a minimum, we need to be able to read data.*/
-    //if(_of->callbacks == NULL) return OP_EREAD;
-    /*Initialize the framing state.*/
     _of->oy.storage = -1;
     memset(&_of->oy, 0, sizeof(_of->oy));
 

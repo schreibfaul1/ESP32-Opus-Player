@@ -76,7 +76,6 @@ typedef struct OggOpusLink{
 } OggOpusLink_t;
 
 typedef struct OggOpusFile{
-  op_read_func      callbacks;
   void             *stream;
   int               seekable;
   int               nlinks;
@@ -157,8 +156,6 @@ int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 
 //OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *opus_init_decoder();
-OggOpusFile_t *op_test_callbacks(void *_stream, const   op_read_func *_cb,const unsigned char *_initial_data,
-                               size_t _initial_bytes,int *_error) ;
 
 #define OP_DEC_FORMAT_SHORT (7008)
 #define OP_DEC_FORMAT_FLOAT (7040)
