@@ -41,14 +41,6 @@ static int op_get_data(OggOpusFile_t *_of, int _nbytes) {
     return nbytes;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/*Save a tiny smidge of verbosity to make the code more readable.*/
-static int op_seek_helper(OggOpusFile_t *_of, int64_t _offset) {
-    if(_offset == _of->offset) return 0;
-    _of->offset = _offset;
-    ogg_sync_reset(&_of->oy);
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /* Get the current position indicator of the underlying stream. This should be the same as the value reported
    by tell().*/
 static int64_t op_position(const OggOpusFile_t *_of) {
@@ -733,16 +725,16 @@ static void op_clear(OggOpusFile_t *_of) {
     ogg_sync_clear(&_of->oy);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open1(OggOpusFile_t *_of, const op_read_func *_cb) {
+static int op_open1(OggOpusFile_t *_of) {
     ogg_page og;
     ogg_page *pog;
     int seekable;
     int ret;
     memset(_of, 0, sizeof(*_of));
     _of->end = -1;
-    *&_of->callbacks = *_cb;
+    //*&_of->callbacks = *_cb;
     /*At a minimum, we need to be able to read data.*/
-    if(_of->callbacks == NULL) return OP_EREAD;
+    //if(_of->callbacks == NULL) return OP_EREAD;
     /*Initialize the framing state.*/
     _of->oy.storage = -1;
     memset(&_of->oy, 0, sizeof(_of->oy));
@@ -791,33 +783,20 @@ static int op_open2(OggOpusFile_t *_of) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile_t* op_test_callbacks(const op_read_func *_cb) {
+OggOpusFile_t* opus_init_decoder() {
     OggOpusFile_t *of;
-    int ret;
+    int ret = OP_EFAULT;
     of = (OggOpusFile_t*) malloc(sizeof(*of));
-    ret = OP_EFAULT;
-    if(of!=NULL) {
-        ret = op_open1(of, _cb);
-        if(ret >= 0) {
-            return of;
-        }
-
+    if(of==NULL) return NULL;
+    ret = op_open1(of);
+    if(ret < 0) {
         op_clear(of);
         free(of);
     }
-    return NULL;
-}
-//----------------------------------------------------------------------------------------------------------------------
-OggOpusFile_t* op_open_callbacks(const op_read_func *_cb) {
-    OggOpusFile_t *of;
-    of = op_test_callbacks(_cb);
+    ret = op_open2(of);
+    if(ret >= 0) return of;
 
-    if(of!=NULL) {
-        int ret;
-        ret = op_open2(of);
-        if(ret >= 0) return of;
-        free(of);
-    }
+    free(of);
     return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------

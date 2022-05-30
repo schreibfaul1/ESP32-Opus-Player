@@ -281,8 +281,7 @@ void setup() {
 //    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     file = SD_MMC.open("/opus/testfile.opus");
 
-    cb = {SD_read};
-    of = op_open_callbacks(&cb);
+    of = opus_init_decoder();
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */

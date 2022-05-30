@@ -156,7 +156,7 @@ int op_strncasecmp(const char *_a,const char *_b,int _n);
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 
 //OggOpusFile_t *op_open_file(const char *_path,int *_error);
-OggOpusFile_t *op_open_callbacks(const   op_read_func *_cb);
+OggOpusFile_t *opus_init_decoder();
 OggOpusFile_t *op_test_callbacks(void *_stream, const   op_read_func *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
 
