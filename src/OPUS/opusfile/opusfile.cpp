@@ -34,7 +34,7 @@ static int op_get_data(OggOpusFile_t *_of, int _nbytes) {
     int nbytes;
     assert(_nbytes>0);
     buffer = (unsigned char*) ogg_sync_buffer(&_of->oy, _nbytes);
-    nbytes = (int) (*_of->callbacks.read)(_of->stream, buffer, _nbytes);
+    nbytes = (int) (*_of->callbacks)(_of->stream, buffer, _nbytes);
 //    log_i("nbytes gelesen %i", nbytes);
     assert(nbytes<=_nbytes);
     if(nbytes > 0) ogg_sync_wrote(&_of->oy, nbytes);
@@ -892,7 +892,7 @@ static void op_clear(OggOpusFile_t *_of) {
     ogg_sync_clear(&_of->oy);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open1(OggOpusFile_t *_of, void *_stream, const OpusFileCallbacks_t *_cb) {
+static int op_open1(OggOpusFile_t *_of, void *_stream, const   op_read_func *_cb) {
     ogg_page og;
     ogg_page *pog;
     int seekable;
@@ -902,7 +902,7 @@ static int op_open1(OggOpusFile_t *_of, void *_stream, const OpusFileCallbacks_t
     _of->stream = _stream;
     *&_of->callbacks = *_cb;
     /*At a minimum, we need to be able to read data.*/
-    if(_of->callbacks.read==NULL) return OP_EREAD;
+    if(_of->callbacks == NULL) return OP_EREAD;
     /*Initialize the framing state.*/
     ogg_sync_init(&_of->oy);
 
@@ -950,7 +950,7 @@ static int op_open2(OggOpusFile_t *_of) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile_t* op_test_callbacks(const OpusFileCallbacks_t *_cb) {
+OggOpusFile_t* op_test_callbacks(const   op_read_func *_cb) {
     OggOpusFile_t *of;
     int ret;
     of = (OggOpusFile_t*) malloc(sizeof(*of));
@@ -967,7 +967,7 @@ OggOpusFile_t* op_test_callbacks(const OpusFileCallbacks_t *_cb) {
     return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
-OggOpusFile_t* op_open_callbacks(const OpusFileCallbacks_t *_cb) {
+OggOpusFile_t* op_open_callbacks(const op_read_func *_cb) {
     OggOpusFile_t *of;
     of = op_test_callbacks(_cb);
 

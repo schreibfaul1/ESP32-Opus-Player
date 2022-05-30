@@ -47,7 +47,7 @@ const uint8_t volumetable[22]={   0,  1,  2,  3,  4 , 6 , 8, 10, 12, 14, 17,
                                  20, 23, 27, 30 ,34, 38, 43 ,48, 52, 58, 64}; //22 elements
 
 OggOpusFile_t *of;
-OpusFileCallbacks cb;
+op_read_func cb;
 TaskHandle_t opus_task;
 File file;
 

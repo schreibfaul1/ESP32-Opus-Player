@@ -66,9 +66,9 @@ typedef struct OpusTags{
   char         *vendor;
 } OpusTags_t;
 
-typedef struct OpusFileCallbacks{
-  op_read_func  read;
-} OpusFileCallbacks_t;
+// typedef struct OpusFileCallbacks{
+//   op_read_func  read;
+// }   op_read_func  read;
 
 typedef struct OggOpusLink{
   int64_t           offset;
@@ -83,7 +83,7 @@ typedef struct OggOpusLink{
 } OggOpusLink_t;
 
 typedef struct OggOpusFile{
-  OpusFileCallbacks_t  callbacks;
+    op_read_func callbacks;
   void             *stream;
   int               seekable;
   int               nlinks;
@@ -163,8 +163,8 @@ int op_strncasecmp(const char *_a,const char *_b,int _n);
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
 
 OggOpusFile_t *op_open_file(const char *_path,int *_error);
-OggOpusFile_t *op_open_callbacks(const OpusFileCallbacks_t *_cb);
-OggOpusFile_t *op_test_callbacks(void *_stream, const OpusFileCallbacks_t *_cb,const unsigned char *_initial_data,
+OggOpusFile_t *op_open_callbacks(const   op_read_func *_cb);
+OggOpusFile_t *op_test_callbacks(void *_stream, const   op_read_func *_cb,const unsigned char *_initial_data,
                                size_t _initial_bytes,int *_error) ;
 
 #define OP_DEC_FORMAT_SHORT (7008)
