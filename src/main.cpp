@@ -249,7 +249,7 @@ int SD_read(unsigned char* buff, int nbytes){
 void opusTask(void *parameter) {
     int ret;
     do {
-        ret = op_read_stereo(of, m_outBuff, 2048);
+        ret = op_read_stereo(m_outBuff, 2048);
         if(ret > 0){
             m_validSamples = ret;
             playChunk();

@@ -167,8 +167,8 @@ OggOpusFile_t *opus_init_decoder();
 #define OP_TRACK_GAIN    (3008)
 #define OP_ABSOLUTE_GAIN (3009)
 
-int op_read(OggOpusFile_t *_of, int16_t *_pcm,int _buf_size,int *_li);
-int op_read_stereo(OggOpusFile_t *_of, int16_t *_pcm,int _buf_size);
-int op_read_float_stereo(OggOpusFile_t *_of, float *_pcm,int _buf_size);
+int op_read( int16_t *_pcm,int _buf_size,int *_li);
+int op_read_stereo(int16_t *_pcm,int _buf_size);
+int op_read_float_stereo(float *_pcm,int _buf_size);
 
 
