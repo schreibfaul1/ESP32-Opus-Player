@@ -89,54 +89,6 @@ typedef struct {
     int bodybytes;
 } ogg_sync_state;
 
-/* Ogg BITSTREAM PRIMITIVES: bitstream ************************/
-
-    // extern void oggpack_writeinit(oggpack_buffer *b);
-    // extern int oggpack_writecheck(oggpack_buffer *b);
-    // extern void oggpack_writetrunc(oggpack_buffer *b, long bits);
-    // extern void oggpack_writealign(oggpack_buffer *b);
-    // extern void oggpack_writecopy(oggpack_buffer *b, void *source, long bits);
-    // extern void oggpack_reset(oggpack_buffer *b);
-    void oggpack_writeclear(oggpack_buffer *b);
-    // extern void oggpack_readinit(oggpack_buffer *b, unsigned char *buf, int bytes);
-    // extern void oggpack_write(oggpack_buffer *b, unsigned long value, int bits);
-    // extern long oggpack_look(oggpack_buffer *b, int bits);
-    // extern long oggpack_look1(oggpack_buffer *b);
-    // extern void oggpack_adv(oggpack_buffer *b, int bits);
-    // extern void oggpack_adv1(oggpack_buffer *b);
-    // extern long oggpack_read(oggpack_buffer *b, int bits);
-    // extern long oggpack_read1(oggpack_buffer *b);
-    // extern long oggpack_bytes(oggpack_buffer *b);
-    // extern long oggpack_bits(oggpack_buffer *b);
-    // extern unsigned char *oggpack_get_buffer(oggpack_buffer *b);
-
-    // extern void oggpackB_writeinit(oggpack_buffer *b);
-    // extern int oggpackB_writecheck(oggpack_buffer *b);
-    // extern void oggpackB_writetrunc(oggpack_buffer *b, long bits);
-    // extern void oggpackB_writealign(oggpack_buffer *b);
-    // extern void oggpackB_writecopy(oggpack_buffer *b, void *source, long bits);
-    // extern void oggpackB_reset(oggpack_buffer *b);
-    // extern void oggpackB_writeclear(oggpack_buffer *b);
-    // extern void oggpackB_readinit(oggpack_buffer *b, unsigned char *buf, int bytes);
-    // extern void oggpackB_write(oggpack_buffer *b, unsigned long value, int bits);
-    // extern long oggpackB_look(oggpack_buffer *b, int bits);
-    // extern long oggpackB_look1(oggpack_buffer *b);
-    // extern void oggpackB_adv(oggpack_buffer *b, int bits);
-    // extern void oggpackB_adv1(oggpack_buffer *b);
-    // extern long oggpackB_read(oggpack_buffer *b, int bits);
-    // extern long oggpackB_read1(oggpack_buffer *b);
-    // extern long oggpackB_bytes(oggpack_buffer *b);
-    // extern long oggpackB_bits(oggpack_buffer *b);
-    // extern unsigned char *oggpackB_get_buffer(oggpack_buffer *b);
-
-    /* Ogg BITSTREAM PRIMITIVES: encoding **************************/
-
-    // extern int ogg_stream_packetin(ogg_stream_state *os, ogg_packet *op);
-    // extern int ogg_stream_iovecin(ogg_stream_state *os, ogg_iovec_t *iov, int count, long e_o_s, int64_t granulepos);
-    // extern int ogg_stream_pageout(ogg_stream_state *os, ogg_page *og);
-    // extern int ogg_stream_pageout_fill(ogg_stream_state *os, ogg_page *og, int nfill);
-    // extern int ogg_stream_flush(ogg_stream_state *os, ogg_page *og);
-    // extern int ogg_stream_flush_fill(ogg_stream_state *os, ogg_page *og, int nfill);
 
     /* Ogg BITSTREAM PRIMITIVES: decoding **************************/
 
