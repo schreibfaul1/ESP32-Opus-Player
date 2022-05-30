@@ -6,7 +6,7 @@
 #include "SD_MMC.h"
 #include "FS.h"
 #include "driver/i2s.h"
-#include "OPUS/opusfile/opusfile.h"
+#include "OPUS/opusfile.h"
 
 
 // Digital I/O used

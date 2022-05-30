@@ -13,8 +13,8 @@
 #pragma once
 
 #include "Arduino.h"
-#include "../libogg/ogg.h"
-#include "../libopus/opus_decoder.h"
+#include "ogg.h"
+#include "opus_decoder.h"
 
 extern __attribute__((weak)) int SD_read(unsigned char* buff, int nbytes);
 
