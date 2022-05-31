@@ -96,7 +96,7 @@ typedef struct OggOpusFile{
   ogg_packet        op[255];
   int               op_pos;
   int               op_count;
-  OpusMSDecoder    *od;
+  OpusMSDecoder_t  *od;
   void             *decode_cb_ctx;
   int               od_stream_count;
   int               od_coupled_count;
