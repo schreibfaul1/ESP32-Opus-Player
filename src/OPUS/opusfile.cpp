@@ -14,8 +14,9 @@
 #include "internal.h"
 #include "opusfile.h"
 
-OggOpusFile_t *m_OggOpusFile;
-OggOpusLink_t *m_OggOpusLink;
+OggOpusFile_t    *m_OggOpusFile;
+OggOpusLink_t    *m_OggOpusLink;
+OpusMSDecoder_t  *m_od;
 
 
 #define OP_PAGE_SIZE_MAX  (65307)
@@ -684,17 +685,17 @@ static int op_make_decode_ready() {
     coupled_count = head->coupled_count;
     channel_count = head->channel_count;
     /*Check to see if the current decoder is compatible with the current link.*/
-    if(m_OggOpusFile->od != NULL && m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
+    if(m_od != NULL && m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
             && m_OggOpusFile->od_channel_count == channel_count
             && memcmp(m_OggOpusFile->od_mapping, head->mapping, sizeof(*head->mapping) * channel_count) == 0) {
-        opus_multistream_decoder_ctl(m_OggOpusFile->od, OPUS_RESET_STATE);
+        opus_multistream_decoder_ctl(m_od, OPUS_RESET_STATE);
     }
     else {
         int err;
-        opus_multistream_decoder_destroy(m_OggOpusFile->od);
-        m_OggOpusFile->od = opus_multistream_decoder_create(48000, channel_count, stream_count, coupled_count, head->mapping,
+        opus_multistream_decoder_destroy(m_od);
+        m_od = opus_multistream_decoder_create(48000, channel_count, stream_count, coupled_count, head->mapping,
                 &err);
-        if(m_OggOpusFile->od == NULL) return OP_EFAULT;
+        if(m_od == NULL) return OP_EFAULT;
         m_OggOpusFile->od_stream_count = stream_count;
         m_OggOpusFile->od_coupled_count = coupled_count;
         m_OggOpusFile->od_channel_count = channel_count;
@@ -721,7 +722,7 @@ static void op_decode_clear() {
 static void op_clear() {
     OggOpusLink_t *links;
     free(m_OggOpusFile->od_buffer);
-    if(m_OggOpusFile->od != NULL) opus_multistream_decoder_destroy(m_OggOpusFile->od);
+    if(m_od != NULL) opus_multistream_decoder_destroy(m_od);
     links = m_OggOpusLink;
     free(links);
     free(m_OggOpusFile->serialnos);
@@ -1279,7 +1280,7 @@ static int op_read_native(int16_t *_pcm, int _buf_size, int *_li) {
                         if(ret < 0) return ret;
                         buf = m_OggOpusFile->od_buffer;
                     }
-                    ret = opus_multistream_decode(m_OggOpusFile->od, pop->packet, pop->bytes, buf, duration);
+                    ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, buf, duration);
                     if(ret < 0) return OP_EBADPACKET;
                     //if(ret < 0) return ret;
                     /*Perform pre-skip/pre-roll.*/
@@ -1296,7 +1297,7 @@ static int op_read_native(int16_t *_pcm, int _buf_size, int *_li) {
                 else {
                     assert(_pcm!=NULL);
                     /*Otherwise decode directly into the user's buffer.*/
-                    ret = opus_multistream_decode(m_OggOpusFile->od, pop->packet, pop->bytes, _pcm, duration);
+                    ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, _pcm, duration);
                     if(ret < 0) return OP_EBADPACKET;
                     if(trimmed_duration > 0) {
                         /*Perform pre-skip/pre-roll.*/
