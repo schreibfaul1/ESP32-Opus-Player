@@ -1,2 +1,2 @@
 # ESP32-Opus-Player
-plays Opus files via I2S from SD card
+can only play OPUS files from SD over I2S, tested with ESP32 and ESP32-S3
