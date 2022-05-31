@@ -130,16 +130,11 @@ typedef void (*opus_copy_channel_in_func)(int16_t *dst, int dst_stride, const vo
 typedef void (*opus_copy_channel_out_func)(void *dst, int dst_stride, int dst_channel, const int16_t *src,
                                            int src_stride, int frame_size, void *user_data);
 
-typedef struct ChannelLayout {
+typedef struct OpusMSDecoder {
     int nb_channels;
     int nb_streams;
     int nb_coupled_streams;
     unsigned char mapping[256];
-} ChannelLayout;
-
-typedef struct OpusMSDecoder {
-    ChannelLayout layout;
-    /* Decoder states go here */
 }OpusMSDecoder_t;
 
 
@@ -201,10 +196,10 @@ int pad_frame(unsigned char *data, int32_t len, int32_t new_len);
 int opus_multistream_decode_native(OpusMSDecoder_t *st, const unsigned char *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int frame_size);
 int opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int request, va_list ap);
-int validate_layout(const ChannelLayout *layout);
-int get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
-int get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
-int get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
+int validate_layout(OpusMSDecoder_t *layout);
+int get_left_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
+int get_right_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
+int get_mono_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
 int32_t opus_multistream_decoder_get_size(int streams, int coupled_streams);
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int channels, int streams, int coupled_streams,
                                                const unsigned char *mapping, int *error);
