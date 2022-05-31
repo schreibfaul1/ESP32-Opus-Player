@@ -17,6 +17,7 @@
 OggOpusFile_t *m_OggOpusFile;
 OggOpusLink_t *m_OggOpusLink;
 
+
 #define OP_PAGE_SIZE_MAX  (65307)
 
 #define OP_CHUNK_SIZE     (65536)
@@ -484,7 +485,7 @@ static int32_t op_collect_audio_packets(int _durations[255]) {
                   which case this page will be discarded.
   Return: 0 on success, 1 if there is a buffered BOS page available, or a
            negative value on unrecoverable error.*/
-static int op_find_initial_pcm_offset(OggOpusLink_t *_link, ogg_page *_og) {
+static int op_find_initial_pcm_offset(ogg_page *_og) {
     ogg_page og;
     int64_t page_offset;
     int64_t pcm_start;
@@ -515,29 +516,29 @@ static int op_find_initial_pcm_offset(OggOpusLink_t *_link, ogg_page *_og) {
             }
             /*Fail if the pre-skip is non-zero, since it's asking us to skip more
              samples than exist.*/
-            if(_link->head.pre_skip > 0) {
+            if(m_OggOpusLink->head.pre_skip > 0) {
                 free(durations);
                 return OP_EBADTIMESTAMP;
             }
-            _link->pcm_file_offset = 0;
+            m_OggOpusLink->pcm_file_offset = 0;
             /*Set pcm_end and end_offset so we can skip the call to
              op_find_final_pcm_offset().*/
-            _link->pcm_start = _link->pcm_end = 0;
-            _link->end_offset = _link->data_offset;
+            m_OggOpusLink->pcm_start = m_OggOpusLink->pcm_end = 0;
+            m_OggOpusLink->end_offset = m_OggOpusLink->data_offset;
             free(durations);
             return 0;
         }
         /*Similarly, if we hit the next link in the chain, we've gone too far.*/
         if(ogg_page_bos(_og)) {
-            if(_link->head.pre_skip > 0) {
+            if(m_OggOpusLink->head.pre_skip > 0) {
                 free(durations);
                 return OP_EBADTIMESTAMP;
             }
             /*Set pcm_end and end_offset so we can skip the call to
              op_find_final_pcm_offset().*/
-            _link->pcm_file_offset = 0;
-            _link->pcm_start = _link->pcm_end = 0;
-            _link->end_offset = _link->data_offset;
+            m_OggOpusLink->pcm_file_offset = 0;
+            m_OggOpusLink->pcm_start = m_OggOpusLink->pcm_end = 0;
+            m_OggOpusLink->end_offset = m_OggOpusLink->data_offset;
             /*Tell the caller we've got a buffered page for them.*/
             free(durations);
             return 1;
@@ -594,7 +595,7 @@ static int op_find_initial_pcm_offset(OggOpusLink_t *_link, ogg_page *_og) {
             pcm_start = 0;
             /*However, the end-trimming MUST not ask us to trim more samples than
              exist after applying the pre-skip.*/
-            if(op_granpos_cmp(cur_page_gp, _link->head.pre_skip) < 0) {
+            if(op_granpos_cmp(cur_page_gp, m_OggOpusLink->head.pre_skip) < 0) {
                 free(durations);
                 return OP_EBADTIMESTAMP;
             }
@@ -625,9 +626,9 @@ static int op_find_initial_pcm_offset(OggOpusLink_t *_link, ogg_page *_og) {
     }
     /*Update the packet count after end-trimming.*/
     m_OggOpusFile->op_count = pi;
-    m_OggOpusFile->cur_discard_count = _link->head.pre_skip;
-    _link->pcm_file_offset = 0;
-    m_OggOpusFile->prev_packet_gp = _link->pcm_start = pcm_start;
+    m_OggOpusFile->cur_discard_count = m_OggOpusLink->head.pre_skip;
+    m_OggOpusLink->pcm_file_offset = 0;
+    m_OggOpusFile->prev_packet_gp = m_OggOpusLink->pcm_start = pcm_start;
     m_OggOpusFile->prev_page_offset = page_offset;
     free(durations);
     return 0;
@@ -756,7 +757,7 @@ static int op_open1() {
         m_OggOpusLink[0].pcm_end = -1;
         m_OggOpusLink[0].serialno = m_OggOpusFile->os.serialno;
         /*Fetch the initial PCM offset.*/
-        ret = op_find_initial_pcm_offset(m_OggOpusLink, &og);
+        ret = op_find_initial_pcm_offset(&og);
         if(seekable || (ret <= 0)) break;
         m_OggOpusFile->nlinks = 0;
         if(!seekable) m_OggOpusFile->cur_link++;
@@ -925,7 +926,7 @@ static int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _s
                     if(ret < 0) return ret;
                     /*op_find_initial_pcm_offset() will suppress any initial hole for us,
                      so no need to set _ignore_holes.*/
-                    ret = op_find_initial_pcm_offset( links, &og);
+                    ret = op_find_initial_pcm_offset(&og);
                     if(ret < 0) return ret;
                     m_OggOpusLink[0].serialno = cur_serialno = m_OggOpusFile->os.serialno;
                     m_OggOpusFile->cur_link++;
