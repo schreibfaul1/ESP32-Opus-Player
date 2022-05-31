@@ -79,7 +79,6 @@ typedef struct OggOpusFile{
   void             *stream;
   int               seekable;
   int               nlinks;
-  OggOpusLink_t    *links;
   int               nserialnos;
   int               cserialnos;
   uint32_t         *serialnos;
@@ -98,7 +97,6 @@ typedef struct OggOpusFile{
   int               op_pos;
   int               op_count;
   OpusMSDecoder    *od;
-  //op_decode_cb_func decode_cb;
   void             *decode_cb_ctx;
   int               od_stream_count;
   int               od_coupled_count;

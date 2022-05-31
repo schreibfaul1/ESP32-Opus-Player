@@ -15,7 +15,7 @@
 #include "opusfile.h"
 
 OggOpusFile_t *m_OggOpusFile;
-
+OggOpusLink_t *m_OggOpusLink;
 
 #define OP_PAGE_SIZE_MAX  (65307)
 
@@ -678,7 +678,7 @@ static int op_make_decode_ready() {
     if(m_OggOpusFile->ready_state > OP_STREAMSET) return 0;
     if(m_OggOpusFile->ready_state < OP_STREAMSET) return OP_EFAULT;
     li = m_OggOpusFile->seekable ? m_OggOpusFile->cur_link : 0;
-    head = &m_OggOpusFile->links[li].head;
+    head = &m_OggOpusLink[li].head;
     stream_count = head->stream_count;
     coupled_count = head->coupled_count;
     channel_count = head->channel_count;
@@ -721,7 +721,7 @@ static void op_clear() {
     OggOpusLink_t *links;
     free(m_OggOpusFile->od_buffer);
     if(m_OggOpusFile->od != NULL) opus_multistream_decoder_destroy(m_OggOpusFile->od);
-    links = m_OggOpusFile->links;
+    links = m_OggOpusLink;
     free(links);
     free(m_OggOpusFile->serialnos);
     ogg_stream_clear(&m_OggOpusFile->os);
@@ -740,23 +740,23 @@ static int op_open1() {
 
     /*Don't seek yet.
      Set up a 'single' (current) logical bitstream entry for partial open.*/
-    m_OggOpusFile->links = (OggOpusLink_t*) malloc(sizeof(*m_OggOpusFile->links));
+    m_OggOpusLink = (OggOpusLink_t*) malloc(sizeof(*m_OggOpusLink));
     /*The serialno gets filled in later by op_fetch_headers().*/
     ogg_stream_init(&m_OggOpusFile->os, -1);
     pog = NULL;
     for(;;) {
         /*Fetch all BOS pages, store the Opus header and all seen serial numbers,
          and load subsequent Opus setup headers.*/
-        ret = op_fetch_headers(&m_OggOpusFile->links[0].head, &m_OggOpusFile->links[0].tags, &m_OggOpusFile->serialnos, &m_OggOpusFile->nserialnos,
-                &m_OggOpusFile->cserialnos, pog);
+        ret = op_fetch_headers(&m_OggOpusLink[0].head, &m_OggOpusLink[0].tags, &m_OggOpusFile->serialnos,
+                               &m_OggOpusFile->nserialnos, &m_OggOpusFile->cserialnos, pog);
         if(ret < 0) break;
         m_OggOpusFile->nlinks = 1;
-        m_OggOpusFile->links[0].offset = 0;
-        m_OggOpusFile->links[0].data_offset = m_OggOpusFile->offset;
-        m_OggOpusFile->links[0].pcm_end = -1;
-        m_OggOpusFile->links[0].serialno = m_OggOpusFile->os.serialno;
+        m_OggOpusLink[0].offset = 0;
+        m_OggOpusLink[0].data_offset = m_OggOpusFile->offset;
+        m_OggOpusLink[0].pcm_end = -1;
+        m_OggOpusLink[0].serialno = m_OggOpusFile->os.serialno;
         /*Fetch the initial PCM offset.*/
-        ret = op_find_initial_pcm_offset(m_OggOpusFile->links, &og);
+        ret = op_find_initial_pcm_offset(m_OggOpusLink, &og);
         if(seekable || (ret <= 0)) break;
         m_OggOpusFile->nlinks = 0;
         if(!seekable) m_OggOpusFile->cur_link++;
@@ -808,7 +808,7 @@ static int op_get_link_from_serialno(int _cur_link, int64_t _page_offset,
     int li_lo;
     int li_hi;
     assert(m_OggOpusFile->seekable);
-    links = m_OggOpusFile->links;
+    links = m_OggOpusLink;
     nlinks = m_OggOpusFile->nlinks;
     li_lo = 0;
     /*Start off by guessing we're just a multiplexed page in the current link.*/
@@ -843,7 +843,7 @@ static int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _s
     assert(m_OggOpusFile->ready_state<OP_INITSET||m_OggOpusFile->op_pos>=m_OggOpusFile->op_count);
 
     seekable = m_OggOpusFile->seekable;
-    links = m_OggOpusFile->links;
+    links = m_OggOpusLink;
     cur_link = seekable ? m_OggOpusFile->cur_link : 0;
     cur_serialno = links[cur_link].serialno;
     /*Handle one page.*/
@@ -927,7 +927,7 @@ static int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _s
                      so no need to set _ignore_holes.*/
                     ret = op_find_initial_pcm_offset( links, &og);
                     if(ret < 0) return ret;
-                    m_OggOpusFile->links[0].serialno = cur_serialno = m_OggOpusFile->os.serialno;
+                    m_OggOpusLink[0].serialno = cur_serialno = m_OggOpusFile->os.serialno;
                     m_OggOpusFile->cur_link++;
                 }
                 /*If the link was empty, keep going, because we already have the
@@ -1165,7 +1165,7 @@ static void op_buffer_continued_data(ogg_page *_og) {
 static int64_t op_get_pcm_offset(int64_t _gp, int _li) {
     const OggOpusLink_t *links;
     int64_t pcm_offset;
-    links = m_OggOpusFile->links;
+    links = m_OggOpusLink;
     assert(_li>=0&&_li<m_OggOpusFile->nlinks);
     pcm_offset = links[_li].pcm_file_offset;
     if(m_OggOpusFile->seekable && (op_granpos_cmp(_gp, links[_li].pcm_end) > 0)) {
@@ -1200,7 +1200,7 @@ static int op_init_buffer() {
         const OggOpusLink_t *links;
         int nlinks;
         int li;
-        links = m_OggOpusFile->links;
+        links = m_OggOpusLink;
         nlinks = m_OggOpusFile->nlinks;
         nchannels_max = 1;
         for(li = 0; li < nlinks; li++) {
@@ -1225,7 +1225,7 @@ static int op_read_native(int16_t *_pcm, int _buf_size, int *_li) {
             int od_buffer_pos;
             int nsamples;
             int op_pos;
-            nchannels = m_OggOpusFile->links[m_OggOpusFile->seekable ? m_OggOpusFile->cur_link : 0].head.channel_count;
+            nchannels = m_OggOpusLink[m_OggOpusFile->seekable ? m_OggOpusFile->cur_link : 0].head.channel_count;
             od_buffer_pos = m_OggOpusFile->od_buffer_pos;
             nsamples = m_OggOpusFile->od_buffer_size - od_buffer_pos;
             /*If we have buffered samples, return them.*/
@@ -1352,7 +1352,7 @@ static int op_filter_read_native(void *_dst, int _dst_sz, op_read_filter_func _f
         ret = m_OggOpusFile->od_buffer_size - od_buffer_pos;
         if(ret > 0) {
             int nchannels;
-            nchannels = m_OggOpusFile->links[m_OggOpusFile->seekable ? m_OggOpusFile->cur_link : 0].head.channel_count;
+            nchannels = m_OggOpusLink[m_OggOpusFile->seekable ? m_OggOpusFile->cur_link : 0].head.channel_count;
             ret = (*_filter)(_dst, _dst_sz, m_OggOpusFile->od_buffer + nchannels * od_buffer_pos, ret, nchannels);
             assert(ret>=0); assert(ret<=m_OggOpusFile->od_buffer_size-od_buffer_pos);
             od_buffer_pos += ret;

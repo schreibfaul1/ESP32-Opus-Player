@@ -46,7 +46,6 @@ typedef enum { LEFTCHANNEL=0, RIGHTCHANNEL=1 } SampleIndex;
 const uint8_t volumetable[22]={   0,  1,  2,  3,  4 , 6 , 8, 10, 12, 14, 17,
                                  20, 23, 27, 30 ,34, 38, 43 ,48, 52, 58, 64}; //22 elements
 
-OggOpusFile_t *of;
 TaskHandle_t opus_task;
 File file;
 
@@ -280,7 +279,7 @@ void setup() {
 //    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
     file = SD_MMC.open("/opus/testfile.opus");
 
-    of = opus_init_decoder();
+    opus_init_decoder();
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */
