@@ -1544,7 +1544,7 @@ static void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16
     El = MULT16_16(mid2, mid2) + side - 2 * xp;
     Er = MULT16_16(mid2, mid2) + side + 2 * xp;
     if (Er < QCONST32(6e-4f, 28) || El < QCONST32(6e-4f, 28)) {
-        OPUS_COPY(Y, X, N);
+        memcpy(Y, X, N * sizeof(*Y));
         return;
     }
 
@@ -1715,7 +1715,7 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
             for (j = 0; j < N0; j++)
                 tmp[i * N0 + j] = X[j * stride + i];
     }
-    OPUS_COPY(X, tmp, N);
+    memcpy(X, tmp, N * sizeof(*X));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1737,7 +1737,7 @@ static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
             for (j = 0; j < N0; j++)
                 tmp[j * stride + i] = X[i * N0 + j];
     }
-    OPUS_COPY(X, tmp, N);
+    memcpy(X, tmp, N * sizeof(*X));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2205,7 +2205,7 @@ static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B
     /* Band recombining to increase frequency resolution */
 
     if (lowband_scratch && lowband && (recombine || ((N_B & 1) == 0 && tf_change < 0) || _B0 > 1)) {
-        OPUS_COPY(lowband_scratch, lowband, N);
+        memcpy(lowband_scratch, lowband, N * sizeof(*lowband_scratch));
         lowband = lowband_scratch;
     }
 
@@ -2427,9 +2427,9 @@ static void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *no
     n2 = M * (eBands[start + 2] - eBands[start + 1]);
     /* Duplicate enough of the first band folding data to be able to fold the second band.
        Copies no data for CELT-only mode. */
-    OPUS_COPY(&norm[n1], &norm[2 * n1 - n2], n2 - n1);
+    memcpy(&norm[n1], &norm[2 * n1 - n2], (n2 - n1) * sizeof(*norm));
     if (dual_stereo)
-        OPUS_COPY(&norm2[n1], &norm2[2 * n1 - n2], n2 - n1);
+        memcpy(&norm2[n1], &norm2[2 * n1 - n2], (n2 - n1) * sizeof(*norm2));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2618,8 +2618,8 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
                     cm = x_cm | y_cm;
                     ec_save = *ec;
                     ctx_save = ctx;
-                    OPUS_COPY(X_save, X, N);
-                    OPUS_COPY(Y_save, Y, N);
+                    memcpy(X_save, X, N * sizeof(X_save));
+                    memcpy(Y_save, Y, N * sizeof(Y_save));
                     /* Encode and round down. */
                     ctx.theta_round = -1;
                     x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
@@ -2633,21 +2633,22 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
                     cm2 = x_cm;
                     ec_save2 = *ec;
                     ctx_save2 = ctx;
-                    OPUS_COPY(X_save2, X, N);
-                    OPUS_COPY(Y_save2, Y, N);
+                    memcpy(X_save2, X, N * sizeof(X_save2));
+                    memcpy(Y_save2, Y, N * sizeof(Y_save2));
                     if (!last)
-                        OPUS_COPY(norm_save2, norm + M * eBands[i] - norm_offset, N);
+                        memcpy(norm_save2, norm + M * eBands[i] - norm_offset, N * sizeof(norm_save2));
                     nstart_bytes = ec_save.offs;
                     nend_bytes = ec_save.storage;
                     bytes_buf = ec_save.buf + nstart_bytes;
                     save_bytes = nend_bytes - nstart_bytes;
-                    OPUS_COPY(bytes_save, bytes_buf, save_bytes);
+                    log_e("sizeof(save_byres) %d", sizeof(bytes_save));
+                    memcpy(bytes_save, bytes_buf, save_bytes * sizeof(bytes_save));
 
                     /* Restore */
                     *ec = ec_save;
                     ctx = ctx_save;
-                    OPUS_COPY(X, X_save, N);
-                    OPUS_COPY(Y, Y_save, N);
+                    memcpy(X, X_save, N * sizeof(*X));
+                    memcpy(Y, Y_save, N * sizeof(*Y));
 
                     if (i == start + 1)
                         special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
@@ -2662,11 +2663,11 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
                         x_cm = cm2;
                         *ec = ec_save2;
                         ctx = ctx_save2;
-                        OPUS_COPY(X, X_save2, N);
-                        OPUS_COPY(Y, Y_save2, N);
+                        memcpy(X, X_save2, N * sizeof(*X));
+                        memcpy(Y, Y_save2, N * sizeof(*Y));
                         if (!last)
-                            OPUS_COPY(norm + M * eBands[i] - norm_offset, norm_save2, N);
-                        OPUS_COPY(bytes_buf, bytes_save, save_bytes);
+                            memcpy(norm + M * eBands[i] - norm_offset, norm_save2, N * sizeof(*norm));
+                        memcpy(bytes_buf, bytes_save, save_bytes * sizeof(*bytes_buf));
                     }
                 }
                 else {
@@ -2886,7 +2887,7 @@ static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[],
                           downsample, silence);
         /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
         freq2 = out_syn[1] + overlap / 2;
-        OPUS_COPY(freq2, freq, N);
+        memcpy(freq2, freq, N * sizeof(*freq2));
         for (b = 0; b < B; b++)
             clt_mdct_backward(&mode->mdct, &freq2[b], out_syn[0] + NB * b, mode->window, overlap, shift, B, arch);
         for (b = 0; b < B; b++)
@@ -3147,7 +3148,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                    because celt_fir() cannot filter in-place. */
                 celt_fir(exc + MAX_PERIOD - exc_length, lpc + c * LPC_ORDER,
                          fir_tmp, exc_length, LPC_ORDER, st->arch);
-                OPUS_COPY(exc + MAX_PERIOD - exc_length, fir_tmp, exc_length);
+                memcpy(exc + MAX_PERIOD - exc_length, fir_tmp, exc_length * sizeof(*exc));
             }
 
             /* Check if the waveform is decaying, and if so how fast.
@@ -3548,13 +3549,13 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     }
 
     if (C == 1)
-        OPUS_COPY(&oldBandE[nbEBands], oldBandE, nbEBands);
+        memcpy(&oldBandE[nbEBands], oldBandE, nbEBands * sizeof(*oldBandE));
 
     /* In case start or end were to change */
     if (!isTransient) {
         int16_t max_background_increase;
-        OPUS_COPY(oldLogE2, oldLogE, 2 * nbEBands);
-        OPUS_COPY(oldLogE, oldBandE, 2 * nbEBands);
+        memcpy(oldLogE2, oldLogE, 2 * nbEBands * sizeof(*oldLogE2));
+        memcpy(oldLogE, oldBandE, 2 * nbEBands * sizeof(*oldLogE));
         /* In normal circumstances, we only allow the noise floor to increase by
            up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
            increase for each update.*/
@@ -6008,223 +6009,6 @@ static int32_t loss_distortion(const int16_t *eBands, int16_t *oldEBands, int st
     } while (++c < C);
     return min(200, SHR32(dist, 2 * DB_SHIFT - 6));
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-// static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const int16_t *eBands, int16_t *oldEBands,
-//                                     int32_t budget, int32_t tell, const unsigned char *prob_model, int16_t *error,
-//                                     ec_enc *enc, int C, int LM, int intra, int16_t max_decay, int lfe) {
-//     int i, c;
-//     int badness = 0;
-//     int32_t prev[2] = {0, 0};
-//     int16_t coef;
-//     int16_t beta;
-
-//     if (tell + 3 <= budget) ec_enc_bit_logp(enc, intra, 3);
-//     if (intra) {
-//         coef = 0;
-//         beta = beta_intra;
-//     } else {
-//         beta = beta_coef[LM];
-//         coef = pred_coef[LM];
-//     }
-
-//     /* Encode at a fixed coarse resolution */
-//     for (i = start; i < end; i++) {
-//         c = 0;
-//         do {
-//             int bits_left;
-//             int qi, qi0;
-//             int32_t q;
-//             int16_t x;
-//             int32_t f, tmp;
-//             int16_t oldE;
-//             int16_t decay_bound;
-//             x = eBands[i + c * m->nbEBands];
-//             oldE = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
-
-//             f = SHL32(EXTEND32(x), 7) - PSHR32(MULT16_16(coef, oldE), 8) - prev[c];
-//             /* Rounding to nearest integer here is really important! */
-//             qi = (f + QCONST32(.5f, DB_SHIFT + 7)) >> (DB_SHIFT + 7);
-//             decay_bound =
-//                 EXTRACT16(max(-QCONST16(28.f, DB_SHIFT), SUB32((int32_t)oldEBands[i + c * m->nbEBands], max_decay)));
-//             /* Prevent the energy from going down too quickly (e.g. for bands
-//                that have just one bin) */
-//             if (qi < 0 && x < decay_bound) {
-//                 qi += (int)SHR16(SUB16(decay_bound, x), DB_SHIFT);
-//                 if (qi > 0) qi = 0;
-//             }
-//             qi0 = qi;
-//             /* If we don't have enough bits to encode all the energy, just assume
-//                 something safe. */
-//             tell = ec_tell(enc);
-//             bits_left = budget - tell - 3 * C * (end - i);
-//             if (i != start && bits_left < 30) {
-//                 if (bits_left < 24) qi = min(1, qi);
-//                 if (bits_left < 16) qi = max(-1, qi);
-//             }
-//             if (lfe && i >= 2) qi = min(qi, 0);
-//             if (budget - tell >= 15) {
-//                 int pi;
-//                 pi = 2 * min(i, 20);
-//                 ec_laplace_encode(enc, &qi, prob_model[pi] << 7, prob_model[pi + 1] << 6);
-//             } else if (budget - tell >= 2) {
-//                 qi = max(-1, min(qi, 1));
-//                 ec_enc_icdf(enc, 2 * qi ^ -(qi < 0), small_energy_icdf, 2);
-//             } else if (budget - tell >= 1) {
-//                 qi = min(0, qi);
-//                 ec_enc_bit_logp(enc, -qi, 1);
-//             } else
-//                 qi = -1;
-//             error[i + c * m->nbEBands] = PSHR32(f, 7) - SHL16(qi, DB_SHIFT);
-//             badness += abs(qi0 - qi);
-//             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
-
-//             tmp = PSHR32(MULT16_16(coef, oldE), 8) + prev[c] + SHL32(q, 7);
-//             tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
-//             oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
-//             prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
-//         } while (++c < C);
-//     }
-//     return lfe ? 0 : badness;
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, const int16_t *eBands, int16_t *oldEBands,
-//                          uint32_t budget, int16_t *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
-//                          int force_intra, int32_t *delayedIntra, int two_pass, int loss_rate, int lfe) {
-//     int intra;
-//     int16_t max_decay;
-//     VARDECL(int16_t, oldEBands_intra);
-//     VARDECL(int16_t, error_intra);
-//     ec_enc enc_start_state;
-//     uint32_t tell;
-//     int badness1 = 0;
-//     int32_t intra_bias;
-//     int32_t new_distortion;
-//     SAVE_STACK;
-
-//     intra = force_intra || (!two_pass && *delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C);
-//     intra_bias = (int32_t)((budget * *delayedIntra * loss_rate) / (C * 512));
-//     new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
-
-//     tell = ec_tell(enc);
-//     if (tell + 3 > budget) two_pass = intra = 0;
-
-//     max_decay = QCONST16(16.f, DB_SHIFT);
-//     if (end - start > 10) {
-//         max_decay = min(max_decay, SHL32(EXTEND32(nbAvailableBytes), DB_SHIFT - 3));
-//     }
-//     if (lfe) max_decay = QCONST16(3.f, DB_SHIFT);
-//     enc_start_state = *enc;
-
-//     ALLOC(oldEBands_intra, C * m->nbEBands, int16_t);
-//     ALLOC(error_intra, C * m->nbEBands, int16_t);
-//     OPUS_COPY(oldEBands_intra, oldEBands, C * m->nbEBands);
-
-//     if (two_pass || intra) {
-//         badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget, tell, e_prob_model[LM][1],
-//                                             error_intra, enc, C, LM, 1, max_decay, lfe);
-//     }
-
-//     if (!intra) {
-//         unsigned char *intra_buf;
-//         ec_enc enc_intra_state;
-//         int32_t tell_intra;
-//         uint32_t nstart_bytes;
-//         uint32_t nintra_bytes;
-//         uint32_t save_bytes;
-//         int badness2;
-//         VARDECL(unsigned char, intra_bits);
-
-//         tell_intra = ec_tell_frac(enc);
-
-//         enc_intra_state = *enc;
-
-//         nstart_bytes = ec_range_bytes(&enc_start_state);
-//         nintra_bytes = ec_range_bytes(&enc_intra_state);
-//         intra_buf = ec_get_buffer(&enc_intra_state) + nstart_bytes;
-//         save_bytes = nintra_bytes - nstart_bytes;
-//         if (save_bytes == 0) save_bytes = ALLOC_NONE;
-//         ALLOC(intra_bits, save_bytes, unsigned char);
-//         /* Copy bits from intra bit-stream */
-//         OPUS_COPY(intra_bits, intra_buf, nintra_bytes - nstart_bytes);
-
-//         *enc = enc_start_state;
-
-//         badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget, tell, e_prob_model[LM][intra],
-//                                             error, enc, C, LM, 0, max_decay, lfe);
-
-//         if (two_pass &&
-//             (badness1 < badness2 || (badness1 == badness2 && ((int32_t)ec_tell_frac(enc)) + intra_bias > tell_intra))) {
-//             *enc = enc_intra_state;
-//             /* Copy intra bits to bit-stream */
-//             OPUS_COPY(intra_buf, intra_bits, nintra_bytes - nstart_bytes);
-//             OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
-//             OPUS_COPY(error, error_intra, C * m->nbEBands);
-//             intra = 1;
-//         }
-//     } else {
-//         OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
-//         OPUS_COPY(error, error_intra, C * m->nbEBands);
-//     }
-
-//     if (intra)
-//         *delayedIntra = new_distortion;
-//     else
-//         *delayedIntra =
-//             ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), *delayedIntra), new_distortion);
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-//                        ec_enc *enc, int C) {
-//     int i, c;
-
-//     /* Encode finer resolution */
-//     for (i = start; i < end; i++) {
-//         int16_t frac = 1 << fine_quant[i];
-//         if (fine_quant[i] <= 0) continue;
-//         c = 0;
-//         do {
-//             int q2;
-//             int16_t offset;
-//             /* Has to be without rounding */
-//             q2 = (error[i + c * m->nbEBands] + QCONST16(.5f, DB_SHIFT)) >> (DB_SHIFT - fine_quant[i]);
-//             if (q2 > frac - 1) q2 = frac - 1;
-//             if (q2 < 0) q2 = 0;
-//             ec_enc_bits(enc, q2, fine_quant[i]);
-//             offset = SUB16(SHR32(SHL32(EXTEND32(q2), DB_SHIFT) + QCONST16(.5f, DB_SHIFT), fine_quant[i]),
-//                            QCONST16(.5f, DB_SHIFT));
-//             oldEBands[i + c * m->nbEBands] += offset;
-//             error[i + c * m->nbEBands] -= offset;
-//             /*printf ("%f ", error[i] - offset);*/
-//         } while (++c < C);
-//     }
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// void quant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-//                            int *fine_priority, int bits_left, ec_enc *enc, int C) {
-//     int i, prio, c;
-
-//     /* Use up the remaining bits */
-//     for (prio = 0; prio < 2; prio++) {
-//         for (i = start; i < end && bits_left >= C; i++) {
-//             if (fine_quant[i] >= MAX_FINE_BITS || fine_priority[i] != prio) continue;
-//             c = 0;
-//             do {
-//                 int q2;
-//                 int16_t offset;
-//                 q2 = error[i + c * m->nbEBands] < 0 ? 0 : 1;
-//                 ec_enc_bits(enc, q2, 1);
-//                 offset = SHR16(SHL16(q2, DB_SHIFT) - QCONST16(.5f, DB_SHIFT), fine_quant[i] + 1);
-//                 oldEBands[i + c * m->nbEBands] += offset;
-//                 error[i + c * m->nbEBands] -= offset;
-//                 bits_left--;
-//             } while (++c < C);
-//         }
-//     }
-// }
 //----------------------------------------------------------------------------------------------------------------------
 
 void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int intra, ec_dec *dec, int C,

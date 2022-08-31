@@ -430,7 +430,6 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 int32_t celt_rcp(int32_t x);
 #define celt_div(a,b) MULT32_32_Q31((int32_t)(a),celt_rcp(b))
 #define MAX_PERIOD 1024
-#define OPUS_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
 #define OPUS_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
 #define OPUS_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
 #define ALLOC_STEPS 6

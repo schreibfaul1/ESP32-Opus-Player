@@ -2617,8 +2617,8 @@ int32_t silk_Decode(                                   /* O    Returns error cod
           delay_stack_alloc ? decControl->nChannelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE,
           int16_t);
     if (delay_stack_alloc) {
-        OPUS_COPY(samplesOut1_tmp_storage2, samplesOut,
-                  decControl->nChannelsInternal * (channel_state[0].frame_length + 2));
+        size_t n = (decControl->nChannelsInternal * (channel_state[0].frame_length + 2)) * sizeof(samplesOut1_tmp_storage2);
+        memcpy(samplesOut1_tmp_storage2, samplesOut, n);
         samplesOut1_tmp[0] = samplesOut1_tmp_storage2;
         samplesOut1_tmp[1] = samplesOut1_tmp_storage2 + channel_state[0].frame_length + 2;
     }
