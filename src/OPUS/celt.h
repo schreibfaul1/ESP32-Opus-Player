@@ -39,7 +39,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <string.h>
-#include "../opus_decoder.h"
+#include "opus_decoder.h"
 
 
 #ifdef __cplusplus

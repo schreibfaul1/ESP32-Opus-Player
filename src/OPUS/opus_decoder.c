@@ -27,7 +27,7 @@
 
 #include "Arduino.h"
 #include <stdarg.h>
-#include "celt/celt.h"
+#include "celt.h"
 #include "opus_decoder.h"
 
 extern uint32_t CELT_SET_SIGNALLING_REQUEST;
