@@ -29,15 +29,35 @@
 
 #define CELT_C
 
+#include <Arduino.h>
 #include <stdint.h>
 #include <math.h>
 #include <stdarg.h>
 #include <pgmspace.h>
 #include "celt.h"
 
+const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
+const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
+const uint32_t CELT_SET_START_BAND_REQUEST      = 10010;
+const uint32_t CELT_SET_END_BAND_REQUEST        = 10012;
+const uint32_t CELT_GET_MODE_REQUEST            = 10015;
+const uint32_t CELT_SET_SIGNALLING_REQUEST      = 10016;
+const uint32_t CELT_SET_TONALITY_REQUEST        = 10018;
+const uint32_t CELT_SET_TONALITY_SLOPE_REQUEST  = 10020;
+const uint32_t CELT_SET_ANALYSIS_REQUEST        = 10022;
+const uint32_t OPUS_SET_LFE_REQUEST             = 10024;
+const uint32_t OPUS_SET_ENERGY_MASK_REQUEST     = 10026;
+const uint32_t CELT_SET_SILK_INFO_REQUEST       = 10028;
 
-
-
+const uint32_t PLC_PITCH_LAG_MAX = 720;
+const uint32_t PLC_PITCH_LAG_MIN = 100;
+const uint32_t EC_SYM_BITS       = 8;
+const uint32_t EC_CODE_BITS      = 32;
+const uint32_t EC_SYM_MAX        = (1U << EC_SYM_BITS) - 1;
+const uint32_t EC_CODE_SHIFT     = EC_CODE_BITS - EC_SYM_BITS -1;
+const uint32_t EC_CODE_TOP       = 1U << (EC_CODE_BITS - 1);
+const uint32_t EC_CODE_BOT       = EC_CODE_TOP >> EC_SYM_BITS;
+const uint32_t EC_CODE_EXTRA     = (EC_CODE_BITS-2) % EC_SYM_BITS + 1;
 
 /*For each V(N,K) supported, we will access element U(min(N,K+1),max(N,K+1)). Thus, the number of entries in row I is
   the larger of the maximum number of pulses we will ever allocate for a given N=I (K=128, or however many fit in
@@ -713,11 +733,17 @@ static const CELTMode *const static_mode_list[TOTAL_MODES] = {
     &mode48000_960_120,
 };
 
-static const uint32_t *const CELT_PVQ_U_ROW[15] PROGMEM = {
-    CELT_PVQ_U_DATA + 0,    CELT_PVQ_U_DATA + 176,  CELT_PVQ_U_DATA + 351,  CELT_PVQ_U_DATA + 525,
-    CELT_PVQ_U_DATA + 698,  CELT_PVQ_U_DATA + 870,  CELT_PVQ_U_DATA + 1041, CELT_PVQ_U_DATA + 1131,
-    CELT_PVQ_U_DATA + 1178, CELT_PVQ_U_DATA + 1207, CELT_PVQ_U_DATA + 1226, CELT_PVQ_U_DATA + 1240,
-    CELT_PVQ_U_DATA + 1248, CELT_PVQ_U_DATA + 1254, CELT_PVQ_U_DATA + 1257};
+const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
+
+static uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
+    uint32_t  ret = CELT_PVQ_U_DATA[row_idx[row] + data];
+    return ret;
+}
+
+#define DECODE_BUFFER_SIZE 2048
+#define CELT_PVQ_U(_n, _k) (celt_pvq_u_row(min(_n, _k), max(_n, _k)))
+#define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
+
 //----------------------------------------------------------------------------------------------------------------------
 
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s) {
@@ -842,8 +868,7 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
     j = 0;
     do {
         signx[j] = X[j] < 0;
-        /* OPT: Make sure the compiler doesn't use a branch on ABS16(). */
-        X[j] = ABS16(X[j]);
+        X[j] = abs(X[j]);
         iy[j] = 0;
         y[j] = 0;
     } while (++j < N);
@@ -1113,8 +1138,8 @@ void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int1
     }
     /* When the gain is zero, T0 and/or T1 is set to zero. We need
        to have then be at least 2 to avoid processing garbage data. */
-    T0 = IMAX(T0, COMBFILTER_MINPERIOD);
-    T1 = IMAX(T1, COMBFILTER_MINPERIOD);
+    T0 = max(T0, COMBFILTER_MINPERIOD);
+    T1 = max(T1, COMBFILTER_MINPERIOD);
     g00 = MULT16_16_P15(g0, gains[tapset0][0]);
     g01 = MULT16_16_P15(g0, gains[tapset0][1]);
     g02 = MULT16_16_P15(g0, gains[tapset0][2]);
@@ -1311,7 +1336,7 @@ void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t
     const int16_t *eBands = m->eBands;
     N = M * m->shortMdctSize;
     bound = M * eBands[end];
-    if (downsample != 1) bound = IMIN(bound, N / downsample);
+    if (downsample != 1) bound = min(bound, N / downsample);
     if (silence) {
         bound = 0;
         start = end = 0;
@@ -1385,7 +1410,7 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
         depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i])) >> LM;
 
         thresh32 = SHR32(celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
-        thresh = MULT16_32_Q15(QCONST16(0.5f, 15), MIN32(32767, thresh32)); {
+        thresh = MULT16_32_Q15(QCONST16(0.5f, 15), min(32767, thresh32)); {
             int32_t t;
             t = N0 << LM;
             shift = celt_ilog2(t) >> 1;
@@ -1404,22 +1429,22 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
             prev1 = prev1logE[c * m->nbEBands + i];
             prev2 = prev2logE[c * m->nbEBands + i];
             if (C == 1) {
-                prev1 = MAX16(prev1, prev1logE[m->nbEBands + i]);
-                prev2 = MAX16(prev2, prev2logE[m->nbEBands + i]);
+                prev1 = max(prev1, prev1logE[m->nbEBands + i]);
+                prev2 = max(prev2, prev2logE[m->nbEBands + i]);
             }
-            Ediff = EXTEND32(logE[c * m->nbEBands + i]) - EXTEND32(MIN16(prev1, prev2));
-            Ediff = MAX32(0, Ediff);
+            Ediff = EXTEND32(logE[c * m->nbEBands + i]) - EXTEND32(min(prev1, prev2));
+            Ediff = max(0, Ediff);
 
             if (Ediff < 16384) {
                 int32_t r32 = SHR32(celt_exp2(-EXTRACT16(Ediff)), 1);
-                r = 2 * MIN16(16383, r32);
+                r = 2 * min(16383, r32);
             }
             else {
                 r = 0;
             }
             if (LM == 3)
-                r = MULT16_16_Q14(23170, MIN32(23169, r));
-            r = SHR16(MIN16(thresh, r), 1);
+                r = MULT16_16_Q14(23170, min(23169, r));
+            r = SHR16(min(thresh, r), 1);
             r = SHR32(MULT16_16_Q15(sqrt_1, r), shift);
 
             X = X_ + c * size + (m->eBands[i] << LM);
@@ -1451,12 +1476,12 @@ static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
 
     int shift;
 
-    minE = MIN32(Ex, Ey);
+    minE = min(Ex, Ey);
     /* Adjustment to make the weights a bit more conservative. */
     Ex = ADD32(Ex, minE / 3);
     Ey = ADD32(Ey, minE / 3);
 
-    shift = celt_ilog2(EPSILON + MAX32(Ex, Ey)) - 14;
+    shift = celt_ilog2(EPSILON + max(Ex, Ey)) - 14;
 
     w[0] = VSHR32(Ex, shift);
     w[1] = VSHR32(Ey, shift);
@@ -1471,7 +1496,7 @@ static void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const i
     int16_t left, right;
     int16_t norm;
 
-    int shift = celt_zlog2(MAX32(bandE[i], bandE[i + m->nbEBands])) - 13;
+    int shift = celt_zlog2(max(bandE[i], bandE[i + m->nbEBands])) - 13;
 
     left = VSHR32(bandE[i], shift);
     right = VSHR32(bandE[i + m->nbEBands], shift);
@@ -1741,9 +1766,9 @@ static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
         always have enough bits left over to code at least one pulse in the
         side; otherwise it would collapse, since it doesn't get folded. */
     qb = celt_sudiv(b + N2 * offset, N2);
-    qb = IMIN(b - pulse_cap - (4 << BITRES), qb);
+    qb = min(b - pulse_cap - (4 << BITRES), qb);
 
-    qb = IMIN(8 << BITRES, qb);
+    qb = min(8 << BITRES, qb);
 
     if (qb < (1 << BITRES >> 1)) {
         qn = 1;
@@ -1815,7 +1840,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t 
                 int down;
                 /* Bias quantization towards itheta=0 and itheta=16384. */
                 int bias = itheta > 8192 ? 32767 / qn : -32767 / qn;
-                down = IMIN(qn - 1, IMAX(0, (itheta * (int32_t)qn + bias) >> 14));
+                down = min(qn - 1, max(0, (itheta * (int32_t)qn + bias) >> 14));
                 if (ctx->theta_round < 0)
                     itheta = down;
                 else
@@ -2046,9 +2071,9 @@ static unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int N, int b, 
                 delta -= delta >> (4 - LM);
             else
                 /* Corresponds to a forward-masking slope of 1.5 dB per 10 ms */
-                delta = IMIN(0, delta + (N << BITRES >> (5 - LM)));
+                delta = min(0, delta + (N << BITRES >> (5 - LM)));
         }
-        mbits = IMAX(0, IMIN(b, (b - delta) / 2));
+        mbits = max(0, min(b, (b - delta) / 2));
         sbits = b - mbits;
         ctx->remaining_bits -= qalloc;
 
@@ -2350,7 +2375,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
         /* "Normal" split code */
         int32_t rebalance;
 
-        mbits = IMAX(0, IMIN(b, (b - delta) / 2));
+        mbits = max(0, min(b, (b - delta) / 2));
         sbits = b - mbits;
         ctx->remaining_bits -= qalloc;
 
@@ -2509,8 +2534,8 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         remaining_bits = total_bits - tell - 1;
         ctx.remaining_bits = remaining_bits;
         if (i <= codedBands - 1){
-            curr_balance = celt_sudiv(balance, IMIN(3, codedBands - i));
-            b = IMAX(0, IMIN(16383, IMIN(remaining_bits + 1, pulses[i] + curr_balance)));
+            curr_balance = celt_sudiv(balance, min(3, codedBands - i));
+            b = max(0, min(16383, min(remaining_bits + 1, pulses[i] + curr_balance)));
         }
         else {
             b = 0;
@@ -2539,7 +2564,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
             int fold_end;
             int fold_i;
             /* This ensures we never repeat spectral content within one band */
-            effective_lowband = IMAX(0, M * eBands[lowband_offset] - norm_offset - N);
+            effective_lowband = max(0, M * eBands[lowband_offset] - norm_offset - N);
             fold_start = lowband_offset;
             while (M * eBands[--fold_start] > effective_lowband + norm_offset)
                 ;
@@ -3000,7 +3025,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         int effEnd;
         int16_t decay;
         end = st->end;
-        effEnd = IMAX(start, IMIN(end, mode->effEBands));
+        effEnd = max(start, min(end, mode->effEBands));
 
         ALLOC(X, C * N, int16_t); /**< Interleaved normalised MDCTs */
 
@@ -3009,7 +3034,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         c = 0;
         do {
             for (i = start; i < end; i++)
-                oldBandE[c * nbEBands + i] = MAX16(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
+                oldBandE[c * nbEBands + i] = max(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
         } while (++c < C);
         seed = st->rng;
         for (c = 0; c < C; c++) {
@@ -3059,7 +3084,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
 
         /* We want the excitation for 2 pitch periods in order to look for a
            decaying signal, but we can't get more than MAX_PERIOD. */
-        exc_length = IMIN(2 * pitch_index, MAX_PERIOD);
+        exc_length = min(2 * pitch_index, MAX_PERIOD);
 
         ALLOC(etmp, overlap, int32_t);
         ALLOC(_exc, MAX_PERIOD + LPC_ORDER, int16_t);
@@ -3105,7 +3130,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                     int16_t tmp = 32767;
                     int32_t sum = QCONST16(1., 12);
                     for (i = 0; i < LPC_ORDER; i++)
-                        sum += ABS16(lpc[c * LPC_ORDER + i]);
+                        sum += abs(lpc[c * LPC_ORDER + i]);
                     if (sum < 65535)
                         break;
                     for (i = 0; i < LPC_ORDER; i++)
@@ -3132,7 +3157,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                 int32_t E1 = 1, E2 = 1;
                 int decay_length;
 
-                int shift = IMAX(0, 2 * celt_zlog2(celt_maxabs16(&exc[MAX_PERIOD - exc_length], exc_length)) - 20);
+                int shift = max(0, 2 * celt_zlog2(celt_maxabs16(&exc[MAX_PERIOD - exc_length], exc_length)) - 20);
 
                 decay_length = exc_length >> 1;
                 for (i = 0; i < decay_length; i++) {
@@ -3142,7 +3167,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                     e = exc[MAX_PERIOD - 2 * decay_length + i];
                     E2 += SHR32(MULT16_16(e, e), shift);
                 }
-                E1 = MIN32(E1, E2);
+                E1 = min(E1, E2);
                 decay = celt_sqrt(frac_div32(SHR32(E1, 1), E2));
             }
 
@@ -3350,7 +3375,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 
     if (C == 1) {
         for (i = 0; i < nbEBands; i++)
-            oldBandE[i] = MAX16(oldBandE[i], oldBandE[nbEBands + i]);
+            oldBandE[i] = max(oldBandE[i], oldBandE[nbEBands + i]);
     }
 
     total_bits = len * 8;
@@ -3427,7 +3452,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         width = C * (eBands[i + 1] - eBands[i]) << LM;
         /* quanta is 6 bits, but no more than 1 bit/sample
            and no less than 1/8 bit/sample */
-        quanta = IMIN(width << BITRES, IMAX(6 << BITRES, width));
+        quanta = min(width << BITRES, max(6 << BITRES, width));
         dynalloc_loop_logp = dynalloc_logp;
         boost = 0;
         while (tell + (dynalloc_loop_logp << BITRES) < total_bits && boost < cap[i])
@@ -3444,7 +3469,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         offsets[i] = boost;
         /* Making dynalloc more likely */
         if (boost > 0)
-            dynalloc_logp = IMAX(2, dynalloc_logp - 1);
+            dynalloc_logp = max(2, dynalloc_logp - 1);
     }
 
     ALLOC(fine_quant, nbEBands, int);
@@ -3499,8 +3524,8 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 
     c = 0;
     do  {
-        st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
-        st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
+        st->postfilter_period = max(st->postfilter_period, COMBFILTER_MINPERIOD);
+        st->postfilter_period_old = max(st->postfilter_period_old, COMBFILTER_MINPERIOD);
         comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
                     st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
                     mode->window, overlap, st->arch);
@@ -3538,11 +3563,11 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         else
             max_background_increase = QCONST16(1.f, DB_SHIFT);
         for (i = 0; i < 2 * nbEBands; i++)
-            backgroundLogE[i] = MIN16(backgroundLogE[i] + max_background_increase, oldBandE[i]);
+            backgroundLogE[i] = min(backgroundLogE[i] + max_background_increase, oldBandE[i]);
     }
     else {
         for (i = 0; i < 2 * nbEBands; i++)
-            oldLogE[i] = MIN16(oldLogE[i], oldBandE[i]);
+            oldLogE[i] = min(oldLogE[i], oldBandE[i]);
     }
     c = 0;
     do {
@@ -3720,7 +3745,7 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
         /* Normalize tmp to max range */
         {
             int shift = 0;
-            shift = 14 - celt_ilog2(MAX16(1, celt_maxabs16(tmp, len)));
+            shift = 14 - celt_ilog2(max(1, celt_maxabs16(tmp, len)));
             if (shift != 0) {
                 for (i = 0; i < len; i++) tmp[i] = SHL16(tmp[i], shift);
             }
@@ -3750,7 +3775,7 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
             tmp[i] = mem0 + PSHR32(tmp[i] - mem0, 3);
 
             mem0 = tmp[i];
-            maxE = MAX16(maxE, mem0);
+            maxE = max(maxE, mem0);
         }
         /*for (i=0;i<len2;i++)printf("%f ", tmp[i]/mean);printf("\n");*/
 
@@ -3778,7 +3803,7 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
         for (i = 12; i < len2 - 5; i += 4) {
             int id;
 
-            id = MAX32(0, MIN32(127, MULT16_32_Q15(tmp[i] + EPSILON, norm))); /* Do not round to nearest */
+            id = max(0, min(127, MULT16_32_Q15(tmp[i] + EPSILON, norm))); /* Do not round to nearest */
 
             unmask += inv_table[id];
         }
@@ -3798,10 +3823,10 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
         *weak_transient = 1;
     }
     /* Arbitrary metric for VBR boost */
-    tf_max = MAX16(0, celt_sqrt(27 * mask_metric) - 42);
-    /* *tf_estimate = 1 + MIN16(1, sqrt(MAX16(0, tf_max-30))/20); */
+    tf_max = max(0, celt_sqrt(27 * mask_metric) - 42);
+    /* *tf_estimate = 1 + min(1, sqrt(max(0, tf_max-30))/20); */
     *tf_estimate =
-        celt_sqrt(MAX32(0, SHL32(MULT16_16(QCONST16(0.0069, 14), MIN16(163, tf_max)), 14) - QCONST32(0.139, 28)));
+        celt_sqrt(max(0, SHL32(MULT16_16(QCONST16(0.0069, 14), min(163, tf_max)), 14) - QCONST32(0.139, 28)));
     /*printf("%d %f\n", tf_max, mask_metric);*/
 
     /*printf("%d %f %d\n", is_transient, (float)*tf_estimate, tf_max);*/
@@ -3810,279 +3835,279 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
 //----------------------------------------------------------------------------------------------------------------------
 
 /* Looks for sudden increases of energy to decide whether we need to patch the transient decision */
-static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C) {
-    int i, c;
-    int32_t mean_diff = 0;
-    int16_t spread_old[26];
-    /* Apply an aggressive (-6 dB/Bark) spreading function to the old frame to
-       avoid false detection caused by irrelevant bands */
-    if (C == 1) {
-        spread_old[start] = oldE[start];
-        for (i = start + 1; i < end; i++) spread_old[i] = MAX16(spread_old[i - 1] - QCONST16(1.0f, DB_SHIFT), oldE[i]);
-    } else {
-        spread_old[start] = MAX16(oldE[start], oldE[start + nbEBands]);
-        for (i = start + 1; i < end; i++)
-            spread_old[i] = MAX16(spread_old[i - 1] - QCONST16(1.0f, DB_SHIFT), MAX16(oldE[i], oldE[i + nbEBands]));
-    }
-    for (i = end - 2; i >= start; i--)
-        spread_old[i] = MAX16(spread_old[i], spread_old[i + 1] - QCONST16(1.0f, DB_SHIFT));
-    /* Compute mean increase */
-    c = 0;
-    do {
-        for (i = IMAX(2, start); i < end - 1; i++) {
-            int16_t x1, x2;
-            x1 = MAX16(0, newE[i + c * nbEBands]);
-            x2 = MAX16(0, spread_old[i]);
-            mean_diff = ADD32(mean_diff, EXTEND32(MAX16(0, SUB16(x1, x2))));
-        }
-    } while (++c < C);
-    mean_diff = DIV32(mean_diff, C * (end - 1 - IMAX(2, start)));
-    /*printf("%f %f %d\n", mean_diff, max_diff, count);*/
-    return mean_diff > QCONST16(1.f, DB_SHIFT);
-}
+// static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C) {
+//     int i, c;
+//     int32_t mean_diff = 0;
+//     int16_t spread_old[26];
+//     /* Apply an aggressive (-6 dB/Bark) spreading function to the old frame to
+//        avoid false detection caused by irrelevant bands */
+//     if (C == 1) {
+//         spread_old[start] = oldE[start];
+//         for (i = start + 1; i < end; i++) spread_old[i] = max(spread_old[i - 1] - QCONST16(1.0f, DB_SHIFT), oldE[i]);
+//     } else {
+//         spread_old[start] = max(oldE[start], oldE[start + nbEBands]);
+//         for (i = start + 1; i < end; i++)
+//             spread_old[i] = max(spread_old[i - 1] - QCONST16(1.0f, DB_SHIFT), max(oldE[i], oldE[i + nbEBands]));
+//     }
+//     for (i = end - 2; i >= start; i--)
+//         spread_old[i] = max(spread_old[i], spread_old[i + 1] - QCONST16(1.0f, DB_SHIFT));
+//     /* Compute mean increase */
+//     c = 0;
+//     do {
+//         for (i = max(2, start); i < end - 1; i++) {
+//             int16_t x1, x2;
+//             x1 = max(0, newE[i + c * nbEBands]);
+//             x2 = max(0, spread_old[i]);
+//             mean_diff = ADD32(mean_diff, EXTEND32(max(0, SUB16(x1, x2))));
+//         }
+//     } while (++c < C);
+//     mean_diff = DIV32(mean_diff, C * (end - 1 - max(2, start)));
+//     /*printf("%f %f %d\n", mean_diff, max_diff, count);*/
+//     return mean_diff > QCONST16(1.f, DB_SHIFT);
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
 /** Apply window and compute the MDCT for all sub-frames and all channels in a frame */
-static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
-                          int C, int CC, int LM, int upsample, int arch) {
-    const int overlap = mode->overlap;
-    int N;
-    int B;
-    int shift;
-    int i, b, c;
-    if (shortBlocks) {
-        B = shortBlocks;
-        N = mode->shortMdctSize;
-        shift = mode->maxLM;
-    } else {
-        B = 1;
-        N = mode->shortMdctSize << LM;
-        shift = mode->maxLM - LM;
-    }
-    c = 0;
-    do {
-        for (b = 0; b < B; b++) {
-            /* Interleaving the sub-frames while doing the MDCTs */
-            clt_mdct_forward(&mode->mdct, in + c * (B * N + overlap) + b * N, &out[b + c * N * B], mode->window,
-                             overlap, shift, B, arch);
-        }
-    } while (++c < CC);
-    if (CC == 2 && C == 1) {
-        for (i = 0; i < B * N; i++) out[i] = ADD32(HALF32(out[i]), HALF32(out[B * N + i]));
-    }
-    if (upsample != 1) {
-        c = 0;
-        do {
-            int bound = B * N / upsample;
-            for (i = 0; i < bound; i++) out[c * B * N + i] *= upsample;
-            OPUS_CLEAR(&out[c * B * N + bound], B * N - bound);
-        } while (++c < C);
-    }
-}
+// static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
+//                           int C, int CC, int LM, int upsample, int arch) {
+//     const int overlap = mode->overlap;
+//     int N;
+//     int B;
+//     int shift;
+//     int i, b, c;
+//     if (shortBlocks) {
+//         B = shortBlocks;
+//         N = mode->shortMdctSize;
+//         shift = mode->maxLM;
+//     } else {
+//         B = 1;
+//         N = mode->shortMdctSize << LM;
+//         shift = mode->maxLM - LM;
+//     }
+//     c = 0;
+//     do {
+//         for (b = 0; b < B; b++) {
+//             /* Interleaving the sub-frames while doing the MDCTs */
+//             clt_mdct_forward(&mode->mdct, in + c * (B * N + overlap) + b * N, &out[b + c * N * B], mode->window,
+//                              overlap, shift, B, arch);
+//         }
+//     } while (++c < CC);
+//     if (CC == 2 && C == 1) {
+//         for (i = 0; i < B * N; i++) out[i] = ADD32(HALF32(out[i]), HALF32(out[B * N + i]));
+//     }
+//     if (upsample != 1) {
+//         c = 0;
+//         do {
+//             int bound = B * N / upsample;
+//             for (i = 0; i < bound; i++) out[c * B * N + i] *= upsample;
+//             OPUS_CLEAR(&out[c * B * N + bound], B * N - bound);
+//         } while (++c < C);
+//     }
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
-                      const int16_t *coef, int32_t *mem, int clip) {
-    int i;
-    int16_t coef0;
-    int32_t m;
-    int Nu;
+// void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
+//                       const int16_t *coef, int32_t *mem, int clip) {
+//     int i;
+//     int16_t coef0;
+//     int32_t m;
+//     int Nu;
 
-    coef0 = coef[0];
-    m = *mem;
+//     coef0 = coef[0];
+//     m = *mem;
 
-    /* Fast path for the normal 48kHz case and no clipping */
-    if (coef[1] == 0 && upsample == 1 && !clip) {
-        for (i = 0; i < N; i++) {
-            int16_t x;
-            x = SCALEIN(pcmp[CC * i]);
-            /* Apply pre-emphasis */
-            inp[i] = SHL32(x, 12) - m;
-            m = SHR32(MULT16_16(coef0, x), 15 - 12);
-        }
-        *mem = m;
-        return;
-    }
+//     /* Fast path for the normal 48kHz case and no clipping */
+//     if (coef[1] == 0 && upsample == 1 && !clip) {
+//         for (i = 0; i < N; i++) {
+//             int16_t x;
+//             x = SCALEIN(pcmp[CC * i]);
+//             /* Apply pre-emphasis */
+//             inp[i] = SHL32(x, 12) - m;
+//             m = SHR32(MULT16_16(coef0, x), 15 - 12);
+//         }
+//         *mem = m;
+//         return;
+//     }
 
-    Nu = N / upsample;
-    if (upsample != 1) {
-        OPUS_CLEAR(inp, N);
-    }
-    for (i = 0; i < Nu; i++)
-        inp[i * upsample] = SCALEIN(pcmp[CC * i]);
+//     Nu = N / upsample;
+//     if (upsample != 1) {
+//         OPUS_CLEAR(inp, N);
+//     }
+//     for (i = 0; i < Nu; i++)
+//         inp[i * upsample] = SCALEIN(pcmp[CC * i]);
 
-    (void)clip; /* Avoids a warning about clip being unused. */
+//     (void)clip; /* Avoids a warning about clip being unused. */
 
-    {
-        for (i = 0; i < N; i++)
-        {
-            int16_t x;
-            x = inp[i];
-            /* Apply pre-emphasis */
-            inp[i] = SHL32(x, 12) - m;
-            m = SHR32(MULT16_16(coef0, x), 15 - 12);
-        }
-    }
-    *mem = m;
-}
+//     {
+//         for (i = 0; i < N; i++)
+//         {
+//             int16_t x;
+//             x = inp[i];
+//             /* Apply pre-emphasis */
+//             inp[i] = SHL32(x, 12) - m;
+//             m = SHR32(MULT16_16(coef0, x), 15 - 12);
+//         }
+//     }
+//     *mem = m;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias)
-{
-    int i;
-    int32_t L1;
-    L1 = 0;
-    for (i = 0; i < N; i++)
-        L1 += EXTEND32(ABS16(tmp[i]));
-    /* When in doubt, prefer good freq resolution */
-    L1 = MAC16_32_Q15(L1, LM * bias, L1);
-    return L1;
-}
+// static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias)
+// {
+//     int i;
+//     int32_t L1;
+//     L1 = 0;
+//     for (i = 0; i < N; i++)
+//         L1 += EXTEND32(abs(tmp[i]));
+//     /* When in doubt, prefer good freq resolution */
+//     L1 = MAC16_32_Q15(L1, LM * bias, L1);
+//     return L1;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
-                       int16_t tf_estimate, int tf_chan, int *importance) {
-    int i;
-    VARDECL(int, metric);
-    int cost0;
-    int cost1;
-    VARDECL(int, path0);
-    VARDECL(int, path1);
-    VARDECL(int16_t, tmp);
-    VARDECL(int16_t, tmp_1);
-    int sel;
-    int selcost[2];
-    int tf_select = 0;
-    int16_t bias;
+// static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
+//                        int16_t tf_estimate, int tf_chan, int *importance) {
+//     int i;
+//     VARDECL(int, metric);
+//     int cost0;
+//     int cost1;
+//     VARDECL(int, path0);
+//     VARDECL(int, path1);
+//     VARDECL(int16_t, tmp);
+//     VARDECL(int16_t, tmp_1);
+//     int sel;
+//     int selcost[2];
+//     int tf_select = 0;
+//     int16_t bias;
 
-    SAVE_STACK;
-    bias = MULT16_16_Q14(QCONST16(.04f, 15), MAX16(-QCONST16(.25f, 14), QCONST16(.5f, 14) - tf_estimate));
-    /*printf("%f ", bias);*/
+//     SAVE_STACK;
+//     bias = MULT16_16_Q14(QCONST16(.04f, 15), max(-QCONST16(.25f, 14), QCONST16(.5f, 14) - tf_estimate));
+//     /*printf("%f ", bias);*/
 
-    ALLOC(metric, len, int);
-    ALLOC(tmp, (m->eBands[len] - m->eBands[len - 1]) << LM, int16_t);
-    ALLOC(tmp_1, (m->eBands[len] - m->eBands[len - 1]) << LM, int16_t);
-    ALLOC(path0, len, int);
-    ALLOC(path1, len, int);
+//     ALLOC(metric, len, int);
+//     ALLOC(tmp, (m->eBands[len] - m->eBands[len - 1]) << LM, int16_t);
+//     ALLOC(tmp_1, (m->eBands[len] - m->eBands[len - 1]) << LM, int16_t);
+//     ALLOC(path0, len, int);
+//     ALLOC(path1, len, int);
 
-    for (i = 0; i < len; i++) {
-        int k, N;
-        int narrow;
-        int32_t L1, best_L1;
-        int best_level = 0;
-        N = (m->eBands[i + 1] - m->eBands[i]) << LM;
-        /* band is too narrow to be split down to LM=-1 */
-        narrow = (m->eBands[i + 1] - m->eBands[i]) == 1;
-        OPUS_COPY(tmp, &X[tf_chan * N0 + (m->eBands[i] << LM)], N);
-        /* Just add the right channel if we're in stereo */
-        /*if (C==2)
-           for (j=0;j<N;j++)
-              tmp[j] = ADD16(SHR16(tmp[j], 1),SHR16(X[N0+j+(m->eBands[i]<<LM)],
-           1));*/
-        L1 = l1_metric(tmp, N, isTransient ? LM : 0, bias);
-        best_L1 = L1;
-        /* Check the -1 case for transients */
-        if (isTransient && !narrow) {
-            OPUS_COPY(tmp_1, tmp, N);
-            haar1(tmp_1, N >> LM, 1 << LM);
-            L1 = l1_metric(tmp_1, N, LM + 1, bias);
-            if (L1 < best_L1) {
-                best_L1 = L1;
-                best_level = -1;
-            }
-        }
-        /*printf ("%f ", L1);*/
-        for (k = 0; k < LM + !(isTransient || narrow); k++) {
-            int B;
+//     for (i = 0; i < len; i++) {
+//         int k, N;
+//         int narrow;
+//         int32_t L1, best_L1;
+//         int best_level = 0;
+//         N = (m->eBands[i + 1] - m->eBands[i]) << LM;
+//         /* band is too narrow to be split down to LM=-1 */
+//         narrow = (m->eBands[i + 1] - m->eBands[i]) == 1;
+//         OPUS_COPY(tmp, &X[tf_chan * N0 + (m->eBands[i] << LM)], N);
+//         /* Just add the right channel if we're in stereo */
+//         /*if (C==2)
+//            for (j=0;j<N;j++)
+//               tmp[j] = ADD16(SHR16(tmp[j], 1),SHR16(X[N0+j+(m->eBands[i]<<LM)],
+//            1));*/
+//         L1 = l1_metric(tmp, N, isTransient ? LM : 0, bias);
+//         best_L1 = L1;
+//         /* Check the -1 case for transients */
+//         if (isTransient && !narrow) {
+//             OPUS_COPY(tmp_1, tmp, N);
+//             haar1(tmp_1, N >> LM, 1 << LM);
+//             L1 = l1_metric(tmp_1, N, LM + 1, bias);
+//             if (L1 < best_L1) {
+//                 best_L1 = L1;
+//                 best_level = -1;
+//             }
+//         }
+//         /*printf ("%f ", L1);*/
+//         for (k = 0; k < LM + !(isTransient || narrow); k++) {
+//             int B;
 
-            if (isTransient)
-                B = (LM - k - 1);
-            else
-                B = k + 1;
+//             if (isTransient)
+//                 B = (LM - k - 1);
+//             else
+//                 B = k + 1;
 
-            haar1(tmp, N >> k, 1 << k);
+//             haar1(tmp, N >> k, 1 << k);
 
-            L1 = l1_metric(tmp, N, B, bias);
+//             L1 = l1_metric(tmp, N, B, bias);
 
-            if (L1 < best_L1) {
-                best_L1 = L1;
-                best_level = k + 1;
-            }
-        }
-        /*printf ("%d ", isTransient ? LM-best_level : best_level);*/
-        /* metric is in Q1 to be able to select the mid-point (-0.5) for narrower
-         * bands */
-        if (isTransient)
-            metric[i] = 2 * best_level;
-        else
-            metric[i] = -2 * best_level;
-        /* For bands that can't be split to -1, set the metric to the half-way point
-           to avoid biasing the decision */
-        if (narrow && (metric[i] == 0 || metric[i] == -2 * LM)) metric[i] -= 1;
-        /*printf("%d ", metric[i]/2 + (!isTransient)*LM);*/
-    }
-    /*printf("\n");*/
-    /* Search for the optimal tf resolution, including tf_select */
-    tf_select = 0;
-    for (sel = 0; sel < 2; sel++) {
-        cost0 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
-        cost1 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 1]) +
-                (isTransient ? 0 : lambda);
-        for (i = 1; i < len; i++) {
-            int curr0, curr1;
-            curr0 = IMIN(cost0, cost1 + lambda);
-            curr1 = IMIN(cost0 + lambda, cost1);
-            cost0 = curr0 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
-            cost1 = curr1 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 1]);
-        }
-        cost0 = IMIN(cost0, cost1);
-        selcost[sel] = cost0;
-    }
-    /* For now, we're conservative and only allow tf_select=1 for transients.
-     * If tests confirm it's useful for non-transients, we could allow it. */
-    if (selcost[1] < selcost[0] && isTransient) tf_select = 1;
-    cost0 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
-    cost1 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]) +
-            (isTransient ? 0 : lambda);
-    /* Viterbi forward pass */
-    for (i = 1; i < len; i++) {
-        int curr0, curr1;
-        int from0, from1;
+//             if (L1 < best_L1) {
+//                 best_L1 = L1;
+//                 best_level = k + 1;
+//             }
+//         }
+//         /*printf ("%d ", isTransient ? LM-best_level : best_level);*/
+//         /* metric is in Q1 to be able to select the mid-point (-0.5) for narrower
+//          * bands */
+//         if (isTransient)
+//             metric[i] = 2 * best_level;
+//         else
+//             metric[i] = -2 * best_level;
+//         /* For bands that can't be split to -1, set the metric to the half-way point
+//            to avoid biasing the decision */
+//         if (narrow && (metric[i] == 0 || metric[i] == -2 * LM)) metric[i] -= 1;
+//         /*printf("%d ", metric[i]/2 + (!isTransient)*LM);*/
+//     }
+//     /*printf("\n");*/
+//     /* Search for the optimal tf resolution, including tf_select */
+//     tf_select = 0;
+//     for (sel = 0; sel < 2; sel++) {
+//         cost0 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
+//         cost1 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 1]) +
+//                 (isTransient ? 0 : lambda);
+//         for (i = 1; i < len; i++) {
+//             int curr0, curr1;
+//             curr0 = min(cost0, cost1 + lambda);
+//             curr1 = min(cost0 + lambda, cost1);
+//             cost0 = curr0 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
+//             cost1 = curr1 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * sel + 1]);
+//         }
+//         cost0 = min(cost0, cost1);
+//         selcost[sel] = cost0;
+//     }
+//     /* For now, we're conservative and only allow tf_select=1 for transients.
+//      * If tests confirm it's useful for non-transients, we could allow it. */
+//     if (selcost[1] < selcost[0] && isTransient) tf_select = 1;
+//     cost0 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
+//     cost1 = importance[0] * abs(metric[0] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]) +
+//             (isTransient ? 0 : lambda);
+//     /* Viterbi forward pass */
+//     for (i = 1; i < len; i++) {
+//         int curr0, curr1;
+//         int from0, from1;
 
-        from0 = cost0;
-        from1 = cost1 + lambda;
-        if (from0 < from1) {
-            curr0 = from0;
-            path0[i] = 0;
-        } else {
-            curr0 = from1;
-            path0[i] = 1;
-        }
+//         from0 = cost0;
+//         from1 = cost1 + lambda;
+//         if (from0 < from1) {
+//             curr0 = from0;
+//             path0[i] = 0;
+//         } else {
+//             curr0 = from1;
+//             path0[i] = 1;
+//         }
 
-        from0 = cost0 + lambda;
-        from1 = cost1;
-        if (from0 < from1) {
-            curr1 = from0;
-            path1[i] = 0;
-        } else {
-            curr1 = from1;
-            path1[i] = 1;
-        }
-        cost0 = curr0 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
-        cost1 = curr1 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]);
-    }
-    tf_res[len - 1] = cost0 < cost1 ? 0 : 1;
-    /* Viterbi backward pass to check the decisions */
-    for (i = len - 2; i >= 0; i--) {
-        if (tf_res[i + 1] == 1)
-            tf_res[i] = path1[i + 1];
-        else
-            tf_res[i] = path0[i + 1];
-    }
-    /*printf("%d %f\n", *tf_sum, tf_estimate);*/
+//         from0 = cost0 + lambda;
+//         from1 = cost1;
+//         if (from0 < from1) {
+//             curr1 = from0;
+//             path1[i] = 0;
+//         } else {
+//             curr1 = from1;
+//             path1[i] = 1;
+//         }
+//         cost0 = curr0 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
+//         cost1 = curr1 + importance[i] * abs(metric[i] - 2 * tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]);
+//     }
+//     tf_res[len - 1] = cost0 < cost1 ? 0 : 1;
+//     /* Viterbi backward pass to check the decisions */
+//     for (i = len - 2; i >= 0; i--) {
+//         if (tf_res[i + 1] == 1)
+//             tf_res[i] = path1[i + 1];
+//         else
+//             tf_res[i] = path0[i + 1];
+//     }
+//     /*printf("%d %f\n", *tf_sum, tf_estimate);*/
 
-    return tf_select;
-}
+//     return tf_select;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
 static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc) {
@@ -4148,27 +4173,27 @@ static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_
             sum = ADD16(sum, EXTRACT16(SHR32(partial, 18)));
         }
         sum = MULT16_16_Q15(QCONST16(1.f / 8, 15), sum);
-        sum = MIN16(QCONST16(1.f, 10), ABS16(sum));
+        sum = min(QCONST16(1.f, 10), abs(sum));
         minXC = sum;
         for (i = 8; i < intensity; i++) {
             int32_t partial;
             partial = celt_inner_prod(&X[m->eBands[i] << LM], &X[N0 + (m->eBands[i] << LM)],
                                       (m->eBands[i + 1] - m->eBands[i]) << LM, arch);
-            minXC = MIN16(minXC, ABS16(EXTRACT16(SHR32(partial, 18))));
+            minXC = min(minXC, abs(EXTRACT16(SHR32(partial, 18))));
         }
-        minXC = MIN16(QCONST16(1.f, 10), ABS16(minXC));
+        minXC = min(QCONST16(1.f, 10), abs(minXC));
         /*printf ("%f\n", sum);*/
         /* mid-side savings estimations based on the LF average*/
         logXC = celt_log2(QCONST32(1.001f, 20) - MULT16_16(sum, sum));
         /* mid-side savings estimations based on min correlation */
-        logXC2 = MAX16(HALF16(logXC), celt_log2(QCONST32(1.001f, 20) - MULT16_16(minXC, minXC)));
+        logXC2 = max(HALF16(logXC), celt_log2(QCONST32(1.001f, 20) - MULT16_16(minXC, minXC)));
 
         /* Compensate for Q20 vs Q14 input and convert output to Q8 */
         logXC = PSHR32(logXC - QCONST16(6.f, DB_SHIFT), DB_SHIFT - 8);
         logXC2 = PSHR32(logXC2 - QCONST16(6.f, DB_SHIFT), DB_SHIFT - 8);
 
-        trim += MAX16(-QCONST16(4.f, 8), MULT16_16_Q15(QCONST16(.75f, 15), logXC));
-        *stereo_saving = MIN16(*stereo_saving + QCONST16(0.25f, 8), -HALF16(logXC2));
+        trim += max(-QCONST16(4.f, 8), MULT16_16_Q15(QCONST16(.75f, 15), logXC));
+        *stereo_saving = min(*stereo_saving + QCONST16(0.25f, 8), -HALF16(logXC2));
     }
 
     /* Estimate spectral tilt */
@@ -4180,7 +4205,7 @@ static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_
     } while (++c < C);
     diff /= C * (end - 1);
     /*printf("%f\n", diff);*/
-    trim -= MAX32(-QCONST16(2.f, 8), MIN32(QCONST16(2.f, 8), SHR32(diff + QCONST16(1.f, DB_SHIFT), DB_SHIFT - 8) / 6));
+    trim -= max(-QCONST16(2.f, 8), min(QCONST16(2.f, 8), SHR32(diff + QCONST16(1.f, DB_SHIFT), DB_SHIFT - 8) / 6));
     trim -= SHR16(surround_trim, DB_SHIFT - 8);
     trim -= 2 * SHR16(tf_estimate, 14 - 8);
 
@@ -4188,7 +4213,7 @@ static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_
 
     trim_index = PSHR32(trim, 8);
 
-    trim_index = IMAX(0, IMIN(10, trim_index));
+    trim_index = max(0, min(10, trim_index));
     /*printf("%d\n", trim_index);*/
 
     return trim_index;
@@ -4210,8 +4235,8 @@ static int stereo_analysis(const CELTMode *m, const int16_t *X, int LM, int N0) 
             R = EXTEND32(X[N0 + j]);
             M = ADD32(L, R);
             S = SUB32(L, R);
-            sumLR = ADD32(sumLR, ADD32(ABS32(L), ABS32(R)));
-            sumMS = ADD32(sumMS, ADD32(ABS32(M), ABS32(S)));
+            sumLR = ADD32(sumLR, ADD32(abs(L), abs(R)));
+            sumMS = ADD32(sumMS, ADD32(abs(M), abs(S)));
         }
     }
     sumMS = MULT16_32_Q15(QCONST16(0.707107f, 15), sumMS);
@@ -4252,14 +4277,14 @@ static int16_t median_of_5(const int16_t *x) {
     }
     if (t2 > t1) {
         if (t1 < t3)
-            return MIN16(t2, t3);
+            return min(t2, t3);
         else
-            return MIN16(t4, t1);
+            return min(t4, t1);
     } else {
         if (t2 < t3)
-            return MIN16(t1, t3);
+            return min(t1, t3);
         else
-            return MIN16(t2, t4);
+            return min(t2, t4);
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4308,7 +4333,7 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
     }
     c = 0;
     do {
-        for (i = 0; i < end; i++) maxDepth = MAX16(maxDepth, bandLogE[c * nbEBands + i] - noise_floor[i]);
+        for (i = 0; i < end; i++) maxDepth = max(maxDepth, bandLogE[c * nbEBands + i] - noise_floor[i]);
     } while (++c < C);
     {
         /* Compute a really simple masking model to avoid taking into account completely masked
@@ -4319,18 +4344,18 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
         ALLOC(sig, nbEBands, int16_t);
         for (i = 0; i < end; i++) mask[i] = bandLogE[i] - noise_floor[i];
         if (C == 2) {
-            for (i = 0; i < end; i++) mask[i] = MAX16(mask[i], bandLogE[nbEBands + i] - noise_floor[i]);
+            for (i = 0; i < end; i++) mask[i] = max(mask[i], bandLogE[nbEBands + i] - noise_floor[i]);
         }
         OPUS_COPY(sig, mask, end);
-        for (i = 1; i < end; i++) mask[i] = MAX16(mask[i], mask[i - 1] - QCONST16(2.f, DB_SHIFT));
-        for (i = end - 2; i >= 0; i--) mask[i] = MAX16(mask[i], mask[i + 1] - QCONST16(3.f, DB_SHIFT));
+        for (i = 1; i < end; i++) mask[i] = max(mask[i], mask[i - 1] - QCONST16(2.f, DB_SHIFT));
+        for (i = end - 2; i >= 0; i--) mask[i] = max(mask[i], mask[i + 1] - QCONST16(3.f, DB_SHIFT));
         for (i = 0; i < end; i++) {
             /* Compute SMR: Mask is never more than 72 dB below the peak and never below the noise floor.*/
-            int16_t smr = sig[i] - MAX16(MAX16(0, maxDepth - QCONST16(12.f, DB_SHIFT)), mask[i]);
+            int16_t smr = sig[i] - max(max(0, maxDepth - QCONST16(12.f, DB_SHIFT)), mask[i]);
             /* Clamp SMR to make sure we're not shifting by something negative or too large. */
 
             /* FIXME: Use PSHR16() instead */
-            int shift = -PSHR32(MAX16(-QCONST16(5.f, DB_SHIFT), MIN16(0, smr)), DB_SHIFT);
+            int shift = -PSHR32(max(-QCONST16(5.f, DB_SHIFT), min(0, smr)), DB_SHIFT);
 
             spread_weight[i] = 32 >> shift;
         }
@@ -4353,41 +4378,41 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
                    is the last we'll consider. Otherwise, we run into problems on
                    bandlimited signals. */
                 if (bandLogE2[c * nbEBands + i] > bandLogE2[c * nbEBands + i - 1] + QCONST16(.5f, DB_SHIFT)) last = i;
-                f[i] = MIN16(f[i - 1] + QCONST16(1.5f, DB_SHIFT), bandLogE2[c * nbEBands + i]);
+                f[i] = min(f[i - 1] + QCONST16(1.5f, DB_SHIFT), bandLogE2[c * nbEBands + i]);
             }
             for (i = last - 1; i >= 0; i--)
-                f[i] = MIN16(f[i], MIN16(f[i + 1] + QCONST16(2.f, DB_SHIFT), bandLogE2[c * nbEBands + i]));
+                f[i] = min(f[i], min(f[i + 1] + QCONST16(2.f, DB_SHIFT), bandLogE2[c * nbEBands + i]));
 
             /* Combine with a median filter to avoid dynalloc triggering unnecessarily.
                The "offset" value controls how conservative we are -- a higher offset
                reduces the impact of the median filter and makes dynalloc use more bits. */
             offset = QCONST16(1.f, DB_SHIFT);
-            for (i = 2; i < end - 2; i++) f[i] = MAX16(f[i], median_of_5(&bandLogE2[c * nbEBands + i - 2]) - offset);
+            for (i = 2; i < end - 2; i++) f[i] = max(f[i], median_of_5(&bandLogE2[c * nbEBands + i - 2]) - offset);
             tmp = median_of_3(&bandLogE2[c * nbEBands]) - offset;
-            f[0] = MAX16(f[0], tmp);
-            f[1] = MAX16(f[1], tmp);
+            f[0] = max(f[0], tmp);
+            f[1] = max(f[1], tmp);
             tmp = median_of_3(&bandLogE2[c * nbEBands + end - 3]) - offset;
-            f[end - 2] = MAX16(f[end - 2], tmp);
-            f[end - 1] = MAX16(f[end - 1], tmp);
+            f[end - 2] = max(f[end - 2], tmp);
+            f[end - 1] = max(f[end - 1], tmp);
 
-            for (i = 0; i < end; i++) f[i] = MAX16(f[i], noise_floor[i]);
+            for (i = 0; i < end; i++) f[i] = max(f[i], noise_floor[i]);
         } while (++c < C);
         if (C == 2) {
             for (i = start; i < end; i++) {
                 /* Consider 24 dB "cross-talk" */
-                follower[nbEBands + i] = MAX16(follower[nbEBands + i], follower[i] - QCONST16(4.f, DB_SHIFT));
-                follower[i] = MAX16(follower[i], follower[nbEBands + i] - QCONST16(4.f, DB_SHIFT));
-                follower[i] = HALF16(MAX16(0, bandLogE[i] - follower[i]) +
-                                     MAX16(0, bandLogE[nbEBands + i] - follower[nbEBands + i]));
+                follower[nbEBands + i] = max(follower[nbEBands + i], follower[i] - QCONST16(4.f, DB_SHIFT));
+                follower[i] = max(follower[i], follower[nbEBands + i] - QCONST16(4.f, DB_SHIFT));
+                follower[i] = HALF16(max(0, bandLogE[i] - follower[i]) +
+                                     max(0, bandLogE[nbEBands + i] - follower[nbEBands + i]));
             }
         } else {
             for (i = start; i < end; i++) {
-                follower[i] = MAX16(0, bandLogE[i] - follower[i]);
+                follower[i] = max(0, bandLogE[i] - follower[i]);
             }
         }
-        for (i = start; i < end; i++) follower[i] = MAX16(follower[i], surround_dynalloc[i]);
+        for (i = start; i < end; i++) follower[i] = max(follower[i], surround_dynalloc[i]);
         for (i = start; i < end; i++) {
-            importance[i] = PSHR32(13 * celt_exp2(MIN16(follower[i], QCONST16(4.f, DB_SHIFT))), 16);
+            importance[i] = PSHR32(13 * celt_exp2(min(follower[i], QCONST16(4.f, DB_SHIFT))), 16);
         }
         /* For non-transient CBR/CVBR frames, halve the dynalloc contribution */
         if ((!vbr || constrained_vbr) && !isTransient) {
@@ -4405,7 +4430,7 @@ static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLog
             int boost;
             int boost_bits;
 
-            follower[i] = MIN16(follower[i], QCONST16(4, DB_SHIFT));
+            follower[i] = min(follower[i], QCONST16(4, DB_SHIFT));
 
             width = C * (eBands[i + 1] - eBands[i]) << LM;
             if (width < 6) {
@@ -4457,7 +4482,7 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t bas
 
     coded_bands = lastCodedBands ? lastCodedBands : nbEBands;
     coded_bins = eBands[coded_bands] << LM;
-    if (C == 2) coded_bins += eBands[IMIN(intensity, coded_bands)] << LM;
+    if (C == 2) coded_bins += eBands[min(intensity, coded_bands)] << LM;
 
     target = base_target;
 
@@ -4469,13 +4494,13 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t bas
         int coded_stereo_bands;
         int coded_stereo_dof;
         int16_t max_frac;
-        coded_stereo_bands = IMIN(intensity, coded_bands);
+        coded_stereo_bands = min(intensity, coded_bands);
         coded_stereo_dof = (eBands[coded_stereo_bands] << LM) - coded_stereo_bands;
         /* Maximum fraction of the bits we can save if the signal is mono. */
         max_frac = DIV32_16(MULT16_16(QCONST16(0.8f, 15), coded_stereo_dof), coded_bins);
-        stereo_saving = MIN16(stereo_saving, QCONST16(1.f, 8));
+        stereo_saving = min(stereo_saving, QCONST16(1.f, 8));
         /*printf("%d %d %d ", coded_stereo_dof, coded_bins, tot_boost);*/
-        target -= (int32_t)MIN32(MULT16_32_Q15(max_frac, target),
+        target -= (int32_t)min(MULT16_32_Q15(max_frac, target),
                                  SHR32(MULT16_16(stereo_saving - QCONST16(0.1f, 8), (coded_stereo_dof << BITRES)), 8));
     }
     /* Boost the rate according to dynalloc (minus the dynalloc average for calibration). */
@@ -4491,17 +4516,17 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t bas
         int32_t surround_target = target + (int32_t)SHR32(MULT16_16(surround_masking, coded_bins << BITRES), DB_SHIFT);
         /*printf("%f %d %d %d %d %d %d ", surround_masking, coded_bins, st->end, st->intensity, surround_target, target,
          * st->bitrate);*/
-        target = IMAX(target / 4, surround_target);
+        target = max(target / 4, surround_target);
     }
 
     {
         int32_t floor_depth;
         int bins;
         bins = eBands[nbEBands - 2] << LM;
-        /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),celt_log2(SHL32(MAX16(1,sample_max),13))), DB_SHIFT);*/
+        /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),celt_log2(SHL32(max(1,sample_max),13))), DB_SHIFT);*/
         floor_depth = (int32_t)SHR32(MULT16_16((C * bins << BITRES), maxDepth), DB_SHIFT);
-        floor_depth = IMAX(floor_depth, target >> 2);
-        target = IMIN(target, floor_depth);
+        floor_depth = max(floor_depth, target >> 2);
+        target = min(target, floor_depth);
         /*printf("%f %d\n", maxDepth, floor_depth);*/
     }
 
@@ -4514,13 +4539,13 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t bas
     if (!has_surround_mask && tf_estimate < QCONST16(.2f, 14)) {
         int16_t amount;
         int16_t tvbr_factor;
-        amount = MULT16_16_Q15(QCONST16(.0000031f, 30), IMAX(0, IMIN(32000, 96000 - bitrate)));
+        amount = MULT16_16_Q15(QCONST16(.0000031f, 30), max(0, min(32000, 96000 - bitrate)));
         tvbr_factor = SHR32(MULT16_16(temporal_vbr, amount), DB_SHIFT);
         target += (int32_t)MULT16_32_Q15(tvbr_factor, target);
     }
 
     /* Don't allow more than doubling the rate */
-    target = IMIN(2 * base_target, target);
+    target = min(2 * base_target, target);
 
     return target;
 }
@@ -4736,7 +4761,9 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
         /*Lots of pulses case:*/
         if (_k >= _n) {
             const uint32_t *row;
-            row = CELT_PVQ_U_ROW[_n];
+            //row = celt_pvq_u_row[_n];
+            row = &CELT_PVQ_U_DATA[row_idx[_n]];
+
             /*Are the pulses in this dimension negative?*/
             p = row[_k + 1];
             s = -(_i >= p);
@@ -4747,7 +4774,7 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
             if (q > _i) {
                 assert(p > q);
                 _k = _n;
-                do p = CELT_PVQ_U_ROW[--_k][_n];
+                do p = celt_pvq_u_row(--_k, _n);
                 while (p > _i);
             } else
                 for (p = row[_k]; p > _i; p = row[_k]) _k--;
@@ -4759,8 +4786,8 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
         /*Lots of dimensions case:*/
         else {
             /*Are there any pulses in this dimension at all?*/
-            p = CELT_PVQ_U_ROW[_k][_n];
-            q = CELT_PVQ_U_ROW[_k + 1][_n];
+            p = celt_pvq_u_row(_k, _n);
+            q = celt_pvq_u_row(_k + 1, _n);
             if (p <= _i && _i < q) {
                 _i -= p;
                 *_y++ = 0;
@@ -4770,7 +4797,7 @@ static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
                 _i -= q & s;
                 /*Count how many pulses were placed in this dimension.*/
                 k0 = _k;
-                do p = CELT_PVQ_U_ROW[--_k][_n];
+                do p = celt_pvq_u_row(--_k, _n);
                 while (p > _i);
                 _i -= p;
                 val = (k0 - _k + s) ^ s;
@@ -4885,9 +4912,15 @@ unsigned ec_decode_bin(ec_dec *_this, unsigned _bits) {
 
 void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     uint32_t s;
-    s = IMUL32(_this->ext, _ft - _fh);
+    s = _this->ext *  (_ft - _fh);
     _this->val -= s;
-    _this->rng = _fl > 0 ? IMUL32(_this->ext, _fh - _fl) : _this->rng - s;
+
+    if(_fl > 0){
+        _this->rng = _this->ext * (_fh - _fl);
+    }
+    else{
+        _this->rng = _this->rng - s;
+    }
     ec_dec_normalize(_this);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4921,7 +4954,7 @@ int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
     ret = -1;
     do {
         t = s;
-        s = IMUL32(r, _icdf[++ret]);
+        s = r * _icdf[++ret];
     } while (d < s);
     _this->val = d - s;
     _this->rng = t - s;
@@ -5051,10 +5084,10 @@ void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     uint32_t r;
     r = celt_udiv(_this->rng, _ft);
     if (_fl > 0) {
-        _this->val += _this->rng - IMUL32(r, (_ft - _fl));
-        _this->rng = IMUL32(r, (_fh - _fl));
+        _this->val += _this->rng - (r * (_ft - _fl));
+        _this->rng = r * (_fh - _fl);
     } else
-        _this->rng -= IMUL32(r, (_ft - _fh));
+        _this->rng -= r * (_ft - _fh);
     ec_enc_normalize(_this);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5063,10 +5096,10 @@ void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
     uint32_t r;
     r = _this->rng >> _bits;
     if (_fl > 0) {
-        _this->val += _this->rng - IMUL32(r, ((1U << _bits) - _fl));
-        _this->rng = IMUL32(r, (_fh - _fl));
+        _this->val += _this->rng - (r * ((1U << _bits) - _fl));
+        _this->rng = r * (_fh - _fl);
     } else
-        _this->rng -= IMUL32(r, ((1U << _bits) - _fh));
+        _this->rng -= r * (((1U << _bits) - _fh));
     ec_enc_normalize(_this);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5090,10 +5123,10 @@ void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ft
     uint32_t r;
     r = _this->rng >> _ftb;
     if (_s > 0) {
-        _this->val += _this->rng - IMUL32(r, _icdf[_s - 1]);
-        _this->rng = IMUL32(r, _icdf[_s - 1] - _icdf[_s]);
+        _this->val += _this->rng - r * _icdf[_s - 1];
+        _this->rng = r * (_icdf[_s - 1] - _icdf[_s]);
     } else
-        _this->rng -= IMUL32(r, _icdf[_s]);
+        _this->rng -= r * _icdf[_s];
     ec_enc_normalize(_this);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5450,9 +5483,9 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
             int ndi_max;
             ndi_max = (32768 - fl + LAPLACE_MINP - 1) >> LAPLACE_LOG_MINP;
             ndi_max = (ndi_max - s) >> 1;
-            di = IMIN(val - i, ndi_max - 1);
+            di = min(val - i, ndi_max - 1);
             fl += (2 * di + 1 + s) * LAPLACE_MINP;
-            fs = IMIN(LAPLACE_MINP, 32768 - fl);
+            fs = min(LAPLACE_MINP, 32768 - fl);
             *value = (i + di + s) ^ s;
         } else {
             fs += LAPLACE_MINP;
@@ -5498,8 +5531,8 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
     assert(fl < 32768);
     assert(fs > 0);
     assert(fl <= fm);
-    assert(fm < IMIN(fl + fs, 32768));
-    ec_dec_update(dec, fl, IMIN(fl + fs, 32768), 32768);
+    assert(fm < min(fl + fs, 32768));
+    ec_dec_update(dec, fl, min(fl + fs, 32768), 32768);
     return val;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5557,7 +5590,7 @@ int16_t celt_rsqrt_norm(int32_t x) {
     int16_t y;
     /* Range of n is [-16384,32767] ([-0.5,1) in Q15). */
     n = x - 32768;
-    /* Get a rough initial guess for the root. The optimal minimax quadratic approximation (using relative error) is
+    /* Get a rough initial guess for the root. The optimal minmax quadratic approximation (using relative error) is
        r = 1.437799046117536+n*(-0.823394375837328+n*0.4096419668459485).  Coefficients here, and the final result r,
        are Q14.*/
     r = ADD16(23557, MULT16_16_Q15(n, ADD16(-13490, MULT16_16_Q15(n, 6713))));
@@ -5600,7 +5633,7 @@ static inline int16_t _celt_cos_pi_2(int16_t x) {
     x2 = MULT16_16_P15(x, x);
     return ADD16(
         1,
-        MIN16(32766, ADD32(SUB16(32767, x2),
+        min(32766, ADD32(SUB16(32767, x2),
                            MULT16_16_P15(x2, ADD32(-7651, MULT16_16_P15(x2, ADD32(8277, MULT16_16_P15(-626, x2))))))));
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5916,7 +5949,7 @@ static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, 
             }
         }
         Syy += SHR32(MULT16_16(y[i + len], y[i + len]), yshift) - SHR32(MULT16_16(y[i], y[i]), yshift);
-        Syy = MAX32(1, Syy);
+        Syy = max(1, Syy);
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5963,7 +5996,7 @@ void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int
     int32_t maxabs = celt_maxabs32(x[0], len);
     if (C == 2) {
         int32_t maxabs_1 = celt_maxabs32(x[1], len);
-        maxabs = MAX32(maxabs, maxabs_1);
+        maxabs = max(maxabs, maxabs_1);
     }
     if (maxabs < 1) maxabs = 1;
     shift = celt_ilog2(maxabs) - 10;
@@ -6019,17 +6052,17 @@ int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr,
         xcorr[i + 1] = sum[1];
         xcorr[i + 2] = sum[2];
         xcorr[i + 3] = sum[3];
-        sum[0] = MAX32(sum[0], sum[1]);
-        sum[2] = MAX32(sum[2], sum[3]);
-        sum[0] = MAX32(sum[0], sum[2]);
-        maxcorr = MAX32(maxcorr, sum[0]);
+        sum[0] = max(sum[0], sum[1]);
+        sum[2] = max(sum[2], sum[3]);
+        sum[0] = max(sum[0], sum[2]);
+        maxcorr = max(maxcorr, sum[0]);
     }
     /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
     for (; i < max_pitch; i++) {
         int32_t sum;
         sum = celt_inner_prod(_x, _y + i, len, arch);
         xcorr[i] = sum;
-        maxcorr = MAX32(maxcorr, sum);
+        maxcorr = max(maxcorr, sum);
     }
     return maxcorr;
 }
@@ -6064,7 +6097,7 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 
     xmax = celt_maxabs16(x_lp4, len >> 2);
     ymax = celt_maxabs16(y_lp4, lag >> 2);
-    shift = celt_ilog2(MAX32(1, MAX32(xmax, ymax))) - 11;
+    shift = celt_ilog2(max(1, max(xmax, ymax))) - 11;
     if (shift > 0) {
         for (j = 0; j < len >> 2; j++) x_lp4[j] = SHR16(x_lp4[j], shift);
         for (j = 0; j < lag >> 2; j++) y_lp4[j] = SHR16(y_lp4[j], shift);
@@ -6090,9 +6123,9 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
         sum = 0;
         for (j = 0; j < len >> 1; j++) sum += SHR32(MULT16_16(x_lp[j], y[i + j]), shift);
 
-        xcorr[i] = MAX32(-1, sum);
+        xcorr[i] = max(-1, sum);
 
-        maxcorr = MAX32(maxcorr, sum);
+        maxcorr = max(maxcorr, sum);
     }
     find_best_pitch(xcorr, y, len >> 1, max_pitch >> 1, best_pitch, shift + 1, maxcorr);
 
@@ -6137,7 +6170,7 @@ static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy) {
     den = celt_rsqrt_norm(x2y2);
     g = MULT16_32_Q15(den, xy);
     g = VSHR32(g, (shift >> 1) - 1);
-    return EXTRACT16(MIN32(g, 32767));
+    return EXTRACT16(min(g, 32767));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -6170,7 +6203,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
     yy = xx;
     for (i = 1; i <= maxperiod; i++) {
         yy = yy + MULT16_16(x[-i], x[-i]) - MULT16_16(x[N - i], x[N - i]);
-        yy_lookup[i] = MAX32(0, yy);
+        yy_lookup[i] = max(0, yy);
     }
     yy = yy_lookup[T0];
     best_xy = xy;
@@ -6203,13 +6236,13 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
             cont = HALF16(prev_gain);
         else
             cont = 0;
-        thresh = MAX16(QCONST16(.3f, 15), MULT16_16_Q15(QCONST16(.7f, 15), g0) - cont);
+        thresh = max(QCONST16(.3f, 15), MULT16_16_Q15(QCONST16(.7f, 15), g0) - cont);
         /* Bias against very high pitch (very short period) to avoid false-positives
            due to short-term correlation */
         if (T1 < 3 * minperiod)
-            thresh = MAX16(QCONST16(.4f, 15), MULT16_16_Q15(QCONST16(.85f, 15), g0) - cont);
+            thresh = max(QCONST16(.4f, 15), MULT16_16_Q15(QCONST16(.85f, 15), g0) - cont);
         else if (T1 < 2 * minperiod)
-            thresh = MAX16(QCONST16(.5f, 15), MULT16_16_Q15(QCONST16(.9f, 15), g0) - cont);
+            thresh = max(QCONST16(.5f, 15), MULT16_16_Q15(QCONST16(.9f, 15), g0) - cont);
         if (g1 > thresh) {
             best_xy = xy;
             best_yy = yy;
@@ -6217,7 +6250,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
             g = g1;
         }
     }
-    best_xy = MAX32(0, best_xy);
+    best_xy = max(0, best_xy);
     if (best_yy <= best_xy)
         pg = 32767;
     else
@@ -6271,7 +6304,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
             if (tmp >= thresh[j] || done) {
                 done = 1;
                 /* Don't allocate more than we can actually use */
-                psum += IMIN(tmp, cap[j]);
+                psum += min(tmp, cap[j]);
             } else {
                 if (tmp >= alloc_floor) psum += alloc_floor;
             }
@@ -6294,7 +6327,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
         } else
             done = 1;
         /* Don't allocate more than we can actually use */
-        tmp = IMIN(tmp, cap[j]);
+        tmp = min(tmp, cap[j]);
         bits[j] = tmp;
         psum += tmp;
     }
@@ -6321,13 +6354,13 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
         left = total - psum;
         percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
         left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
-        rem = IMAX(left - (m->eBands[j] - m->eBands[start]), 0);
+        rem = max(left - (m->eBands[j] - m->eBands[start]), 0);
         band_width = m->eBands[codedBands] - m->eBands[j];
         band_bits = (int)(bits[j] + percoeff * band_width + rem);
         /*Only code a skip decision if we're above the threshold for this band.
           Otherwise it is force-skipped.
           This ensures that we have enough bits to code the skip flag.*/
-        if (band_bits >= IMAX(thresh[j], alloc_floor + (1 << BITRES))) {
+        if (band_bits >= max(thresh[j], alloc_floor + (1 << BITRES))) {
             if (encode) {
                 /*This if() block is the only part of the allocation function that
                    is not a mandatory part of the bitstream: any bands we choose to
@@ -6373,7 +6406,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
     /* Code the intensity and dual stereo parameters. */
     if (intensity_rsv > 0) {
         if (encode) {
-            *intensity = IMIN(*intensity, codedBands);
+            *intensity = min(*intensity, codedBands);
             ec_enc_uint(ec, *intensity - start, codedBands + 1 - start);
         } else
             *intensity = start + ec_dec_uint(ec, codedBands + 1 - start);
@@ -6397,7 +6430,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
     left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
     for (j = start; j < codedBands; j++) bits[j] += ((int)percoeff * (m->eBands[j + 1] - m->eBands[j]));
     for (j = start; j < codedBands; j++) {
-        int tmp = (int)IMIN(left, m->eBands[j + 1] - m->eBands[j]);
+        int tmp = (int)min(left, m->eBands[j + 1] - m->eBands[j]);
         bits[j] += tmp;
         left -= tmp;
     }
@@ -6416,7 +6449,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
         bit = (int32_t)bits[j] + balance;
 
         if (N > 1) {
-            excess = MAX32(bit - cap[j], 0);
+            excess = max(bit - cap[j], 0);
             bits[j] = bit - excess;
 
             /* Compensate for the extra DoF in stereo */
@@ -6439,14 +6472,14 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
                 offset += NClogN >> 3;
 
             /* Divide with rounding */
-            ebits[j] = IMAX(0, (bits[j] + offset + (den << (BITRES - 1))));
+            ebits[j] = max(0, (bits[j] + offset + (den << (BITRES - 1))));
             ebits[j] = celt_udiv(ebits[j], den) >> BITRES;
 
             /* Make sure not to bust */
             if (C * ebits[j] > (bits[j] >> BITRES)) ebits[j] = bits[j] >> stereo >> BITRES;
 
             /* More than that is useless because that's about as far as PVQ can go */
-            ebits[j] = IMIN(ebits[j], MAX_FINE_BITS);
+            ebits[j] = min(ebits[j], MAX_FINE_BITS);
 
             /* If we rounded down or capped this band, make it a candidate for the
                 final fine energy pass */
@@ -6457,7 +6490,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
 
         } else {
             /* For N=1, all bits go to fine energy except for a single sign bit */
-            excess = MAX32(0, bit - (C << BITRES));
+            excess = max(0, bit - (C << BITRES));
             bits[j] = bit - excess;
             ebits[j] = 0;
             fine_priority[j] = 1;
@@ -6469,7 +6502,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
         if (excess > 0) {
             int extra_fine;
             int extra_bits;
-            extra_fine = IMIN(excess >> (stereo + BITRES), MAX_FINE_BITS - ebits[j]);
+            extra_fine = min(excess >> (stereo + BITRES), MAX_FINE_BITS - ebits[j]);
             ebits[j] += extra_fine;
             extra_bits = extra_fine * C << BITRES;
             fine_priority[j] = extra_bits >= excess - balance;
@@ -6511,7 +6544,7 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
     VARDECL(int, trim_offset);
     SAVE_STACK;
 
-    total = IMAX(total, 0);
+    total = max(total, 0);
     len = m->nbEBands;
     skip_start = start;
     /* Reserve a bit to signal the end of manually skipped bands. */
@@ -6536,7 +6569,7 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
 
     for (j = start; j < end; j++) {
         /* Below this threshold, we're sure not to allocate any PVQ bits */
-        thresh[j] = IMAX((C) << BITRES, (3 * (m->eBands[j + 1] - m->eBands[j]) << LM << BITRES) >> 4);
+        thresh[j] = max((C) << BITRES, (3 * (m->eBands[j + 1] - m->eBands[j]) << LM << BITRES) >> 4);
         /* Tilt of the allocation curve */
         trim_offset[j] =
             C * (m->eBands[j + 1] - m->eBands[j]) * (alloc_trim - 5 - LM) * (end - j - 1) * (1 << (LM + BITRES)) >> 6;
@@ -6554,12 +6587,12 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
             int bitsj;
             int N = m->eBands[j + 1] - m->eBands[j];
             bitsj = C * N * m->allocVectors[mid * len + j] << LM >> 2;
-            if (bitsj > 0) bitsj = IMAX(0, bitsj + trim_offset[j]);
+            if (bitsj > 0) bitsj = max(0, bitsj + trim_offset[j]);
             bitsj += offsets[j];
             if (bitsj >= thresh[j] || done) {
                 done = 1;
                 /* Don't allocate more than we can actually use */
-                psum += IMIN(bitsj, cap[j]);
+                psum += min(bitsj, cap[j]);
             } else {
                 if (bitsj >= C << BITRES) psum += C << BITRES;
             }
@@ -6577,12 +6610,12 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
         int N = m->eBands[j + 1] - m->eBands[j];
         bits1j = C * N * m->allocVectors[lo * len + j] << LM >> 2;
         bits2j = hi >= m->nbAllocVectors ? cap[j] : C * N * m->allocVectors[hi * len + j] << LM >> 2;
-        if (bits1j > 0) bits1j = IMAX(0, bits1j + trim_offset[j]);
-        if (bits2j > 0) bits2j = IMAX(0, bits2j + trim_offset[j]);
+        if (bits1j > 0) bits1j = max(0, bits1j + trim_offset[j]);
+        if (bits2j > 0) bits2j = max(0, bits2j + trim_offset[j]);
         if (lo > 0) bits1j += offsets[j];
         bits2j += offsets[j];
         if (offsets[j] > 0) skip_start = j;
-        bits2j = IMAX(0, bits2j - bits1j);
+        bits2j = max(0, bits2j - bits1j);
         bits1[j] = bits1j;
         bits2[j] = bits2j;
     }
@@ -6604,7 +6637,7 @@ static int32_t loss_distortion(const int16_t *eBands, int16_t *oldEBands, int st
             dist = MAC16_16(dist, d, d);
         }
     } while (++c < C);
-    return MIN32(200, SHR32(dist, 2 * DB_SHIFT - 6));
+    return min(200, SHR32(dist, 2 * DB_SHIFT - 6));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -6638,13 +6671,13 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const
             int16_t oldE;
             int16_t decay_bound;
             x = eBands[i + c * m->nbEBands];
-            oldE = MAX16(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
+            oldE = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
 
             f = SHL32(EXTEND32(x), 7) - PSHR32(MULT16_16(coef, oldE), 8) - prev[c];
             /* Rounding to nearest integer here is really important! */
             qi = (f + QCONST32(.5f, DB_SHIFT + 7)) >> (DB_SHIFT + 7);
             decay_bound =
-                EXTRACT16(MAX32(-QCONST16(28.f, DB_SHIFT), SUB32((int32_t)oldEBands[i + c * m->nbEBands], max_decay)));
+                EXTRACT16(max(-QCONST16(28.f, DB_SHIFT), SUB32((int32_t)oldEBands[i + c * m->nbEBands], max_decay)));
             /* Prevent the energy from going down too quickly (e.g. for bands
                that have just one bin) */
             if (qi < 0 && x < decay_bound) {
@@ -6657,19 +6690,19 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const
             tell = ec_tell(enc);
             bits_left = budget - tell - 3 * C * (end - i);
             if (i != start && bits_left < 30) {
-                if (bits_left < 24) qi = IMIN(1, qi);
-                if (bits_left < 16) qi = IMAX(-1, qi);
+                if (bits_left < 24) qi = min(1, qi);
+                if (bits_left < 16) qi = max(-1, qi);
             }
-            if (lfe && i >= 2) qi = IMIN(qi, 0);
+            if (lfe && i >= 2) qi = min(qi, 0);
             if (budget - tell >= 15) {
                 int pi;
-                pi = 2 * IMIN(i, 20);
+                pi = 2 * min(i, 20);
                 ec_laplace_encode(enc, &qi, prob_model[pi] << 7, prob_model[pi + 1] << 6);
             } else if (budget - tell >= 2) {
-                qi = IMAX(-1, IMIN(qi, 1));
+                qi = max(-1, min(qi, 1));
                 ec_enc_icdf(enc, 2 * qi ^ -(qi < 0), small_energy_icdf, 2);
             } else if (budget - tell >= 1) {
-                qi = IMIN(0, qi);
+                qi = min(0, qi);
                 ec_enc_bit_logp(enc, -qi, 1);
             } else
                 qi = -1;
@@ -6678,7 +6711,7 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const
             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
 
             tmp = PSHR32(MULT16_16(coef, oldE), 8) + prev[c] + SHL32(q, 7);
-            tmp = MAX32(-QCONST32(28.f, DB_SHIFT + 7), tmp);
+            tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
             oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
             prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
         } while (++c < C);
@@ -6710,7 +6743,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, cons
 
     max_decay = QCONST16(16.f, DB_SHIFT);
     if (end - start > 10) {
-        max_decay = MIN32(max_decay, SHL32(EXTEND32(nbAvailableBytes), DB_SHIFT - 3));
+        max_decay = min(max_decay, SHL32(EXTEND32(nbAvailableBytes), DB_SHIFT - 3));
     }
     if (lfe) max_decay = QCONST16(3.f, DB_SHIFT);
     enc_start_state = *enc;
@@ -6859,7 +6892,7 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEB
             tell = ec_tell(dec);
             if (budget - tell >= 15) {
                 int pi;
-                pi = 2 * IMIN(i, 20);
+                pi = 2 * min(i, 20);
                 qi = ec_laplace_decode(dec, prob_model[pi] << 7, prob_model[pi + 1] << 6);
             } else if (budget - tell >= 2) {
                 qi = ec_dec_icdf(dec, small_energy_icdf, 2);
@@ -6870,9 +6903,9 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEB
                 qi = -1;
             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
 
-            oldEBands[i + c * m->nbEBands] = MAX16(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
+            oldEBands[i + c * m->nbEBands] = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
             tmp = PSHR32(MULT16_16(coef, oldEBands[i + c * m->nbEBands]), 8) + prev[c] + SHL32(q, 7);
-            tmp = MAX32(-QCONST32(28.f, DB_SHIFT + 7), tmp);
+            tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
             oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
             prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
         } while (++c < C);
@@ -6997,345 +7030,3 @@ static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], i
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
-
-// static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s) {
-//     int i;
-//     int16_t ms;
-//     int16_t *Xptr;
-//     Xptr = X;
-//     ms = NEG16(s);
-//     for (i = 0; i < len - stride; i++) {
-//         int16_t x1, x2;
-//         x1 = Xptr[0];
-//         x2 = Xptr[stride];
-//         Xptr[stride] = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x2), s, x1), 15));
-//         *Xptr++ = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x1), ms, x2), 15));
-//     }
-//     Xptr = &X[len - 2 * stride - 1];
-//     for (i = len - 2 * stride - 1; i >= 0; i--) {
-//         int16_t x1, x2;
-//         x1 = Xptr[0];
-//         x2 = Xptr[stride];
-//         Xptr[stride] = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x2), s, x1), 15));
-//         *Xptr-- = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x1), ms, x2), 15));
-//     }
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread) {
-//     static const int SPREAD_FACTOR[3] = {15, 10, 5};
-//     int i;
-//     int16_t c, s;
-//     int16_t gain, theta;
-//     int stride2 = 0;
-//     int factor;
-
-//     if (2 * K >= len || spread == SPREAD_NONE) return;
-//     factor = SPREAD_FACTOR[spread - 1];
-
-//     gain = celt_div((int32_t)MULT16_16(Q15_ONE, len), (int32_t)(len + factor * K));
-//     theta = HALF16(MULT16_16_Q15(gain, gain));
-
-//     c = celt_cos_norm(EXTEND32(theta));
-//     s = celt_cos_norm(EXTEND32(SUB16(32767, theta))); /*  sin(theta) */
-
-//     if (len >= 8 * stride) {
-//         stride2 = 1;
-//         /* This is just a simple (equivalent) way of computing sqrt(len/stride) with rounding.
-//            It's basically incrementing long as (stride2+0.5)^2 < len/stride. */
-//         while ((stride2 * stride2 + stride2) * stride + (stride >> 2) < len) stride2++;
-//     }
-//     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
-//        extract_collapse_mask().*/
-//     len = celt_udiv(len, stride);
-//     for (i = 0; i < stride; i++) {
-//         if (dir < 0) {
-//             if (stride2) exp_rotation1(X + i * len, len, stride2, s, c);
-//             exp_rotation1(X + i * len, len, 1, c, s);
-//         } else {
-//             exp_rotation1(X + i * len, len, 1, c, -s);
-//             if (stride2) exp_rotation1(X + i * len, len, stride2, s, -c);
-//         }
-//     }
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// /** Takes the pitch vector and the decoded residual vector, computes the gain
-//     that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-// static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain) {
-//     int i;
-//     int k;
-//     int32_t t;
-//     int16_t g;
-
-//     k = celt_ilog2(Ryy) >> 1;
-//     t = VSHR32(Ryy, 2 * (k - 7));
-//     g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
-
-//     i = 0;
-//     do X[i] = EXTRACT16(PSHR32(MULT16_16(g, iy[i]), k + 1));
-//     while (++i < N);
-// }
-// //----------------------------------------------------------------------------------------------------------------------
-
-// static unsigned extract_collapse_mask(int *iy, int N, int B) {
-//     unsigned collapse_mask;
-//     int N0;
-//     int i;
-//     if (B <= 1) return 1;
-//     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
-//        exp_rotation().*/
-//     N0 = celt_udiv(N, B);
-//     collapse_mask = 0;
-//     i = 0;
-//     do {
-//         int j;
-//         unsigned tmp = 0;
-//         j = 0;
-//         do {
-//             tmp |= iy[i * N0 + j];
-//         } while (++j < N0);
-//         collapse_mask |= (tmp != 0) << i;
-//     } while (++i < B);
-//     return collapse_mask;
-// }
-//----------------------------------------------------------------------------------------------------------------------
-
-// int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
-//     VARDECL(int16_t, y);
-//     VARDECL(int, signx);
-//     int i, j;
-//     int pulsesLeft;
-//     int32_t sum;
-//     int32_t xy;
-//     int16_t yy;
-//     SAVE_STACK;
-
-//     (void)arch;
-//     ALLOC(y, N, int16_t);
-//     ALLOC(signx, N, int);
-
-//     /* Get rid of the sign */
-//     sum = 0;
-//     j = 0;
-//     do {
-//         signx[j] = X[j] < 0;
-//         /* OPT: Make sure the compiler doesn't use a branch on ABS16(). */
-//         X[j] = ABS16(X[j]);
-//         iy[j] = 0;
-//         y[j] = 0;
-//     } while (++j < N);
-
-//     xy = yy = 0;
-
-//     pulsesLeft = K;
-
-//     /* Do a pre-search by projecting on the pyramid */
-//     if (K > (N >> 1)) {
-//         int16_t rcp;
-//         j = 0;
-//         do {
-//             sum += X[j];
-//         } while (++j < N);
-
-//         /* If X is too small, just replace it with a pulse at 0 */
-//         if (sum <= K) {
-//             X[0] = QCONST16(1.f, 14);
-//             j = 1;
-//             do X[j] = 0;
-//             while (++j < N);
-//             sum = QCONST16(1.f, 14);
-//         }
-//         rcp = EXTRACT16(MULT16_32_Q16(K, celt_rcp(sum)));
-//         j = 0;
-//         do {
-//             /* It's really important to round *towards zero* here */
-//             iy[j] = MULT16_16_Q15(X[j], rcp);
-//             y[j] = (int16_t)iy[j];
-//             yy = MAC16_16(yy, y[j], y[j]);
-//             xy = MAC16_16(xy, X[j], y[j]);
-//             y[j] *= 2;
-//             pulsesLeft -= iy[j];
-//         } while (++j < N);
-//     }
-//     assert(pulsesLeft >= 0);
-
-//     /* This should never happen, but just in case it does (e.g. on silence)
-//        we fill the first bin with pulses. */
-//     if (pulsesLeft > N + 3) {
-//         int16_t tmp = (int16_t)pulsesLeft;
-//         yy = MAC16_16(yy, tmp, tmp);
-//         yy = MAC16_16(yy, tmp, y[0]);
-//         iy[0] += pulsesLeft;
-//         pulsesLeft = 0;
-//     }
-
-//     for (i = 0; i < pulsesLeft; i++) {
-//         int16_t Rxy, Ryy;
-//         int best_id;
-//         int32_t best_num;
-//         int16_t best_den;
-//         int rshift;
-//         rshift = 1 + celt_ilog2(K - pulsesLeft + i + 1);
-//         best_id = 0;
-//         /* The squared magnitude term gets added anyway, so we might as well
-//            add it outside the loop */
-//         yy = ADD16(yy, 1);
-
-//         /* Calculations for position 0 are out of the loop, in part to reduce
-//            mispredicted branches (since the if condition is usually false)
-//            in the loop. */
-//         /* Temporary sums of the new pulse(s) */
-//         Rxy = EXTRACT16(SHR32(ADD32(xy, EXTEND32(X[0])), rshift));
-//         /* We're multiplying y[j] by two so we don't have to do it here */
-//         Ryy = ADD16(yy, y[0]);
-
-//         /* Approximate score: we maximise Rxy/sqrt(Ryy) (we're guaranteed that
-//            Rxy is positive because the sign is pre-computed) */
-//         Rxy = MULT16_16_Q15(Rxy, Rxy);
-//         best_den = Ryy;
-//         best_num = Rxy;
-//         j = 1;
-//         do {
-//             /* Temporary sums of the new pulse(s) */
-//             Rxy = EXTRACT16(SHR32(ADD32(xy, EXTEND32(X[j])), rshift));
-//             /* We're multiplying y[j] by two so we don't have to do it here */
-//             Ryy = ADD16(yy, y[j]);
-
-//             /* Approximate score: we maximise Rxy/sqrt(Ryy) (we're guaranteed that
-//                Rxy is positive because the sign is pre-computed) */
-//             Rxy = MULT16_16_Q15(Rxy, Rxy);
-//             /* The idea is to check for num/den >= best_num/best_den, but that way
-//                we can do it without any division */
-//             /* OPT: It's not clear whether a cmov is faster than a branch here
-//                since the condition is more often false than true and using
-//                a cmov introduces data dependencies across iterations. The optimal
-//                choice may be architecture-dependent. */
-//             if (opus_unlikely(MULT16_16(best_den, Rxy) > MULT16_16(Ryy, best_num))) {
-//                 best_den = Ryy;
-//                 best_num = Rxy;
-//                 best_id = j;
-//             }
-//         } while (++j < N);
-
-//         /* Updating the sums of the new pulse(s) */
-//         xy = ADD32(xy, EXTEND32(X[best_id]));
-//         /* We're multiplying y[j] by two so we don't have to do it here */
-//         yy = ADD16(yy, y[best_id]);
-
-//         /* Only now that we've made the final choice, update y/iy */
-//         /* Multiplying y[j] by 2 so we don't have to do it everywhere else */
-//         y[best_id] += 2;
-//         iy[best_id]++;
-//     }
-
-//     /* Put the original sign back */
-//     j = 0;
-//     do {
-//         /*iy[j] = signx[j] ? -iy[j] : iy[j];*/
-//         /* OPT: The is more likely to be compiled without a branch than the code above
-//            but has the same performance otherwise. */
-//         iy[j] = (iy[j] ^ -signx[j]) + signx[j];
-//     } while (++j < N);
-
-//     return yy;
-// }
-// //----------------------------------------------------------------------------------------------------------------------
-
-// unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch) {
-//     VARDECL(int, iy);
-//     int16_t yy;
-//     unsigned collapse_mask;
-//     SAVE_STACK;
-
-//     assert2(K > 0, "alg_quant() needs at least one pulse");
-//     assert2(N > 1, "alg_quant() needs at least two dimensions");
-
-//     /* Covers vectorization by up to 4. */
-//     ALLOC(iy, N + 3, int);
-
-//     exp_rotation(X, N, 1, B, K, spread);
-
-//     yy = op_pvq_search(X, iy, K, N, arch);
-
-//     encode_pulses(iy, N, K, enc);
-
-//     if (resynth) {
-//         normalise_residual(iy, X, N, yy, gain);
-//         exp_rotation(X, N, -1, B, K, spread);
-//     }
-
-//     collapse_mask = extract_collapse_mask(iy, N, B);
-
-//     return collapse_mask;
-// }
-// //----------------------------------------------------------------------------------------------------------------------
-
-// /** Decode pulse vector and combine the result with the pitch vector to produce
-//     the final normalised signal in the current band. */
-// unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain) {
-//     int32_t Ryy;
-//     unsigned collapse_mask;
-//     VARDECL(int, iy);
-//     SAVE_STACK;
-
-//     assert2(K > 0, "alg_unquant() needs at least one pulse");
-//     assert2(N > 1, "alg_unquant() needs at least two dimensions");
-//     ALLOC(iy, N, int);
-//     Ryy = decode_pulses(iy, N, K, dec);
-//     normalise_residual(iy, X, N, Ryy, gain);
-//     exp_rotation(X, N, -1, B, K, spread);
-//     collapse_mask = extract_collapse_mask(iy, N, B);
-
-//     return collapse_mask;
-// }
-// //----------------------------------------------------------------------------------------------------------------------
-
-// void renormalise_vector(int16_t *X, int N, int16_t gain, int arch) {
-//     int i;
-//     int k;
-//     int32_t E;
-//     int16_t g;
-//     int32_t t;
-//     int16_t *xptr;
-//     E = EPSILON + celt_inner_prod(X, X, N, arch);
-//     k = celt_ilog2(E) >> 1;
-//     t = VSHR32(E, 2 * (k - 7));
-//     g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
-
-//     xptr = X;
-//     for (i = 0; i < N; i++) {
-//         *xptr = EXTRACT16(PSHR32(MULT16_16(g, *xptr), k + 1));
-//         xptr++;
-//     }
-//     /*return celt_sqrt(E);*/
-// }
-// //----------------------------------------------------------------------------------------------------------------------
-
-// int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch) {
-//     int i;
-//     int itheta;
-//     int16_t mid, side;
-//     int32_t Emid, Eside;
-
-//     Emid = Eside = EPSILON;
-//     if (stereo) {
-//         for (i = 0; i < N; i++) {
-//             int16_t m, s;
-//             m = ADD16(SHR16(X[i], 1), SHR16(Y[i], 1));
-//             s = SUB16(SHR16(X[i], 1), SHR16(Y[i], 1));
-//             Emid = MAC16_16(Emid, m, m);
-//             Eside = MAC16_16(Eside, s, s);
-//         }
-//     } else {
-//         Emid += celt_inner_prod(X, X, N, arch);
-//         Eside += celt_inner_prod(Y, Y, N, arch);
-//     }
-//     mid = celt_sqrt(Emid);
-//     side = celt_sqrt(Eside);
-//     /* 0.63662 = 2/pi */
-//     itheta = MULT16_16_Q15(QCONST16(0.63662f, 15), celt_atan2p(side, mid));
-
-//     return itheta;
-// }
-// //----------------------------------------------------------------------------------------------------------------------

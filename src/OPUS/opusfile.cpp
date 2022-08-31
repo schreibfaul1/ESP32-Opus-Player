@@ -18,11 +18,7 @@ OggOpusFile_t    *m_OggOpusFile;
 OggOpusLink_t    *m_OggOpusLink;
 OpusMSDecoder_t  *m_od;
 
-
-#define OP_PAGE_SIZE_MAX  (65307)
-
-#define OP_CHUNK_SIZE     (65536)
-#define OP_CHUNK_SIZE_MAX (1024*(int32_t)1024)
+#define OP_CHUNK_SIZE     (1024 * 8)
 #define OP_READ_SIZE      (2048)
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1142,16 +1138,6 @@ static int op_page_continues(const ogg_page *_og) {
     return _og->header[27 + nlacing - 1] == 255;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/*A small helper to buffer the continued packet data from a page.*/
-static void op_buffer_continued_data(ogg_page *_og) {
-    ogg_packet op;
-    ogg_stream_pagein(&m_OggOpusFile->os, _og);
-    /*Drain any packets that did end on this page (and ignore holes).
-     We only care about the continued packet data.*/
-    while(ogg_stream_packetout(&m_OggOpusFile->os, &op))
-        ;
-}
-//----------------------------------------------------------------------------------------------------------------------
 /*Allocate the decoder scratch buffer.
  This is done lazily, since if the user provides large enough buffers, we'll
  never need it.*/
@@ -1176,7 +1162,11 @@ static int op_init_buffer() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Read more samples from the stream, using the same API as op_read() or op_read_float().*/
-static int op_read_native(int16_t *_pcm, int _buf_size, int *_li) {
+static int op_read_native() {
+
+    int16_t *_pcm = NULL;
+    int _buf_size = 0;
+    int *_li = NULL;
 
     if(m_OggOpusFile->ready_state<OP_OPENED) return OP_EINVAL;
     for(;;) {
@@ -1294,18 +1284,11 @@ static int op_read_native(int16_t *_pcm, int _buf_size, int *_li) {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/*A generic filter to apply to the decoded audio data.
- _src is non-const because we will destructively modify the contents of the
- source buffer that we consume in some cases.*/
-typedef int (*op_read_filter_func)( void *_dst, int _dst_sz, int16_t *_src, int _nsamples,
-        int _nchannels);
-//----------------------------------------------------------------------------------------------------------------------
-/*Decode some samples and then apply a custom filter to them.
- This is used to convert to different output formats.*/
-static int op_filter_read_native(void *_dst, int _dst_sz, int *_li) {
+int op_read_stereo(int16_t *_pcm, int _buf_size) {
+
     int ret;
     /*Ensure we have some decoded samples in our buffer.*/
-    ret = op_read_native(NULL, 0, _li);
+    ret = op_read_native();
     /*Now apply the filter to them.*/
     if((ret>=0) && (m_OggOpusFile->ready_state>=OP_INITSET)) {
         int od_buffer_pos;
@@ -1317,13 +1300,13 @@ static int op_filter_read_native(void *_dst, int _dst_sz, int *_li) {
 
             int16_t *_src = m_OggOpusFile->od_buffer + nchannels * od_buffer_pos;
 
-            ret = _min(ret, _dst_sz >> 1);
+            ret = _min(ret, _buf_size >> 1);
             if(nchannels == 2)
-                memcpy(_dst, _src, ret * 2 * sizeof(*_src));
+                memcpy(_pcm, _src, ret * 2 * sizeof(*_src));
             else {
                 int16_t *dst;
                 int i;
-                dst = (int16_t*) _dst;
+                dst = (int16_t*) _pcm;
                 if(nchannels == 1) {
                     for(i = 0; i < ret; i++)
                         dst[2 * i + 0] = dst[2 * i + 1] = _src[i];
@@ -1339,29 +1322,6 @@ static int op_filter_read_native(void *_dst, int _dst_sz, int *_li) {
         }
     }
     return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
-int op_read_stereo(int16_t *_pcm, int _buf_size) {
-
-    return op_filter_read_native(_pcm, _buf_size, NULL);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*A version of strncasecmp() that is guaranteed to only ignore the case of
- ASCII characters.*/
-int op_strncasecmp(const char *_a, const char *_b, int _n) {
-    int i;
-    for(i = 0; i < _n; i++) {
-        int a;
-        int b;
-        int d;
-        a = _a[i];
-        b = _b[i];
-        if(a >= 'a' && a <= 'z') a -= 'a' - 'A';
-        if(b >= 'a' && b <= 'z') b -= 'a' - 'A';
-        d = a - b;
-        if(d) return d;
-    }
-    return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 int opus_head_parse(OpusHead_t *_head, const unsigned char *_data, size_t _len) {

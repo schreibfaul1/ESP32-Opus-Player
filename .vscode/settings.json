@@ -274,7 +274,8 @@
     "silk.h": "c",
     "random": "c",
     "memory": "c",
-    "config.h": "c"
+    "config.h": "c",
+    "math.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }

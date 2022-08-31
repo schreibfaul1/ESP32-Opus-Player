@@ -18,18 +18,13 @@
 
 extern __attribute__((weak)) int SD_read(unsigned char* buff, int nbytes);
 
-#define OP_MEM_SIZE_MAX (~(size_t)0>>1)
-#define OP_MEM_DIFF_MAX ((ptrdiff_t)OP_MEM_SIZE_MAX)
-
 /*Advance a file offset by the given amount, clamping against INT64_MAX.
-  This is used to advance a known offset by things like OP_CHUNK_SIZE or
-   OP_PAGE_SIZE_MAX, while making sure to avoid signed overflow.
   It assumes that both _offset and _amount are non-negative.*/
 #define OP_ADV_OFFSET(_offset,_amount) \
  (_min(_offset,INT64_MAX-(_amount))+(_amount))
 
 #define OP_NCHANNELS_MAX (2)
-#define OPUS_CHANNEL_COUNT_MAX (255)
+#define OPUS_CHANNEL_COUNT_MAX (2)
 
 /*Initial state.*/
 # define  OP_NOTOPEN   (0)
@@ -107,11 +102,6 @@ typedef struct OggOpusFile{
   int32_t           gain_offset_q8;
 } OggOpusFile_t;
 
-
-
-
-int op_strncasecmp(const char *_a,const char *_b,int _n);
-
 #define OP_FALSE         (-1)
 #define OP_EOF           (-2)
 #define OP_HOLE          (-3)
@@ -163,8 +153,6 @@ OggOpusFile_t *opus_init_decoder();
 #define OP_TRACK_GAIN    (3008)
 #define OP_ABSOLUTE_GAIN (3009)
 
-int op_read( int16_t *_pcm,int _buf_size,int *_li);
 int op_read_stereo(int16_t *_pcm,int _buf_size);
-int op_read_float_stereo(float *_pcm,int _buf_size);
 
 

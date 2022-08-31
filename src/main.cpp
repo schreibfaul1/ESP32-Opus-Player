@@ -254,6 +254,7 @@ void opusTask(void *parameter) {
             playChunk();
         }
         vTaskDelay(5);
+        // log_e("%u", uxTaskGetStackHighWaterMark(NULL));
     } while(ret > 0);
     vTaskDelete(opus_task);
 }
@@ -284,7 +285,7 @@ void setup() {
     xTaskCreatePinnedToCore(
             opusTask, /* Function to implement the task */
             "OPUS", /* Name of the task */
-            4096 * 6,  /* Stack size in words */
+            4096 * 4,  /* Stack size in words */
             NULL,  /* Task input parameter */
             2,  /* Priority of the task */
             &opus_task,  /* Task handle. */

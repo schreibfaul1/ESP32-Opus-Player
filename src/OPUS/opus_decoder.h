@@ -43,7 +43,6 @@ extern "C" {
 
 #define VARDECL(type, var)
 #define ALLOC(var, size, type) type var[size]
-#define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
 #define OPUS_OK                0
 #define OPUS_BAD_ARG          -1
 #define OPUS_BUFFER_TOO_SMALL -2

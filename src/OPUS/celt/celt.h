@@ -230,81 +230,16 @@ struct CELTMode {
 #define SPREAD_NORMAL     (2)
 #define SPREAD_AGGRESSIVE (3)
 
-#define MIN(a,b) ((a)<(b) ? (a):(b))
-#define MAX(a,b) ((a)>(b) ? (a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
 
-#define ABS16(x) ((x) < 0 ? (-(x)) : (x))
-#define ABS32(x) ((x) < 0 ? (-(x)) : (x))
-
-#define IMUL32(a,b) ((a)*(b))
-
-#define MIN16(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 16-bit value.   */
-#define MAX16(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 16-bit value.   */
-#define MIN32(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 32-bit value.   */
-#define MAX32(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 32-bit value.   */
-#define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
-#define IMAX(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum int value.   */
-#define UADD32(a,b) ((a)+(b))
-#define USUB32(a,b) ((a)-(b))
-
-#define __celt_check_mode_ptr_ptr(ptr) ((ptr) + ((ptr) - (const CELTMode**)(ptr)))
-// #define __celt_check_analysis_ptr(ptr) ((ptr) + ((ptr) - (const AnalysisInfo*)(ptr)))
-// #define __celt_check_silkinfo_ptr(ptr) ((ptr) + ((ptr) - (const SILKInfo*)(ptr)))
-
-#define CELT_SET_PREDICTION_REQUEST    10002
-
-/** Controls the use of interframe prediction.
-    0=Independent frames
-    1=Short term interframe prediction allowed
-    2=Long term prediction allowed
- */
-#define CELT_SET_PREDICTION(x) CELT_SET_PREDICTION_REQUEST, (int32_t)(x)
-
-#define CELT_SET_INPUT_CLIPPING_REQUEST    10004
-#define CELT_SET_INPUT_CLIPPING(x) CELT_SET_INPUT_CLIPPING_REQUEST, (int32_t)(x)
-
-#define CELT_GET_AND_CLEAR_ERROR_REQUEST   10007
-#define CELT_GET_AND_CLEAR_ERROR(x) CELT_GET_AND_CLEAR_ERROR_REQUEST, (int32_t*)(x)
-
-#define CELT_SET_CHANNELS_REQUEST    10008
-#define CELT_SET_CHANNELS(x) CELT_SET_CHANNELS_REQUEST, (int32_t)(x)
-
-
-/* Internal */
-#define CELT_SET_START_BAND_REQUEST    10010
-#define CELT_SET_START_BAND(x) CELT_SET_START_BAND_REQUEST, (int32_t)(x)
-#define CELT_SET_END_BAND_REQUEST    10012
-#define CELT_SET_END_BAND(x) CELT_SET_END_BAND_REQUEST, (int32_t)(x)
-#define CELT_GET_MODE_REQUEST    10015
-#define CELT_SET_SIGNALLING_REQUEST    10016
-#define CELT_SET_TONALITY_REQUEST    10018
-#define CELT_SET_TONALITY_SLOPE_REQUEST    10020
-#define CELT_SET_ANALYSIS_REQUEST    10022
-#define OPUS_SET_LFE_REQUEST    10024
-#define OPUS_SET_ENERGY_MASK_REQUEST    10026
-#define CELT_SET_SILK_INFO_REQUEST    10028
-#define PLC_PITCH_LAG_MAX (720)
-#define PLC_PITCH_LAG_MIN (100)
-#define EC_SYM_BITS   (8)
-#define EC_CODE_BITS  (32)
-#define EC_SYM_MAX    ((1U<<EC_SYM_BITS)-1)
-#define EC_CODE_SHIFT (EC_CODE_BITS-EC_SYM_BITS-1)
-#define EC_CODE_TOP   (((uint32_t)1U)<<(EC_CODE_BITS-1))
-#define EC_CODE_BOT   (EC_CODE_TOP>>EC_SYM_BITS)
-#define EC_CODE_EXTRA ((EC_CODE_BITS-2)%EC_SYM_BITS+1)
-#define DECODE_BUFFER_SIZE 2048
-#define CELT_PVQ_U(_n, _k) (CELT_PVQ_U_ROW[IMIN(_n, _k)][IMAX(_n, _k)])
-#define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
 #define opus_likely(x)       (__builtin_expect(!!(x), 1))
 #define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
-#define CELT_SIG_SCALE 32768.f
-#define CELT_FATAL(str) celt_fatal(str, __FILE__, __LINE__);
+
 #define assert2(cond, message)
-#define SAMP_MAX 2147483647
 #define TWID_MAX 32767
 #define TRIG_UPSCALE 1
 #define LPC_ORDER 24
-#define SAMP_MIN -SAMP_MAX
 #define celt_fir(x, num, y, N, ord, arch) (celt_fir_c(x, num, y, N, ord, arch))
 #define S_MUL(a,b) MULT16_32_Q15(b, a)
 #define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
@@ -382,8 +317,7 @@ struct CELTMode {
 #define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(uint16_t)(b))
 
 /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
-#define MULT16_32_Q16(a,b) ((int32_t)SHR((int64_t)((int16_t)(a))*(b),16))
-
+inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 16;}
 
 /** 16x32 multiplication, followed by a 16-bit shift right (round-to-nearest). Results fits in 32 bits */
 #define MULT16_32_P16(a,b) ((int32_t)PSHR((int64_t)((int16_t)(a))*(b),16))
@@ -570,8 +504,8 @@ static inline int32_t celt_sudiv(int32_t n, int32_t d) {
 
 static inline int16_t sig2word16(int32_t x){
    x = PSHR32(x, 12);
-   x = MAX32(x, -32768);
-   x = MIN32(x, 32767);
+   x = max(x, -32768);
+   x = min(x, 32767);
    return EXTRACT16(x);
 }
 
@@ -606,10 +540,10 @@ static inline int32_t celt_maxabs16(const int16_t *x, int len) {
     int16_t maxval = 0;
     int16_t minval = 0;
     for (i = 0; i < len; i++) {
-        maxval = MAX16(maxval, x[i]);
-        minval = MIN16(minval, x[i]);
+        maxval = max(maxval, x[i]);
+        minval = min(minval, x[i]);
     }
-    return MAX32(EXTEND32(maxval), -EXTEND32(minval));
+    return max(EXTEND32(maxval), -EXTEND32(minval));
 }
 
 static inline int32_t celt_maxabs32(const int32_t *x, int len) {
@@ -617,10 +551,10 @@ static inline int32_t celt_maxabs32(const int32_t *x, int len) {
     int32_t maxval = 0;
     int32_t minval = 0;
     for (i = 0; i < len; i++) {
-        maxval = MAX32(maxval, x[i]);
-        minval = MIN32(minval, x[i]);
+        maxval = max(maxval, x[i]);
+        minval = min(minval, x[i]);
     }
-    return MAX32(maxval, -minval);
+    return max(maxval, -minval);
 }
 
 /** Integer log in base2. Undefined for zero and negative numbers */
@@ -797,14 +731,14 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
                               int allow_weak_transients, int *weak_transient);
-static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);
-static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
-                          int C, int CC, int LM, int upsample, int arch);
-void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
-                      const int16_t *coef, int32_t *mem, int clip);
-static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias);
-static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
-                       int16_t tf_estimate, int tf_chan, int *importance);
+//static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);
+//static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
+//                          int C, int CC, int LM, int upsample, int arch);
+//void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
+//                      const int16_t *coef, int32_t *mem, int clip);
+//static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias);
+//static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
+//                       int16_t tf_estimate, int tf_chan, int *importance);
 static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc);
 static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_t *bandLogE, int end, int LM, int C,
                                int N0, AnalysisInfo *analysis, int16_t *stereo_saving, int16_t tf_estimate,
