@@ -6010,221 +6010,221 @@ static int32_t loss_distortion(const int16_t *eBands, int16_t *oldEBands, int st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const int16_t *eBands, int16_t *oldEBands,
-                                    int32_t budget, int32_t tell, const unsigned char *prob_model, int16_t *error,
-                                    ec_enc *enc, int C, int LM, int intra, int16_t max_decay, int lfe) {
-    int i, c;
-    int badness = 0;
-    int32_t prev[2] = {0, 0};
-    int16_t coef;
-    int16_t beta;
+// static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const int16_t *eBands, int16_t *oldEBands,
+//                                     int32_t budget, int32_t tell, const unsigned char *prob_model, int16_t *error,
+//                                     ec_enc *enc, int C, int LM, int intra, int16_t max_decay, int lfe) {
+//     int i, c;
+//     int badness = 0;
+//     int32_t prev[2] = {0, 0};
+//     int16_t coef;
+//     int16_t beta;
 
-    if (tell + 3 <= budget) ec_enc_bit_logp(enc, intra, 3);
-    if (intra) {
-        coef = 0;
-        beta = beta_intra;
-    } else {
-        beta = beta_coef[LM];
-        coef = pred_coef[LM];
-    }
+//     if (tell + 3 <= budget) ec_enc_bit_logp(enc, intra, 3);
+//     if (intra) {
+//         coef = 0;
+//         beta = beta_intra;
+//     } else {
+//         beta = beta_coef[LM];
+//         coef = pred_coef[LM];
+//     }
 
-    /* Encode at a fixed coarse resolution */
-    for (i = start; i < end; i++) {
-        c = 0;
-        do {
-            int bits_left;
-            int qi, qi0;
-            int32_t q;
-            int16_t x;
-            int32_t f, tmp;
-            int16_t oldE;
-            int16_t decay_bound;
-            x = eBands[i + c * m->nbEBands];
-            oldE = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
+//     /* Encode at a fixed coarse resolution */
+//     for (i = start; i < end; i++) {
+//         c = 0;
+//         do {
+//             int bits_left;
+//             int qi, qi0;
+//             int32_t q;
+//             int16_t x;
+//             int32_t f, tmp;
+//             int16_t oldE;
+//             int16_t decay_bound;
+//             x = eBands[i + c * m->nbEBands];
+//             oldE = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
 
-            f = SHL32(EXTEND32(x), 7) - PSHR32(MULT16_16(coef, oldE), 8) - prev[c];
-            /* Rounding to nearest integer here is really important! */
-            qi = (f + QCONST32(.5f, DB_SHIFT + 7)) >> (DB_SHIFT + 7);
-            decay_bound =
-                EXTRACT16(max(-QCONST16(28.f, DB_SHIFT), SUB32((int32_t)oldEBands[i + c * m->nbEBands], max_decay)));
-            /* Prevent the energy from going down too quickly (e.g. for bands
-               that have just one bin) */
-            if (qi < 0 && x < decay_bound) {
-                qi += (int)SHR16(SUB16(decay_bound, x), DB_SHIFT);
-                if (qi > 0) qi = 0;
-            }
-            qi0 = qi;
-            /* If we don't have enough bits to encode all the energy, just assume
-                something safe. */
-            tell = ec_tell(enc);
-            bits_left = budget - tell - 3 * C * (end - i);
-            if (i != start && bits_left < 30) {
-                if (bits_left < 24) qi = min(1, qi);
-                if (bits_left < 16) qi = max(-1, qi);
-            }
-            if (lfe && i >= 2) qi = min(qi, 0);
-            if (budget - tell >= 15) {
-                int pi;
-                pi = 2 * min(i, 20);
-                ec_laplace_encode(enc, &qi, prob_model[pi] << 7, prob_model[pi + 1] << 6);
-            } else if (budget - tell >= 2) {
-                qi = max(-1, min(qi, 1));
-                ec_enc_icdf(enc, 2 * qi ^ -(qi < 0), small_energy_icdf, 2);
-            } else if (budget - tell >= 1) {
-                qi = min(0, qi);
-                ec_enc_bit_logp(enc, -qi, 1);
-            } else
-                qi = -1;
-            error[i + c * m->nbEBands] = PSHR32(f, 7) - SHL16(qi, DB_SHIFT);
-            badness += abs(qi0 - qi);
-            q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
+//             f = SHL32(EXTEND32(x), 7) - PSHR32(MULT16_16(coef, oldE), 8) - prev[c];
+//             /* Rounding to nearest integer here is really important! */
+//             qi = (f + QCONST32(.5f, DB_SHIFT + 7)) >> (DB_SHIFT + 7);
+//             decay_bound =
+//                 EXTRACT16(max(-QCONST16(28.f, DB_SHIFT), SUB32((int32_t)oldEBands[i + c * m->nbEBands], max_decay)));
+//             /* Prevent the energy from going down too quickly (e.g. for bands
+//                that have just one bin) */
+//             if (qi < 0 && x < decay_bound) {
+//                 qi += (int)SHR16(SUB16(decay_bound, x), DB_SHIFT);
+//                 if (qi > 0) qi = 0;
+//             }
+//             qi0 = qi;
+//             /* If we don't have enough bits to encode all the energy, just assume
+//                 something safe. */
+//             tell = ec_tell(enc);
+//             bits_left = budget - tell - 3 * C * (end - i);
+//             if (i != start && bits_left < 30) {
+//                 if (bits_left < 24) qi = min(1, qi);
+//                 if (bits_left < 16) qi = max(-1, qi);
+//             }
+//             if (lfe && i >= 2) qi = min(qi, 0);
+//             if (budget - tell >= 15) {
+//                 int pi;
+//                 pi = 2 * min(i, 20);
+//                 ec_laplace_encode(enc, &qi, prob_model[pi] << 7, prob_model[pi + 1] << 6);
+//             } else if (budget - tell >= 2) {
+//                 qi = max(-1, min(qi, 1));
+//                 ec_enc_icdf(enc, 2 * qi ^ -(qi < 0), small_energy_icdf, 2);
+//             } else if (budget - tell >= 1) {
+//                 qi = min(0, qi);
+//                 ec_enc_bit_logp(enc, -qi, 1);
+//             } else
+//                 qi = -1;
+//             error[i + c * m->nbEBands] = PSHR32(f, 7) - SHL16(qi, DB_SHIFT);
+//             badness += abs(qi0 - qi);
+//             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
 
-            tmp = PSHR32(MULT16_16(coef, oldE), 8) + prev[c] + SHL32(q, 7);
-            tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
-            oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
-            prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
-        } while (++c < C);
-    }
-    return lfe ? 0 : badness;
-}
+//             tmp = PSHR32(MULT16_16(coef, oldE), 8) + prev[c] + SHL32(q, 7);
+//             tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
+//             oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
+//             prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
+//         } while (++c < C);
+//     }
+//     return lfe ? 0 : badness;
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, const int16_t *eBands, int16_t *oldEBands,
-                         uint32_t budget, int16_t *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
-                         int force_intra, int32_t *delayedIntra, int two_pass, int loss_rate, int lfe) {
-    int intra;
-    int16_t max_decay;
-    VARDECL(int16_t, oldEBands_intra);
-    VARDECL(int16_t, error_intra);
-    ec_enc enc_start_state;
-    uint32_t tell;
-    int badness1 = 0;
-    int32_t intra_bias;
-    int32_t new_distortion;
-    SAVE_STACK;
+// void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, const int16_t *eBands, int16_t *oldEBands,
+//                          uint32_t budget, int16_t *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
+//                          int force_intra, int32_t *delayedIntra, int two_pass, int loss_rate, int lfe) {
+//     int intra;
+//     int16_t max_decay;
+//     VARDECL(int16_t, oldEBands_intra);
+//     VARDECL(int16_t, error_intra);
+//     ec_enc enc_start_state;
+//     uint32_t tell;
+//     int badness1 = 0;
+//     int32_t intra_bias;
+//     int32_t new_distortion;
+//     SAVE_STACK;
 
-    intra = force_intra || (!two_pass && *delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C);
-    intra_bias = (int32_t)((budget * *delayedIntra * loss_rate) / (C * 512));
-    new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
+//     intra = force_intra || (!two_pass && *delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C);
+//     intra_bias = (int32_t)((budget * *delayedIntra * loss_rate) / (C * 512));
+//     new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
 
-    tell = ec_tell(enc);
-    if (tell + 3 > budget) two_pass = intra = 0;
+//     tell = ec_tell(enc);
+//     if (tell + 3 > budget) two_pass = intra = 0;
 
-    max_decay = QCONST16(16.f, DB_SHIFT);
-    if (end - start > 10) {
-        max_decay = min(max_decay, SHL32(EXTEND32(nbAvailableBytes), DB_SHIFT - 3));
-    }
-    if (lfe) max_decay = QCONST16(3.f, DB_SHIFT);
-    enc_start_state = *enc;
+//     max_decay = QCONST16(16.f, DB_SHIFT);
+//     if (end - start > 10) {
+//         max_decay = min(max_decay, SHL32(EXTEND32(nbAvailableBytes), DB_SHIFT - 3));
+//     }
+//     if (lfe) max_decay = QCONST16(3.f, DB_SHIFT);
+//     enc_start_state = *enc;
 
-    ALLOC(oldEBands_intra, C * m->nbEBands, int16_t);
-    ALLOC(error_intra, C * m->nbEBands, int16_t);
-    OPUS_COPY(oldEBands_intra, oldEBands, C * m->nbEBands);
+//     ALLOC(oldEBands_intra, C * m->nbEBands, int16_t);
+//     ALLOC(error_intra, C * m->nbEBands, int16_t);
+//     OPUS_COPY(oldEBands_intra, oldEBands, C * m->nbEBands);
 
-    if (two_pass || intra) {
-        badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget, tell, e_prob_model[LM][1],
-                                            error_intra, enc, C, LM, 1, max_decay, lfe);
-    }
+//     if (two_pass || intra) {
+//         badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget, tell, e_prob_model[LM][1],
+//                                             error_intra, enc, C, LM, 1, max_decay, lfe);
+//     }
 
-    if (!intra) {
-        unsigned char *intra_buf;
-        ec_enc enc_intra_state;
-        int32_t tell_intra;
-        uint32_t nstart_bytes;
-        uint32_t nintra_bytes;
-        uint32_t save_bytes;
-        int badness2;
-        VARDECL(unsigned char, intra_bits);
+//     if (!intra) {
+//         unsigned char *intra_buf;
+//         ec_enc enc_intra_state;
+//         int32_t tell_intra;
+//         uint32_t nstart_bytes;
+//         uint32_t nintra_bytes;
+//         uint32_t save_bytes;
+//         int badness2;
+//         VARDECL(unsigned char, intra_bits);
 
-        tell_intra = ec_tell_frac(enc);
+//         tell_intra = ec_tell_frac(enc);
 
-        enc_intra_state = *enc;
+//         enc_intra_state = *enc;
 
-        nstart_bytes = ec_range_bytes(&enc_start_state);
-        nintra_bytes = ec_range_bytes(&enc_intra_state);
-        intra_buf = ec_get_buffer(&enc_intra_state) + nstart_bytes;
-        save_bytes = nintra_bytes - nstart_bytes;
-        if (save_bytes == 0) save_bytes = ALLOC_NONE;
-        ALLOC(intra_bits, save_bytes, unsigned char);
-        /* Copy bits from intra bit-stream */
-        OPUS_COPY(intra_bits, intra_buf, nintra_bytes - nstart_bytes);
+//         nstart_bytes = ec_range_bytes(&enc_start_state);
+//         nintra_bytes = ec_range_bytes(&enc_intra_state);
+//         intra_buf = ec_get_buffer(&enc_intra_state) + nstart_bytes;
+//         save_bytes = nintra_bytes - nstart_bytes;
+//         if (save_bytes == 0) save_bytes = ALLOC_NONE;
+//         ALLOC(intra_bits, save_bytes, unsigned char);
+//         /* Copy bits from intra bit-stream */
+//         OPUS_COPY(intra_bits, intra_buf, nintra_bytes - nstart_bytes);
 
-        *enc = enc_start_state;
+//         *enc = enc_start_state;
 
-        badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget, tell, e_prob_model[LM][intra],
-                                            error, enc, C, LM, 0, max_decay, lfe);
+//         badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget, tell, e_prob_model[LM][intra],
+//                                             error, enc, C, LM, 0, max_decay, lfe);
 
-        if (two_pass &&
-            (badness1 < badness2 || (badness1 == badness2 && ((int32_t)ec_tell_frac(enc)) + intra_bias > tell_intra))) {
-            *enc = enc_intra_state;
-            /* Copy intra bits to bit-stream */
-            OPUS_COPY(intra_buf, intra_bits, nintra_bytes - nstart_bytes);
-            OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
-            OPUS_COPY(error, error_intra, C * m->nbEBands);
-            intra = 1;
-        }
-    } else {
-        OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
-        OPUS_COPY(error, error_intra, C * m->nbEBands);
-    }
+//         if (two_pass &&
+//             (badness1 < badness2 || (badness1 == badness2 && ((int32_t)ec_tell_frac(enc)) + intra_bias > tell_intra))) {
+//             *enc = enc_intra_state;
+//             /* Copy intra bits to bit-stream */
+//             OPUS_COPY(intra_buf, intra_bits, nintra_bytes - nstart_bytes);
+//             OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
+//             OPUS_COPY(error, error_intra, C * m->nbEBands);
+//             intra = 1;
+//         }
+//     } else {
+//         OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
+//         OPUS_COPY(error, error_intra, C * m->nbEBands);
+//     }
 
-    if (intra)
-        *delayedIntra = new_distortion;
-    else
-        *delayedIntra =
-            ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), *delayedIntra), new_distortion);
-}
+//     if (intra)
+//         *delayedIntra = new_distortion;
+//     else
+//         *delayedIntra =
+//             ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), *delayedIntra), new_distortion);
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-                       ec_enc *enc, int C) {
-    int i, c;
+// void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
+//                        ec_enc *enc, int C) {
+//     int i, c;
 
-    /* Encode finer resolution */
-    for (i = start; i < end; i++) {
-        int16_t frac = 1 << fine_quant[i];
-        if (fine_quant[i] <= 0) continue;
-        c = 0;
-        do {
-            int q2;
-            int16_t offset;
-            /* Has to be without rounding */
-            q2 = (error[i + c * m->nbEBands] + QCONST16(.5f, DB_SHIFT)) >> (DB_SHIFT - fine_quant[i]);
-            if (q2 > frac - 1) q2 = frac - 1;
-            if (q2 < 0) q2 = 0;
-            ec_enc_bits(enc, q2, fine_quant[i]);
-            offset = SUB16(SHR32(SHL32(EXTEND32(q2), DB_SHIFT) + QCONST16(.5f, DB_SHIFT), fine_quant[i]),
-                           QCONST16(.5f, DB_SHIFT));
-            oldEBands[i + c * m->nbEBands] += offset;
-            error[i + c * m->nbEBands] -= offset;
-            /*printf ("%f ", error[i] - offset);*/
-        } while (++c < C);
-    }
-}
+//     /* Encode finer resolution */
+//     for (i = start; i < end; i++) {
+//         int16_t frac = 1 << fine_quant[i];
+//         if (fine_quant[i] <= 0) continue;
+//         c = 0;
+//         do {
+//             int q2;
+//             int16_t offset;
+//             /* Has to be without rounding */
+//             q2 = (error[i + c * m->nbEBands] + QCONST16(.5f, DB_SHIFT)) >> (DB_SHIFT - fine_quant[i]);
+//             if (q2 > frac - 1) q2 = frac - 1;
+//             if (q2 < 0) q2 = 0;
+//             ec_enc_bits(enc, q2, fine_quant[i]);
+//             offset = SUB16(SHR32(SHL32(EXTEND32(q2), DB_SHIFT) + QCONST16(.5f, DB_SHIFT), fine_quant[i]),
+//                            QCONST16(.5f, DB_SHIFT));
+//             oldEBands[i + c * m->nbEBands] += offset;
+//             error[i + c * m->nbEBands] -= offset;
+//             /*printf ("%f ", error[i] - offset);*/
+//         } while (++c < C);
+//     }
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
-void quant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-                           int *fine_priority, int bits_left, ec_enc *enc, int C) {
-    int i, prio, c;
+// void quant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
+//                            int *fine_priority, int bits_left, ec_enc *enc, int C) {
+//     int i, prio, c;
 
-    /* Use up the remaining bits */
-    for (prio = 0; prio < 2; prio++) {
-        for (i = start; i < end && bits_left >= C; i++) {
-            if (fine_quant[i] >= MAX_FINE_BITS || fine_priority[i] != prio) continue;
-            c = 0;
-            do {
-                int q2;
-                int16_t offset;
-                q2 = error[i + c * m->nbEBands] < 0 ? 0 : 1;
-                ec_enc_bits(enc, q2, 1);
-                offset = SHR16(SHL16(q2, DB_SHIFT) - QCONST16(.5f, DB_SHIFT), fine_quant[i] + 1);
-                oldEBands[i + c * m->nbEBands] += offset;
-                error[i + c * m->nbEBands] -= offset;
-                bits_left--;
-            } while (++c < C);
-        }
-    }
-}
+//     /* Use up the remaining bits */
+//     for (prio = 0; prio < 2; prio++) {
+//         for (i = start; i < end && bits_left >= C; i++) {
+//             if (fine_quant[i] >= MAX_FINE_BITS || fine_priority[i] != prio) continue;
+//             c = 0;
+//             do {
+//                 int q2;
+//                 int16_t offset;
+//                 q2 = error[i + c * m->nbEBands] < 0 ? 0 : 1;
+//                 ec_enc_bits(enc, q2, 1);
+//                 offset = SHR16(SHL16(q2, DB_SHIFT) - QCONST16(.5f, DB_SHIFT), fine_quant[i] + 1);
+//                 oldEBands[i + c * m->nbEBands] += offset;
+//                 error[i + c * m->nbEBands] -= offset;
+//                 bits_left--;
+//             } while (++c < C);
+//         }
+//     }
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
 void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int intra, ec_dec *dec, int C,
@@ -6323,18 +6323,18 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *old
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C) {
-    int c, i;
-    c = 0;
-    do {
-        for (i = 0; i < effEnd; i++) {
-            bandLogE[i + c * m->nbEBands] = celt_log2(bandE[i + c * m->nbEBands]) - SHL16((int16_t)eMeans[i], 6);
-            /* Compensate for bandE[] being Q12 but celt_log2() taking a Q14 input. */
-            bandLogE[i + c * m->nbEBands] += QCONST16(2.f, DB_SHIFT);
-        }
-        for (i = effEnd; i < end; i++) bandLogE[c * m->nbEBands + i] = -QCONST16(14.f, DB_SHIFT);
-    } while (++c < C);
-}
+// void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C) {
+//     int c, i;
+//     c = 0;
+//     do {
+//         for (i = 0; i < effEnd; i++) {
+//             bandLogE[i + c * m->nbEBands] = celt_log2(bandE[i + c * m->nbEBands]) - SHL16((int16_t)eMeans[i], 6);
+//             /* Compensate for bandE[] being Q12 but celt_log2() taking a Q14 input. */
+//             bandLogE[i + c * m->nbEBands] += QCONST16(2.f, DB_SHIFT);
+//         }
+//         for (i = effEnd; i < end; i++) bandLogE[c * m->nbEBands + i] = -QCONST16(14.f, DB_SHIFT);
+//     } while (++c < C);
+// }
 //----------------------------------------------------------------------------------------------------------------------
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC. */

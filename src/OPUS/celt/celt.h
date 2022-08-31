@@ -788,21 +788,7 @@ static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, 
                             int32_t maxcorr);
 static void celt_fir5(int16_t *x, const int16_t *num, int N);
 void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int len, int C, int arch);
-int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int len, int max_pitch, int arch);
-void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int len, int max_pitch, int *pitch,
-                  int arch);
 static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
-int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0_, int prev_period, int16_t prev_gain,
-                        int arch);
-static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, const int *bits1,
-                                          const int *bits2, const int *thresh, const int *cap, int32_t total,
-                                          int32_t *_balance, int skip_rsv, int *intensity, int intensity_rsv,
-                                          int *dual_stereo, int dual_stereo_rsv, int *bits, int *ebits,
-                                          int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev,
-                                          int signalBandwidth);
-int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
-                           int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
-                           int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
 static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
@@ -830,23 +816,12 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
 int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
                            int *intensity, int *dual_stereo, int32_t total, int32_t *balance, int *pulses, int *ebits,
                            int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
-static int quant_coarse_energy_impl(const CELTMode *m, int start, int end, const int16_t *eBands, int16_t *oldEBands,
-                                    int32_t budget, int32_t tell, const unsigned char *prob_model, int16_t *error,
-                                    ec_enc *enc, int C, int LM, int intra, int16_t max_decay, int lfe);
-void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd, const int16_t *eBands, int16_t *oldEBands,
-                         uint32_t budget, int16_t *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
-                         int force_intra, int32_t *delayedIntra, int two_pass, int loss_rate, int lfe);
-void quant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-                       ec_enc *enc, int C);
-void quant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int16_t *error, int *fine_quant,
-                           int *fine_priority, int bits_left, ec_enc *enc, int C);
 void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int intra, ec_dec *dec, int C,
                            int LM);
 void unquant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBands, int *fine_quant, ec_dec *dec,
                          int C);
 void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int *fine_quant,
                              int *fine_priority, int bits_left, ec_dec *dec, int C);
-void amp2Log2(const CELTMode *m, int effEnd, int end, int32_t *bandE, int16_t *bandLogE, int C);
 static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
 
 
