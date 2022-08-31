@@ -731,26 +731,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
                               int allow_weak_transients, int *weak_transient);
-//static int patch_transient_decision(int16_t *newE, int16_t *oldE, int nbEBands, int start, int end, int C);
-//static void compute_mdcts(const CELTMode *mode, int shortBlocks, int32_t *__restrict__ in, int32_t *__restrict__ out,
-//                          int C, int CC, int LM, int upsample, int arch);
-//void celt_preemphasis(const int16_t *__restrict__ pcmp, int32_t *__restrict__ inp, int N, int CC, int upsample,
-//                      const int16_t *coef, int32_t *mem, int clip);
-//static int32_t l1_metric(const int16_t *tmp, int N, int LM, int16_t bias);
-//static int tf_analysis(const CELTMode *m, int len, int isTransient, int *tf_res, int lambda, int16_t *X, int N0, int LM,
-//                       int16_t tf_estimate, int tf_chan, int *importance);
-static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc);
-static int alloc_trim_analysis(const CELTMode *m, const int16_t *X, const int16_t *bandLogE, int end, int LM, int C,
-                               int N0, AnalysisInfo *analysis, int16_t *stereo_saving, int16_t tf_estimate,
-                               int intensity, int16_t surround_trim, int32_t equiv_rate, int arch);
-static int stereo_analysis(const CELTMode *m, const int16_t *X, int LM, int N0);
-static int16_t median_of_5(const int16_t *x);
-static int16_t median_of_3(const int16_t *x);
-static int16_t dynalloc_analysis(const int16_t *bandLogE, const int16_t *bandLogE2, int nbEBands, int start, int end,
-                                 int C, int *offsets, int lsb_depth, const int16_t *logN, int isTransient, int vbr,
-                                 int constrained_vbr, const int16_t *eBands, int LM, int effectiveBytes,
-                                 int32_t *tot_boost_, int lfe, int16_t *surround_dynalloc, AnalysisInfo *analysis,
-                                 int *importance, int *spread_weight);
+
 void _celt_lpc(int16_t *_lpc, const int32_t *ac, int p);
 void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord, int16_t *mem, int arch);
