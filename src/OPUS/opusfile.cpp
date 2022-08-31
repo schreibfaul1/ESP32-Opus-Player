@@ -1302,7 +1302,7 @@ typedef int (*op_read_filter_func)( void *_dst, int _dst_sz, int16_t *_src, int 
 //----------------------------------------------------------------------------------------------------------------------
 /*Decode some samples and then apply a custom filter to them.
  This is used to convert to different output formats.*/
-static int op_filter_read_native(void *_dst, int _dst_sz, op_read_filter_func _filter, int *_li) {
+static int op_filter_read_native(void *_dst, int _dst_sz, int *_li) {
     int ret;
     /*Ensure we have some decoded samples in our buffer.*/
     ret = op_read_native(NULL, 0, _li);
@@ -1343,7 +1343,7 @@ static int op_filter_read_native(void *_dst, int _dst_sz, op_read_filter_func _f
 //----------------------------------------------------------------------------------------------------------------------
 int op_read_stereo(int16_t *_pcm, int _buf_size) {
 
-    return op_filter_read_native(_pcm, _buf_size, op_stereo_filter, NULL);
+    return op_filter_read_native(_pcm, _buf_size, NULL);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*A version of strncasecmp() that is guaranteed to only ignore the case of
