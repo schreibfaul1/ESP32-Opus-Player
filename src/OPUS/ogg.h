@@ -123,7 +123,7 @@ typedef struct {
     extern int ogg_page_bos(const ogg_page *og);
     // extern int ogg_page_eos(const ogg_page *og);
     extern int64_t ogg_page_granulepos(const ogg_page *og);
-    extern int ogg_page_serialno(const ogg_page *og);
+    extern int getSerialNo(const ogg_page *og);
     // extern long ogg_page_pageno(const ogg_page *og);
     extern int ogg_page_packets(const ogg_page *og);
 

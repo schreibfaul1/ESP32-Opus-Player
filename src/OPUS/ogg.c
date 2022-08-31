@@ -299,13 +299,6 @@ int64_t ogg_page_granulepos(const ogg_page *og){
   return((int64_t)granulepos);
 }
 
-int ogg_page_serialno(const ogg_page *og){
-  return((int)((uint32_t)og->header[14]) |
-              ((uint32_t)og->header[15]<<8) |
-              ((uint32_t)og->header[16]<<16) |
-              ((uint32_t)og->header[17]<<24));
-}
-
 long ogg_page_pageno(const ogg_page *og){
   return((long)((uint32_t)og->header[18]) |
                ((uint32_t)og->header[19]<<8) |
@@ -988,7 +981,7 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
   int bos=ogg_page_bos(og);
   int eos=ogg_page_eos(og);
   int64_t granulepos=ogg_page_granulepos(og);
-  int serialno=ogg_page_serialno(og);
+  int serialno=getSerialNo(og);
   long pageno=ogg_page_pageno(og);
   int segments=header[26];
 
@@ -1213,4 +1206,11 @@ int ogg_stream_packetpeek(ogg_stream_state *os,ogg_packet *op){
 void ogg_packet_clear(ogg_packet *op) {
   free(op->packet);
   memset(op, 0, sizeof(*op));
+}
+
+int getSerialNo(const ogg_page *og){
+  return((int)((uint32_t)og->header[14]) |
+              ((uint32_t)og->header[15]<<8) |
+              ((uint32_t)og->header[16]<<16) |
+              ((uint32_t)og->header[17]<<24));
 }
