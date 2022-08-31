@@ -110,8 +110,6 @@ extern "C" {
 #define OPUS_BANDWIDTH_SUPERWIDEBAND 1104 /**<12 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_FULLBAND 1105      /**<20 kHz bandpass @hideinitializer*/
 #define OPUS_RESET_STATE 4028
-#define MODE_SILK_ONLY 1000
-#define MODE_HYBRID 1001
 #define MODE_CELT_ONLY 1002
 #define OPUS_SET_VOICE_RATIO_REQUEST 11018
 #define OPUS_GET_VOICE_RATIO_REQUEST 11019
@@ -139,7 +137,6 @@ typedef struct OpusMSDecoder {
 
 
 int opus_decoder_get_size(int channels);
-OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error);
 int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels);
 int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size);
 int opus_decode_float(OpusDecoder *st, const unsigned char *data, int32_t len, float *pcm, int frame_size,

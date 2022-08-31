@@ -47,7 +47,6 @@ const uint32_t CELT_SET_TONALITY_SLOPE_REQUEST  = 10020;
 const uint32_t CELT_SET_ANALYSIS_REQUEST        = 10022;
 const uint32_t OPUS_SET_LFE_REQUEST             = 10024;
 const uint32_t OPUS_SET_ENERGY_MASK_REQUEST     = 10026;
-const uint32_t CELT_SET_SILK_INFO_REQUEST       = 10028;
 
 const uint32_t PLC_PITCH_LAG_MAX = 720;
 const uint32_t PLC_PITCH_LAG_MIN = 100;

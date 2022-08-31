@@ -64,11 +64,6 @@ typedef struct {
    unsigned char leak_boost[LEAK_BANDS];
 } AnalysisInfo;
 
-typedef struct {
-   int signalType;
-   int offset;
-} SILKInfo;
-
 /*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
    larger type, you can speed up the decoder by using it here.*/
 typedef uint32_t           ec_window;
