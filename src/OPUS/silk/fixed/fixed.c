@@ -459,7 +459,6 @@ void silk_find_LPC_FIX(silk_encoder_state *psEncC,  /* I/O  Encoder state  */
     int32_t res_nrg_interp_Q, res_nrg_Q, res_tmp_nrg_Q;
     int16_t a_tmp_Q12[MAX_LPC_ORDER];
     int16_t NLSF0_Q15[MAX_LPC_ORDER];
-    SAVE_STACK;
 
     subfr_length = psEncC->subfr_length + psEncC->predictLPCOrder;
 
@@ -853,7 +852,6 @@ int32_t silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
     int32_t   nb_cbk_search, cbk_size;
     int32_t delta_lag_log2_sqr_Q7, lag_log2_Q7, prevLag_log2_Q7, prev_lag_bias_Q13;
     const int8_t *Lag_CB_ptr;
-    SAVE_STACK;
 
     /* Check for valid sampling frequency */
     assert( Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16 );
@@ -1319,7 +1317,6 @@ static void silk_P_Ana_calc_corr_st3(
     VARDECL( int32_t, scratch_mem );
     VARDECL( int32_t, xcorr32 );
     const int8_t *Lag_range_ptr, *Lag_CB_ptr;
-    SAVE_STACK;
 
     assert( complexity >= SILK_PE_MIN_COMPLEX );
     assert( complexity <= SILK_PE_MAX_COMPLEX );
@@ -1391,7 +1388,6 @@ static void silk_P_Ana_calc_energy_st3(
     int32_t   nb_cbk_search, delta, idx, cbk_size, lag_diff;
     VARDECL( int32_t, scratch_mem );
     const int8_t *Lag_range_ptr, *Lag_CB_ptr;
-    SAVE_STACK;
 
     assert( complexity >= SILK_PE_MIN_COMPLEX );
     assert( complexity <= SILK_PE_MAX_COMPLEX );
@@ -1485,8 +1481,6 @@ void silk_residual_energy_FIX(int32_t nrgs[MAX_NB_SUBFR],        /* O    Residua
     VARDECL(int16_t, LPC_res);
     const int16_t *x_ptr;
     int32_t tmp32;
-    SAVE_STACK;
-
     x_ptr = x;
     offset = LPC_order + subfr_length;
 

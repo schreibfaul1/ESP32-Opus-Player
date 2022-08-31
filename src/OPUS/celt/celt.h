@@ -445,10 +445,6 @@ int32_t celt_rcp(int32_t x);
 
 #define VARDECL(type, var)
 #define ALLOC(var, size, type) type var[size]
-#define SAVE_STACK
-#define RESTORE_STACK
-#define ALLOC_STACK
-
 #define FINE_OFFSET 21
 #define QTHETA_OFFSET 4
 #define QTHETA_OFFSET_TWOPHASE 16
@@ -456,10 +452,9 @@ int32_t celt_rcp(int32_t x);
 #define MAX_PSEUDO 40
 #define LOG_MAX_PSEUDO 6
 #define ALLOC_NONE 1
-static inline int _opus_false(void) {return 0;}
-#define OPUS_CHECK_ARRAY(ptr, len) _opus_false()
-#define OPUS_CHECK_VALUE(value) _opus_false()
-#define OPUS_PRINT_INT(value) do{}while(0)
+//static inline int _opus_false(void) {return 0;}
+//#define OPUS_CHECK_ARRAY(ptr, len) _opus_false()
+//#define OPUS_PRINT_INT(value) do{}while(0)
 #define OPUS_FPRINTF (void)
 
 #define op_pvq_search(x, iy, K, N, arch) (op_pvq_search_c(x, iy, K, N, arch))

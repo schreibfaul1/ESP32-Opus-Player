@@ -1683,7 +1683,6 @@ void silk_encode_pulses(ec_enc *psRangeEnc,            /* I/O  compressor data s
     const int8_t *pulses_ptr;
     const uint8_t *cdf_ptr;
     const uint8_t *nBits_ptr;
-    SAVE_STACK;
 
     silk_memset(pulses_comb, 0, 8 * sizeof(int32_t)); /* Fixing Valgrind reported problem*/
 
@@ -2170,7 +2169,6 @@ void silk_CNG(silk_decoder_state *psDec,       /* I/O  Decoder state            
     int32_t LPC_pred_Q10, max_Gain_Q16, gain_Q16, gain_Q10;
     int16_t A_Q12[MAX_LPC_ORDER];
     silk_CNG_struct *psCNG = &psDec->sCNG;
-    SAVE_STACK;
 
     if (psDec->fs_kHz != psCNG->fs_kHz) {
         /* Reset state */
@@ -2392,7 +2390,6 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t has_side;
     int32_t stereo_to_mono;
     int delay_stack_alloc;
-    SAVE_STACK;
 
     assert(decControl->nChannelsInternal == 1 || decControl->nChannelsInternal == 2);
 
@@ -2717,7 +2714,6 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
     int32_t *pred_lag_ptr, *pexc_Q14, *pres_Q14;
     VARDECL(int32_t, res_Q14);
     VARDECL(int32_t, sLPC_Q14);
-    SAVE_STACK;
 
     assert(psDec->prev_gain_Q16 != 0);
 
@@ -2910,7 +2906,6 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
 ) {
     VARDECL(silk_decoder_control, psDecCtrl);
     int32_t L, mv_len, ret = 0;
-    SAVE_STACK;
 
     L = psDec->frame_length;
     ALLOC(psDecCtrl, 1, silk_decoder_control);
@@ -3934,7 +3929,6 @@ void silk_NSQ_del_dec_c(const silk_encoder_state *psEncC,                    /* 
     VARDECL(int32_t, delayedGain_Q10);
     VARDECL(NSQ_del_dec_struct, psDelDec);
     NSQ_del_dec_struct *psDD;
-    SAVE_STACK;
 
     /* Set unvoiced lag to the previous one, overwrite later for voiced */
     lag = NSQ->lagPrev;
@@ -4142,7 +4136,6 @@ static void silk_noise_shape_quantizer_del_dec(
     VARDECL(NSQ_sample_pair, psSampleState);
     NSQ_del_dec_struct *psDD;
     NSQ_sample_struct *psSS;
-    SAVE_STACK;
 
     assert(nStatesDelayedDecision > 0);
     ALLOC(psSampleState, nStatesDelayedDecision, NSQ_sample_pair);
@@ -4536,7 +4529,6 @@ void silk_NSQ_c(const silk_encoder_state *psEncC,                         /* I  
     int32_t HarmShapeFIRPacked_Q14;
     int32_t offset_Q10;
     VARDECL(int32_t, x_sc_Q10);
-    SAVE_STACK;
 
     NSQ->rand_seed = psIndices->Seed;
 
@@ -4972,7 +4964,6 @@ static void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2,
     int i, k;
     VARDECL(int16_t, exc_buf);
     int16_t *exc_buf_ptr;
-    SAVE_STACK;
     ALLOC(exc_buf, 2 * subfr_length, int16_t);
     /* Find random noise component */
     /* Scale previous excitation signal */
@@ -5010,7 +5001,6 @@ static void silk_PLC_conceal(silk_decoder_state *psDec,       /* I/O Decoder sta
     VARDECL(int32_t, sLTP_Q14);
     silk_PLC_struct *psPLC = &psDec->sPLC;
     int32_t prevGain_Q10[2];
-    SAVE_STACK;
 
     ALLOC(sLTP_Q14, psDec->ltp_mem_length + psDec->frame_length, int32_t);
 
@@ -5247,7 +5237,6 @@ void silk_resampler_down2_3(int32_t *S,        /* I/O  State vector [ 6 ]       
     int32_t nSamplesIn, counter, res_Q6;
     VARDECL(int32_t, buf);
     int32_t *buf_ptr;
-    SAVE_STACK;
 
     //    ALLOC( buf, RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR, int32_t );
     int32_t *buf = (int32_t *)malloc((RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR) * sizeof(int32_t));
@@ -5474,7 +5463,6 @@ void silk_resampler_private_down_FIR(void *SS,           /* I/O  Resampler state
     int32_t max_index_Q16, index_increment_Q16;
     VARDECL(int32_t, buf);
     const int16_t *FIR_Coefs;
-    SAVE_STACK;
 
     ALLOC(buf, S->batchSize + S->FIR_Order, int32_t);
 
@@ -5547,7 +5535,6 @@ void silk_resampler_private_IIR_FIR(void *SS,           /* I/O  Resampler state 
     int32_t nSamplesIn;
     int32_t max_index_Q16, index_increment_Q16;
     VARDECL(int16_t, buf);
-    SAVE_STACK;
 
     ALLOC(buf, 2 * S->batchSize + RESAMPLER_ORDER_FIR_12, int16_t);
 
@@ -6162,7 +6149,6 @@ void silk_stereo_LR_to_MS(stereo_enc_state *state,      /* I/O  State           
     VARDECL(int16_t, LP_side);
     VARDECL(int16_t, HP_side);
     int16_t *mid = &x1[-2];
-    SAVE_STACK;
 
     ALLOC(side, frame_length + 2, int16_t);
     /* Convert to basic mid/side signals */
@@ -6435,7 +6421,6 @@ int32_t silk_VAD_GetSA_Q8_c(                            /* O    Return value, 0 
     int32_t X_offset[VAD_N_BANDS];
     int32_t ret = 0;
     silk_VAD_state *psSilk_VAD = &psEncC->sVAD;
-    SAVE_STACK;
 
     /* Safety checks */
     assert(VAD_N_BANDS == 4);

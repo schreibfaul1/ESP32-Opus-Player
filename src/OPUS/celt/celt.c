@@ -857,7 +857,6 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
     int32_t sum;
     int32_t xy;
     int16_t yy;
-    SAVE_STACK;
 
     (void)arch;
     ALLOC(y, N, int16_t);
@@ -993,7 +992,6 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
     VARDECL(int, iy);
     int16_t yy;
     unsigned collapse_mask;
-    SAVE_STACK;
 
     assert2(K > 0, "alg_quant() needs at least one pulse");
     assert2(N > 1, "alg_quant() needs at least two dimensions");
@@ -1024,7 +1022,6 @@ unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, i
     int32_t Ryy;
     unsigned collapse_mask;
     VARDECL(int, iy);
-    SAVE_STACK;
 
     assert2(K > 0, "alg_unquant() needs at least one pulse");
     assert2(N > 1, "alg_unquant() needs at least two dimensions");
@@ -1699,7 +1696,6 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
     VARDECL(int16_t, tmp);
     int N;
-    SAVE_STACK;
     N = N0 * stride;
     ALLOC(tmp, N, int16_t);
     assert(stride > 0);
@@ -1723,7 +1719,6 @@ static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
     VARDECL(int16_t, tmp);
     int N;
-    SAVE_STACK;
     N = N0 * stride;
     ALLOC(tmp, N, int16_t);
     if (hadamard) {
@@ -2461,7 +2456,6 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
     int resynth = !encode || theta_rdo;
 
     struct band_ctx ctx;
-    SAVE_STACK;
 
     M = 1 << LM;
     B = shortBlocks ? M : 1;
@@ -2785,7 +2779,6 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
     int apply_downsampling = 0;
     int16_t coef0;
     VARDECL(int32_t, scratch);
-    SAVE_STACK;
 
     /* Short version for common case. */
     if (downsample == 1 && C == 2 && !accum) {
@@ -2861,7 +2854,6 @@ static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[],
     int nbEBands;
     int overlap;
     VARDECL(int32_t, freq);
-    SAVE_STACK;
 
     overlap = mode->overlap;
     nbEBands = mode->nbEBands;
@@ -2965,7 +2957,6 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
 static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
     int pitch_index;
     VARDECL(int16_t, lp_pitch_buf);
-    SAVE_STACK;
     int16_t *lp_pitch_buf = (int16_t *)malloc((DECODE_BUFFER_SIZE >> 1) * sizeof(int16_t));
                                                         // ALLOC( lp_pitch_buf, DECODE_BUFFER_SIZE>>1, int16_t );
     pitch_downsample(decode_mem, lp_pitch_buf,
@@ -2995,7 +2986,6 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
     int loss_count;
     int noise_based;
     const int16_t *eBands;
-    SAVE_STACK;
 
     mode = st->mode;
     nbEBands = mode->nbEBands;
@@ -3317,7 +3307,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     int nbEBands;
     int overlap;
     const int16_t *eBands;
-    ALLOC_STACK;
+//    ALLOC_STACK;
 
     VALIDATE_CELT_DECODER(st);
     mode = st->mode;
@@ -3708,7 +3698,6 @@ static int transient_analysis(const int32_t *__restrict__ in, int len, int C, in
         5,   5,   5,   5,   5,  5,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
         4,   4,   4,   4,   4,  4,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  2,
     };
-    SAVE_STACK;
     ALLOC(tmp, len, int16_t);
 
     *weak_transient = 0;
@@ -3959,7 +3948,6 @@ void _celt_lpc(int16_t *_lpc,     /* out: [0...p-1] LPC coefficients      */
 void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch) {
     int i, j;
     VARDECL(int16_t, rnum);
-    SAVE_STACK;
     assert(x != y);
     ALLOC(rnum, ord, int16_t);
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
@@ -3987,7 +3975,6 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord
     int i, j;
     VARDECL(int16_t, rden);
     VARDECL(int16_t, y);
-    SAVE_STACK;
 
     assert((ord & 3) == 0);
     ALLOC(rden, ord, int16_t);
@@ -4040,8 +4027,7 @@ int _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
     int shift;
     const int16_t *xptr;
     VARDECL(int16_t, xx);
-    SAVE_STACK;
-    ALLOC(xx, n, int16_t);
+     ALLOC(xx, n, int16_t);
     assert(n > 0);
     assert(overlap >= 0);
     if (overlap == 0) {
@@ -5065,7 +5051,6 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     /* Allows us to scale with MULT16_32_Q16(), which is faster than
        MULT16_32_Q15() on ARM. */
     int scale_shift = st->scale_shift - 1;
-    SAVE_STACK;
     (void)arch;
     scale = st->scale;
 
@@ -5451,8 +5436,6 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     int shift = 0;
     int offset;
 
-    SAVE_STACK;
-
     assert(len > 0);
     assert(max_pitch > 0);
     lag = len + max_pitch;
@@ -5555,7 +5538,6 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
     int offset;
     int minperiod0;
     VARDECL(int32_t, yy_lookup);
-    SAVE_STACK;
 
     minperiod0 = minperiod;
     maxperiod /= 2;
@@ -5657,7 +5639,6 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
     int32_t left, percoeff;
     int done;
     int32_t balance;
-    SAVE_STACK;
 
     alloc_floor = C << BITRES;
     stereo = C > 1;
@@ -5912,7 +5893,6 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
     VARDECL(int, bits2);
     VARDECL(int, thresh);
     VARDECL(int, trim_offset);
-    SAVE_STACK;
 
     total = max(total, 0);
     len = m->nbEBands;
