@@ -478,18 +478,6 @@ int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char pack
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int encode_size(int size, unsigned char *data) {
-    if (size < 252) {
-        data[0] = size;
-        return 1;
-    } else {
-        data[0] = 252 + (size & 0x3);
-        data[1] = (size - (int)data[0]) >> 2;
-        return 2;
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 static int parse_size(const unsigned char *data, int32_t len, int16_t *size) {
     if (len < 1) {
         *size = -1;
