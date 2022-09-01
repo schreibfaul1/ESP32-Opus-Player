@@ -64,8 +64,8 @@ typedef struct {
    unsigned char leak_boost[LEAK_BANDS];
 } AnalysisInfo;
 
-/*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
-   larger type, you can speed up the decoder by using it here.*/
+/*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a larger type, you can speed up the
+ decoder by using it here.*/
 typedef uint32_t           ec_window;
 typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
@@ -438,8 +438,6 @@ int32_t celt_rcp(int32_t x);
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((int32_t)(int16_t)(a)*(int16_t)(b)))>>15)
 
-#define VARDECL(type, var)
-#define ALLOC(var, size, type) type var[size]
 #define FINE_OFFSET 21
 #define QTHETA_OFFSET 4
 #define QTHETA_OFFSET_TWOPHASE 16
@@ -447,10 +445,6 @@ int32_t celt_rcp(int32_t x);
 #define MAX_PSEUDO 40
 #define LOG_MAX_PSEUDO 6
 #define ALLOC_NONE 1
-//static inline int _opus_false(void) {return 0;}
-//#define OPUS_CHECK_ARRAY(ptr, len) _opus_false()
-//#define OPUS_PRINT_INT(value) do{}while(0)
-#define OPUS_FPRINTF (void)
 
 #define op_pvq_search(x, iy, K, N, arch) (op_pvq_search_c(x, iy, K, N, arch))
 
@@ -464,31 +458,13 @@ static inline int16_t SAT16(int32_t x) {
    return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
 }
 
-static inline int opus_select_arch(void)
-{
-  return 0;
-}
-
 static inline uint32_t ec_range_bytes(ec_ctx *_this){
   return _this->offs;
 }
 
-static inline unsigned char *ec_get_buffer(ec_ctx *_this){
-  return _this->buf;
-}
-
-static inline int ec_get_error(ec_ctx *_this){
-  return _this->error;
-}
-
-static inline uint32_t celt_udiv(uint32_t n, uint32_t d) {
-   assert(d>0); return n/d;
-
-}
 
 static inline int32_t celt_sudiv(int32_t n, int32_t d) {
    assert(d>0); return n/d;
-
 }
 
 static inline int16_t sig2word16(int32_t x){
@@ -683,8 +659,6 @@ static void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const i
                              const int32_t *bandE, int bandID, int N);
 static void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int N);
 static void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int N, int arch);
-int spreading_decision(const CELTMode *m, const int16_t *X, int *average, int last_decision, int *hf_average,
-                       int *tapset_decision, int update_hf, int end, int C, int M, const int *spread_weight);
 static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard);
 static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard);
 void haar1(int16_t *X, int N0, int stride);

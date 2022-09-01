@@ -52,13 +52,8 @@ struct OpusDecoder {
    int          frame_size;
    int          prev_redundancy;
    int          last_packet_duration;
-
-
    uint32_t  rangeFinal;
 };
-
-
-#define VALIDATE_OPUS_DECODER(st)
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -81,8 +76,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    CELTDecoder *celt_dec;
    int ret;
 
-   if ((Fs!=48000&&Fs!=24000&&Fs!=16000&&Fs!=12000&&Fs!=8000)
-    || (channels!=1&&channels!=2))
+   if ((Fs!=48000&&Fs!=24000&&Fs!=16000&&Fs!=12000&&Fs!=8000) || (channels!=1&&channels!=2))
       return OPUS_BAD_ARG;
 
    OPUS_CLEAR((char*)st, opus_decoder_get_size(channels));
@@ -102,22 +96,8 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
 
    st->prev_mode = 0;
    st->frame_size = Fs/400;
-   st->arch = opus_select_arch();
+   st->arch = 0;
    return OPUS_OK;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static void smooth_fade(const int16_t *in1, const int16_t *in2, int16_t *out, int overlap, int channels,
-                        const int16_t *window, int32_t Fs) {
-    int i, c;
-    int inc = 48000 / Fs;
-    for (c = 0; c < channels; c++) {
-        for (i = 0; i < overlap; i++) {
-            int16_t w = MULT16_16_Q15(window[i * inc], window[i * inc]);
-            out[i * channels + c] =
-                SHR32(MAC16_16(MULT16_16(w, in2[i * channels + c]), 32767 - w, in1[i * channels + c]), 15);
-        }
-    }
 }
 //----------------------------------------------------------------------------------------------------------------------
 static int opus_packet_get_mode(const unsigned char *data) {
@@ -139,23 +119,16 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     CELTDecoder *celt_dec;
     int i, celt_ret = 0;
     ec_dec dec;
-    int pcm_transition_celt_size;
-    VARDECL(int16_t, pcm_transition_celt);
-    int16_t *pcm_transition = NULL;
     int redundant_audio_size;
-    VARDECL(int16_t, redundant_audio);
+    int16_t redundant_audio;
 
     int audiosize;
     int mode;
     int bandwidth;
-    int transition = 0;
     int start_band;
-    int redundancy = 0;
-    int redundancy_bytes = 0;
     int c;
     int F2_5, F5, F10, F20;
     const int16_t *window;
-    uint32_t redundant_rng = 0;
     int celt_accum;
 
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
@@ -210,9 +183,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     }
 
     celt_accum = 0;
-    pcm_transition_celt_size = 1;
-
-    ALLOC(pcm_transition_celt, pcm_transition_celt_size, int16_t);
 
     if (audiosize > frame_size) {
         /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
@@ -223,10 +193,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     }
 
     start_band = 0;
-
-    if (redundancy) {
-        transition = 0;
-    }
 
     if (bandwidth) {
         int endband = 21;
@@ -251,10 +217,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST, endband);
     }
 
-    /* Only allocation memory for redundancy if/when needed */
-    redundant_audio_size = redundancy ? F5 * st->channels : ALLOC_NONE;
-    ALLOC(redundant_audio, redundant_audio_size, int16_t);
-
     int celt_frame_size = min(F20, frame_size);
     /* Make sure to discard any previous CELT state */
     if (mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy)
@@ -265,21 +227,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     const CELTMode *celt_mode;
     celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode**)(&celt_mode));
     window = celt_mode->window;
-
-    if (transition) {
-        if (audiosize >= F5) {
-            for (i = 0; i < st->channels * F2_5; i++) pcm[i] = pcm_transition[i];
-            smooth_fade(pcm_transition + st->channels * F2_5, pcm + st->channels * F2_5, pcm + st->channels * F2_5,
-                        F2_5, st->channels, window, st->Fs);
-        } else {
-            /* Not enough time to do a clean transition, but we do it anyway
-               This will not preserve amplitude perfectly and may introduce
-               a bit of temporal aliasing, but it shouldn't be too bad and
-               that's pretty much the best we can do. In any case, generating this
-               transition it pretty silly in the first place */
-            smooth_fade(pcm_transition, pcm, pcm, F2_5, st->channels, window, st->Fs);
-        }
-    }
 
     if (st->decode_gain) {
         int32_t gain;
@@ -293,11 +240,8 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     if (len <= 1)
         st->rangeFinal = 0;
-    else
-        st->rangeFinal = dec.rng ^ redundant_rng;
 
     st->prev_mode = mode;
-    st->prev_redundancy = redundancy;
 	int ret = celt_ret < 0 ? celt_ret : audiosize;
 
     return celt_ret < 0 ? celt_ret : audiosize;
@@ -311,7 +255,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, 
     int packet_frame_size, packet_bandwidth, packet_mode, packet_stream_channels;
     /* 48 x 2.5 ms = 120 ms */
     int16_t size[48];
-    VALIDATE_OPUS_DECODER(st);
+//    VALIDATE_OPUS_DECODER(st);
     /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
     if ((len == 0 || data == NULL) && frame_size % (st->Fs / 400) != 0) {
         return OPUS_BAD_ARG;
@@ -856,14 +800,13 @@ int opus_multistream_decode_native(OpusMSDecoder_t *st, const unsigned char *dat
     int s, c;
     char *ptr;
     int do_plc = 0;
-    VARDECL(int16_t, buf);
     if (frame_size <= 0) {
         return OPUS_BAD_ARG;
     }
     /* Limit frame_size to avoid excessive stack allocations. */
     opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
     frame_size = min(frame_size, Fs / 25 * 3);
-    ALLOC(buf, 2 * frame_size, int16_t);
+    int16_t buf[2 * frame_size];
     ptr = (char *)st + align(sizeof(OpusMSDecoder_t));
     coupled_size = opus_decoder_get_size(2);
     mono_size = opus_decoder_get_size(1);
