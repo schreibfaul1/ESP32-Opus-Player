@@ -34,11 +34,7 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-#include <limits.h>
-#include <assert.h>
-#include <string.h>
+#include "Arduino.h"
 #include "opus_decoder.h"
 
 
@@ -217,25 +213,9 @@ struct CELTMode {
     PulseCache cache;
 };
 
-/* List of all the available modes */
-#define TOTAL_MODES 1
-
-#define SPREAD_NONE       (0)
-#define SPREAD_LIGHT      (1)
-#define SPREAD_NORMAL     (2)
-#define SPREAD_AGGRESSIVE (3)
-
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-#define opus_likely(x)       (__builtin_expect(!!(x), 1))
-#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
-
-#define assert2(cond, message)
-#define TWID_MAX 32767
-#define TRIG_UPSCALE 1
-#define LPC_ORDER 24
-#define celt_fir(x, num, y, N, ord, arch) (celt_fir_c(x, num, y, N, ord, arch))
 #define S_MUL(a,b) MULT16_32_Q15(b, a)
 #define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
                           (m).i = ADD32_ovflw(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
@@ -245,7 +225,7 @@ struct CELTMode {
 
 #define C_MULBYSCALAR( c, s ) do{ (c).r =  S_MUL( (c).r , s ) ;  (c).i =  S_MUL( (c).i , s ) ; }while(0)
 
-#define DIVSCALAR(x,k) (x) = S_MUL(  x, (TWID_MAX-((k)>>1))/(k)+1 )
+#define DIVSCALAR(x,k) (x) = S_MUL(  x, (32767-((k)>>1))/(k)+1 )
 
 #define C_FIXDIV(c,div) do {    DIVSCALAR( (c).r , div); DIVSCALAR( (c).i  , div); }while (0)
 
@@ -254,28 +234,11 @@ struct CELTMode {
 #define  C_SUB( res, a,b) do {(res).r=SUB32_ovflw((a).r,(b).r);  (res).i=SUB32_ovflw((a).i,(b).i); }while(0)
 #define C_ADDTO( res , a) do {(res).r = ADD32_ovflw((res).r, (a).r);  (res).i = ADD32_ovflw((res).i,(a).i); }while(0)
 
-#define C_SUBFROM( res , a) do {(res).r = ADD32_ovflw((res).r,(a).r);  (res).i = SUB32_ovflw((res).i,(a).i); }while(0)
-
-#define CHECK_OVERFLOW_OP(a,op,b) /* noop */
-
-#  define KISS_FFT_COS(phase)  floor(.5+TWID_MAX*cos (phase))
-#  define KISS_FFT_SIN(phase)  floor(.5+TWID_MAX*sin (phase))
-#  define HALF_OF(x) ((x)>>1)
-
-#define  kf_cexp(x,phase) do{ (x)->r = KISS_FFT_COS(phase); (x)->i = KISS_FFT_SIN(phase); }while(0)
-
-#define  kf_cexp2(x,phase) do{ (x)->r = TRIG_UPSCALE*celt_cos_norm((phase));\
-                               (x)->i = TRIG_UPSCALE*celt_cos_norm((phase)-32768); }while(0)
-
-#define LAPLACE_LOG_MINP (0)
-#define LAPLACE_MINP (1<<LAPLACE_LOG_MINP)
-#define LAPLACE_NMIN (16)
 #define COMBFILTER_MAXPERIOD 1024
 #define COMBFILTER_MINPERIOD 15
 
 #define VALIDATE_CELT_DECODER(st)
 
-#define opus_fft_alloc_arch(_st, arch) ((void)(arch), opus_fft_alloc_arch_c(_st))
 #define opus_fft_free_arch(_st, arch)  ((void)(arch), opus_fft_free_arch_c(_st))
 #define opus_fft(_cfg, _fin, _fout, arch) ((void)(arch), opus_fft_c(_cfg, _fin, _fout))
 #define opus_ifft(_cfg, _fin, _fout, arch) ((void)(arch), opus_ifft_c(_cfg, _fin, _fout))
@@ -290,15 +253,10 @@ struct CELTMode {
 #define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
    clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
 
-#define SIG_SAT (300000000)
-#define NORM_SCALING 16384
-#define DB_SHIFT 10
 #define EPSILON 1
 #define VERY_SMALL 0
 #define VERY_LARGE16 ((int16_t)32767)
 #define Q15_ONE ((int16_t)32767)
-#define SCALEIN(a)      (a)
-#define SCALEOUT(a)     (a)
 
 #define EC_WINDOW_SIZE ((int)sizeof(ec_window)*CHAR_BIT)
 #define EC_UINT_BITS   (8)
@@ -319,10 +277,10 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 
 
 /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
-#define MULT16_32_Q15(a,b) ((int32_t)SHR((int64_t)((int16_t)(a))*(b),15))
+#define MULT16_32_Q15(a,b) ((int32_t)((int64_t)((int16_t)(a))*(b) >> 15))
 
 /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
-#define MULT32_32_Q31(a,b) ((int32_t)SHR((int64_t)(a)*(int64_t)(b),31))
+#define MULT32_32_Q31(a,b) ((int32_t)((int64_t)(a)*(int64_t)(b) >> 31))
 
 
 /** Compile-time conversion of float constant to 16-bit value */
@@ -331,13 +289,6 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 /** Compile-time conversion of float constant to 32-bit value */
 #define QCONST32(x,bits) ((int32_t)(0.5L+(x)*(((int32_t)1)<<(bits))))
 
-/** Negate a 16-bit value */
-#define NEG16(x) (-(x))
-/** Negate a 32-bit value */
-#define NEG32(x) (-(x))
-
-/** Change a 32-bit value into a 16-bit value. The value is assumed to fit in 16-bit, otherwise the result is undefined */
-#define EXTRACT16(x) ((int16_t)(x))
 /** Change a 16-bit value into a 32-bit value */
 #define EXTEND32(x) ((int32_t)(x))
 
@@ -351,22 +302,20 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 #define SHL32(a,shift) ((int32_t)((uint32_t)(a)<<(shift)))
 
 /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
-#define PSHR32(a,shift) (SHR32((a)+((EXTEND32(1)<<((shift))>>1)),shift))
+#define PSHR32(a,shift) (((a)+((EXTEND32(1)<<((shift))>>1)) >> shift))
 /** 32-bit arithmetic shift right where the argument can be negative */
 #define VSHR32(a, shift) (((shift)>0) ? SHR32(a, shift) : SHL32(a, -(shift)))
 
 /** "RAW" macros, should not be used outside of this header file */
-#define SHR(a,shift) ((a) >> (shift))
-#define SHL(a,shift) SHL32(a,shift)
-#define PSHR(a,shift) (SHR((a)+((EXTEND32(1)<<((shift))>>1)),shift))
+#define PSHR(a,shift) ((a)+((EXTEND32(1)<<((shift))>>1)) >> shift)
 #define SATURATE(x,a) (((x)>(a) ? (a) : (x)<-(a) ? -(a) : (x)))
 
-#define SATURATE16(x) (EXTRACT16((x)>32767 ? 32767 : (x)<-32768 ? -32768 : (x)))
+#define SATURATE16(x) ((int16_t)((x)>32767 ? 32767 : (x)<-32768 ? -32768 : (x)))
 
 /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
-#define ROUND16(x,a) (EXTRACT16(PSHR32((x),(a))))
+#define ROUND16(x,a) ((int16_t)(PSHR32((x),(a))))
 /** Shift by a and round-to-neareast 32-bit value. Result is a saturated 16-bit value */
-#define SROUND16(x,a) EXTRACT16(SATURATE(PSHR32(x,a), 32767));
+#define SROUND16(x,a) (int16_t)(SATURATE(PSHR32(x,a), 32767));
 
 /** Divide by two */
 #define HALF16(x)  (SHR16(x,1))
@@ -401,21 +350,21 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 /** 16x32 multiply, followed by a 15-bit shift right and 32-bit add.
     b must fit in 31 bits.
     Result fits in 32 bits. */
-#define MAC16_32_Q15(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15)))
+#define MAC16_32_Q15(c,a,b) ADD32((c),ADD32(MULT16_16((a),(b) >> 15), MULT16_16((a),((b)&0x00007fff)) >> 15))
 
 /** 16x32 multiplication, followed by a 16-bit shift right and 32-bit add.
     Results fits in 32 bits */
-#define MAC16_32_Q16(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16)))
+#define MAC16_32_Q16(c,a,b) ADD32((c),ADD32(MULT16_16((a),(b) >> 16), MULT16_16SU((a),((b)&0x0000ffff)) >> 16))
 
-#define MULT16_16_Q11_32(a,b) (SHR(MULT16_16((a),(b)),11))
-#define MULT16_16_Q11(a,b) (SHR(MULT16_16((a),(b)),11))
-#define MULT16_16_Q13(a,b) (SHR(MULT16_16((a),(b)),13))
-#define MULT16_16_Q14(a,b) (SHR(MULT16_16((a),(b)),14))
-#define MULT16_16_Q15(a,b) (SHR(MULT16_16((a),(b)),15))
+#define MULT16_16_Q11_32(a,b) (MULT16_16((a),(b)) >> 11)
+#define MULT16_16_Q11(a,b)    (MULT16_16((a),(b)) >> 11)
+#define MULT16_16_Q13(a,b)    (MULT16_16((a),(b)) >> 13)
+#define MULT16_16_Q14(a,b)    (MULT16_16((a),(b)) >> 14)
+#define MULT16_16_Q15(a,b)    (MULT16_16((a),(b)) >> 15)
 
-#define MULT16_16_P13(a,b) (SHR(ADD32(4096,MULT16_16((a),(b))),13))
-#define MULT16_16_P14(a,b) (SHR(ADD32(8192,MULT16_16((a),(b))),14))
-#define MULT16_16_P15(a,b) (SHR(ADD32(16384,MULT16_16((a),(b))),15))
+#define MULT16_16_P13(a,b)   (ADD32(4096, MULT16_16((a),(b))) >> 13)
+#define MULT16_16_P14(a,b)   (ADD32(8192, MULT16_16((a),(b))) >> 14)
+#define MULT16_16_P15(a,b)   (ADD32(16384,MULT16_16((a),(b))) >> 15)
 
 /** Divide a 32-bit value by a 16-bit value. Result fits in 16 bits */
 #define DIV32_16(a,b) ((int16_t)(((int32_t)(a))/((int16_t)(b))))
@@ -432,13 +381,11 @@ int32_t celt_rcp(int32_t x);
 #define celt_inner_prod(x, y, N, arch) ((void)(arch),celt_inner_prod_c(x, y, N))
 #define celt_pitch_xcorr celt_pitch_xcorr_c
 #define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
-#define xcorr_kernel(x, y, sum, len, arch) ((void)(arch),xcorr_kernel_c(x, y, sum, len))
 
 
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((int32_t)(int16_t)(a)*(int16_t)(b)))>>15)
 
-#define FINE_OFFSET 21
 #define QTHETA_OFFSET 4
 #define QTHETA_OFFSET_TWOPHASE 16
 #define MAX_FINE_BITS 8
@@ -455,13 +402,10 @@ extern const unsigned char LOG2_FRAC_TABLE[24];
 /* Prototypes and inlines*/
 
 static inline int16_t SAT16(int32_t x) {
-   return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
+    if(x > INT16_MAX) return INT16_MAX;
+    if(x < INT16_MIN) return INT16_MIN;
+    return (int16_t)x;
 }
-
-static inline uint32_t ec_range_bytes(ec_ctx *_this){
-  return _this->offs;
-}
-
 
 static inline int32_t celt_sudiv(int32_t n, int32_t d) {
    assert(d>0); return n/d;
@@ -471,7 +415,7 @@ static inline int16_t sig2word16(int32_t x){
    x = PSHR32(x, 12);
    x = max(x, -32768);
    x = min(x, 32767);
-   return EXTRACT16(x);
+   return (int16_t)(x);
 }
 
 static inline int ec_tell(ec_ctx *_this){
@@ -491,12 +435,12 @@ static inline int16_t celt_atan2p(int16_t y, int16_t x) {
         int32_t arg;
         arg = celt_div(SHL32(EXTEND32(y), 15), x);
         if (arg >= 32767) arg = 32767;
-        return SHR16(celt_atan01(EXTRACT16(arg)), 1);
+        return SHR16(celt_atan01((int16_t)(arg)), 1);
     } else {
         int32_t arg;
         arg = celt_div(SHL32(EXTEND32(x), 15), y);
         if (arg >= 32767) arg = 32767;
-        return 25736 - SHR16(celt_atan01(EXTRACT16(arg)), 1);
+        return 25736 - SHR16(celt_atan01((int16_t)(arg)), 1);
     }
 }
 
@@ -537,7 +481,7 @@ static inline int16_t celt_log2(int32_t x) {
     int16_t n, frac;
     /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
         0.15530808010959576, -0.08556153059057618 */
-    static const int16_t C[5] = {-6801 + (1 << (13 - DB_SHIFT)), 15746, -5217, 2545, -1401};
+    static const int16_t C[5] = {-6801 + (1 << 3), 15746, -5217, 2545, -1401};
     if (x == 0) return -32767;
     i = celt_ilog2(x);
     n = VSHR32(x, i - 15) - 32768 - 16384;
@@ -545,7 +489,7 @@ static inline int16_t celt_log2(int32_t x) {
         C[0],
         MULT16_16_Q15(
             n, ADD16(C[1], MULT16_16_Q15(n, ADD16(C[2], MULT16_16_Q15(n, ADD16(C[3], MULT16_16_Q15(n, C[4]))))))));
-    return SHL16(i - 13, DB_SHIFT) + SHR16(frac, 14 - DB_SHIFT);
+    return SHL16(i - 13, 10) + SHR16(frac, 14 - 10);
 }
 
 static inline int32_t celt_exp2_frac(int16_t x) {
@@ -680,7 +624,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
                         int frame_size, ec_dec *dec, int accum);
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 void _celt_lpc(int16_t *_lpc, const int32_t *ac, int p);
-void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch);
+void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord, int16_t *mem, int arch);
 int _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int overlap, int lag, int n, int arch);
 static uint32_t icwrs(int _n, const int *_y);
@@ -703,11 +647,9 @@ static int ec_write_byte(ec_enc *_this, unsigned _value);
 static int ec_write_byte_at_end(ec_enc *_this, unsigned _value);
 static void ec_enc_carry_out(ec_enc *_this, int _c);
 static inline void ec_enc_normalize(ec_enc *_this);
-void ec_enc_init(ec_enc *_this, unsigned char *_buf, uint32_t _size);
 void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft);
 void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits);
 void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp);
-void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb);
 void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft);
 void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits);
 static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N);
@@ -733,9 +675,6 @@ void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict_
 CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
 static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
                             int32_t maxcorr);
-static void celt_fir5(int16_t *x, const int16_t *num, int N);
-void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int len, int C, int arch);
-static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);
 static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain);
@@ -745,8 +684,6 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
 unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int N, int16_t gain, int arch);
 int stereo_itheta(const int16_t *X, const int16_t *Y, int stereo, int N, int arch);
-static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
-                            int32_t maxcorr);
 static void celt_fir5(int16_t *x, const int16_t *num, int N);
 void pitch_downsample(int32_t *__restrict__ x[], int16_t *__restrict__ x_lp, int len, int C, int arch);
 int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int len, int max_pitch, int arch);
@@ -769,7 +706,7 @@ void unquant_fine_energy(const CELTMode *m, int start, int end, int16_t *oldEBan
                          int C);
 void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *oldEBands, int *fine_quant,
                              int *fine_priority, int bits_left, ec_dec *dec, int C);
-static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
+static void xcorr_kernel(const int16_t *x, const int16_t *y, int32_t sum[4], int len);
 
 
 #ifdef __cplusplus
