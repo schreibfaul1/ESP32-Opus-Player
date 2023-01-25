@@ -236,10 +236,6 @@ struct CELTMode {
 
 #define VALIDATE_CELT_DECODER(st)
 
-#define opus_fft_free_arch(_st, arch)  ((void)(arch), opus_fft_free_arch_c(_st))
-#define opus_fft(_cfg, _fin, _fout, arch) ((void)(arch), opus_fft_c(_cfg, _fin, _fout))
-#define opus_ifft(_cfg, _fin, _fout, arch) ((void)(arch), opus_ifft_c(_cfg, _fin, _fout))
-
 #define EPSILON 1
 #define VERY_SMALL 0
 #define VERY_LARGE16 ((int16_t)32767)
@@ -363,10 +359,6 @@ int32_t celt_rcp(int32_t x);
 #define MAX_PERIOD 1024
 #define OPUS_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
 #define ALLOC_STEPS 6
-
-#define celt_inner_prod(x, y, N, arch) ((void)(arch),celt_inner_prod_c(x, y, N))
-#define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
-
 
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((int32_t)(int16_t)(a)*(int16_t)(b)))>>15)
@@ -494,7 +486,7 @@ static inline int32_t celt_exp2(int16_t x) {
     return VSHR32(EXTEND32(frac), -integer - 2);
 }
 
-static inline void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const int16_t *y02, int32_t N, int32_t *xy1,
+static inline void dual_inner_prod(const int16_t *x, const int16_t *y01, const int16_t *y02, int32_t N, int32_t *xy1,
                                      int32_t *xy2) {
     int32_t i;
     int32_t xy01 = 0;
@@ -509,7 +501,7 @@ static inline void dual_inner_prod_c(const int16_t *x, const int16_t *y01, const
 
 /*We make sure a C version is always available for cases where the overhead of vectorization and passing around an
   arch flag aren't worth it.*/
-static inline int32_t celt_inner_prod_c(const int16_t *x, const int16_t *y, int32_t N) {
+static inline int32_t celt_inner_prod(const int16_t *x, const int16_t *y, int32_t N) {
     int32_t i;
     int32_t xy = 0;
     for (i = 0; i < N; i++) xy = MAC16_16(xy, x[i], y[i]);
@@ -629,8 +621,6 @@ static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_st
 static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
-void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
-void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
 static uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay);
 int32_t ec_laplace_decode(ec_dec *dec, uint32_t fs, int32_t decay);
 uint32_t isqrt32(uint32_t _val);

@@ -798,7 +798,7 @@ void renormalise_vector(int16_t *X, int32_t N, int16_t gain, int32_t arch) {
     int16_t g;
     int32_t t;
     int16_t *xptr;
-    E = EPSILON + celt_inner_prod(X, X, N, arch);
+    E = EPSILON + celt_inner_prod(X, X, N);
     k = celt_ilog2(E) >> 1;
     t = VSHR32(E, 2 * (k - 7));
     g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
@@ -835,7 +835,10 @@ void comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10
     x1 = x[-T + 1];
     for (i = 0; i < N; i++) {
         x0 = x[i - T + 2];
-        y[i] = x[i] + MULT16_32_Q15(g10, x2) + MULT16_32_Q15(g11, ADD32(x1, x3)) + MULT16_32_Q15(g12, ADD32(x0, x4));
+        y[i]  = x[i];
+        y[i] += MULT16_32_Q15(g10, x2);
+        y[i] += MULT16_32_Q15(g11, ADD32(x1, x3));
+        y[i] += MULT16_32_Q15(g12, ADD32(x0, x4));
         y[i] = SATURATE(y[i], (300000000));
         x4 = x3;
         x3 = x2;
@@ -882,7 +885,13 @@ void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int1
         int16_t f;
         x0 = x[i - T1 + 2];
         f = MULT16_16_Q15(window[i], window[i]);
-        y[i] = x[i] + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g00), x[i - T0]) + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g01), ADD32(x[i - T0 + 1], x[i - T0 - 1])) + MULT16_32_Q15(MULT16_16_Q15((32767 - f), g02), ADD32(x[i - T0 + 2], x[i - T0 - 2])) + MULT16_32_Q15(MULT16_16_Q15(f, g10), x2) + MULT16_32_Q15(MULT16_16_Q15(f, g11), ADD32(x1, x3)) + MULT16_32_Q15(MULT16_16_Q15(f, g12), ADD32(x0, x4));
+        y[i]  = x[i];
+        y[i] += MULT16_32_Q15(MULT16_16_Q15((32767 - f), g00), x[i - T0]);
+        y[i] += MULT16_32_Q15(MULT16_16_Q15((32767 - f), g01), ADD32(x[i - T0 + 1], x[i - T0 - 1]));
+        y[i] += MULT16_32_Q15(MULT16_16_Q15((32767 - f), g02), ADD32(x[i - T0 + 2], x[i - T0 - 2]));
+        y[i] += MULT16_32_Q15(MULT16_16_Q15(f, g10), x2);
+        y[i] += MULT16_32_Q15(MULT16_16_Q15(f, g11), ADD32(x1, x3));
+        y[i] += MULT16_32_Q15(MULT16_16_Q15(f, g12), ADD32(x0, x4));
         y[i] = SATURATE(y[i], (300000000));
         x4 = x3;
         x3 = x2;
@@ -1164,7 +1173,7 @@ static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N, int32
     int32_t t, lgain, rgain;
 
     /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
-    dual_inner_prod(Y, X, Y, N, &xp, &side, arch);
+    dual_inner_prod(Y, X, Y, N, &xp, &side);
     /* Compensating for the mid normalization */
     xp = MULT16_32_Q15(mid, xp);
     /* mid and side are in Q15, not Q14 like X and Y */
@@ -2045,8 +2054,8 @@ void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_,
                                              effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                                              last ? NULL : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
 
-                    dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N, arch)) +
-                            MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N, arch));
+                    dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) +
+                            MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
 
                     /* Save first result. */
                     cm2 = x_cm;
@@ -2077,7 +2086,7 @@ void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_,
                     x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
                                              effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                                              last ? NULL : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
-                    dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N, arch)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N, arch));
+                    dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
                     if (dist0 >= dist1) {
                         x_cm = cm2;
                         *ec = ec_save2;
@@ -3632,36 +3641,6 @@ void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
-    int32_t i;
-    int16_t scale;
-    /* Allows us to scale with MULT16_32_Q16(), which is faster than
-       MULT16_32_Q15() on ARM. */
-    int32_t scale_shift = st->scale_shift - 1;
-    scale = st->scale;
-
-    if(fin == fout) log_e("In-place FFT not supported");
-    /* Bit-reverse the input */
-    for (i = 0; i < st->nfft; i++) {
-        kiss_fft_cpx x = fin[i];
-        fout[st->bitrev[i]].r = MULT16_32_Q16(scale, x.r) >> scale_shift;
-        fout[st->bitrev[i]].i = MULT16_32_Q16(scale, x.i) >> scale_shift;
-    }
-    opus_fft_impl(st, fout);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
-    int32_t i;
-    if(fin == fout) log_e("In-place FFT not supported");
-    /* Bit-reverse the input */
-    for (i = 0; i < st->nfft; i++) fout[st->bitrev[i]] = fin[i];
-    for (i = 0; i < st->nfft; i++) fout[i].i = -fout[i].i;
-    opus_fft_impl(st, fout);
-    for (i = 0; i < st->nfft; i++) fout[i].i = -fout[i].i;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 /* When called, decay is positive and at most 11456. */
 static uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay) {
     uint32_t ft;
@@ -4037,7 +4016,7 @@ int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, i
     /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
     for (; i < max_pitch; i++) {
         int32_t sum;
-        sum = celt_inner_prod(_x, _y + i, len, arch);
+        sum = celt_inner_prod(_x, _y + i, len);
         xcorr[i] = sum;
         maxcorr = max(maxcorr, sum);
     }
