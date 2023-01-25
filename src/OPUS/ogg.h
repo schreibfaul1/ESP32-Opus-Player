@@ -19,14 +19,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include "Arduino.h"
 #include <stddef.h>
 #include <stdint.h>
-
-typedef struct {
-    void  *iov_base;
-    size_t iov_len;
-} ogg_iovec_t;
 
 typedef struct {
     int32_t endbyte;
@@ -83,7 +78,6 @@ typedef struct {
     int32_t storage;
     int32_t fill;
     int32_t returned;
-
     int32_t unsynced;
     int32_t headerbytes;
     int32_t bodybytes;

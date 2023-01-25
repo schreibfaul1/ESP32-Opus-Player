@@ -185,7 +185,8 @@ static int32_t op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint3
         /*Get the next page.
          No need to clamp the boundary offset against m_OggOpusFile->end, as all errors
          become OP_ENOTFORMAT or OP_EBADHEADER.*/
-        if(op_get_next_page(_og, OP_ADV_OFFSET(m_OggOpusFile->offset,OP_CHUNK_SIZE))<0) {
+        int64_t offset = min(m_OggOpusFile->offset, INT64_MAX - OP_CHUNK_SIZE) + OP_CHUNK_SIZE;
+        if(op_get_next_page(_og, offset) < 0) {
             return m_OggOpusFile->ready_state < OP_STREAMSET ? OP_ENOTFORMAT : OP_EBADHEADER;
         }
     }
@@ -200,7 +201,8 @@ static int32_t op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint3
                 for(;;) {
                     /*No need to clamp the boundary offset against m_OggOpusFile->end, as all
                      errors become OP_EBADHEADER.*/
-                    if(op_get_next_page(_og, OP_ADV_OFFSET(m_OggOpusFile->offset,OP_CHUNK_SIZE))<0) {
+                    int64_t offset = min(m_OggOpusFile->offset, INT64_MAX - OP_CHUNK_SIZE) + OP_CHUNK_SIZE;
+                    if(op_get_next_page(_og, offset) < 0) {
                         return OP_EBADHEADER;
                     }
                     /*If this page belongs to the correct stream, go parse it.*/
@@ -242,7 +244,8 @@ static int32_t op_fetch_headers(OpusHead_t *_head, OpusTags_t *_tags, uint32_t *
     if(!_og) {
         /*No need to clamp the boundary offset against m_OggOpusFile->end, as all errors
          become OP_ENOTFORMAT.*/
-        if(op_get_next_page(&og, OP_ADV_OFFSET(m_OggOpusFile->offset,OP_CHUNK_SIZE))<0) {
+        int64_t offset = min(m_OggOpusFile->offset, INT64_MAX - OP_CHUNK_SIZE) + OP_CHUNK_SIZE;
+        if(op_get_next_page(&og, offset) < 0) {
             return OP_ENOTFORMAT;
         }
         _og = &og;
@@ -797,16 +800,15 @@ static int32_t op_get_link_from_serialno(int32_t _cur_link, int64_t _page_offset
  It also keeps prev_packet_gp up to date (seek and read both use this).
  Return: <0) Error, OP_HOLE (lost packet), or OP_EOF.
  0) Got at least one audio data packet.*/
-static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int32_t _spanp,
-        int32_t _ignore_holes) {
+static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int32_t _spanp, int32_t _ignore_holes) {
     OggOpusLink_t *links;
-    uint32_t cur_serialno;
-    int32_t seekable;
-    int32_t cur_link;
-    int32_t ret;
+    uint32_t       cur_serialno;
+    int32_t        seekable;
+    int32_t        cur_link;
+    int32_t        ret;
 
     /*We shouldn't get here if we have unprocessed packets.*/
-    assert(m_OggOpusFile->ready_state<OP_INITSET||m_OggOpusFile->op_pos>=m_OggOpusFile->op_count);
+    assert(m_OggOpusFile->ready_state < OP_INITSET || m_OggOpusFile->op_pos >= m_OggOpusFile->op_count);
 
     seekable = m_OggOpusFile->seekable;
     links = m_OggOpusLink;
@@ -815,7 +817,7 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
     /*Handle one page.*/
     for(;;) {
         ogg_page og;
-        assert(m_OggOpusFile->ready_state>=OP_OPENED);
+        assert(m_OggOpusFile->ready_state >= OP_OPENED);
         /*If we were given a page to use, use it.*/
         if(_og != NULL) {
             *&og = *_og;
@@ -823,16 +825,16 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
         }
         /*Keep reading until we get a page with the correct serialno.*/
         else
-            _page_offset = op_get_next_page( &og, m_OggOpusFile->end);
+            _page_offset = op_get_next_page(&og, m_OggOpusFile->end);
         /*EOF: Leave uninitialized.*/
-        if(_page_offset < 0) return _page_offset < OP_FALSE ? (int32_t) _page_offset : OP_EOF;
-        if((m_OggOpusFile->ready_state>=OP_STREAMSET) && cur_serialno != (uint32_t) getSerialNo(&og)) {
+        if(_page_offset < 0) return _page_offset < OP_FALSE ? (int32_t)_page_offset : OP_EOF;
+        if((m_OggOpusFile->ready_state >= OP_STREAMSET) && cur_serialno != (uint32_t)getSerialNo(&og)) {
             /*Two possibilities:
              1) Another stream is multiplexed into this logical section, or*/
             if(!ogg_page_bos(&og)) continue;
             /* 2) Our decoding just traversed a bitstream boundary.*/
             if(!_spanp) return OP_EOF;
-            if(m_OggOpusFile->ready_state>=OP_INITSET) op_decode_clear();
+            if(m_OggOpusFile->ready_state >= OP_INITSET) op_decode_clear();
         }
         /*Bitrate tracking: add the header's bytes here.
          The body bytes are counted when we consume the packets.*/
@@ -846,21 +848,20 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
          In the non-seekable (streaming) case, we'll only be at a boundary if we
          just left the previous logical bitstream, and we're now nominally at the
          header of the next bitstream.*/
-        if(m_OggOpusFile->ready_state<OP_STREAMSET) {
+        if(m_OggOpusFile->ready_state < OP_STREAMSET) {
             if(seekable) {
                 uint32_t serialno;
                 serialno = getSerialNo(&og);
                 /*Match the serialno to bitstream section.*/
-                assert(cur_link>=0&&cur_link<m_OggOpusFile->nlinks);
+                assert(cur_link >= 0 && cur_link < m_OggOpusFile->nlinks);
                 if(links[cur_link].serialno != serialno) {
                     /*It wasn't a page from the current link.
                      Is it from the next one?*/
                     if((cur_link + 1 < m_OggOpusFile->nlinks && links[cur_link + 1].serialno == serialno)) {
                         cur_link++;
-                    }
-                    else {
+                    } else {
                         int32_t new_link;
-                        new_link = op_get_link_from_serialno( cur_link, _page_offset, serialno);
+                        new_link = op_get_link_from_serialno(cur_link, _page_offset, serialno);
                         /*Not a desired Opus bitstream section.
                          Keep trying.*/
                         if(new_link < 0) continue;
@@ -881,13 +882,11 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                      streams joined in the middle) or after seeking.*/
                     _ignore_holes = 1;
                 }
-            }
-            else {
+            } else {
                 do {
                     /*We're streaming.
                      Fetch the two header packets, build the info struct.*/
-                    ret = op_fetch_headers( &links[0].head, &links[0].tags,
-                    NULL, NULL, NULL, &og);
+                    ret = op_fetch_headers(&links[0].head, &links[0].tags, NULL, NULL, NULL, &og);
                     if(ret < 0) return ret;
                     /*op_find_initial_pcm_offset() will suppress any initial hole for us,
                      so no need to set _ignore_holes.*/
@@ -912,17 +911,17 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
         }
         /*The buffered page is the data we want, and we're ready for it.
          Add it to the stream state.*/
-        if(m_OggOpusFile->ready_state==OP_STREAMSET) {
+        if(m_OggOpusFile->ready_state == OP_STREAMSET) {
             ret = op_make_decode_ready();
             if(ret < 0) return ret;
         }
         /*Extract all the packets from the current page.*/
         ogg_stream_pagein(&m_OggOpusFile->os, &og);
-        if(m_OggOpusFile->ready_state>=OP_INITSET) {
-            int32_t total_duration;
-            int32_t *durations = (int32_t*) malloc(255 * sizeof(int32_t));
-            int32_t op_count;
-            int32_t report_hole;
+        if(m_OggOpusFile->ready_state >= OP_INITSET) {
+            int32_t  total_duration;
+            int32_t *durations = (int32_t *)malloc(255 * sizeof(int32_t));
+            int32_t  op_count;
+            int32_t  report_hole;
             report_hole = 0;
             total_duration = op_collect_audio_packets(durations);
             if(total_duration < 0) {
@@ -934,8 +933,7 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                  We repeat this call until we get any actual packets, since we might
                  have buffered multiple out-of-sequence pages with no packets on
                  them.*/
-                do
-                    total_duration = op_collect_audio_packets(durations);
+                do total_duration = op_collect_audio_packets(durations);
                 while(total_duration < 0);
                 if(!_ignore_holes) {
                     /*Report the hole to the caller after we finish timestamping the
@@ -993,9 +991,7 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                      position, or the granule position it had was too small (both
                      illegal), just use the starting granule position for the link.*/
                     prev_packet_gp = links[cur_link].pcm_start;
-                    if(cur_page_gp != -1) {
-                        op_granpos_add(&prev_packet_gp, cur_page_gp, -total_duration);
-                    }
+                    if(cur_page_gp != -1) { op_granpos_add(&prev_packet_gp, cur_page_gp, -total_duration); }
                     if(!op_granpos_diff(&diff, prev_packet_gp, links[cur_link].pcm_start)) {
                         int32_t pre_skip;
                         /*If we start at the beginning of the pre-skip region, or we're
@@ -1005,7 +1001,7 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                          past the end of the pre-skip region.*/
                         pre_skip = links[cur_link].head.pre_skip;
                         if(diff >= 0 && diff <= _max(0, pre_skip - 80 * 48)) {
-                            cur_discard_count = pre_skip - (int32_t) diff;
+                            cur_discard_count = pre_skip - (int32_t)diff;
                         }
                     }
                     m_OggOpusFile->cur_discard_count = cur_discard_count;
@@ -1021,15 +1017,14 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                     }
                 }
                 /*If we hit the last page, handle end-trimming.*/
-                if((cur_page_eos) &&(!op_granpos_diff(&diff,cur_page_gp,prev_packet_gp))
-                &&(diff<total_duration)) {
+                if((cur_page_eos) && (!op_granpos_diff(&diff, cur_page_gp, prev_packet_gp)) &&
+                   (diff < total_duration)) {
                     cur_packet_gp = prev_packet_gp;
                     for(pi = 0; pi < op_count; pi++) {
                         /*Check for overflow.*/
-                        if(diff < 0 && (INT64_MAX+diff<durations[pi])) {
+                        if(diff < 0 && (INT64_MAX + diff < durations[pi])) {
                             diff = durations[pi] + 1;
-                        }
-                        else
+                        } else
                             diff = durations[pi] - diff;
                         /*If we have samples to trim...*/
                         if(diff > 0) {
@@ -1040,16 +1035,14 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                             /*Move the EOS flag to this packet, if necessary, so we'll trim
                              the samples during decode.*/
                             m_OggOpusFile->op[pi].e_o_s = 1;
-                        }
-                        else {
+                        } else {
                             /*Update the granule position as normal.*/
                             op_granpos_add(&cur_packet_gp, cur_packet_gp, durations[pi]);
                         }
                         m_OggOpusFile->op[pi].granulepos = cur_packet_gp;
                         op_granpos_diff(&diff, cur_page_gp, cur_packet_gp);
                     }
-                }
-                else {
+                } else {
                     /*Propagate timestamps to earlier packets.
                      op_granpos_add(&prev_packet_gp,prev_packet_gp,total_duration)
                      should succeed and give prev_packet_gp==cur_page_gp.
@@ -1074,10 +1067,11 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
                             cur_packet_gp = 0;
                         }
                         total_duration -= durations[pi];
-                        assert(total_duration>=0);
+                        assert(total_duration >= 0);
                         op_granpos_add(&cur_packet_gp, cur_packet_gp, durations[pi]);
                         m_OggOpusFile->op[pi].granulepos = cur_packet_gp;
-                    }assert(total_duration==0);
+                    }
+                    assert(total_duration == 0);
                 }
                 m_OggOpusFile->prev_packet_gp = prev_packet_gp;
                 m_OggOpusFile->prev_page_offset = _page_offset;
@@ -1244,12 +1238,11 @@ static int32_t op_read_native() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 int32_t op_read_stereo(int16_t *_pcm, int32_t _buf_size) {
-
     int32_t ret;
     /*Ensure we have some decoded samples in our buffer.*/
     ret = op_read_native();
     /*Now apply the filter to them.*/
-    if((ret>=0) && (m_OggOpusFile->ready_state>=OP_INITSET)) {
+    if((ret >= 0) && (m_OggOpusFile->ready_state >= OP_INITSET)) {
         int32_t od_buffer_pos;
         od_buffer_pos = m_OggOpusFile->od_buffer_pos;
         ret = m_OggOpusFile->od_buffer_size - od_buffer_pos;
@@ -1260,22 +1253,20 @@ int32_t op_read_stereo(int16_t *_pcm, int32_t _buf_size) {
             int16_t *_src = m_OggOpusFile->od_buffer + nchannels * od_buffer_pos;
 
             ret = _min(ret, _buf_size >> 1);
-            if(nchannels == 2)
-                memcpy(_pcm, _src, ret * 2 * sizeof(*_src));
+            if(nchannels == 2) memcpy(_pcm, _src, ret * 2 * sizeof(*_src));
             else {
                 int16_t *dst;
-                int32_t i;
-                dst = (int16_t*) _pcm;
+                int32_t  i;
+                dst = (int16_t *)_pcm;
                 if(nchannels == 1) {
-                    for(i = 0; i < ret; i++)
-                        dst[2 * i + 0] = dst[2 * i + 1] = _src[i];
-                }
-                else {
+                    for(i = 0; i < ret; i++) dst[2 * i + 0] = dst[2 * i + 1] = _src[i];
+                } else {
                     // noop, removed for RAM savings
                 }
             }
 
-            assert(ret>=0); assert(ret<=m_OggOpusFile->od_buffer_size-od_buffer_pos);
+            assert(ret >= 0);
+            assert(ret <= m_OggOpusFile->od_buffer_size - od_buffer_pos);
             od_buffer_pos += ret;
             m_OggOpusFile->od_buffer_pos = od_buffer_pos;
         }

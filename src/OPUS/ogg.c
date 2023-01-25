@@ -430,23 +430,29 @@ static int32_t _os_lacing_expand(ogg_stream_state *os,int32_t needed){
 /* Direct table CRC; note that this will be faster in the future if we perform the checksum simultaneously with other copies */
 
 static uint32_t _os_update_crc(uint32_t crc, uint8_t *buffer, int32_t size) {
-    while(size >= 8) {
-        crc ^= ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) |
-               ((uint32_t)buffer[3]);
+  while(size >= 8) {
+    crc ^=
+        ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) | ((uint32_t)buffer[3]);
 
-        crc = crc_lookup[7][crc >> 24] ^ crc_lookup[6][(crc >> 16) & 0xFF] ^ crc_lookup[5][(crc >> 8) & 0xFF] ^
-              crc_lookup[4][crc & 0xFF] ^ crc_lookup[3][buffer[4]] ^ crc_lookup[2][buffer[5]] ^
-              crc_lookup[1][buffer[6]] ^ crc_lookup[0][buffer[7]];
+    crc = crc_lookup[7][crc >> 24] ^
+          crc_lookup[6][(crc >> 16) & 0xFF] ^
+          crc_lookup[5][(crc >> 8) & 0xFF] ^
+          crc_lookup[4][crc & 0xFF] ^
+          crc_lookup[3][buffer[4]] ^
+          crc_lookup[2][buffer[5]] ^
+          crc_lookup[1][buffer[6]] ^
+          crc_lookup[0][buffer[7]];
 
-        buffer += 8;
-        size -= 8;
-    }
+    buffer += 8;
+    size -= 8;
+  }
 
-    while(size--) crc = (crc << 8) ^ crc_lookup[0][((crc >> 24) & 0xff) ^ *buffer++];
-    return crc;
+  while(size--) crc = (crc << 8) ^ crc_lookup[0][((crc >> 24) & 0xff) ^ *buffer++];
+  return crc;
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ogg_page_checksum_set(ogg_page *og) {
+
     if(og) {
         uint32_t crc_reg = 0;
 
@@ -464,171 +470,6 @@ void ogg_page_checksum_set(ogg_page *og) {
         og->header[24] = (uint8_t)((crc_reg >> 16) & 0xff);
         og->header[25] = (uint8_t)((crc_reg >> 24) & 0xff);
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* Conditionally flush a page; force==0 will only flush nominal-size pages,
-   force==1 forces us to flush a page regardless of page size so int32_t as there's any data available at all. */
-static int32_t ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int32_t force, int32_t nfill) {
-    int32_t     i;
-    int32_t     vals = 0;
-    int32_t     maxvals = (os->lacing_fill > 255 ? 255 : os->lacing_fill);
-    int32_t     bytes = 0;
-    int32_t    acc = 0;
-    int64_t granule_pos = -1;
-
-    if(ogg_stream_check(os)) return (0);
-    if(maxvals == 0) return (0);
-
-    /* construct a page */
-    /* decide how many segments to include */
-
-    /* If this is the initial header case, the first page must only include the initial header packet */
-    if(os->b_o_s == 0) { /* 'initial header page' case */
-        granule_pos = 0;
-        for(vals = 0; vals < maxvals; vals++) {
-            if((os->lacing_vals[vals] & 0x0ff) < 255) {
-                vals++;
-                break;
-            }
-        }
-    }
-    else {
-        /* The extra packets_done, packet_just_done logic here attempts to do two things:
-           1) Don't unnecessarily span pages.
-           2) Unless necessary, don't flush pages if there are less than four packets on them; this expands page size
-              to reduce unnecessary overhead if incoming packets are large.
-           These are not necessary behaviors, just 'always better than naive flushing' without requiring an application
-           to explicitly request a specific optimized behavior. We'll want an explicit behavior setup pathway
-           eventually as well. */
-
-        int32_t packets_done = 0;
-        int32_t packet_just_done = 0;
-        for(vals = 0; vals < maxvals; vals++) {
-            if(acc > nfill && packet_just_done >= 4) {
-                force = 1;
-                break;
-            }
-            acc += os->lacing_vals[vals] & 0x0ff;
-            if((os->lacing_vals[vals] & 0xff) < 255) {
-                granule_pos = os->granule_vals[vals];
-                packet_just_done = ++packets_done;
-            }
-            else
-                packet_just_done = 0;
-        }
-        if(vals == 255) force = 1;
-    }
-
-    if(!force) return (0);
-
-    /* construct the header in temp storage */
-    memcpy(os->header, "OggS", 4);
-
-    /* stream structure version */
-    os->header[4] = 0x00;
-
-    /* continued packet flag? */
-    os->header[5] = 0x00;
-    if((os->lacing_vals[0] & 0x100) == 0) os->header[5] |= 0x01;
-    /* first page flag? */
-    if(os->b_o_s == 0) os->header[5] |= 0x02;
-    /* last page flag? */
-    if(os->e_o_s && os->lacing_fill == vals) os->header[5] |= 0x04;
-    os->b_o_s = 1;
-
-    /* 64 bits of PCM position */
-    for(i = 6; i < 14; i++) {
-        os->header[i] = (uint8_t)(granule_pos & 0xff);
-        granule_pos >>= 8;
-    }
-
-    /* 32 bits of stream serial number */
-    {
-        int32_t serialno = os->serialno;
-        for(i = 14; i < 18; i++) {
-            os->header[i] = (uint8_t)(serialno & 0xff);
-            serialno >>= 8;
-        }
-    }
-
-    /* 32 bits of page counter (we have both counter and page header
-       because this val can roll over) */
-    if(os->pageno == -1)
-        os->pageno = 0; /* because someone called
-                           stream_reset; this would be a
-                           strange thing to do in an
-                           encode stream, but it has
-                           plausible uses */
-    {
-        int32_t pageno = os->pageno++;
-        for(i = 18; i < 22; i++) {
-            os->header[i] = (uint8_t)(pageno & 0xff);
-            pageno >>= 8;
-        }
-    }
-
-    /* zero for computation; filled in later */
-    os->header[22] = 0;
-    os->header[23] = 0;
-    os->header[24] = 0;
-    os->header[25] = 0;
-
-    /* segment table */
-    os->header[26] = (uint8_t)(vals & 0xff);
-    for(i = 0; i < vals; i++) bytes += os->header[i + 27] = (uint8_t)(os->lacing_vals[i] & 0xff);
-
-    /* set pointers in the ogg_page struct */
-    og->header = os->header;
-    og->header_len = os->header_fill = vals + 27;
-    og->body = os->body_data + os->body_returned;
-    og->body_len = bytes;
-
-    /* advance the lacing data and set the body_returned pointer */
-
-    os->lacing_fill -= vals;
-    memmove(os->lacing_vals, os->lacing_vals + vals, os->lacing_fill * sizeof(*os->lacing_vals));
-    memmove(os->granule_vals, os->granule_vals + vals, os->lacing_fill * sizeof(*os->granule_vals));
-    os->body_returned += bytes;
-
-    /* calculate the checksum */
-
-    ogg_page_checksum_set(og);
-
-    /* done */
-    return (1);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* This constructs pages from buffered packet segments. The pointers returned are to static buffers; do not free. The
-   returned buffers are good only until the next call (using the same ogg_stream_state) */
-
-int32_t ogg_stream_pageout(ogg_stream_state *os, ogg_page *og) {
-    int32_t force = 0;
-    if(ogg_stream_check(os)) return 0;
-
-    if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
-       (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
-        force = 1;
-
-    return (ogg_stream_flush_i(os, og, force, 4096));
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* Like the above, but an argument is provided to adjust the nominal page size for applications which are smart enough
-   to provide their own delay based flushing */
-
-int32_t ogg_stream_pageout_fill(ogg_stream_state *os, ogg_page *og, int32_t nfill) {
-    int32_t force = 0;
-    if(ogg_stream_check(os)) return 0;
-
-    if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
-       (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
-        force = 1;
-
-    return (ogg_stream_flush_i(os, og, force, nfill));
-}
-//----------------------------------------------------------------------------------------------------------------------
-int32_t ogg_stream_eos(ogg_stream_state *os) {
-    if(ogg_stream_check(os)) return 1;
-    return os->e_o_s;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* clear non-flat storage within */
