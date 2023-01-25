@@ -1014,7 +1014,7 @@ void denormalise_bands(const CELTMode *m, const int16_t * X, int32_t * freq,
             } while (++j < band_end);
     }
     assert(start <= end);
-    OPUS_CLEAR(&freq[bound], N - bound);
+    memset(&freq[bound], 0, (N - bound) * sizeof(*freq));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1591,7 +1591,7 @@ static uint32_t quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int
                 cm_mask = (uint32_t)(1UL << B) - 1;
                 fill &= cm_mask;
                 if (!fill) {
-                    OPUS_CLEAR(X, N);
+                    memset(&X, 0, N * sizeof(X));
                 }
                 else  {
                     if (lowband == NULL) {
@@ -2138,7 +2138,8 @@ int32_t opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int32_t 
     if (st == NULL)
         return OPUS_ALLOC_FAIL;
 
-    OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(mode, channels));
+    int n = opus_custom_decoder_get_size(mode, channels);
+    memset(st, 0, n * sizeof(char));
 
     st->mode = mode;
     st->overlap = mode->overlap;
@@ -2378,20 +2379,6 @@ static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch) {
-    int32_t pitch_index;
-    int16_t lp_pitch_buf[DECODE_BUFFER_SIZE >> 1];
-    pitch_downsample(decode_mem, lp_pitch_buf,
-                     DECODE_BUFFER_SIZE, C, arch);
-    pitch_search(lp_pitch_buf + (PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
-                 DECODE_BUFFER_SIZE - PLC_PITCH_LAG_MAX,
-                 PLC_PITCH_LAG_MAX - PLC_PITCH_LAG_MIN, &pitch_index, arch);
-    pitch_index = PLC_PITCH_LAG_MAX - pitch_index;
-
-    return pitch_index;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
     int32_t c;
     int32_t i;
@@ -2404,7 +2391,6 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
     int32_t nbEBands;
     int32_t overlap;
     int32_t start;
-    int32_t loss_count;
     int32_t noise_based;
     const int16_t *eBands;
 
@@ -2424,9 +2410,8 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
     oldLogE2 = oldLogE + 2 * nbEBands;
     backgroundLogE = oldLogE2 + 2 * nbEBands;
 
-    loss_count = st->loss_count;
     start = st->start;
-    noise_based = loss_count >= 5 || start != 0 || st->skip_plc;
+    noise_based = start != 0 || st->skip_plc;
     if (noise_based){
         /* Noise-based PLC/CNG */
         uint32_t seed;
@@ -2439,7 +2424,7 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
         int16_t X[C * N]; /**< Interleaved normalised MDCTs */
 
         /* Energy decay */
-        decay = loss_count == 0 ? QCONST16(1.5f, 10) : QCONST16(.5f, 10);
+        decay = QCONST16(1.5f, 10);
         c = 0;
         do {
             for (i = start; i < end; i++)
@@ -2473,202 +2458,9 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
         celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
     }
     else{
-        int32_t exc_length;
-        /* Pitch-based PLC */
-        const int16_t *window;
-        int16_t *exc;
-        int16_t fade = 32767;
-        int32_t pitch_index;
-
-        if (loss_count == 0) {
-            st->last_pitch_index = pitch_index = celt_plc_pitch_search(decode_mem, C, st->arch);
-        }
-        else {
-            pitch_index = st->last_pitch_index;
-            fade = QCONST16(.8f, 15);
-        }
-
-        /* We want the excitation for 2 pitch periods in order to look for a
-           decaying signal, but we can't get more than MAX_PERIOD. */
-        exc_length = min(2 * pitch_index, MAX_PERIOD);
-
-        int32_t etmp[overlap];
-        int16_t _exc[MAX_PERIOD + 24];
-        int16_t fir_tmp[exc_length];
-        exc = _exc + 24;
-        window = mode->window;
-        c = 0;
-        do {
-            int16_t decay;
-            int16_t attenuation;
-            int32_t S1 = 0;
-            int32_t *buf;
-            int32_t extrapolation_offset;
-            int32_t extrapolation_len;
-            int32_t j;
-
-            buf = decode_mem[c];
-            for (i = 0; i < MAX_PERIOD + 24; i++)
-                exc[i - 24] = ROUND16(buf[DECODE_BUFFER_SIZE - MAX_PERIOD - 24 + i], 12);
-
-            if (loss_count == 0) {
-                int32_t ac[24 + 1];
-                /* Compute LPC coefficients for the last MAX_PERIOD samples before
-                   the first loss so we can work in the excitation-filter domain. */
-                _celt_autocorr(exc, ac, window, overlap,
-                               24, MAX_PERIOD, st->arch);
-                /* Add a noise floor of -40 dB. */
-
-                ac[0] += ac[0] >> 13;
-
-                /* Use lag windowing to stabilize the Levinson-Durbin recursion. */
-                for (i = 1; i <= 24; i++) {
-                    /*ac[i] *= exp(-.5*(2*M_PI*.002*i)*(2*M_PI*.002*i));*/
-
-                    ac[i] -= MULT16_32_Q15(2 * i * i, ac[i]);
-                }
-                _celt_lpc(lpc + c * 24, ac, 24);
-
-                /* For fixed-point, apply bandwidth expansion until we can guarantee that
-                   no overflow can happen in the IIR filter. This means:
-                   32768*sum(abs(filter)) < 2^31 */
-                while (1)  {
-                    int16_t tmp = 32767;
-                    int32_t sum = QCONST16(1., 12);
-                    for (i = 0; i < 24; i++)
-                        sum += abs(lpc[c * 24 + i]);
-                    if (sum < 65535)
-                        break;
-                    for (i = 0; i < 24; i++)
-                    {
-                        tmp = MULT16_16_Q15(QCONST16(.99f, 15), tmp);
-                        lpc[c * 24 + i] = MULT16_16_Q15(lpc[c * 24 + i], tmp);
-                    }
-                }
-            }
-            /* Initialize the LPC history with the samples just before the start
-               of the region for which we're computing the excitation. */
-            {
-                celt_fir(exc + MAX_PERIOD - exc_length, lpc + c * 24,
-                         fir_tmp, exc_length, 24);
-                memcpy(exc + MAX_PERIOD - exc_length, fir_tmp, exc_length * sizeof(*exc));
-            }
-
-            /* Check if the waveform is decaying, and if so how fast.
-               We do this to avoid adding energy when concealing in a segment
-               with decaying energy. */
-            {
-                int32_t E1 = 1, E2 = 1;
-                int32_t decay_length;
-
-                int32_t shift = max(0, 2 * celt_zlog2(celt_maxabs16(&exc[MAX_PERIOD - exc_length], exc_length)) - 20);
-
-                decay_length = exc_length >> 1;
-                for (i = 0; i < decay_length; i++) {
-                    int16_t e;
-                    e = exc[MAX_PERIOD - decay_length + i];
-                    E1 += MULT16_16(e, e) >> shift;
-                    e = exc[MAX_PERIOD - 2 * decay_length + i];
-                    E2 += MULT16_16(e, e) >> shift;
-                }
-                E1 = min(E1, E2);
-                decay = celt_sqrt(frac_div32(E1 >> 1, E2));
-            }
-
-            /* Move the decoder memory one frame to the left to give us room to
-               add the data for the new frame. We ignore the overlap that extends
-               past the end of the buffer, because we aren't going to use it. */
-            OPUS_MOVE(buf, buf + N, DECODE_BUFFER_SIZE - N);
-
-            /* Extrapolate from the end of the excitation with a period of
-               "pitch_index", scaling down each period by an additional factor of
-               "decay". */
-            extrapolation_offset = MAX_PERIOD - pitch_index;
-            /* We need to extrapolate enough samples to cover a complete MDCT
-               window (including overlap/2 samples on both sides). */
-            extrapolation_len = N + overlap;
-            /* We also apply fading if this is not the first loss. */
-            attenuation = MULT16_16_Q15(fade, decay);
-            for (i = j = 0; i < extrapolation_len; i++, j++) {
-                int16_t tmp;
-                if (j >= pitch_index) {
-                    j -= pitch_index;
-                    attenuation = MULT16_16_Q15(attenuation, decay);
-                }
-                buf[DECODE_BUFFER_SIZE - N + i] =
-                    SHL32(EXTEND32(MULT16_16_Q15(attenuation,
-                                                 exc[extrapolation_offset + j])),
-                          12);
-                /* Compute the energy of the previously decoded signal whose
-                   excitation we're copying. */
-                tmp = ROUND16(
-                    buf[DECODE_BUFFER_SIZE - MAX_PERIOD - N + extrapolation_offset + j],
-                    12);
-                S1 += MULT16_16(tmp, tmp) >> 10;
-            }
-            {
-                int16_t lpc_mem[24];
-                /* Copy the last decoded samples (prior to the overlap region) to
-                   synthesis filter memory so we can have a continuous signal. */
-                for (i = 0; i < 24; i++)
-                    lpc_mem[i] = ROUND16(buf[DECODE_BUFFER_SIZE - N - 1 - i], 12);
-                /* Apply the synthesis filter to convert the excitation back into
-                   the signal domain. */
-                celt_iir(buf + DECODE_BUFFER_SIZE - N, lpc + c * 24,
-                         buf + DECODE_BUFFER_SIZE - N, extrapolation_len, 24,
-                         lpc_mem, st->arch);
-
-                for (i = 0; i < extrapolation_len; i++)
-                    buf[DECODE_BUFFER_SIZE - N + i] = SATURATE(buf[DECODE_BUFFER_SIZE - N + i], (300000000));
-            }
-
-            /* Check if the synthesis energy is higher than expected, which can
-               happen with the signal changes during our window. If so,
-               attenuate. */
-            {
-                int32_t S2 = 0;
-                for (i = 0; i < extrapolation_len; i++)
-                {
-                    int16_t tmp = ROUND16(buf[DECODE_BUFFER_SIZE - N + i], 12);
-                    S2 += MULT16_16(tmp, tmp) >> 10;
-                }
-                /* This checks for an "explosion" in the synthesis. */
-
-                if (!(S1 > (S2 >> 2))) {
-                    for (i = 0; i < extrapolation_len; i++)
-                        buf[DECODE_BUFFER_SIZE - N + i] = 0;
-                }
-                else if (S1 < S2) {
-                    int16_t ratio = celt_sqrt(frac_div32((S1 >> 1) + 1, S2 + 1));
-                    for (i = 0; i < overlap; i++) {
-                        int16_t tmp_g = 32767 - MULT16_16_Q15(window[i], 32767 - ratio);
-                        buf[DECODE_BUFFER_SIZE - N + i] =
-                            MULT16_32_Q15(tmp_g, buf[DECODE_BUFFER_SIZE - N + i]);
-                    }
-                    for (i = overlap; i < extrapolation_len; i++) {
-                        buf[DECODE_BUFFER_SIZE - N + i] =
-                            MULT16_32_Q15(ratio, buf[DECODE_BUFFER_SIZE - N + i]);
-                    }
-                }
-            }
-
-            /* Apply the pre-filter to the MDCT overlap for the next frame because
-               the post-filter will be re-applied in the decoder after the MDCT
-               overlap. */
-            comb_filter(etmp, buf + DECODE_BUFFER_SIZE,
-                        st->postfilter_period, st->postfilter_period, overlap,
-                        -st->postfilter_gain, -st->postfilter_gain,
-                        st->postfilter_tapset, st->postfilter_tapset, NULL, 0);
-
-            /* Simulate TDAC on the concealed audio so that it blends with the
-               MDCT of the next frame. */
-            for (i = 0; i < overlap / 2; i++) {
-                buf[DECODE_BUFFER_SIZE + i] =
-                    MULT16_32_Q15(window[i], etmp[overlap - 1 - i]) + MULT16_32_Q15(window[overlap - i - 1], etmp[i]);
-            }
-        } while (++c < C);
+        log_e("something is wrong");
+        // an error catching routine could go here
     }
-    st->loss_count = loss_count + 1;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2759,7 +2551,7 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
 
     /* Check if there are at least two packets received consecutively before
      * turning on the pitch-based PLC */
-    st->skip_plc = st->loss_count != 0;
+    st->skip_plc = 0;
 
     if (dec == NULL) {
         ec_dec_init(&_dec, (uint8_t *)data, len);
@@ -2948,10 +2740,8 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
         /* In normal circumstances, we only allow the noise floor to increase by
            up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
            increase for each update.*/
-        if (st->loss_count < 10)
-            max_background_increase = M * QCONST16(0.001f, 10);
-        else
-            max_background_increase = QCONST16(1.f, 10);
+        max_background_increase = M * QCONST16(0.001f, 10);
+
         for (i = 0; i < 2 * nbEBands; i++)
             backgroundLogE[i] = min(backgroundLogE[i] + max_background_increase, oldBandE[i]);
     }
@@ -2975,7 +2765,6 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
     st->rng = dec->rng;
 
     deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
-    st->loss_count = 0;
 
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;
@@ -3023,8 +2812,12 @@ int32_t celt_decoder_ctl(CELTDecoder * st, int32_t request, ...) {
             oldBandE = lpc + st->channels * 24;
             oldLogE = oldBandE + 2 * st->mode->nbEBands;
             oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
-            OPUS_CLEAR((char *)&st->DECODER_RESET_START, opus_custom_decoder_get_size(st->mode, st->channels) -
-                                                             ((char *)&st->DECODER_RESET_START - (char *)st));
+
+            int n = opus_custom_decoder_get_size(st->mode, st->channels);
+            char* dest   = (char*)&st->rng;
+            char* offset = (char*)st;
+            memset(dest, 0,  n - (dest - offset) * sizeof(st));
+
             for (i = 0; i < 2 * st->mode->nbEBands; i++) oldLogE[i] = oldLogE2[i] = -QCONST16(28.f, 10);
             st->skip_plc = 1;
         } break;
@@ -3158,41 +2951,6 @@ static int32_t compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t
     target = min(2 * base_target, target);
 
     return target;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-void _celt_lpc(int16_t *_lpc,     /* out: [0...p-1] LPC coefficients      */
-               const int32_t *ac, /* in:  [0...p] autocorrelation values  */
-               int32_t p) {
-    int32_t i, j;
-    int32_t r;
-    int32_t error = ac[0];
-    int32_t lpc[24];
-    OPUS_CLEAR(lpc, p);
-    if (ac[0] != 0) {
-        for (i = 0; i < p; i++) {
-            /* Sum up this iteration's reflection coefficient */
-            int32_t rr = 0;
-            for (j = 0; j < i; j++) rr += MULT32_32_Q31(lpc[j], ac[i - j]);
-            rr += ac[i + 1] >> 3;
-            r = -frac_div32(SHL32(rr, 3), error);
-            /*  Update LPC coefficients and total error */
-            lpc[i] = r >> 3;
-            for (j = 0; j < (i + 1) >> 1; j++) {
-                int32_t tmp1, tmp2;
-                tmp1 = lpc[j];
-                tmp2 = lpc[i - 1 - j];
-                lpc[j] = tmp1 + MULT32_32_Q31(r, tmp2);
-                lpc[i - 1 - j] = tmp2 + MULT32_32_Q31(r, tmp1);
-            }
-
-            error = error - MULT32_32_Q31(MULT32_32_Q31(r, r), error);
-            /* Bail out once we get 30 dB gain */
-            if (error < (ac[0] >> 10)) break;
-        }
-    }
-    for (i = 0; i < p; i++) _lpc[i] = ROUND16(lpc[i], 16);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4255,90 +4013,8 @@ static void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void celt_fir5(int16_t *x, const int16_t *num, int32_t N) {
-    int32_t i;
-    int16_t num0, num1, num2, num3, num4;
-    int32_t mem0, mem1, mem2, mem3, mem4;
-    num0 = num[0];
-    num1 = num[1];
-    num2 = num[2];
-    num3 = num[3];
-    num4 = num[4];
-    mem0 = 0;
-    mem1 = 0;
-    mem2 = 0;
-    mem3 = 0;
-    mem4 = 0;
-    for (i = 0; i < N; i++) {
-        int32_t sum = SHL32(EXTEND32(x[i]), 12);
-        sum = MAC16_16(sum, num0, mem0);
-        sum = MAC16_16(sum, num1, mem1);
-        sum = MAC16_16(sum, num2, mem2);
-        sum = MAC16_16(sum, num3, mem3);
-        sum = MAC16_16(sum, num4, mem4);
-        mem4 = mem3;
-        mem3 = mem2;
-        mem2 = mem1;
-        mem1 = mem0;
-        mem0 = x[i];
-        x[i] = ROUND16(sum, 12);
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void pitch_downsample(int32_t * x[], int16_t * x_lp, int32_t len, int32_t C, int32_t arch) {
-    int32_t i;
-    int32_t ac[5];
-    int16_t tmp = 32767;
-    int16_t lpc[4];
-    int16_t lpc2[5];
-    int16_t c1 = QCONST16(.8f, 15);
-    int32_t shift;
-    int32_t maxabs = celt_maxabs32(x[0], len);
-    if (C == 2) {
-        int32_t maxabs_1 = celt_maxabs32(x[1], len);
-        maxabs = max(maxabs, maxabs_1);
-    }
-    if (maxabs < 1) maxabs = 1;
-    shift = celt_ilog2(maxabs) - 10;
-    if (shift < 0) shift = 0;
-    if (C == 2) shift++;
-    for (i = 1; i < len >> 1; i++)
-        x_lp[i] = HALF32(HALF32(x[0][(2 * i - 1)] + x[0][(2 * i + 1)]) + x[0][2 * i]) >> shift;
-    x_lp[0] = HALF32(HALF32(x[0][1]) + x[0][0]) >> shift;
-    if (C == 2) {
-        for (i = 1; i < len >> 1; i++)
-            x_lp[i] += HALF32(HALF32(x[1][(2 * i - 1)] + x[1][(2 * i + 1)]) + x[1][2 * i]) >> shift;
-        x_lp[0] += HALF32(HALF32(x[1][1]) + x[1][0]) >> shift;
-    }
-
-    _celt_autocorr(x_lp, ac, NULL, 0, 4, len >> 1, arch);
-
-    /* Noise floor -40 dB */
-    ac[0] += ac[0] >> 13;
-    /* Lag windowing */
-    for (i = 1; i <= 4; i++) {
-        /*ac[i] *= exp(-.5*(2*M_PI*.002*i)*(2*M_PI*.002*i));*/
-        ac[i] -= MULT16_32_Q15(2 * i * i, ac[i]);
-    }
-
-    _celt_lpc(lpc, ac, 4);
-    for (i = 0; i < 4; i++) {
-        tmp = MULT16_16_Q15(QCONST16(.9f, 15), tmp);
-        lpc[i] = MULT16_16_Q15(lpc[i], tmp);
-    }
-    /* Add a zero */
-    lpc2[0] = lpc[0] + QCONST16(.8f, 12);
-    lpc2[1] = lpc[1] + MULT16_16_Q15(c1, lpc[0]);
-    lpc2[2] = lpc[2] + MULT16_16_Q15(c1, lpc[1]);
-    lpc2[3] = lpc[3] + MULT16_16_Q15(c1, lpc[2]);
-    lpc2[4] = MULT16_16_Q15(c1, lpc[3]);
-    celt_fir5(x_lp, lpc2, len >> 1);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 /* Pure C implementation. */
-int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch, int32_t arch) {
+int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch, int32_t arch) {
     int32_t i;
     /*The EDSP version requires that max_pitch is at least 1, and that _x is
        32-bit aligned.
@@ -4366,107 +4042,6 @@ int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr,
         maxcorr = max(maxcorr, sum);
     }
     return maxcorr;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void pitch_search(const int16_t * x_lp, int16_t * y, int32_t len, int32_t max_pitch, int32_t *pitch,
-                  int32_t arch) {
-    int32_t i, j;
-    int32_t lag;
-    int32_t best_pitch[2] = {0, 0};
-    int32_t maxcorr;
-    int32_t xmax, ymax;
-    int32_t shift = 0;
-    int32_t offset;
-
-    assert(len > 0);
-    assert(max_pitch > 0);
-    lag = len + max_pitch;
-
-    int16_t x_lp4[len >> 2];
-    int16_t y_lp4[lag >> 2];
-    int32_t xcorr[max_pitch >> 1];
-
-    /* Downsample by 2 again */
-    for (j = 0; j < len >> 2; j++) x_lp4[j] = x_lp[2 * j];
-    for (j = 0; j < lag >> 2; j++) y_lp4[j] = y[2 * j];
-
-    xmax = celt_maxabs16(x_lp4, len >> 2);
-    ymax = celt_maxabs16(y_lp4, lag >> 2);
-    shift = celt_ilog2(max(1, max(xmax, ymax))) - 11;
-    if (shift > 0) {
-        for (j = 0; j < len >> 2; j++) x_lp4[j] = SHR16(x_lp4[j], shift);
-        for (j = 0; j < lag >> 2; j++) y_lp4[j] = SHR16(y_lp4[j], shift);
-        /* Use double the shift for a MAC */
-        shift *= 2;
-    } else {
-        shift = 0;
-    }
-
-    /* Coarse search with 4x decimation */
-    maxcorr =
-
-        celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2, arch);
-
-    find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
-
-    /* Finer search with 2x decimation */
-    maxcorr = 1;
-    for (i = 0; i < max_pitch >> 1; i++) {
-        int32_t sum;
-        xcorr[i] = 0;
-        if (abs(i - 2 * best_pitch[0]) > 2 && abs(i - 2 * best_pitch[1]) > 2) continue;
-        sum = 0;
-        for (j = 0; j < len >> 1; j++) sum += SHR32(MULT16_16(x_lp[j], y[i + j]), shift);
-
-        xcorr[i] = max(-1, sum);
-
-        maxcorr = max(maxcorr, sum);
-    }
-    find_best_pitch(xcorr, y, len >> 1, max_pitch >> 1, best_pitch, shift + 1, maxcorr);
-
-    /* Refine by pseudo-interpolation */
-    if (best_pitch[0] > 0 && best_pitch[0] < (max_pitch >> 1) - 1) {
-        int32_t a, b, c;
-        a = xcorr[best_pitch[0] - 1];
-        b = xcorr[best_pitch[0]];
-        c = xcorr[best_pitch[0] + 1];
-        if ((c - a) > MULT16_32_Q15(QCONST16(.7f, 15), b - a))
-            offset = 1;
-        else if ((a - c) > MULT16_32_Q15(QCONST16(.7f, 15), b - c))
-            offset = -1;
-        else
-            offset = 0;
-    } else {
-        offset = 0;
-    }
-    *pitch = 2 * best_pitch[0] - offset;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy) {
-    int32_t x2y2;
-    int32_t sx, sy, shift;
-    int32_t g;
-    int16_t den;
-    if (xy == 0 || xx == 0 || yy == 0) return 0;
-    sx = celt_ilog2(xx) - 14;
-    sy = celt_ilog2(yy) - 14;
-    shift = sx + sy;
-    x2y2 = SHR32(MULT16_16(VSHR32(xx, sx), VSHR32(yy, sy)), 14);
-    if (shift & 1) {
-        if (x2y2 < 32768) {
-            x2y2 <<= 1;
-            shift--;
-        } else {
-            x2y2 >>= 1;
-            shift++;
-        }
-    }
-    den = celt_rsqrt_norm(x2y2);
-    g = MULT16_32_Q15(den, xy);
-    g = VSHR32(g, (shift >> 1) - 1);
-    return (int16_t)(min(g, 32767));
 }
 //----------------------------------------------------------------------------------------------------------------------
 

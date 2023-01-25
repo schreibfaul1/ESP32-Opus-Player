@@ -121,9 +121,6 @@ struct CELTDecoder {
     int32_t disable_inv;
     int32_t arch;
 
-    /* Everything beyond this point gets cleared on a reset */
-#define DECODER_RESET_START rng
-
     uint32_t rng;
     int32_t error;
     int32_t last_pitch_index;
@@ -365,11 +362,9 @@ int32_t celt_rcp(int32_t x);
 #define celt_div(a,b) MULT32_32_Q31((int32_t)(a),celt_rcp(b))
 #define MAX_PERIOD 1024
 #define OPUS_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
-#define OPUS_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
 #define ALLOC_STEPS 6
 
 #define celt_inner_prod(x, y, N, arch) ((void)(arch),celt_inner_prod_c(x, y, N))
-#define celt_pitch_xcorr celt_pitch_xcorr_c
 #define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
 
 
@@ -605,12 +600,10 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
 static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                            int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence, int32_t arch);
 static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec);
-static int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch);
 static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM);
 int32_t celt_decode_with_ec(CELTDecoder *st, const uint8_t *data, int32_t len, int16_t * pcm,
                         int32_t frame_size, ec_dec *dec, int32_t accum);
 int32_t celt_decoder_ctl(CELTDecoder * st, int32_t request, ...);
-void _celt_lpc(int16_t *_lpc, const int32_t *ac, int32_t p);
 void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem, int32_t arch);
 int32_t _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int32_t overlap, int32_t lag, int32_t n, int32_t arch);
@@ -657,12 +650,9 @@ static void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy
 static uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain, int32_t arch);
-static void celt_fir5(int16_t *x, const int16_t *num, int32_t N);
-void pitch_downsample(int32_t * x[], int16_t * x_lp, int32_t len, int32_t C, int32_t arch);
-int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch, int32_t arch);
-void pitch_search(const int16_t * x_lp, int16_t * y, int32_t len, int32_t max_pitch, int32_t *pitch,
-                  int32_t arch);
-static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
+
+int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch, int32_t arch);
+
 static int32_t interp_bits2pulses(const CELTMode *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                               const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                               int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,

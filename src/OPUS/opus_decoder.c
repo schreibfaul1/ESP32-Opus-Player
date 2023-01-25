@@ -75,7 +75,8 @@ int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels) {
     if((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2))
         return OPUS_BAD_ARG;
 
-    OPUS_CLEAR((char *)st, opus_decoder_get_size(channels));
+    int n = opus_decoder_get_size(channels);
+    memset(st, 0, n * sizeof(char));
 
     st->celt_dec_offset = 64;
 
