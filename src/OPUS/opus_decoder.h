@@ -52,9 +52,6 @@ extern "C" {
 
 #define OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST 5122
 
-#define OPUS_GNUC_PREREQ(_maj,_min) \
- ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
-
 #define OPUS_SET_APPLICATION_REQUEST 4000
 #define OPUS_GET_APPLICATION_REQUEST 4001
 #define OPUS_SET_BITRATE_REQUEST 4002
@@ -137,8 +134,6 @@ typedef struct OpusMSDecoder {
 int32_t opus_decoder_get_size(int32_t channels);
 int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels);
 int32_t opus_decode(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_decode_float(OpusDecoder *st, const uint8_t *data, int32_t len, float *pcm, int32_t frame_size,
-                      int32_t decode_fec);
 int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...);
 int32_t opus_packet_parse(const uint8_t *data, int32_t len, uint8_t *out_toc, const uint8_t *frames[48],
                       int16_t size[48], int32_t *payload_offset);
@@ -147,13 +142,8 @@ int32_t opus_packet_get_samples_per_frame(const uint8_t *data, int32_t Fs);
 int32_t opus_packet_get_nb_channels(const uint8_t *data);
 int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len);
 int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t Fs);
-int32_t opus_decoder_get_nb_samples(const OpusDecoder *dec, const uint8_t packet[], int32_t len);
-
 
 CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
-void opus_custom_mode_destroy(CELTMode *mode);
-CELTDecoder *opus_custom_decoder_create(const CELTMode *mode, int32_t channels, int32_t *error);
-void opus_custom_decoder_destroy(CELTDecoder *st);
 int32_t celt_decoder_ctl(CELTDecoder *__restrict__ st, int32_t request, ...);
 int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
                        int32_t self_delimited, int32_t *packet_offset);
@@ -193,18 +183,6 @@ int32_t opus_multistream_decoder_init(OpusMSDecoder_t *st, int32_t Fs, int32_t c
 int32_t opus_multistream_decode(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl(OpusMSDecoder_t *st, int32_t request, ...);
 void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #ifdef __cplusplus

@@ -456,11 +456,6 @@ int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_decoder_get_nb_samples(const OpusDecoder *dec, const uint8_t packet[], int32_t len) {
-    return opus_packet_get_nb_samples(packet, len, dec->Fs);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 static int32_t parse_size(const uint8_t *data, int32_t len, int16_t *size) {
     if (len < 1) {
         *size = -1;

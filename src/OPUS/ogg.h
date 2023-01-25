@@ -92,10 +92,7 @@ typedef struct {
 
     /* Ogg BITSTREAM PRIMITIVES: decoding **************************/
 
-    int32_t ogg_sync_init(ogg_sync_state *oy);
     int32_t ogg_sync_clear(ogg_sync_state *oy);
-    int32_t ogg_sync_reset(ogg_sync_state *oy);
-    int32_t ogg_sync_destroy(ogg_sync_state *oy);
     int32_t ogg_sync_check(ogg_sync_state *oy);
 
     char *ogg_sync_buffer(ogg_sync_state *oy, int32_t size);

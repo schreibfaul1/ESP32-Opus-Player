@@ -718,35 +718,11 @@ int32_t ogg_stream_eos(ogg_stream_state *os) {
     return os->e_o_s;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/* This has two layers to place more of the multi-serialno and paging control in the application's hands.  First, we
-   expose a data buffer using ogg_sync_buffer(). The app either copies into the buffer, or passes it directly to read(),
-   etc. We then call ogg_sync_wrote() to tell how many bytes we just added.
-   Pages are returned (pointers into the buffer in ogg_sync_state) by ogg_sync_pageout(). The page is then submitted to
-   ogg_stream_pagein() along with the appropriate ogg_stream_state* (ie, matching serialno). We then get raw packets
-   out calling ogg_stream_packetout() with a ogg_stream_state. */
-
-/* initialize the struct to a known state */
-int32_t ogg_sync_init(ogg_sync_state *oy) {
-    if(oy) {
-        oy->storage = -1; /* used as a readiness flag */
-        memset(oy, 0, sizeof(*oy));
-    }
-    return (0);
-}
-//----------------------------------------------------------------------------------------------------------------------
 /* clear non-flat storage within */
 int32_t ogg_sync_clear(ogg_sync_state *oy) {
     if(oy) {
         if(oy->data) free(oy->data);
         memset(oy, 0, sizeof(*oy));
-    }
-    return (0);
-}
-//----------------------------------------------------------------------------------------------------------------------
-int32_t ogg_sync_destroy(ogg_sync_state *oy) {
-    if(oy) {
-        ogg_sync_clear(oy);
-        free(oy);
     }
     return (0);
 }
@@ -1000,18 +976,6 @@ int32_t ogg_stream_pagein(ogg_stream_state *os, ogg_page *og) {
 
     os->pageno = pageno + 1;
 
-    return (0);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* clear things to an initial state.  Good to call, eg, before seeking */
-int32_t ogg_sync_reset(ogg_sync_state *oy) {
-    if(ogg_sync_check(oy)) return -1;
-
-    oy->fill = 0;
-    oy->returned = 0;
-    oy->unsynced = 0;
-    oy->headerbytes = 0;
-    oy->bodybytes = 0;
     return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
