@@ -67,24 +67,6 @@ typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
 typedef struct ec_ctx         ec_dec;
 
-struct qPart{
-    int32_t B;
-    int32_t N;
-    int32_t fill;
-    int32_t mbits;
-    int32_t sbits;
-    int16_t mid;
-    int32_t rebalance;
-    int32_t itheta;
-    int16_t *next_lowband2;
-    int16_t side;
-    int16_t *X;
-    int16_t *Y;
-    int32_t cm;
-    int32_t LM;
-    int32_t b;
-} s_qPart;
-
 struct ec_ctx {
     uint8_t *buf; /*Buffered input/output.*/
     uint32_t storage; /*The size of the buffer.*/
