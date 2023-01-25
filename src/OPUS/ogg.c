@@ -466,72 +466,6 @@ void ogg_page_checksum_set(ogg_page *og) {
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
-/* submit data to the internal buffer of the framing engine */
-int32_t ogg_stream_iovecin(ogg_stream_state *os, ogg_iovec_t *iov, int32_t count, int32_t e_o_s, int64_t granulepos) {
-    int32_t bytes = 0, lacing_vals;
-    int32_t  i;
-
-    if(ogg_stream_check(os)) return -1;
-    if(!iov) return 0;
-
-    for(i = 0; i < count; ++i) {
-        if(iov[i].iov_len > LONG_MAX) return -1;
-        if(bytes > LONG_MAX - (int32_t)iov[i].iov_len) return -1;
-        bytes += (int32_t)iov[i].iov_len;
-    }
-    lacing_vals = bytes / 255 + 1;
-
-    if(os->body_returned) {
-        /* advance packet data according to the body_returned pointer. We
-           had to keep it around to return a pointer into the buffer last
-           call */
-
-        os->body_fill -= os->body_returned;
-        if(os->body_fill) memmove(os->body_data, os->body_data + os->body_returned, os->body_fill);
-        os->body_returned = 0;
-    }
-
-    /* make sure we have the buffer storage */
-    if(_os_body_expand(os, bytes) || _os_lacing_expand(os, lacing_vals)) return -1;
-
-    /* Copy in the submitted packet.  Yes, the copy is a waste; this is
-       the liability of overly clean abstraction for the time being.  It
-       will actually be fairly easy to eliminate the extra copy in the
-       future */
-
-    for(i = 0; i < count; ++i) {
-        memcpy(os->body_data + os->body_fill, iov[i].iov_base, iov[i].iov_len);
-        os->body_fill += (int32_t)iov[i].iov_len;
-    }
-
-    /* Store lacing vals for this packet */
-    for(i = 0; i < lacing_vals - 1; i++) {
-        os->lacing_vals[os->lacing_fill + i] = 255;
-        os->granule_vals[os->lacing_fill + i] = os->granulepos;
-    }
-    os->lacing_vals[os->lacing_fill + i] = bytes % 255;
-    os->granulepos = os->granule_vals[os->lacing_fill + i] = granulepos;
-
-    /* flag the first segment as the beginning of the packet */
-    os->lacing_vals[os->lacing_fill] |= 0x100;
-
-    os->lacing_fill += lacing_vals;
-
-    /* for the sake of completeness */
-    os->packetno++;
-
-    if(e_o_s) os->e_o_s = 1;
-
-    return (0);
-}
-//----------------------------------------------------------------------------------------------------------------------
-int32_t ogg_stream_packetin(ogg_stream_state *os, ogg_packet *op) {
-    ogg_iovec_t iov;
-    iov.iov_base = op->packet;
-    iov.iov_len = op->bytes;
-    return ogg_stream_iovecin(os, &iov, 1, op->e_o_s, op->granulepos);
-}
-//----------------------------------------------------------------------------------------------------------------------
 /* Conditionally flush a page; force==0 will only flush nominal-size pages,
    force==1 forces us to flush a page regardless of page size so int32_t as there's any data available at all. */
 static int32_t ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int32_t force, int32_t nfill) {
@@ -662,27 +596,6 @@ static int32_t ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int32_t fo
 
     /* done */
     return (1);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* This will flush remaining packets into a page (returning nonzero), even if there is not enough data to trigger a
-   flush normally (undersized page). If there are no packets or partial packets to flush, ogg_stream_flush returns 0.
-    Note that ogg_stream_flush will try to flush a normal sized page like ogg_stream_pageout; a call to ogg_stream_flush
-    does not guarantee that all packets have flushed. Only a return value of 0 from ogg_stream_flush indicates all
-    packet data is flushed into pages.
-
-    Since ogg_stream_flush will flush the last page in a stream even if it's undersized, you almost certainly want to
-    use ogg_stream_pageout (and *not* ogg_stream_flush) unless you specifically need to flush a page regardless of size
-    in the middle of a stream. */
-
-int32_t ogg_stream_flush(ogg_stream_state *os, ogg_page *og) {
-    return ogg_stream_flush_i(os, og, 1, 4096);
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* Like the above, but an argument is provided to adjust the nominal page size for applications which are smart enough
-   to provide their own delay based flushing */
-
-int32_t ogg_stream_flush_fill(ogg_stream_state *os, ogg_page *og, int32_t nfill) {
-    return ogg_stream_flush_i(os, og, 1, nfill);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* This constructs pages from buffered packet segments. The pointers returned are to static buffers; do not free. The

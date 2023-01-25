@@ -628,35 +628,6 @@ static int32_t op_find_initial_pcm_offset(ogg_page *_og) {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-/*Rescale the number _x from the range [0,_from] to [0,_to]. _from and _to must be positive.*/
-static int64_t op_rescale64(int64_t _x, int64_t _from, int64_t _to) {
-    int64_t frac;
-    int64_t ret;
-    int32_t i;
-    if(_x >= _from) return _to;
-    if(_x <= 0) return 0;
-    frac = 0;
-    for(i = 0; i < 63; i++) {
-        frac <<= 1;
-        assert(_x<=_from);
-        if(_x >= _from >> 1) {
-            _x -= _from - _x;
-            frac |= 1;
-        }
-        else
-            _x <<= 1;
-    }
-    ret = 0;
-    for(i = 0; i < 63; i++) {
-        if(frac & 1)
-            ret = (ret & _to & 1) + (ret >> 1) + (_to >> 1);
-        else
-            ret >>= 1;
-        frac >>= 1;
-    }
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
 
 /*The minimum granule position spacing allowed for making predictions.
   This corresponds to about 1 second of audio at 48 kHz for both Opus and
@@ -1124,18 +1095,6 @@ static int32_t op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, in
         }
     }
     return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-/*A small helper to determine if an Ogg page contains data that continues onto
- a subsequent page.*/
-static int32_t op_page_continues(const ogg_page *_og) {
-    int32_t nlacing;
-    assert(_og->header_len>=27);
-    nlacing = _og->header[26];
-    assert(_og->header_len>=27+nlacing);
-    /*This also correctly handles the (unlikely) case of nlacing==0, because
-     0!=255.*/
-    return _og->header[27 + nlacing - 1] == 255;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Allocate the decoder scratch buffer.
