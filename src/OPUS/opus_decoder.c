@@ -42,9 +42,6 @@ struct OpusDecoder {
    int32_t      Fs;          /** Sampling rate (at the API level) */
    int          decode_gain;
    int          arch;
-
-   /* Everything beyond this point gets cleared on a reset */
-#define OPUS_DECODER_RESET_START stream_channels
    int          stream_channels;
    int          bandwidth;
    int          mode;
@@ -353,9 +350,13 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
             *value = st->rangeFinal;
         } break;
         case OPUS_RESET_STATE: {
-            OPUS_CLEAR((char *)&st->OPUS_DECODER_RESET_START,
-                       sizeof(OpusDecoder) - ((char *)&st->OPUS_DECODER_RESET_START - (char *)st));
-
+            st->stream_channels = 0;
+            st->bandwidth = 0;
+            st->mode = 0;
+            st->prev_mode = 0;
+            st->frame_size = 0;
+            st->prev_redundancy = 0;
+            st->last_packet_duration = 0;
             celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
             st->stream_channels = st->channels;
             st->frame_size = st->Fs / 400;
