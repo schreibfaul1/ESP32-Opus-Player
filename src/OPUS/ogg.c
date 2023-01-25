@@ -270,24 +270,24 @@ static const uint32_t crc_lookup[8][256] PROGMEM = {
 
 /* A complete description of Ogg framing exists in docs/framing.html */
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_page_version(const ogg_page *og){
-  return((int)(og->header[4]));
+int32_t ogg_page_version(const ogg_page *og){
+  return((int32_t)(og->header[4]));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_page_continued(const ogg_page *og){
-  return((int)(og->header[5]&0x01));
+int32_t ogg_page_continued(const ogg_page *og){
+  return((int32_t)(og->header[5]&0x01));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_page_bos(const ogg_page *og){
-  return((int)(og->header[5]&0x02));
+int32_t ogg_page_bos(const ogg_page *og){
+  return((int32_t)(og->header[5]&0x02));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_page_eos(const ogg_page *og){
-  return((int)(og->header[5]&0x04));
+int32_t ogg_page_eos(const ogg_page *og){
+  return((int32_t)(og->header[5]&0x04));
 }
 //----------------------------------------------------------------------------------------------------------------------
 int64_t ogg_page_granulepos(const ogg_page *og){
-  unsigned char *page=og->header;
+  uint8_t *page=og->header;
   uint64_t granulepos=page[13]&(0xff);
   granulepos= (granulepos<<8)|(page[12]&0xff);
   granulepos= (granulepos<<8)|(page[11]&0xff);
@@ -299,11 +299,11 @@ int64_t ogg_page_granulepos(const ogg_page *og){
   return((int64_t)granulepos);
 }
 //----------------------------------------------------------------------------------------------------------------------
-long ogg_page_pageno(const ogg_page *og) {
-	return ((long)((uint32_t)og->header[18]) |
+int32_t ogg_page_pageno(const ogg_page *og) {
+    return ((int32_t)((uint32_t)og->header[18]) |
                   ((uint32_t)og->header[19] << 8) |
                   ((uint32_t)og->header[20] << 16) |
-			      ((uint32_t)og->header[21] << 24));
+                  ((uint32_t)og->header[21] << 24));
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* returns the number of packets that are completed on this page (if the leading packet is begun on a previous page,
@@ -320,55 +320,55 @@ long ogg_page_pageno(const ogg_page *og) {
      ogg_page_continued(page) !=0
 */
 
-int ogg_page_packets(const ogg_page *og) {
-	int i, n = og->header[26], count = 0;
-	for(i = 0; i < n; i++)
-		if(og->header[27 + i] < 255) count++;
-	return (count);
+int32_t ogg_page_packets(const ogg_page *og) {
+    int32_t i, n = og->header[26], count = 0;
+    for(i = 0; i < n; i++)
+        if(og->header[27 + i] < 255) count++;
+    return (count);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* init the encode/decode logical stream state */
-int ogg_stream_init(ogg_stream_state *os, int serialno) {
-	if(os) {
-		memset(os, 0, sizeof(*os));
-		os->body_storage = 16 * 1024;
-		os->lacing_storage = 1024;
+int32_t ogg_stream_init(ogg_stream_state *os, int32_t serialno) {
+    if(os) {
+        memset(os, 0, sizeof(*os));
+        os->body_storage = 16 * 1024;
+        os->lacing_storage = 1024;
 
-		os->body_data = malloc(os->body_storage * sizeof(*os->body_data));
-		os->lacing_vals = malloc(os->lacing_storage * sizeof(*os->lacing_vals));
-		os->granule_vals = malloc(os->lacing_storage * sizeof(*os->granule_vals));
+        os->body_data = malloc(os->body_storage * sizeof(*os->body_data));
+        os->lacing_vals = malloc(os->lacing_storage * sizeof(*os->lacing_vals));
+        os->granule_vals = malloc(os->lacing_storage * sizeof(*os->granule_vals));
 
-		if(!os->body_data || !os->lacing_vals || !os->granule_vals) {
-			ogg_stream_clear(os);
-			return -1;
-		}
+        if(!os->body_data || !os->lacing_vals || !os->granule_vals) {
+            ogg_stream_clear(os);
+            return -1;
+        }
 
-		os->serialno = serialno;
+        os->serialno = serialno;
 
-		return (0);
-	}
-	return (-1);
+        return (0);
+    }
+    return (-1);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* async/delayed error detection for the ogg_stream_state */
-int ogg_stream_check(ogg_stream_state *os) {
-	if(!os || !os->body_data) return -1;
-	return 0;
+int32_t ogg_stream_check(ogg_stream_state *os) {
+    if(!os || !os->body_data) return -1;
+    return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* _clear does not free os, only the non-flat storage within */
-int ogg_stream_clear(ogg_stream_state *os) {
-	if(os) {
-		if(os->body_data) free(os->body_data);
-		if(os->lacing_vals) free(os->lacing_vals);
-		if(os->granule_vals) free(os->granule_vals);
+int32_t ogg_stream_clear(ogg_stream_state *os) {
+    if(os) {
+        if(os->body_data) free(os->body_data);
+        if(os->lacing_vals) free(os->lacing_vals);
+        if(os->granule_vals) free(os->granule_vals);
 
-		memset(os, 0, sizeof(*os));
-	}
-	return (0);
+        memset(os, 0, sizeof(*os));
+    }
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_destroy(ogg_stream_state *os){
+int32_t ogg_stream_destroy(ogg_stream_state *os){
   if(os){
     ogg_stream_clear(os);
     free(os);
@@ -377,30 +377,30 @@ int ogg_stream_destroy(ogg_stream_state *os){
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Helpers for ogg_stream_encode; this keeps the structure and what's happening fairly clear */
-static int _os_body_expand(ogg_stream_state *os, long needed) {
-	if(os->body_storage - needed <= os->body_fill) {
-		long  body_storage;
-		void *ret;
-		if(os->body_storage > LONG_MAX - needed) {
-			ogg_stream_clear(os);
-			return -1;
-		}
-		body_storage = os->body_storage + needed;
-		if(body_storage < LONG_MAX - 1024) body_storage += 1024;
-		ret = realloc(os->body_data, body_storage * sizeof(*os->body_data));
-		if(!ret) {
-			ogg_stream_clear(os);
-			return -1;
-		}
-		os->body_storage = body_storage;
-		os->body_data = ret;
-	}
-	return 0;
+static int32_t _os_body_expand(ogg_stream_state *os, int32_t needed) {
+    if(os->body_storage - needed <= os->body_fill) {
+        int32_t  body_storage;
+        void *ret;
+        if(os->body_storage > LONG_MAX - needed) {
+            ogg_stream_clear(os);
+            return -1;
+        }
+        body_storage = os->body_storage + needed;
+        if(body_storage < LONG_MAX - 1024) body_storage += 1024;
+        ret = realloc(os->body_data, body_storage * sizeof(*os->body_data));
+        if(!ret) {
+            ogg_stream_clear(os);
+            return -1;
+        }
+        os->body_storage = body_storage;
+        os->body_data = ret;
+    }
+    return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int _os_lacing_expand(ogg_stream_state *os,long needed){
+static int32_t _os_lacing_expand(ogg_stream_state *os,int32_t needed){
   if(os->lacing_storage-needed<=os->lacing_fill){
-    long lacing_storage;
+    int32_t lacing_storage;
     void *ret;
     if(os->lacing_storage>LONG_MAX-needed){
       ogg_stream_clear(os);
@@ -429,239 +429,239 @@ static int _os_lacing_expand(ogg_stream_state *os,long needed){
 /* checksum the page */
 /* Direct table CRC; note that this will be faster in the future if we perform the checksum simultaneously with other copies */
 
-static uint32_t _os_update_crc(uint32_t crc, unsigned char *buffer, int size) {
-	while(size >= 8) {
-		crc ^= ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) |
-			   ((uint32_t)buffer[3]);
+static uint32_t _os_update_crc(uint32_t crc, uint8_t *buffer, int32_t size) {
+    while(size >= 8) {
+        crc ^= ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) |
+               ((uint32_t)buffer[3]);
 
-		crc = crc_lookup[7][crc >> 24] ^ crc_lookup[6][(crc >> 16) & 0xFF] ^ crc_lookup[5][(crc >> 8) & 0xFF] ^
-			  crc_lookup[4][crc & 0xFF] ^ crc_lookup[3][buffer[4]] ^ crc_lookup[2][buffer[5]] ^
-			  crc_lookup[1][buffer[6]] ^ crc_lookup[0][buffer[7]];
+        crc = crc_lookup[7][crc >> 24] ^ crc_lookup[6][(crc >> 16) & 0xFF] ^ crc_lookup[5][(crc >> 8) & 0xFF] ^
+              crc_lookup[4][crc & 0xFF] ^ crc_lookup[3][buffer[4]] ^ crc_lookup[2][buffer[5]] ^
+              crc_lookup[1][buffer[6]] ^ crc_lookup[0][buffer[7]];
 
-		buffer += 8;
-		size -= 8;
-	}
+        buffer += 8;
+        size -= 8;
+    }
 
-	while(size--) crc = (crc << 8) ^ crc_lookup[0][((crc >> 24) & 0xff) ^ *buffer++];
-	return crc;
+    while(size--) crc = (crc << 8) ^ crc_lookup[0][((crc >> 24) & 0xff) ^ *buffer++];
+    return crc;
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ogg_page_checksum_set(ogg_page *og) {
-	if(og) {
-		uint32_t crc_reg = 0;
+    if(og) {
+        uint32_t crc_reg = 0;
 
-		/* safety; needed for API behavior, but not framing code */
-		og->header[22] = 0;
-		og->header[23] = 0;
-		og->header[24] = 0;
-		og->header[25] = 0;
+        /* safety; needed for API behavior, but not framing code */
+        og->header[22] = 0;
+        og->header[23] = 0;
+        og->header[24] = 0;
+        og->header[25] = 0;
 
-		crc_reg = _os_update_crc(crc_reg, og->header, og->header_len);
-		crc_reg = _os_update_crc(crc_reg, og->body, og->body_len);
+        crc_reg = _os_update_crc(crc_reg, og->header, og->header_len);
+        crc_reg = _os_update_crc(crc_reg, og->body, og->body_len);
 
-		og->header[22] = (unsigned char)(crc_reg & 0xff);
-		og->header[23] = (unsigned char)((crc_reg >> 8) & 0xff);
-		og->header[24] = (unsigned char)((crc_reg >> 16) & 0xff);
-		og->header[25] = (unsigned char)((crc_reg >> 24) & 0xff);
-	}
+        og->header[22] = (uint8_t)(crc_reg & 0xff);
+        og->header[23] = (uint8_t)((crc_reg >> 8) & 0xff);
+        og->header[24] = (uint8_t)((crc_reg >> 16) & 0xff);
+        og->header[25] = (uint8_t)((crc_reg >> 24) & 0xff);
+    }
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* submit data to the internal buffer of the framing engine */
-int ogg_stream_iovecin(ogg_stream_state *os, ogg_iovec_t *iov, int count, long e_o_s, int64_t granulepos) {
-	long bytes = 0, lacing_vals;
-	int  i;
+int32_t ogg_stream_iovecin(ogg_stream_state *os, ogg_iovec_t *iov, int32_t count, int32_t e_o_s, int64_t granulepos) {
+    int32_t bytes = 0, lacing_vals;
+    int32_t  i;
 
-	if(ogg_stream_check(os)) return -1;
-	if(!iov) return 0;
+    if(ogg_stream_check(os)) return -1;
+    if(!iov) return 0;
 
-	for(i = 0; i < count; ++i) {
-		if(iov[i].iov_len > LONG_MAX) return -1;
-		if(bytes > LONG_MAX - (long)iov[i].iov_len) return -1;
-		bytes += (long)iov[i].iov_len;
-	}
-	lacing_vals = bytes / 255 + 1;
+    for(i = 0; i < count; ++i) {
+        if(iov[i].iov_len > LONG_MAX) return -1;
+        if(bytes > LONG_MAX - (int32_t)iov[i].iov_len) return -1;
+        bytes += (int32_t)iov[i].iov_len;
+    }
+    lacing_vals = bytes / 255 + 1;
 
-	if(os->body_returned) {
-		/* advance packet data according to the body_returned pointer. We
-		   had to keep it around to return a pointer into the buffer last
-		   call */
+    if(os->body_returned) {
+        /* advance packet data according to the body_returned pointer. We
+           had to keep it around to return a pointer into the buffer last
+           call */
 
-		os->body_fill -= os->body_returned;
-		if(os->body_fill) memmove(os->body_data, os->body_data + os->body_returned, os->body_fill);
-		os->body_returned = 0;
-	}
+        os->body_fill -= os->body_returned;
+        if(os->body_fill) memmove(os->body_data, os->body_data + os->body_returned, os->body_fill);
+        os->body_returned = 0;
+    }
 
-	/* make sure we have the buffer storage */
-	if(_os_body_expand(os, bytes) || _os_lacing_expand(os, lacing_vals)) return -1;
+    /* make sure we have the buffer storage */
+    if(_os_body_expand(os, bytes) || _os_lacing_expand(os, lacing_vals)) return -1;
 
-	/* Copy in the submitted packet.  Yes, the copy is a waste; this is
-	   the liability of overly clean abstraction for the time being.  It
-	   will actually be fairly easy to eliminate the extra copy in the
-	   future */
+    /* Copy in the submitted packet.  Yes, the copy is a waste; this is
+       the liability of overly clean abstraction for the time being.  It
+       will actually be fairly easy to eliminate the extra copy in the
+       future */
 
-	for(i = 0; i < count; ++i) {
-		memcpy(os->body_data + os->body_fill, iov[i].iov_base, iov[i].iov_len);
-		os->body_fill += (int)iov[i].iov_len;
-	}
+    for(i = 0; i < count; ++i) {
+        memcpy(os->body_data + os->body_fill, iov[i].iov_base, iov[i].iov_len);
+        os->body_fill += (int32_t)iov[i].iov_len;
+    }
 
-	/* Store lacing vals for this packet */
-	for(i = 0; i < lacing_vals - 1; i++) {
-		os->lacing_vals[os->lacing_fill + i] = 255;
-		os->granule_vals[os->lacing_fill + i] = os->granulepos;
-	}
-	os->lacing_vals[os->lacing_fill + i] = bytes % 255;
-	os->granulepos = os->granule_vals[os->lacing_fill + i] = granulepos;
+    /* Store lacing vals for this packet */
+    for(i = 0; i < lacing_vals - 1; i++) {
+        os->lacing_vals[os->lacing_fill + i] = 255;
+        os->granule_vals[os->lacing_fill + i] = os->granulepos;
+    }
+    os->lacing_vals[os->lacing_fill + i] = bytes % 255;
+    os->granulepos = os->granule_vals[os->lacing_fill + i] = granulepos;
 
-	/* flag the first segment as the beginning of the packet */
-	os->lacing_vals[os->lacing_fill] |= 0x100;
+    /* flag the first segment as the beginning of the packet */
+    os->lacing_vals[os->lacing_fill] |= 0x100;
 
-	os->lacing_fill += lacing_vals;
+    os->lacing_fill += lacing_vals;
 
-	/* for the sake of completeness */
-	os->packetno++;
+    /* for the sake of completeness */
+    os->packetno++;
 
-	if(e_o_s) os->e_o_s = 1;
+    if(e_o_s) os->e_o_s = 1;
 
-	return (0);
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_packetin(ogg_stream_state *os, ogg_packet *op) {
-	ogg_iovec_t iov;
-	iov.iov_base = op->packet;
-	iov.iov_len = op->bytes;
-	return ogg_stream_iovecin(os, &iov, 1, op->e_o_s, op->granulepos);
+int32_t ogg_stream_packetin(ogg_stream_state *os, ogg_packet *op) {
+    ogg_iovec_t iov;
+    iov.iov_base = op->packet;
+    iov.iov_len = op->bytes;
+    return ogg_stream_iovecin(os, &iov, 1, op->e_o_s, op->granulepos);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Conditionally flush a page; force==0 will only flush nominal-size pages,
-   force==1 forces us to flush a page regardless of page size so long as there's any data available at all. */
-static int ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int force, int nfill) {
-	int     i;
-	int     vals = 0;
-	int     maxvals = (os->lacing_fill > 255 ? 255 : os->lacing_fill);
-	int     bytes = 0;
-	long    acc = 0;
-	int64_t granule_pos = -1;
+   force==1 forces us to flush a page regardless of page size so int32_t as there's any data available at all. */
+static int32_t ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int32_t force, int32_t nfill) {
+    int32_t     i;
+    int32_t     vals = 0;
+    int32_t     maxvals = (os->lacing_fill > 255 ? 255 : os->lacing_fill);
+    int32_t     bytes = 0;
+    int32_t    acc = 0;
+    int64_t granule_pos = -1;
 
-	if(ogg_stream_check(os)) return (0);
-	if(maxvals == 0) return (0);
+    if(ogg_stream_check(os)) return (0);
+    if(maxvals == 0) return (0);
 
-	/* construct a page */
-	/* decide how many segments to include */
+    /* construct a page */
+    /* decide how many segments to include */
 
-	/* If this is the initial header case, the first page must only include the initial header packet */
-	if(os->b_o_s == 0) { /* 'initial header page' case */
-		granule_pos = 0;
-		for(vals = 0; vals < maxvals; vals++) {
-			if((os->lacing_vals[vals] & 0x0ff) < 255) {
-				vals++;
-				break;
-			}
-		}
-	}
-	else {
-		/* The extra packets_done, packet_just_done logic here attempts to do two things:
-		   1) Don't unnecessarily span pages.
-		   2) Unless necessary, don't flush pages if there are less than four packets on them; this expands page size
+    /* If this is the initial header case, the first page must only include the initial header packet */
+    if(os->b_o_s == 0) { /* 'initial header page' case */
+        granule_pos = 0;
+        for(vals = 0; vals < maxvals; vals++) {
+            if((os->lacing_vals[vals] & 0x0ff) < 255) {
+                vals++;
+                break;
+            }
+        }
+    }
+    else {
+        /* The extra packets_done, packet_just_done logic here attempts to do two things:
+           1) Don't unnecessarily span pages.
+           2) Unless necessary, don't flush pages if there are less than four packets on them; this expands page size
               to reduce unnecessary overhead if incoming packets are large.
-		   These are not necessary behaviors, just 'always better than naive flushing' without requiring an application
+           These are not necessary behaviors, just 'always better than naive flushing' without requiring an application
            to explicitly request a specific optimized behavior. We'll want an explicit behavior setup pathway
            eventually as well. */
 
-		int packets_done = 0;
-		int packet_just_done = 0;
-		for(vals = 0; vals < maxvals; vals++) {
-			if(acc > nfill && packet_just_done >= 4) {
-				force = 1;
-				break;
-			}
-			acc += os->lacing_vals[vals] & 0x0ff;
-			if((os->lacing_vals[vals] & 0xff) < 255) {
-				granule_pos = os->granule_vals[vals];
-				packet_just_done = ++packets_done;
-			}
-			else
-				packet_just_done = 0;
-		}
-		if(vals == 255) force = 1;
-	}
+        int32_t packets_done = 0;
+        int32_t packet_just_done = 0;
+        for(vals = 0; vals < maxvals; vals++) {
+            if(acc > nfill && packet_just_done >= 4) {
+                force = 1;
+                break;
+            }
+            acc += os->lacing_vals[vals] & 0x0ff;
+            if((os->lacing_vals[vals] & 0xff) < 255) {
+                granule_pos = os->granule_vals[vals];
+                packet_just_done = ++packets_done;
+            }
+            else
+                packet_just_done = 0;
+        }
+        if(vals == 255) force = 1;
+    }
 
-	if(!force) return (0);
+    if(!force) return (0);
 
-	/* construct the header in temp storage */
-	memcpy(os->header, "OggS", 4);
+    /* construct the header in temp storage */
+    memcpy(os->header, "OggS", 4);
 
-	/* stream structure version */
-	os->header[4] = 0x00;
+    /* stream structure version */
+    os->header[4] = 0x00;
 
-	/* continued packet flag? */
-	os->header[5] = 0x00;
-	if((os->lacing_vals[0] & 0x100) == 0) os->header[5] |= 0x01;
-	/* first page flag? */
-	if(os->b_o_s == 0) os->header[5] |= 0x02;
-	/* last page flag? */
-	if(os->e_o_s && os->lacing_fill == vals) os->header[5] |= 0x04;
-	os->b_o_s = 1;
+    /* continued packet flag? */
+    os->header[5] = 0x00;
+    if((os->lacing_vals[0] & 0x100) == 0) os->header[5] |= 0x01;
+    /* first page flag? */
+    if(os->b_o_s == 0) os->header[5] |= 0x02;
+    /* last page flag? */
+    if(os->e_o_s && os->lacing_fill == vals) os->header[5] |= 0x04;
+    os->b_o_s = 1;
 
-	/* 64 bits of PCM position */
-	for(i = 6; i < 14; i++) {
-		os->header[i] = (unsigned char)(granule_pos & 0xff);
-		granule_pos >>= 8;
-	}
+    /* 64 bits of PCM position */
+    for(i = 6; i < 14; i++) {
+        os->header[i] = (uint8_t)(granule_pos & 0xff);
+        granule_pos >>= 8;
+    }
 
-	/* 32 bits of stream serial number */
-	{
-		long serialno = os->serialno;
-		for(i = 14; i < 18; i++) {
-			os->header[i] = (unsigned char)(serialno & 0xff);
-			serialno >>= 8;
-		}
-	}
+    /* 32 bits of stream serial number */
+    {
+        int32_t serialno = os->serialno;
+        for(i = 14; i < 18; i++) {
+            os->header[i] = (uint8_t)(serialno & 0xff);
+            serialno >>= 8;
+        }
+    }
 
-	/* 32 bits of page counter (we have both counter and page header
-	   because this val can roll over) */
-	if(os->pageno == -1)
-		os->pageno = 0; /* because someone called
-						   stream_reset; this would be a
-						   strange thing to do in an
-						   encode stream, but it has
-						   plausible uses */
-	{
-		long pageno = os->pageno++;
-		for(i = 18; i < 22; i++) {
-			os->header[i] = (unsigned char)(pageno & 0xff);
-			pageno >>= 8;
-		}
-	}
+    /* 32 bits of page counter (we have both counter and page header
+       because this val can roll over) */
+    if(os->pageno == -1)
+        os->pageno = 0; /* because someone called
+                           stream_reset; this would be a
+                           strange thing to do in an
+                           encode stream, but it has
+                           plausible uses */
+    {
+        int32_t pageno = os->pageno++;
+        for(i = 18; i < 22; i++) {
+            os->header[i] = (uint8_t)(pageno & 0xff);
+            pageno >>= 8;
+        }
+    }
 
-	/* zero for computation; filled in later */
-	os->header[22] = 0;
-	os->header[23] = 0;
-	os->header[24] = 0;
-	os->header[25] = 0;
+    /* zero for computation; filled in later */
+    os->header[22] = 0;
+    os->header[23] = 0;
+    os->header[24] = 0;
+    os->header[25] = 0;
 
-	/* segment table */
-	os->header[26] = (unsigned char)(vals & 0xff);
-	for(i = 0; i < vals; i++) bytes += os->header[i + 27] = (unsigned char)(os->lacing_vals[i] & 0xff);
+    /* segment table */
+    os->header[26] = (uint8_t)(vals & 0xff);
+    for(i = 0; i < vals; i++) bytes += os->header[i + 27] = (uint8_t)(os->lacing_vals[i] & 0xff);
 
-	/* set pointers in the ogg_page struct */
-	og->header = os->header;
-	og->header_len = os->header_fill = vals + 27;
-	og->body = os->body_data + os->body_returned;
-	og->body_len = bytes;
+    /* set pointers in the ogg_page struct */
+    og->header = os->header;
+    og->header_len = os->header_fill = vals + 27;
+    og->body = os->body_data + os->body_returned;
+    og->body_len = bytes;
 
-	/* advance the lacing data and set the body_returned pointer */
+    /* advance the lacing data and set the body_returned pointer */
 
-	os->lacing_fill -= vals;
-	memmove(os->lacing_vals, os->lacing_vals + vals, os->lacing_fill * sizeof(*os->lacing_vals));
-	memmove(os->granule_vals, os->granule_vals + vals, os->lacing_fill * sizeof(*os->granule_vals));
-	os->body_returned += bytes;
+    os->lacing_fill -= vals;
+    memmove(os->lacing_vals, os->lacing_vals + vals, os->lacing_fill * sizeof(*os->lacing_vals));
+    memmove(os->granule_vals, os->granule_vals + vals, os->lacing_fill * sizeof(*os->granule_vals));
+    os->body_returned += bytes;
 
-	/* calculate the checksum */
+    /* calculate the checksum */
 
-	ogg_page_checksum_set(og);
+    ogg_page_checksum_set(og);
 
-	/* done */
-	return (1);
+    /* done */
+    return (1);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* This will flush remaining packets into a page (returning nonzero), even if there is not enough data to trigger a
@@ -674,48 +674,48 @@ static int ogg_stream_flush_i(ogg_stream_state *os, ogg_page *og, int force, int
     use ogg_stream_pageout (and *not* ogg_stream_flush) unless you specifically need to flush a page regardless of size
     in the middle of a stream. */
 
-int ogg_stream_flush(ogg_stream_state *os, ogg_page *og) {
+int32_t ogg_stream_flush(ogg_stream_state *os, ogg_page *og) {
     return ogg_stream_flush_i(os, og, 1, 4096);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Like the above, but an argument is provided to adjust the nominal page size for applications which are smart enough
    to provide their own delay based flushing */
 
-int ogg_stream_flush_fill(ogg_stream_state *os, ogg_page *og, int nfill) {
-	return ogg_stream_flush_i(os, og, 1, nfill);
+int32_t ogg_stream_flush_fill(ogg_stream_state *os, ogg_page *og, int32_t nfill) {
+    return ogg_stream_flush_i(os, og, 1, nfill);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* This constructs pages from buffered packet segments. The pointers returned are to static buffers; do not free. The
    returned buffers are good only until the next call (using the same ogg_stream_state) */
 
-int ogg_stream_pageout(ogg_stream_state *os, ogg_page *og) {
-	int force = 0;
-	if(ogg_stream_check(os)) return 0;
+int32_t ogg_stream_pageout(ogg_stream_state *os, ogg_page *og) {
+    int32_t force = 0;
+    if(ogg_stream_check(os)) return 0;
 
-	if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
-	   (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
-		force = 1;
+    if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
+       (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
+        force = 1;
 
-	return (ogg_stream_flush_i(os, og, force, 4096));
+    return (ogg_stream_flush_i(os, og, force, 4096));
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Like the above, but an argument is provided to adjust the nominal page size for applications which are smart enough
    to provide their own delay based flushing */
 
-int ogg_stream_pageout_fill(ogg_stream_state *os, ogg_page *og, int nfill) {
-	int force = 0;
-	if(ogg_stream_check(os)) return 0;
+int32_t ogg_stream_pageout_fill(ogg_stream_state *os, ogg_page *og, int32_t nfill) {
+    int32_t force = 0;
+    if(ogg_stream_check(os)) return 0;
 
-	if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
-	   (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
-		force = 1;
+    if((os->e_o_s && os->lacing_fill) || /* 'were done, now flush' case */
+       (os->lacing_fill && !os->b_o_s))  /* 'initial header page' case */
+        force = 1;
 
-	return (ogg_stream_flush_i(os, og, force, nfill));
+    return (ogg_stream_flush_i(os, og, force, nfill));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_eos(ogg_stream_state *os) {
-	if(ogg_stream_check(os)) return 1;
-	return os->e_o_s;
+int32_t ogg_stream_eos(ogg_stream_state *os) {
+    if(ogg_stream_check(os)) return 1;
+    return os->e_o_s;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* This has two layers to place more of the multi-serialno and paging control in the application's hands.  First, we
@@ -726,71 +726,71 @@ int ogg_stream_eos(ogg_stream_state *os) {
    out calling ogg_stream_packetout() with a ogg_stream_state. */
 
 /* initialize the struct to a known state */
-int ogg_sync_init(ogg_sync_state *oy) {
-	if(oy) {
-		oy->storage = -1; /* used as a readiness flag */
-		memset(oy, 0, sizeof(*oy));
-	}
-	return (0);
+int32_t ogg_sync_init(ogg_sync_state *oy) {
+    if(oy) {
+        oy->storage = -1; /* used as a readiness flag */
+        memset(oy, 0, sizeof(*oy));
+    }
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* clear non-flat storage within */
-int ogg_sync_clear(ogg_sync_state *oy) {
-	if(oy) {
-		if(oy->data) free(oy->data);
-		memset(oy, 0, sizeof(*oy));
-	}
-	return (0);
+int32_t ogg_sync_clear(ogg_sync_state *oy) {
+    if(oy) {
+        if(oy->data) free(oy->data);
+        memset(oy, 0, sizeof(*oy));
+    }
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_sync_destroy(ogg_sync_state *oy) {
-	if(oy) {
-		ogg_sync_clear(oy);
-		free(oy);
-	}
-	return (0);
+int32_t ogg_sync_destroy(ogg_sync_state *oy) {
+    if(oy) {
+        ogg_sync_clear(oy);
+        free(oy);
+    }
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_sync_check(ogg_sync_state *oy) {
-	if(oy->storage < 0) return -1;
-	return 0;
+int32_t ogg_sync_check(ogg_sync_state *oy) {
+    if(oy->storage < 0) return -1;
+    return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-char *ogg_sync_buffer(ogg_sync_state *oy, long size) {
-	if(ogg_sync_check(oy)) return NULL;
+char *ogg_sync_buffer(ogg_sync_state *oy, int32_t size) {
+    if(ogg_sync_check(oy)) return NULL;
 
-	/* first, clear out any space that has been previously returned */
-	if(oy->returned) {
-		oy->fill -= oy->returned;
-		if(oy->fill > 0) memmove(oy->data, oy->data + oy->returned, oy->fill);
-		oy->returned = 0;
-	}
+    /* first, clear out any space that has been previously returned */
+    if(oy->returned) {
+        oy->fill -= oy->returned;
+        if(oy->fill > 0) memmove(oy->data, oy->data + oy->returned, oy->fill);
+        oy->returned = 0;
+    }
 
-	if(size > oy->storage - oy->fill) {
-		/* We need to extend the internal buffer */
-		long  newsize = size + oy->fill + 4096; /* an extra page to be nice */
-		void *ret;
+    if(size > oy->storage - oy->fill) {
+        /* We need to extend the internal buffer */
+        int32_t  newsize = size + oy->fill + 4096; /* an extra page to be nice */
+        void *ret;
 
-		if(oy->data) ret = realloc(oy->data, newsize);
-		else
-			ret = malloc(newsize);
-		if(!ret) {
-			ogg_sync_clear(oy);
-			return NULL;
-		}
-		oy->data = ret;
-		oy->storage = newsize;
-	}
+        if(oy->data) ret = realloc(oy->data, newsize);
+        else
+            ret = malloc(newsize);
+        if(!ret) {
+            ogg_sync_clear(oy);
+            return NULL;
+        }
+        oy->data = ret;
+        oy->storage = newsize;
+    }
 
-	/* expose a segment at least as large as requested at the fill mark */
-	return ((char *)oy->data + oy->fill);
+    /* expose a segment at least as large as requested at the fill mark */
+    return ((char *)oy->data + oy->fill);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_sync_wrote(ogg_sync_state *oy, long bytes) {
-	if(ogg_sync_check(oy)) return -1;
-	if(oy->fill + bytes > oy->storage) return -1;
-	oy->fill += bytes;
-	return (0);
+int32_t ogg_sync_wrote(ogg_sync_state *oy, int32_t bytes) {
+    if(ogg_sync_check(oy)) return -1;
+    if(oy->fill + bytes > oy->storage) return -1;
+    oy->fill += bytes;
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* sync the stream.  This is meant to be useful for finding page boundaries.
@@ -799,321 +799,321 @@ int ogg_sync_wrote(ogg_sync_state *oy, long bytes) {
     0) page not ready; more data (no bytes skipped)
     n) page synced at current location; page length n bytes */
 
-long ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og) {
-	unsigned char *page = oy->data + oy->returned;
-	unsigned char *next;
-	long           bytes = oy->fill - oy->returned;
+int32_t ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og) {
+    uint8_t *page = oy->data + oy->returned;
+    uint8_t *next;
+    int32_t           bytes = oy->fill - oy->returned;
 
-	if(ogg_sync_check(oy)) return 0;
+    if(ogg_sync_check(oy)) return 0;
 
-	if(oy->headerbytes == 0) {
-		int headerbytes, i;
-		if(bytes < 27) return (0); /* not enough for a header */
+    if(oy->headerbytes == 0) {
+        int32_t headerbytes, i;
+        if(bytes < 27) return (0); /* not enough for a header */
 
-		/* verify capture pattern */
-		if(memcmp(page, "OggS", 4)) goto sync_fail;
+        /* verify capture pattern */
+        if(memcmp(page, "OggS", 4)) goto sync_fail;
 
-		headerbytes = page[26] + 27;
-		if(bytes < headerbytes) return (0); /* not enough for header + seg table */
+        headerbytes = page[26] + 27;
+        if(bytes < headerbytes) return (0); /* not enough for header + seg table */
 
-		/* count up body length in the segment table */
+        /* count up body length in the segment table */
 
-		for(i = 0; i < page[26]; i++) oy->bodybytes += page[27 + i];
-		oy->headerbytes = headerbytes;
-	}
+        for(i = 0; i < page[26]; i++) oy->bodybytes += page[27 + i];
+        oy->headerbytes = headerbytes;
+    }
 
-	if(oy->bodybytes + oy->headerbytes > bytes) return (0);
+    if(oy->bodybytes + oy->headerbytes > bytes) return (0);
 
-	/* The whole test page is buffered.  Verify the checksum */
-	{
-		/* Grab the checksum bytes, set the header field to zero */
-		char     chksum[4];
-		ogg_page log;
+    /* The whole test page is buffered.  Verify the checksum */
+    {
+        /* Grab the checksum bytes, set the header field to zero */
+        char     chksum[4];
+        ogg_page log;
 
-		memcpy(chksum, page + 22, 4);
-		memset(page + 22, 0, 4);
+        memcpy(chksum, page + 22, 4);
+        memset(page + 22, 0, 4);
 
-		/* set up a temp page struct and recompute the checksum */
-		log.header = page;
-		log.header_len = oy->headerbytes;
-		log.body = page + oy->headerbytes;
-		log.body_len = oy->bodybytes;
-		ogg_page_checksum_set(&log);
+        /* set up a temp page struct and recompute the checksum */
+        log.header = page;
+        log.header_len = oy->headerbytes;
+        log.body = page + oy->headerbytes;
+        log.body_len = oy->bodybytes;
+        ogg_page_checksum_set(&log);
 
-		/* Compare */
-		if(memcmp(chksum, page + 22, 4)) {
-			/* D'oh.  Mismatch! Corrupt page (or miscapture and not a page
-			   at all) */
-			/* replace the computed checksum with the one actually read in */
-			memcpy(page + 22, chksum, 4);
+        /* Compare */
+        if(memcmp(chksum, page + 22, 4)) {
+            /* D'oh.  Mismatch! Corrupt page (or miscapture and not a page
+               at all) */
+            /* replace the computed checksum with the one actually read in */
+            memcpy(page + 22, chksum, 4);
 
-			/* Bad checksum. Lose sync */
-			goto sync_fail;
-		}
-	}
+            /* Bad checksum. Lose sync */
+            goto sync_fail;
+        }
+    }
 
-	/* yes, have a whole page all ready to go */
-	{
-		if(og) {
-			og->header = page;
-			og->header_len = oy->headerbytes;
-			og->body = page + oy->headerbytes;
-			og->body_len = oy->bodybytes;
-		}
+    /* yes, have a whole page all ready to go */
+    {
+        if(og) {
+            og->header = page;
+            og->header_len = oy->headerbytes;
+            og->body = page + oy->headerbytes;
+            og->body_len = oy->bodybytes;
+        }
 
-		oy->unsynced = 0;
-		oy->returned += (bytes = oy->headerbytes + oy->bodybytes);
-		oy->headerbytes = 0;
-		oy->bodybytes = 0;
-		return (bytes);
-	}
+        oy->unsynced = 0;
+        oy->returned += (bytes = oy->headerbytes + oy->bodybytes);
+        oy->headerbytes = 0;
+        oy->bodybytes = 0;
+        return (bytes);
+    }
 
 sync_fail:
 
-	oy->headerbytes = 0;
-	oy->bodybytes = 0;
+    oy->headerbytes = 0;
+    oy->bodybytes = 0;
 
-	/* search for possible capture */
-	next = memchr(page + 1, 'O', bytes - 1);
-	if(!next) next = oy->data + oy->fill;
+    /* search for possible capture */
+    next = memchr(page + 1, 'O', bytes - 1);
+    if(!next) next = oy->data + oy->fill;
 
-	oy->returned = (int)(next - oy->data);
-	return ((long)-(next - page));
+    oy->returned = (int32_t)(next - oy->data);
+    return ((int32_t)-(next - page));
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* add the incoming page to the stream state; we decompose the page into packet segments here as well. */
 
-int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og) {
-	unsigned char *header = og->header;
-	unsigned char *body = og->body;
-	long           bodysize = og->body_len;
-	int            segptr = 0;
+int32_t ogg_stream_pagein(ogg_stream_state *os, ogg_page *og) {
+    uint8_t *header = og->header;
+    uint8_t *body = og->body;
+    int32_t           bodysize = og->body_len;
+    int32_t            segptr = 0;
 
-	int     version = ogg_page_version(og);
-	int     continued = ogg_page_continued(og);
-	int     bos = ogg_page_bos(og);
-	int     eos = ogg_page_eos(og);
-	int64_t granulepos = ogg_page_granulepos(og);
-	int     serialno = getSerialNo(og);
-	long    pageno = ogg_page_pageno(og);
-	int     segments = header[26];
+    int32_t     version = ogg_page_version(og);
+    int32_t     continued = ogg_page_continued(og);
+    int32_t     bos = ogg_page_bos(og);
+    int32_t     eos = ogg_page_eos(og);
+    int64_t granulepos = ogg_page_granulepos(og);
+    int32_t     serialno = getSerialNo(og);
+    int32_t    pageno = ogg_page_pageno(og);
+    int32_t     segments = header[26];
 
-	if(ogg_stream_check(os)) return -1;
+    if(ogg_stream_check(os)) return -1;
 
-	/* clean up 'returned data' */
-	{
-		long lr = os->lacing_returned;
-		long br = os->body_returned;
+    /* clean up 'returned data' */
+    {
+        int32_t lr = os->lacing_returned;
+        int32_t br = os->body_returned;
 
-		/* body data */
-		if(br) {
-			os->body_fill -= br;
-			if(os->body_fill) memmove(os->body_data, os->body_data + br, os->body_fill);
-			os->body_returned = 0;
-		}
+        /* body data */
+        if(br) {
+            os->body_fill -= br;
+            if(os->body_fill) memmove(os->body_data, os->body_data + br, os->body_fill);
+            os->body_returned = 0;
+        }
 
-		if(lr) {
-			/* segment table */
-			if(os->lacing_fill - lr) {
-				memmove(os->lacing_vals, os->lacing_vals + lr, (os->lacing_fill - lr) * sizeof(*os->lacing_vals));
-				memmove(os->granule_vals, os->granule_vals + lr, (os->lacing_fill - lr) * sizeof(*os->granule_vals));
-			}
-			os->lacing_fill -= lr;
-			os->lacing_packet -= lr;
-			os->lacing_returned = 0;
-		}
-	}
+        if(lr) {
+            /* segment table */
+            if(os->lacing_fill - lr) {
+                memmove(os->lacing_vals, os->lacing_vals + lr, (os->lacing_fill - lr) * sizeof(*os->lacing_vals));
+                memmove(os->granule_vals, os->granule_vals + lr, (os->lacing_fill - lr) * sizeof(*os->granule_vals));
+            }
+            os->lacing_fill -= lr;
+            os->lacing_packet -= lr;
+            os->lacing_returned = 0;
+        }
+    }
 
-	/* check the serial number */
-	if(serialno != os->serialno) return (-1);
-	if(version > 0) return (-1);
+    /* check the serial number */
+    if(serialno != os->serialno) return (-1);
+    if(version > 0) return (-1);
 
-	if(_os_lacing_expand(os, segments + 1)) return -1;
+    if(_os_lacing_expand(os, segments + 1)) return -1;
 
-	/* are we in sequence? */
-	if(pageno != os->pageno) {
-		int i;
+    /* are we in sequence? */
+    if(pageno != os->pageno) {
+        int32_t i;
 
-		/* unroll previous partial packet (if any) */
-		for(i = os->lacing_packet; i < os->lacing_fill; i++) os->body_fill -= os->lacing_vals[i] & 0xff;
-		os->lacing_fill = os->lacing_packet;
+        /* unroll previous partial packet (if any) */
+        for(i = os->lacing_packet; i < os->lacing_fill; i++) os->body_fill -= os->lacing_vals[i] & 0xff;
+        os->lacing_fill = os->lacing_packet;
 
-		/* make a note of dropped data in segment table */
-		if(os->pageno != -1) {
-			os->lacing_vals[os->lacing_fill++] = 0x400;
-			os->lacing_packet++;
-		}
-	}
+        /* make a note of dropped data in segment table */
+        if(os->pageno != -1) {
+            os->lacing_vals[os->lacing_fill++] = 0x400;
+            os->lacing_packet++;
+        }
+    }
 
-	/* are we a 'continued packet' page?  If so, we may need to skip
-	   some segments */
-	if(continued) {
-		if(os->lacing_fill < 1 || (os->lacing_vals[os->lacing_fill - 1] & 0xff) < 255 ||
-		   os->lacing_vals[os->lacing_fill - 1] == 0x400) {
-			bos = 0;
-			for(; segptr < segments; segptr++) {
-				int val = header[27 + segptr];
-				body += val;
-				bodysize -= val;
-				if(val < 255) {
-					segptr++;
-					break;
-				}
-			}
-		}
-	}
+    /* are we a 'continued packet' page?  If so, we may need to skip
+       some segments */
+    if(continued) {
+        if(os->lacing_fill < 1 || (os->lacing_vals[os->lacing_fill - 1] & 0xff) < 255 ||
+           os->lacing_vals[os->lacing_fill - 1] == 0x400) {
+            bos = 0;
+            for(; segptr < segments; segptr++) {
+                int32_t val = header[27 + segptr];
+                body += val;
+                bodysize -= val;
+                if(val < 255) {
+                    segptr++;
+                    break;
+                }
+            }
+        }
+    }
 
-	if(bodysize) {
-		if(_os_body_expand(os, bodysize)) return -1;
-		memcpy(os->body_data + os->body_fill, body, bodysize);
-		os->body_fill += bodysize;
-	}
+    if(bodysize) {
+        if(_os_body_expand(os, bodysize)) return -1;
+        memcpy(os->body_data + os->body_fill, body, bodysize);
+        os->body_fill += bodysize;
+    }
 
-	{
-		int saved = -1;
-		while(segptr < segments) {
-			int val = header[27 + segptr];
-			os->lacing_vals[os->lacing_fill] = val;
-			os->granule_vals[os->lacing_fill] = -1;
+    {
+        int32_t saved = -1;
+        while(segptr < segments) {
+            int32_t val = header[27 + segptr];
+            os->lacing_vals[os->lacing_fill] = val;
+            os->granule_vals[os->lacing_fill] = -1;
 
-			if(bos) {
-				os->lacing_vals[os->lacing_fill] |= 0x100;
-				bos = 0;
-			}
+            if(bos) {
+                os->lacing_vals[os->lacing_fill] |= 0x100;
+                bos = 0;
+            }
 
-			if(val < 255) saved = os->lacing_fill;
+            if(val < 255) saved = os->lacing_fill;
 
-			os->lacing_fill++;
-			segptr++;
+            os->lacing_fill++;
+            segptr++;
 
-			if(val < 255) os->lacing_packet = os->lacing_fill;
-		}
+            if(val < 255) os->lacing_packet = os->lacing_fill;
+        }
 
-		/* set the granulepos on the last granuleval of the last full packet */
-		if(saved != -1) { os->granule_vals[saved] = granulepos; }
-	}
+        /* set the granulepos on the last granuleval of the last full packet */
+        if(saved != -1) { os->granule_vals[saved] = granulepos; }
+    }
 
-	if(eos) {
-		os->e_o_s = 1;
-		if(os->lacing_fill > 0) os->lacing_vals[os->lacing_fill - 1] |= 0x200;
-	}
+    if(eos) {
+        os->e_o_s = 1;
+        if(os->lacing_fill > 0) os->lacing_vals[os->lacing_fill - 1] |= 0x200;
+    }
 
-	os->pageno = pageno + 1;
+    os->pageno = pageno + 1;
 
-	return (0);
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* clear things to an initial state.  Good to call, eg, before seeking */
-int ogg_sync_reset(ogg_sync_state *oy) {
-	if(ogg_sync_check(oy)) return -1;
+int32_t ogg_sync_reset(ogg_sync_state *oy) {
+    if(ogg_sync_check(oy)) return -1;
 
-	oy->fill = 0;
-	oy->returned = 0;
-	oy->unsynced = 0;
-	oy->headerbytes = 0;
-	oy->bodybytes = 0;
-	return (0);
+    oy->fill = 0;
+    oy->returned = 0;
+    oy->unsynced = 0;
+    oy->headerbytes = 0;
+    oy->bodybytes = 0;
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_reset(ogg_stream_state *os) {
-	if(ogg_stream_check(os)) return -1;
+int32_t ogg_stream_reset(ogg_stream_state *os) {
+    if(ogg_stream_check(os)) return -1;
 
-	os->body_fill = 0;
-	os->body_returned = 0;
+    os->body_fill = 0;
+    os->body_returned = 0;
 
-	os->lacing_fill = 0;
-	os->lacing_packet = 0;
-	os->lacing_returned = 0;
+    os->lacing_fill = 0;
+    os->lacing_packet = 0;
+    os->lacing_returned = 0;
 
-	os->header_fill = 0;
+    os->header_fill = 0;
 
-	os->e_o_s = 0;
-	os->b_o_s = 0;
-	os->pageno = -1;
-	os->packetno = 0;
-	os->granulepos = 0;
+    os->e_o_s = 0;
+    os->b_o_s = 0;
+    os->pageno = -1;
+    os->packetno = 0;
+    os->granulepos = 0;
 
-	return (0);
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_reset_serialno(ogg_stream_state *os, int serialno) {
-	if(ogg_stream_check(os)) return -1;
-	ogg_stream_reset(os);
-	os->serialno = serialno;
-	return (0);
+int32_t ogg_stream_reset_serialno(ogg_stream_state *os, int32_t serialno) {
+    if(ogg_stream_check(os)) return -1;
+    ogg_stream_reset(os);
+    os->serialno = serialno;
+    return (0);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int _packetout(ogg_stream_state *os, ogg_packet *op, int adv) {
-	/* The last part of decode. We have the stream broken into packet
-	   segments.  Now we need to group them into packets (or return the
-	   out of sync markers) */
+static int32_t _packetout(ogg_stream_state *os, ogg_packet *op, int32_t adv) {
+    /* The last part of decode. We have the stream broken into packet
+       segments.  Now we need to group them into packets (or return the
+       out of sync markers) */
 
-	int ptr = os->lacing_returned;
+    int32_t ptr = os->lacing_returned;
 
-	if(os->lacing_packet <= ptr) return (0);
+    if(os->lacing_packet <= ptr) return (0);
 
-	if(os->lacing_vals[ptr] & 0x400) {
-		/* we need to tell the codec there's a gap; it might need to
-		   handle previous packet dependencies. */
-		os->lacing_returned++;
-		os->packetno++;
-		return (-1);
-	}
+    if(os->lacing_vals[ptr] & 0x400) {
+        /* we need to tell the codec there's a gap; it might need to
+           handle previous packet dependencies. */
+        os->lacing_returned++;
+        os->packetno++;
+        return (-1);
+    }
 
-	if(!op && !adv)
-		return (1); /* just using peek as an inexpensive way
-					   to ask if there's a whole packet
-					   waiting */
+    if(!op && !adv)
+        return (1); /* just using peek as an inexpensive way
+                       to ask if there's a whole packet
+                       waiting */
 
-	/* Gather the whole packet. We'll have no holes or a partial packet */
-	{
-		int  size = os->lacing_vals[ptr] & 0xff;
-		long bytes = size;
-		int  eos = os->lacing_vals[ptr] & 0x200; /* last packet of the stream? */
-		int  bos = os->lacing_vals[ptr] & 0x100; /* first packet of the stream? */
+    /* Gather the whole packet. We'll have no holes or a partial packet */
+    {
+        int32_t  size = os->lacing_vals[ptr] & 0xff;
+        int32_t bytes = size;
+        int32_t  eos = os->lacing_vals[ptr] & 0x200; /* last packet of the stream? */
+        int32_t  bos = os->lacing_vals[ptr] & 0x100; /* first packet of the stream? */
 
-		while(size == 255) {
-			int val = os->lacing_vals[++ptr];
-			size = val & 0xff;
-			if(val & 0x200) eos = 0x200;
-			bytes += size;
-		}
+        while(size == 255) {
+            int32_t val = os->lacing_vals[++ptr];
+            size = val & 0xff;
+            if(val & 0x200) eos = 0x200;
+            bytes += size;
+        }
 
-		if(op) {
-			op->e_o_s = eos;
-			op->b_o_s = bos;
-			op->packet = os->body_data + os->body_returned;
-			op->packetno = os->packetno;
-			op->granulepos = os->granule_vals[ptr];
-			op->bytes = bytes;
-		}
+        if(op) {
+            op->e_o_s = eos;
+            op->b_o_s = bos;
+            op->packet = os->body_data + os->body_returned;
+            op->packetno = os->packetno;
+            op->granulepos = os->granule_vals[ptr];
+            op->bytes = bytes;
+        }
 
-		if(adv) {
-			os->body_returned += bytes;
-			os->lacing_returned = ptr + 1;
-			os->packetno++;
-		}
-	}
-	return (1);
+        if(adv) {
+            os->body_returned += bytes;
+            os->lacing_returned = ptr + 1;
+            os->packetno++;
+        }
+    }
+    return (1);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op) {
-	if(ogg_stream_check(os)) return 0;
-	return _packetout(os, op, 1);
+int32_t ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op) {
+    if(ogg_stream_check(os)) return 0;
+    return _packetout(os, op, 1);
 }
 //----------------------------------------------------------------------------------------------------------------------
-int ogg_stream_packetpeek(ogg_stream_state *os, ogg_packet *op) {
-	if(ogg_stream_check(os)) return 0;
-	return _packetout(os, op, 0);
+int32_t ogg_stream_packetpeek(ogg_stream_state *os, ogg_packet *op) {
+    if(ogg_stream_check(os)) return 0;
+    return _packetout(os, op, 0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ogg_packet_clear(ogg_packet *op) {
-	free(op->packet);
-	memset(op, 0, sizeof(*op));
+    free(op->packet);
+    memset(op, 0, sizeof(*op));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int getSerialNo(const ogg_page *og){
-  return((int)((uint32_t)og->header[14]) |
+int32_t getSerialNo(const ogg_page *og){
+  return((int32_t)((uint32_t)og->header[14]) |
               ((uint32_t)og->header[15]<<8) |
               ((uint32_t)og->header[16]<<16) |
               ((uint32_t)og->header[17]<<24));
