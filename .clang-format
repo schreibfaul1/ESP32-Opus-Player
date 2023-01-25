@@ -11,7 +11,6 @@ SpaceBeforeParens: Never
 SpaceInEmptyParentheses: 'false'
 SpacesInParentheses: 'false'
 TabWidth: '4'
-UseTab: ForContinuationAndIndentation
 IndentPPDirectives: BeforeHash
 IncludeBlocks: Merge
 Cpp11BracedListStyle: 'true'
@@ -38,6 +37,6 @@ BraceWrapping:
   BeforeCatch:     true
   BeforeElse:      true
   IndentBraces:    false
-BreakBeforeBraces: Custom
+
 
 ...

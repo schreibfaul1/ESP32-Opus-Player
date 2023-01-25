@@ -768,8 +768,8 @@ char *ogg_sync_buffer(ogg_sync_state *oy, int32_t size) {
 
     if(size > oy->storage - oy->fill) {
         /* We need to extend the internal buffer */
-        int32_t  newsize = size + oy->fill + 4096; /* an extra page to be nice */
-        void *ret;
+        int32_t newsize = size + oy->fill + 4096; /* an extra page to be nice */
+        void   *ret;
 
         if(oy->data) ret = realloc(oy->data, newsize);
         else
@@ -802,7 +802,7 @@ int32_t ogg_sync_wrote(ogg_sync_state *oy, int32_t bytes) {
 int32_t ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og) {
     uint8_t *page = oy->data + oy->returned;
     uint8_t *next;
-    int32_t           bytes = oy->fill - oy->returned;
+    int32_t  bytes = oy->fill - oy->returned;
 
     if(ogg_sync_check(oy)) return 0;
 
@@ -878,7 +878,7 @@ sync_fail:
     if(!next) next = oy->data + oy->fill;
 
     oy->returned = (int32_t)(next - oy->data);
-    return ((int32_t)-(next - page));
+    return ((int32_t) - (next - page));
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* add the incoming page to the stream state; we decompose the page into packet segments here as well. */
@@ -886,17 +886,17 @@ sync_fail:
 int32_t ogg_stream_pagein(ogg_stream_state *os, ogg_page *og) {
     uint8_t *header = og->header;
     uint8_t *body = og->body;
-    int32_t           bodysize = og->body_len;
-    int32_t            segptr = 0;
+    int32_t  bodysize = og->body_len;
+    int32_t  segptr = 0;
 
-    int32_t     version = ogg_page_version(og);
-    int32_t     continued = ogg_page_continued(og);
-    int32_t     bos = ogg_page_bos(og);
-    int32_t     eos = ogg_page_eos(og);
+    int32_t version = ogg_page_version(og);
+    int32_t continued = ogg_page_continued(og);
+    int32_t bos = ogg_page_bos(og);
+    int32_t eos = ogg_page_eos(og);
     int64_t granulepos = ogg_page_granulepos(og);
-    int32_t     serialno = getSerialNo(og);
-    int32_t    pageno = ogg_page_pageno(og);
-    int32_t     segments = header[26];
+    int32_t serialno = getSerialNo(og);
+    int32_t pageno = ogg_page_pageno(og);
+    int32_t segments = header[26];
 
     if(ogg_stream_check(os)) return -1;
 
@@ -1067,10 +1067,10 @@ static int32_t _packetout(ogg_stream_state *os, ogg_packet *op, int32_t adv) {
 
     /* Gather the whole packet. We'll have no holes or a partial packet */
     {
-        int32_t  size = os->lacing_vals[ptr] & 0xff;
+        int32_t size = os->lacing_vals[ptr] & 0xff;
         int32_t bytes = size;
-        int32_t  eos = os->lacing_vals[ptr] & 0x200; /* last packet of the stream? */
-        int32_t  bos = os->lacing_vals[ptr] & 0x100; /* first packet of the stream? */
+        int32_t eos = os->lacing_vals[ptr] & 0x200; /* last packet of the stream? */
+        int32_t bos = os->lacing_vals[ptr] & 0x100; /* first packet of the stream? */
 
         while(size == 255) {
             int32_t val = os->lacing_vals[++ptr];
@@ -1112,9 +1112,7 @@ void ogg_packet_clear(ogg_packet *op) {
     memset(op, 0, sizeof(*op));
 }
 //----------------------------------------------------------------------------------------------------------------------
-int32_t getSerialNo(const ogg_page *og){
-  return((int32_t)((uint32_t)og->header[14]) |
-              ((uint32_t)og->header[15]<<8) |
-              ((uint32_t)og->header[16]<<16) |
-              ((uint32_t)og->header[17]<<24));
+int32_t getSerialNo(const ogg_page *og) {
+    return ((int32_t)((uint32_t)og->header[14]) | ((uint32_t)og->header[15] << 8) | ((uint32_t)og->header[16] << 16) |
+            ((uint32_t)og->header[17] << 24));
 }

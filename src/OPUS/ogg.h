@@ -24,26 +24,26 @@ extern "C" {
 #include <stdint.h>
 
 typedef struct {
-  void *iov_base;
-  size_t iov_len;
+    void  *iov_base;
+    size_t iov_len;
 } ogg_iovec_t;
 
 typedef struct {
-  int32_t endbyte;
-  int32_t  endbit;
+    int32_t endbyte;
+    int32_t endbit;
 
-  uint8_t *buffer;
-  uint8_t *ptr;
-  int32_t storage;
+    uint8_t *buffer;
+    uint8_t *ptr;
+    int32_t  storage;
 } oggpack_buffer;
 
 /* ogg_page is used to encapsulate the data in one Ogg bitstream page *****/
 
 typedef struct {
-  uint8_t *header;
-  int32_t header_len;
-  uint8_t *body;
-  int32_t body_len;
+    uint8_t *header;
+    int32_t  header_len;
+    uint8_t *body;
+    int32_t  body_len;
 } ogg_page;
 
 /* ogg_stream_state contains the current encode/decode state of a logical Ogg bitstream */
@@ -92,44 +92,28 @@ typedef struct {
 
     /* Ogg BITSTREAM PRIMITIVES: decoding **************************/
 
-    extern int32_t ogg_sync_init(ogg_sync_state *oy);
-    extern int32_t ogg_sync_clear(ogg_sync_state *oy);
-    extern int32_t ogg_sync_reset(ogg_sync_state *oy);
-    extern int32_t ogg_sync_destroy(ogg_sync_state *oy);
-    extern int32_t ogg_sync_check(ogg_sync_state *oy);
+    int32_t ogg_sync_init(ogg_sync_state *oy);
+    int32_t ogg_sync_clear(ogg_sync_state *oy);
+    int32_t ogg_sync_reset(ogg_sync_state *oy);
+    int32_t ogg_sync_destroy(ogg_sync_state *oy);
+    int32_t ogg_sync_check(ogg_sync_state *oy);
 
-    extern char *ogg_sync_buffer(ogg_sync_state *oy, int32_t size);
-    extern int32_t ogg_sync_wrote(ogg_sync_state *oy, int32_t bytes);
-    extern int32_t ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og);
-    // extern int32_t ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og);
-    extern int32_t ogg_stream_pagein(ogg_stream_state *os, ogg_page *og);
-    extern int32_t ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op);
-    // extern int32_t ogg_stream_packetpeek(ogg_stream_state *os, ogg_packet *op);
+    char *ogg_sync_buffer(ogg_sync_state *oy, int32_t size);
+    int32_t ogg_sync_wrote(ogg_sync_state *oy, int32_t bytes);
+    int32_t ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og);
+    int32_t ogg_stream_pagein(ogg_stream_state *os, ogg_page *og);
+    int32_t ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op);
 
     /* Ogg BITSTREAM PRIMITIVES: general ***************************/
 
-    extern int32_t ogg_stream_init(ogg_stream_state *os, int32_t serialno);
-    extern int32_t ogg_stream_clear(ogg_stream_state *os);
-    extern int32_t ogg_stream_reset(ogg_stream_state *os);
-    extern int32_t ogg_stream_reset_serialno(ogg_stream_state *os, int32_t serialno);
-    // extern int32_t ogg_stream_destroy(ogg_stream_state *os);
-    // extern int32_t ogg_stream_check(ogg_stream_state *os);
-    // extern int32_t ogg_stream_eos(ogg_stream_state *os);
-
-    // extern void ogg_page_checksum_set(ogg_page *og);
-
-    // extern int32_t ogg_page_version(const ogg_page *og);
-    // extern int32_t ogg_page_continued(const ogg_page *og);
-    extern int32_t ogg_page_bos(const ogg_page *og);
-    // extern int32_t ogg_page_eos(const ogg_page *og);
-    extern int64_t ogg_page_granulepos(const ogg_page *og);
-    extern int32_t getSerialNo(const ogg_page *og);
-    // extern int32_t ogg_page_pageno(const ogg_page *og);
-    extern int32_t ogg_page_packets(const ogg_page *og);
-
-    // extern void ogg_packet_clear(ogg_packet *op);
-
-
+    int32_t ogg_stream_init(ogg_stream_state *os, int32_t serialno);
+    int32_t ogg_stream_clear(ogg_stream_state *os);
+    int32_t ogg_stream_reset(ogg_stream_state *os);
+    int32_t ogg_stream_reset_serialno(ogg_stream_state *os, int32_t serialno);
+    int32_t ogg_page_bos(const ogg_page *og);
+    int64_t ogg_page_granulepos(const ogg_page *og);
+    int32_t getSerialNo(const ogg_page *og);
+    int32_t ogg_page_packets(const ogg_page *og);
 #ifdef __cplusplus
 }
 #endif
