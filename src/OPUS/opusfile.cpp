@@ -32,7 +32,7 @@ OpusMSDecoder_t  *m_od;
    Return: A positive number of bytes read on success, 0 on end-of-file, or a negative value on failure.*/
 static int32_t op_get_data(int32_t _nbytes) {
     uint8_t *buffer;
-    int32_t nbytes;
+    int32_t nbytes = 0;
     assert(_nbytes>0);
     buffer = (uint8_t*) ogg_sync_buffer(&m_OggOpusFile->oy, _nbytes);
     if(SD_read) nbytes = SD_read(buffer, _nbytes);
@@ -110,7 +110,7 @@ static int32_t op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int32
     nserialnos = *_nserialnos;
     cserialnos = *_cserialnos;
     if(nserialnos >= cserialnos) {
-        if(cserialnos > INT_MAX / (int32_t) sizeof(*serialnos) - 1 >> 1) {
+        if(cserialnos > INT_MAX / (int32_t) (sizeof(*serialnos) - 1) >> 1) {
             return OP_EFAULT;
         }
         cserialnos = 2 * cserialnos + 1;
@@ -700,7 +700,7 @@ static void op_clear() {
 static int32_t op_open1() {
     ogg_page og;
     ogg_page *pog;
-    int32_t seekable;
+    int32_t seekable = 0;
     int32_t ret;
     memset(m_OggOpusFile, 0, sizeof(*m_OggOpusFile));
     m_OggOpusFile->end = -1;
@@ -787,7 +787,7 @@ static int32_t op_get_link_from_serialno(int32_t _cur_link, int64_t _page_offset
             li_lo = _cur_link;
         else
             li_hi = _cur_link;
-        _cur_link = li_lo + (li_hi - li_lo >> 1);
+        _cur_link = li_lo + ((li_hi - li_lo) >> 1);
     } while(li_hi - li_lo > 1);
     /*We've identified the link that should contain this page.
      Make sure it's a page we care about.*/
@@ -1141,7 +1141,10 @@ static int32_t op_read_native() {
                  That would technically be undefined behavior, even if the number of
                  bytes to copy were zero.*/
                 if(nsamples > 0) {
+                    #pragma clang diagnostic push
+                    #pragma clang diagnostic ignored "-Wnonnull"
                     memcpy(_pcm, m_OggOpusFile->od_buffer + nchannels * od_buffer_pos, sizeof(*_pcm) * nchannels * nsamples);
+                    #pragma clang diagnostic pop
                     od_buffer_pos += nsamples;
                     m_OggOpusFile->od_buffer_pos = od_buffer_pos;
                 }

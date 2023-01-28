@@ -35,12 +35,34 @@
 #pragma once
 
 #include "Arduino.h"
-#include "opus_decoder.h"
+//#include "opus_decoder.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define OPUS_OK                0
+#define OPUS_BAD_ARG          -1
+#define OPUS_BUFFER_TOO_SMALL -2
+#define OPUS_INTERNAL_ERROR   -3
+#define OPUS_INVALID_PACKET   -4
+#define OPUS_UNIMPLEMENTED    -5
+#define OPUS_INVALID_STATE    -6
+#define OPUS_ALLOC_FAIL       -7
+
+
+#define OPUS_RESET_STATE 4028
+#define OPUS_GET_LOOKAHEAD_REQUEST 4027
+#define OPUS_GET_SAMPLE_RATE_REQUEST 4029
+#define OPUS_GET_FINAL_RANGE_REQUEST 4031
+#define OPUS_GET_PITCH_REQUEST 4033
+#define OPUS_SET_GAIN_REQUEST 4034
+#define OPUS_GET_GAIN_REQUEST 4045 /* Should have been 4035 */
+#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
+#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
+
+
 
 #define LEAK_BANDS 19
 
@@ -66,6 +88,8 @@ typedef uint32_t           ec_window;
 typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
 typedef struct ec_ctx         ec_dec;
+typedef struct CELTMode       CELTMode;
+typedef struct CELTDecoder    CELTDecoder;
 
 struct ec_ctx {
     uint8_t *buf; /*Buffered input/output.*/
@@ -285,20 +309,19 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 #define SHL32(a,shift) ((int32_t)((uint32_t)(a)<<(shift)))
 
 /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
-#define PSHR32(a,shift) (((a)+((EXTEND32(1)<<((shift))>>1)) >> shift))
+static inline int32_t PSHR(int32_t a, uint32_t shift){return (a + ((int32_t)1 << (shift >> 1))) >> shift;}
+
 /** 32-bit arithmetic shift right where the argument can be negative */
 #define VSHR32(a, shift) (((shift)>0) ? SHR32(a, shift) : SHL32(a, -(shift)))
 
-/** "RAW" macros, should not be used outside of this header file */
-#define PSHR(a,shift) ((a)+((EXTEND32(1)<<((shift))>>1)) >> shift)
 #define SATURATE(x,a) (((x)>(a) ? (a) : (x)<-(a) ? -(a) : (x)))
 
 #define SATURATE16(x) ((int16_t)((x)>32767 ? 32767 : (x)<-32768 ? -32768 : (x)))
 
 /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
-#define ROUND16(x,a) ((int16_t)(PSHR32((x),(a))))
+#define ROUND16(x,a) ((int16_t)(PSHR((x),(a))))
 /** Shift by a and round-to-neareast 32-bit value. Result is a saturated 16-bit value */
-#define SROUND16(x,a) (int16_t)(SATURATE(PSHR32(x,a), 32767));
+#define SROUND16(x,a) (int16_t)(SATURATE(PSHR(x,a), 32767));
 
 /** Divide by two */
 #define HALF16(x)  (SHR16(x,1))
@@ -387,7 +410,7 @@ static inline int32_t celt_sudiv(int32_t n, int32_t d) {
 }
 
 static inline int16_t sig2word16(int32_t x){
-   x = PSHR32(x, 12);
+   x = PSHR(x, 12);
    x = max(x, -32768);
    x = min(x, 32767);
    return (int16_t)(x);
@@ -546,6 +569,9 @@ static inline int32_t pulses2bits(const CELTMode *m, int32_t band, int32_t LM, i
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
+_Pragma("GCC diagnostic push")
+_Pragma("GCC diagnostic ignored \"-Wunused-function\"")
+
 int32_t resampling_factor(int32_t rate);
 void comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
 void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1,
@@ -560,8 +586,6 @@ void anti_collapse(const CELTMode *m, int16_t *X_, uint8_t *collapse_masks, int3
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed, int32_t arch);
 static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
-static void intensity_stereo(const CELTMode *m, int16_t * X, const int16_t * Y,
-                             const int32_t *bandE, int32_t bandID, int32_t N);
 static void stereo_split(int16_t * X, int16_t * Y, int32_t N);
 static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N, int32_t arch);
 static void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
@@ -599,7 +623,6 @@ int32_t celt_decoder_ctl(CELTDecoder * st, int32_t request, ...);
 void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem, int32_t arch);
 int32_t _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int32_t overlap, int32_t lag, int32_t n, int32_t arch);
-static uint32_t icwrs(int32_t _n, const int32_t *_y);
 static int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y);
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_dec *_dec);
 uint32_t ec_tell_frac(ec_ctx *_this);
@@ -614,8 +637,6 @@ int32_t ec_dec_bit_logp(ec_dec *_this, uint32_t _logp);
 int32_t ec_dec_icdf(ec_dec *_this, const uint8_t *_icdf, uint32_t _ftb);
 uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft);
 uint32_t ec_dec_bits(ec_dec *_this, uint32_t _bits);
-static int32_t ec_write_byte(ec_enc *_this, uint32_t _value);
-static int32_t ec_write_byte_at_end(ec_enc *_this, uint32_t _value);
 static void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N);
 static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
@@ -632,8 +653,6 @@ int32_t celt_rcp(int32_t x);
 void clt_mdct_backward(const mdct_lookup *l, int32_t *in, int32_t * out, const int16_t * window, int32_t overlap,
                        int32_t shift, int32_t stride);
 CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
-static void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max_pitch, int32_t *best_pitch, int32_t yshift,
-                            int32_t maxcorr);
 static void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 static void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
@@ -658,6 +677,7 @@ void unquant_energy_finalise(const CELTMode *m, int32_t start, int32_t end, int1
                              int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C);
 static void xcorr_kernel(const int16_t *x, const int16_t *y, int32_t sum[4], int32_t len);
 
+_Pragma("GCC diagnostic pop")
 
 #ifdef __cplusplus
 }

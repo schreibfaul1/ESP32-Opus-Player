@@ -26,8 +26,8 @@
 */
 
 #include "Arduino.h"
-#include <stdarg.h>
 #include "celt.h"
+#include <stdarg.h>
 #include "opus_decoder.h"
 
 extern uint32_t CELT_SET_SIGNALLING_REQUEST;
@@ -57,7 +57,6 @@ struct OpusDecoder {
 int32_t opus_decoder_get_size(int32_t channels)
 {
     int32_t celtDecSizeBytes;
-    int32_t ret;
     if (channels < 1 || channels > 2)
         return 0;
 
@@ -116,15 +115,10 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
     CELTDecoder   *celt_dec;
     int32_t        i, celt_ret = 0;
     ec_dec         dec;
-    int32_t        redundant_audio_size;
-    int16_t        redundant_audio;
     int32_t        audiosize;
     int32_t        mode;
     int32_t        bandwidth;
-    int32_t        start_band;
-    int32_t        c;
     int32_t        F2_5, F5, F10, F20;
-    const int16_t *window;
     int32_t        celt_accum;
 
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
@@ -185,8 +179,6 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
     }
     else { frame_size = audiosize; }
 
-    start_band = 0;
-
     if(bandwidth) {
         int32_t endband = 21;
 
@@ -218,7 +210,6 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
 
     const CELTMode *celt_mode;
     celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode **)(&celt_mode));
-    window = celt_mode->window;
 
     if(st->decode_gain) {
         int32_t gain;
@@ -233,8 +224,6 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
     if(len <= 1) st->rangeFinal = 0;
 
     st->prev_mode = mode;
-    int32_t ret = celt_ret < 0 ? celt_ret : audiosize;
-
     return celt_ret < 0 ? celt_ret : audiosize;
 }
 //----------------------------------------------------------------------------------------------------------------------

@@ -116,7 +116,7 @@ uint8_t getChannels(){
 //---------------------------------------------------------------------------------------------------------------------
 int32_t Gain(int16_t s[2]) {
     int32_t v[2];
-    float step = (float)m_vol /64;
+//    float step = (float)m_vol /64;
     uint8_t l = 0, r = 0;
 
     v[LEFTCHANNEL] = (s[LEFTCHANNEL]  * (m_vol - l)) >> 6;
@@ -209,10 +209,6 @@ bool playChunk() {
 }
 //---------------------------------------------------------------------------------------------------------------------
 bool playSample(int16_t sample[2]) {
-
-    int16_t sample1[2]; int16_t* s1;
-    int16_t sample2[2]; int16_t* s2 = sample2;
-    int16_t sample3[2]; int16_t* s3 = sample3;
 
     if (getBitsPerSample() == 8) { // Upsample from unsigned 8 bits to signed 16 bits
         sample[LEFTCHANNEL]  = ((sample[LEFTCHANNEL]  & 0xff) -128) << 8;
