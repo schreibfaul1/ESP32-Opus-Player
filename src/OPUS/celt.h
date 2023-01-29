@@ -652,7 +652,6 @@ int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
 void clt_mdct_backward(const mdct_lookup *l, int32_t *in, int32_t * out, const int16_t * window, int32_t overlap,
                        int32_t shift, int32_t stride);
-CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 static void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 static void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);

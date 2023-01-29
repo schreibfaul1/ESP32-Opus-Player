@@ -144,12 +144,11 @@ int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len);
 int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t Fs);
 
 CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
-int32_t celt_decoder_ctl(CELTDecoder *__restrict__ st, int32_t request, ...);
 int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
                        int32_t self_delimited, int32_t *packet_offset);
 
 /* Make sure everything is properly aligned. */
-static inline int32_t align(int32_t i) {
+static inline int32_t od_align(int32_t i) {
     struct foo {
         char c;
         union {
@@ -171,10 +170,10 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
 int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int32_t request, va_list ap);
-int32_t validate_layout(OpusMSDecoder_t *layout);
-int32_t get_left_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t get_right_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t get_mono_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
+int32_t od_validate_layout(OpusMSDecoder_t *layout);
+int32_t opus_get_left_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
+int32_t opus_get_right_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
+int32_t opus_get_mono_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
 int32_t opus_multistream_decoder_get_size(int32_t streams, int32_t coupled_streams);
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, int32_t streams, int32_t coupled_streams,
                                                const uint8_t *mapping, int32_t *error);

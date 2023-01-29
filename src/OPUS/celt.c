@@ -643,9 +643,7 @@ static const CELTMode mode48000_960_120 = {
     {392, cache_index50, cache_bits50, cache_caps50}, /* cache */
 };
 
-static const CELTMode *const static_mode_list[1] = {
-    &mode48000_960_120,
-};
+
 
 const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
 
@@ -2091,7 +2089,7 @@ int32_t opus_custom_decoder_get_size(const CELTMode *mode, int32_t channels){
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t celt_decoder_get_size(int32_t channels){
-    const CELTMode *mode = opus_custom_mode_create(48000, 960, NULL);
+    const CELTMode *mode = &mode48000_960_120;
     return opus_custom_decoder_get_size(mode, channels);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -2127,7 +2125,7 @@ int32_t opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int32_t 
 
 int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels){
     int32_t ret;
-    ret = opus_custom_decoder_init(st, opus_custom_mode_create(48000, 960, NULL), channels);
+    ret = opus_custom_decoder_init(st, &mode48000_960_120, channels);
     if (ret != OPUS_OK)
         return ret;
     st->downsample = resampling_factor(sampling_rate);
@@ -3766,24 +3764,6 @@ void clt_mdct_backward(const mdct_lookup *l, int32_t *in, int32_t * out,
             wp2--;
         }
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error) {
-    int32_t i;
-    for (i = 0; i < 1; i++) { // TOTAL_MODES
-        int32_t j;
-        for (j = 0; j < 4; j++) {
-            if (Fs == static_mode_list[i]->Fs &&
-                (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts) {
-                if (error) *error = OPUS_OK;
-                return (CELTMode *)static_mode_list[i];
-            }
-        }
-    }
-
-    if (error) *error = OPUS_BAD_ARG;
-    return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
