@@ -77,7 +77,7 @@ int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels) {
 
     int n = opus_decoder_get_size(channels);
 
-    
+
 
 
 
@@ -95,7 +95,7 @@ int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels) {
     ret = celt_decoder_init(celt_dec, Fs, channels);
     if(ret != OPUS_OK) return OPUS_INTERNAL_ERROR;
 
-    celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING_REQUEST, 0);
+    celt_decoder_ctl(CELT_SET_SIGNALLING_REQUEST, 0);
 
     st->prev_mode = 0;
     st->frame_size = Fs / 400;
@@ -206,17 +206,17 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
             default:
                 break;
         }
-        celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST, endband);
+        celt_decoder_ctl(CELT_SET_END_BAND_REQUEST, endband);
     }
 
     int32_t celt_frame_size = min(F20, frame_size);
     /* Make sure to discard any previous CELT state */
-    if(mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy) celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+    if(mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy) celt_decoder_ctl(OPUS_RESET_STATE);
     /* Decode CELT */
-    celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, celt_accum);
+    celt_ret = celt_decode_with_ec(decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, celt_accum);
 
     const CELTMode *celt_mode;
-    celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, (const CELTMode **)(&celt_mode));
+    celt_decoder_ctl(CELT_GET_MODE_REQUEST, (const CELTMode **)(&celt_mode));
 
     if(st->decode_gain) {
         int32_t gain;
@@ -337,7 +337,7 @@ int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...) {
             st->frame_size = 0;
             st->prev_redundancy = 0;
             st->last_packet_duration = 0;
-            celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+            celt_decoder_ctl(OPUS_RESET_STATE);
             st->stream_channels = st->channels;
             st->frame_size = st->Fs / 400;
         } break;
@@ -353,7 +353,7 @@ int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...) {
             if (!value) {
                 goto bad_arg;
             }
-            ret = celt_decoder_ctl(celt_dec, (int32_t)value);
+            ret = celt_decoder_ctl((int32_t)value);
         } break;
         case OPUS_GET_GAIN_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
@@ -381,14 +381,14 @@ int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...) {
             if (value < 0 || value > 1) {
                 goto bad_arg;
             }
-            ret = celt_decoder_ctl(celt_dec, value);
+            ret = celt_decoder_ctl(value);
         } break;
         case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
             if (!value) {
                 goto bad_arg;
             }
-            ret = celt_decoder_ctl(celt_dec, (int32_t)value);
+            ret = celt_decoder_ctl((int32_t)value);
         } break;
         default:
             /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
