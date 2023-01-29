@@ -660,7 +660,7 @@ static int32_t op_make_decode_ready() {
     else {
         int32_t err;
         opus_multistream_decoder_destroy(m_od);
-        m_od = opus_multistream_decoder_create(48000, channel_count, stream_count, coupled_count, head->mapping,
+        m_od = opus_multistream_decoder_create(48000, channel_count, head->mapping,
                 &err);
         if(m_od == NULL) return OP_EFAULT;
         m_OggOpusFile->od_stream_count = stream_count;
