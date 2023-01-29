@@ -583,7 +583,6 @@ static const kiss_fft_state fft_state48000_960_0 = {
     {5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0,  0, 0, 0, 0, 0,}, /* factors */
     fft_bitrev480,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
-    NULL,
 };
 
 static const kiss_fft_state fft_state48000_960_1 = {
@@ -594,7 +593,6 @@ static const kiss_fft_state fft_state48000_960_1 = {
     {5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0,  0, 0,}, /* factors */
     fft_bitrev240,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
-    NULL,
 };
 
 static const kiss_fft_state fft_state48000_960_2 = {
@@ -605,7 +603,6 @@ static const kiss_fft_state fft_state48000_960_2 = {
     {5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0,}, /* factors */
     fft_bitrev120,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
-    NULL,
 };
 
 static const kiss_fft_state fft_state48000_960_3 = {
@@ -616,7 +613,6 @@ static const kiss_fft_state fft_state48000_960_3 = {
     {5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,}, /* factors */
     fft_bitrev60,          /* bitrev */
     fft_twiddles48000_960, /* bitrev */
-    NULL,
 };
 
 static const CELTMode m_CELTMode = {
@@ -779,7 +775,7 @@ uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void renormalise_vector(int16_t *X, int32_t N, int16_t gain, int32_t arch) {
+void renormalise_vector(int16_t *X, int32_t N, int16_t gain) {
     int32_t i;
     int32_t k;
     int32_t E;
@@ -1018,7 +1014,7 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
 /* This prevents energy collapse for transients with multiple short MDCTs */
 void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
-                   uint32_t seed, int32_t arch){
+                   uint32_t seed){
     int32_t c, i, j, k;
     for (i = start; i < end; i++) {
         int32_t N0;
@@ -1086,7 +1082,7 @@ void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, 
             }
             /* We just added some energy, so we need to renormalise */
             if (renormalize)
-                renormalise_vector(X, N0 << LM, 32767, arch);
+                renormalise_vector(X, N0 << LM, 32767);
         } while (++c < C);
     }
 }
@@ -1125,7 +1121,7 @@ static void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N, int32_t arch){
+static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
     int32_t j;
     int32_t xp = 0, side = 0;
     int32_t El, Er;
@@ -1578,7 +1574,7 @@ static uint32_t quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int
                         }
                         cm = fill;
                     }
-                    renormalise_vector(X, N, gain, ctx->arch);
+                    renormalise_vector(X, N, gain);
                 }
             }
         }
@@ -1805,7 +1801,7 @@ static uint32_t quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
     }
     if (ctx->resynth) {
         if (N != 2)
-            stereo_merge(X, Y, mid, N, ctx->arch);
+            stereo_merge(X, Y, mid, N);
         if (inv)
         {
             int32_t j;
@@ -1833,7 +1829,7 @@ static void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *no
 void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
-                     int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t arch, int32_t disable_inv){
+                     int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
     int32_t remaining_bits;
     const int16_t * eBands = m->eBands;
@@ -1880,7 +1876,6 @@ void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_,
     ctx.m = m;
     ctx.seed = *seed;
     ctx.spread = spread;
-    ctx.arch = arch;
     ctx.disable_inv = disable_inv;
     ctx.resynth = resynth;
     ctx.theta_round = 0;
@@ -2114,9 +2109,6 @@ int32_t opus_custom_decoder_init(CELTDecoder *st, int32_t channels){
     st->signalling = 1;
 
     st->disable_inv = channels == 1;
-
-    st->arch = 0;
-
     celt_decoder_ctl(st, OPUS_RESET_STATE);
 
     return OPUS_OK;
@@ -2233,7 +2225,7 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
 //----------------------------------------------------------------------------------------------------------------------
 
 static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start, int32_t effEnd, int32_t C,
-                        int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence, int32_t arch){
+                        int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence){
     int32_t c, i;
     int32_t M;
     int32_t b;
@@ -2407,7 +2399,7 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
                     seed = celt_lcg_rand(seed);
                     X[boffs + j] = (int16_t)((int32_t)seed >> 20);
                 }
-                renormalise_vector(X + boffs, blen, 32767, st->arch);
+                renormalise_vector(X + boffs, blen, 32767);
             }
         }
         st->rng = seed;
@@ -2418,7 +2410,7 @@ static void celt_decode_lost(CELTDecoder * st, int32_t N, int32_t LM){
                       DECODE_BUFFER_SIZE - N + (overlap >> 1));
         } while (++c < C);
 
-        celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
+        celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0);
     }
     else{
         log_e("something is wrong");
@@ -2646,7 +2638,7 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
     quant_all_bands(mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
                     NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
                     len * (8 << BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, &st->rng, 0,
-                    st->arch, st->disable_inv);
+                    st->disable_inv);
 
     if (anti_collapse_rsv > 0) {
         anti_collapse_on = ec_dec_bits(dec, 1);
@@ -2657,7 +2649,7 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
 
     if (anti_collapse_on)
         anti_collapse(X, collapse_masks, LM, C, N,
-                      start, end, oldBandE, oldLogE, oldLogE2, pulses, st->rng, st->arch);
+                      start, end, oldBandE, oldLogE, oldLogE2, pulses, st->rng);
 
     if (silence) {
         for (i = 0; i < C * nbEBands; i++)
@@ -2665,7 +2657,7 @@ int32_t celt_decode_with_ec(CELTDecoder * st, const uint8_t *data, int32_t len, 
     }
 
     celt_synthesis(X, out_syn, oldBandE, start, effEnd,
-                   C, CC, isTransient, LM, st->downsample, silence, st->arch);
+                   C, CC, isTransient, LM, st->downsample, silence);
 
     c = 0;
     do  {
@@ -2856,7 +2848,7 @@ void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem, int32_t arch) {
+void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem) {
     int32_t i, j;
     assert((ord & 3) == 0);
     int16_t rden[ord];
@@ -2902,7 +2894,7 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int
 
 int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
                    int32_t *ac,      /* out: [0...lag-1] ac values */
-                   const int16_t *window, int32_t overlap, int32_t lag, int32_t n, int32_t arch) {
+                   const int16_t *window, int32_t overlap, int32_t lag, int32_t n) {
     int32_t d;
     int32_t i, k;
     int32_t fastN = n - lag;
@@ -2939,7 +2931,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
         } else
             shift = 0;
     }
-    celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1, arch);
+    celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
     for (k = 0; k <= lag; k++) {
         for (i = k + fastN, d = 0; i < n; i++) d = MAC16_16(d, xptr[i], xptr[i - k]);
         ac[k] += d;
@@ -3768,7 +3760,7 @@ void clt_mdct_backward(const mdct_lookup *l, int32_t *in, int32_t * out,
 //----------------------------------------------------------------------------------------------------------------------
 
 /* Pure C implementation. */
-int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch, int32_t arch) {
+int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch) {
     int32_t i;
     /*The EDSP version requires that max_pitch is at least 1, and that _x is
        32-bit aligned.
