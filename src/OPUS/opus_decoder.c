@@ -76,6 +76,11 @@ int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels) {
         return OPUS_BAD_ARG;
 
     int n = opus_decoder_get_size(channels);
+
+    
+
+
+
     log_i("size %i", n);
     memset(st, 0, n * sizeof(char));
 

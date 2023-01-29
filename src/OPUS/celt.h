@@ -596,7 +596,6 @@ void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
-int32_t opus_custom_decoder_get_size(int32_t channels);
 int32_t celt_decoder_get_size(int32_t channels);
 int32_t opus_custom_decoder_init(CELTDecoder *st, int32_t channels);
 int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels);

@@ -2075,16 +2075,11 @@ void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_,
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_get_size(int32_t channels){
+int32_t celt_decoder_get_size(int32_t channels){
     static int32_t size;
     size = sizeof(struct CELTDecoder) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t)
            + channels * 24 * sizeof(int16_t) + 4 * 2 * m_CELTMode.nbEBands * sizeof(int16_t);
     return size;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t celt_decoder_get_size(int32_t channels){
-    return opus_custom_decoder_get_size(channels);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2095,7 +2090,7 @@ int32_t opus_custom_decoder_init(CELTDecoder *st, int32_t channels){
     if (st == NULL)
         return OPUS_ALLOC_FAIL;
 
-    int n = opus_custom_decoder_get_size(channels);
+    int n = celt_decoder_get_size(channels);
     memset(st, 0, n * sizeof(char));
 
 
@@ -2768,7 +2763,7 @@ int32_t celt_decoder_ctl(CELTDecoder * st, int32_t request, ...) {
             oldLogE = oldBandE + 2 * st->mode->nbEBands;
             oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
 
-            int n = opus_custom_decoder_get_size(st->channels);
+            int n = celt_decoder_get_size(st->channels);
             char* dest   = (char*)&st->rng;
             char* offset = (char*)st;
             memset(dest, 0,  n - (dest - offset) * sizeof(st));
