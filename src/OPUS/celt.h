@@ -591,8 +591,8 @@ static uint32_t quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t 
                            int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill);
 static uint32_t quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                                   int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
-static void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
-void quant_all_bands(const CELTMode *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
+static void special_hybrid_folding(int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
+void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
@@ -639,8 +639,7 @@ int16_t celt_rsqrt_norm(int32_t x);
 int32_t celt_sqrt(int32_t x);
 int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
-void clt_mdct_backward(const mdct_lookup *l, int32_t *in, int32_t * out, const int16_t * window, int32_t overlap,
-                       int32_t shift, int32_t stride);
+void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shift, int32_t stride);
 static void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 static void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
