@@ -73,7 +73,7 @@ int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels) {
     int32_t      ret;
 
     if((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2))
-        return OPUS_BAD_ARG;
+        return OPUS_BAD_ARG_;
 
     int n = opus_decoder_get_size(channels);
 
@@ -182,7 +182,7 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
     if(audiosize > frame_size) {
         /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
 
-        return OPUS_BAD_ARG;
+        return OPUS_BAD_ARG_;
     }
     else { frame_size = audiosize; }
 
@@ -244,7 +244,7 @@ int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, in
     int16_t size[48];
     //    VALIDATE_OPUS_DECODER(st);
     /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
-    if((len == 0 || data == NULL) && frame_size % (st->Fs / 400) != 0) { return OPUS_BAD_ARG; }
+    if((len == 0 || data == NULL) && frame_size % (st->Fs / 400) != 0) { return OPUS_BAD_ARG_; }
 
     if(len == 0 || data == NULL) {
         int32_t pcm_count = 0;
@@ -260,7 +260,7 @@ int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, in
         st->last_packet_duration = pcm_count;
         return pcm_count;
     }
-    else if(len < 0) { return OPUS_BAD_ARG; }
+    else if(len < 0) { return OPUS_BAD_ARG_; }
     packet_mode = opus_packet_get_mode(data);
     packet_bandwidth = opus_packet_get_bandwidth(data);
     packet_frame_size = opus_packet_get_samples_per_frame(data, st->Fs);
@@ -295,7 +295,7 @@ int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, in
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t opus_decode(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size) {
-    if (frame_size <= 0) return OPUS_BAD_ARG;
+    if (frame_size <= 0) return OPUS_BAD_ARG_;
     int32_t ret = opus_decode_native(st, data, len, pcm, frame_size, 0, 0);
     log_i("bytes_decoded = %i", ret);
     ESP_LOGE("opus decode", "len=%i, frame_size=%i, decode_fec=%i", len, frame_size);
@@ -400,7 +400,7 @@ int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...) {
     return ret;
 bad_arg:
     va_end(ap);
-    return OPUS_BAD_ARG;
+    return OPUS_BAD_ARG_;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -426,7 +426,7 @@ int32_t opus_packet_get_nb_channels(const uint8_t *data) { return (data[0] & 0x4
 
 int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len) {
     int32_t count;
-    if (len < 1) return OPUS_BAD_ARG;
+    if (len < 1) return OPUS_BAD_ARG_;
     count = packet[0] & 0x3;
     if (count == 0)
         return 1;
@@ -501,7 +501,7 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
     int32_t pad = 0;
     const uint8_t *data0 = data;
 
-    if (size == NULL || len < 0) return OPUS_BAD_ARG;
+    if (size == NULL || len < 0) return OPUS_BAD_ARG_;
     if (len == 0) return OPUS_INVALID_PACKET;
 
     framesize = opus_packet_get_samples_per_frame(data, 48000);
@@ -666,47 +666,12 @@ int32_t opus_multistream_decoder_get_size() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_multistream_decoder_init(OpusMSDecoder_t *st, int32_t Fs, int32_t channels, const uint8_t *mapping) {
-                                    log_i("init");
-
-    int32_t coupled_size;
-    int32_t mono_size;
-    int32_t i, ret;
-    char *ptr;
-
-    if (channels > 2) return OPUS_BAD_ARG;
-
-    st->nb_channels = channels;
-    st->nb_streams = 1;
-    st->nb_coupled_streams = 1;
-
-    for (i = 0; i < st->nb_channels; i++) st->mapping[i] = mapping[i];
-    if (!od_validate_layout(st)) return OPUS_BAD_ARG;
-
-    ptr = (char *)st + od_align(sizeof(OpusMSDecoder_t));
-    coupled_size = opus_decoder_get_size(2);
-    mono_size = opus_decoder_get_size(1);
-
-    for (i = 0; i < 1; i++) {
-        ret = opus_decoder_init((OpusDecoder *)ptr, Fs, 2);
-        if (ret != OPUS_OK) return ret;
-        ptr += od_align(coupled_size);
-    }
-    for (; i < st->nb_streams; i++) {
-        ret = opus_decoder_init((OpusDecoder *)ptr, Fs, 1);
-        if (ret != OPUS_OK) return ret;
-        ptr += od_align(mono_size);
-    }
-    return OPUS_OK;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error) {
     log_i("opus_multistream_decoder_create");
     int32_t ret;
     OpusMSDecoder_t *st;
     if (channels > 2){
-        if (error) *error = OPUS_BAD_ARG;
+        if (error) *error = OPUS_BAD_ARG_;
         return NULL;
     }
     st = (OpusMSDecoder_t *)malloc(opus_multistream_decoder_get_size());
@@ -714,7 +679,26 @@ OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, c
         if (error) *error = OPUS_ALLOC_FAIL;
         return NULL;
     }
-    ret = opus_multistream_decoder_init(st, Fs, channels, mapping);
+
+//    if (channels > 2) return OPUS_BAD_ARG_;
+
+    st->nb_channels = channels;
+    st->nb_streams = 1;
+    st->nb_coupled_streams = 1;
+
+    for (int i = 0; i < st->nb_channels; i++) st->mapping[i] = mapping[i];
+//    if (!od_validate_layout(st)) return OPUS_BAD_ARG_;
+
+    char *ptr;
+    ptr = (char *)st + od_align(sizeof(OpusMSDecoder_t));
+    ret = opus_decoder_init((OpusDecoder *)ptr, Fs, 2);
+    if (ret != OPUS_OK) {
+        free(st);
+        st = NULL;
+        return st;
+    }
+    ptr += od_align(opus_decoder_get_size(2));
+
     if (error) *error = ret;
     if (ret != OPUS_OK) {
         free(st);
@@ -758,7 +742,7 @@ int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data,
     char *ptr;
     int32_t do_plc = 0;
     if (frame_size <= 0) {
-        return OPUS_BAD_ARG;
+        return OPUS_BAD_ARG_;
     }
     /* Limit frame_size to avoid excessive stack allocations. */
     opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
@@ -770,7 +754,7 @@ int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data,
 
     if (len == 0) do_plc = 1;
     if (len < 0) {
-        return OPUS_BAD_ARG;
+        return OPUS_BAD_ARG_;
     }
     if (!do_plc && len < 2 * st->nb_streams - 1) {
         return OPUS_INVALID_PACKET;
@@ -952,7 +936,7 @@ int32_t opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int32_t reques
     }
     return ret;
 bad_arg:
-    return OPUS_BAD_ARG;
+    return OPUS_BAD_ARG_;
 }
 //----------------------------------------------------------------------------------------------------------------------
 

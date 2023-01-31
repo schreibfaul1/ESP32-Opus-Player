@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 #define OPUS_OK                0
-#define OPUS_BAD_ARG          -1
+#define OPUS_BAD_ARG_         -1
 #define OPUS_BUFFER_TOO_SMALL -2
 #define OPUS_INTERNAL_ERROR   -3
 #define OPUS_INVALID_PACKET   -4
@@ -176,7 +176,6 @@ int32_t opus_get_right_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32
 int32_t opus_get_mono_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
 int32_t opus_multistream_decoder_get_size();
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
-int32_t opus_multistream_decoder_init(OpusMSDecoder_t *st, int32_t Fs, int32_t channels, const uint8_t *mapping);
 int32_t opus_multistream_decode(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl(OpusMSDecoder_t *st, int32_t request, ...);
 void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
