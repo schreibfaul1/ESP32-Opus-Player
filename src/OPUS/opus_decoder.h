@@ -169,9 +169,9 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
 int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int32_t request, va_list ap);
-int32_t opus_get_left_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t opus_get_right_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t opus_get_mono_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
+int32_t opus_get_left_channel(int32_t prev);
+int32_t opus_get_right_channel(int32_t prev);
+int32_t opus_get_mono_channel(int32_t prev);
 int32_t opus_multistream_decoder_get_size();
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
 int32_t opus_multistream_decode(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
