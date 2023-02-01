@@ -51,9 +51,9 @@ struct OpusDecoder {
     int32_t   last_packet_duration;
     uint32_t  rangeFinal;
 };
-uint8_t s_channels = 0;
-uint8_t s_mapping[2];
-uint8_t s_nb_streams = 0;
+int8_t s_channels = 0;
+int8_t s_mapping[2];
+int8_t s_nb_streams = 0;
 uint8_t s_nb_coupled_streams = 0;
 
 //----------------------------------------------------------------------------------------------------------------------
