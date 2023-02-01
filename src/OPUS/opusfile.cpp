@@ -11,7 +11,6 @@
  ********************************************************************/
 
 #include "config.h"
-#include "internal.h"
 #include "opusfile.h"
 
 OggOpusFile_t    *m_OggOpusFile;
