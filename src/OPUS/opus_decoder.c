@@ -147,6 +147,7 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
         frame_size = min(frame_size, st->frame_size);
     }
     if(data != NULL) {
+        log_i("st->frame_size %i", st->frame_size);
         audiosize = st->frame_size;
         mode = st->mode;
         bandwidth = st->bandwidth;

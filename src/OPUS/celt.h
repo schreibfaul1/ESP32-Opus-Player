@@ -559,8 +559,8 @@ static inline int32_t pulses2bits(const CELTMode *m, int32_t band, int32_t LM, i
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
-#pragma("GCC diagnostic push")
-#pragma("GCC diagnostic ignored \"-Wunused-function\"")
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 int32_t resampling_factor(int32_t rate);
 void comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
@@ -664,7 +664,7 @@ void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int
                              int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C);
 static void xcorr_kernel(const int16_t *x, const int16_t *y, int32_t sum[4], int32_t len);
 
-#pragma("GCC diagnostic pop")
+#pragma GCC diagnostic pop
 
 #ifdef __cplusplus
 }
