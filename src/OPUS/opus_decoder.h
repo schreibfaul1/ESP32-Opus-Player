@@ -50,55 +50,7 @@ extern "C" {
 #define OPUS_INVALID_STATE    -6
 #define OPUS_ALLOC_FAIL       -7
 
-#define OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST 5122
-
-#define OPUS_SET_APPLICATION_REQUEST 4000
-#define OPUS_GET_APPLICATION_REQUEST 4001
-#define OPUS_SET_BITRATE_REQUEST 4002
-#define OPUS_GET_BITRATE_REQUEST 4003
-#define OPUS_SET_MAX_BANDWIDTH_REQUEST 4004
-#define OPUS_GET_MAX_BANDWIDTH_REQUEST 4005
-#define OPUS_SET_VBR_REQUEST 4006
-#define OPUS_GET_VBR_REQUEST 4007
-#define OPUS_SET_BANDWIDTH_REQUEST 4008
-#define OPUS_GET_BANDWIDTH_REQUEST 4009
-#define OPUS_SET_COMPLEXITY_REQUEST 4010
-#define OPUS_GET_COMPLEXITY_REQUEST 4011
-#define OPUS_SET_INBAND_FEC_REQUEST 4012
-#define OPUS_GET_INBAND_FEC_REQUEST 4013
-#define OPUS_SET_PACKET_LOSS_PERC_REQUEST 4014
-#define OPUS_GET_PACKET_LOSS_PERC_REQUEST 4015
-#define OPUS_SET_DTX_REQUEST 4016
-#define OPUS_GET_DTX_REQUEST 4017
-#define OPUS_SET_VBR_CONSTRAINT_REQUEST 4020
-#define OPUS_GET_VBR_CONSTRAINT_REQUEST 4021
-#define OPUS_SET_FORCE_CHANNELS_REQUEST 4022
-#define OPUS_GET_FORCE_CHANNELS_REQUEST 4023
-#define OPUS_SET_SIGNAL_REQUEST 4024
-#define OPUS_GET_SIGNAL_REQUEST 4025
-#define OPUS_GET_LOOKAHEAD_REQUEST 4027
 #define OPUS_GET_SAMPLE_RATE_REQUEST 4029
-#define OPUS_GET_FINAL_RANGE_REQUEST 4031
-#define OPUS_GET_PITCH_REQUEST 4033
-#define OPUS_SET_GAIN_REQUEST 4034
-#define OPUS_GET_GAIN_REQUEST 4045 /* Should have been 4035 */
-#define OPUS_SET_LSB_DEPTH_REQUEST 4036
-#define OPUS_GET_LSB_DEPTH_REQUEST 4037
-#define OPUS_GET_LAST_PACKET_DURATION_REQUEST 4039
-#define OPUS_SET_EXPERT_FRAME_DURATION_REQUEST 4040
-#define OPUS_GET_EXPERT_FRAME_DURATION_REQUEST 4041
-#define OPUS_SET_PREDICTION_DISABLED_REQUEST 4042
-#define OPUS_GET_PREDICTION_DISABLED_REQUEST 4043
-#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
-#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
-#define OPUS_GET_IN_DTX_REQUEST 4049
-#define OPUS_AUTO -1000     /**<Auto/default setting @hideinitializer*/
-#define OPUS_BITRATE_MAX -1 /**<Maximum bitrate @hideinitializer*/
-#define OPUS_APPLICATION_VOIP 2048
-#define OPUS_APPLICATION_AUDIO 2049
-#define OPUS_APPLICATION_RESTRICTED_LOWDELAY 2051
-#define OPUS_SIGNAL_VOICE 3001            /**< Signal being encoded is voice */
-#define OPUS_SIGNAL_MUSIC 3002            /**< Signal being encoded is music */
 #define OPUS_BANDWIDTH_NARROWBAND 1101    /**< 4 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_MEDIUMBAND 1102    /**< 6 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_WIDEBAND 1103      /**< 8 kHz bandpass @hideinitializer*/
@@ -106,11 +58,6 @@ extern "C" {
 #define OPUS_BANDWIDTH_FULLBAND 1105      /**<20 kHz bandpass @hideinitializer*/
 #define OPUS_RESET_STATE 4028
 #define MODE_CELT_ONLY 1002
-#define OPUS_SET_VOICE_RATIO_REQUEST 11018
-#define OPUS_GET_VOICE_RATIO_REQUEST 11019
-#define OPUS_SET_FORCE_MODE_REQUEST 11002
-#define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, (int32_t)(x)
-
 
 typedef struct OpusDecoder OpusDecoder;
 typedef struct CELTDecoder CELTDecoder;
@@ -123,10 +70,6 @@ typedef void (*opus_copy_channel_out_func)(void *dst, int32_t dst_stride, int32_
                                            int32_t src_stride, int32_t frame_size, void *user_data);
 
 typedef struct OpusMSDecoder {
-    int32_t nb_channels;
-    int32_t nb_streams;
-    int32_t nb_coupled_streams;
-    uint8_t mapping[256];
 }OpusMSDecoder_t;
 
 
@@ -170,16 +113,15 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
 int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int32_t request, va_list ap);
-int32_t od_validate_layout(OpusMSDecoder_t *layout);
-int32_t opus_get_left_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t opus_get_right_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
-int32_t opus_get_mono_channel(OpusMSDecoder_t *layout, int32_t stream_id, int32_t prev);
+int32_t opus_get_left_channel(int32_t stream_id, int32_t prev);
+int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
+int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);
 int32_t opus_multistream_decoder_get_size();
 OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
 int32_t opus_multistream_decode(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
 int32_t opus_multistream_decoder_ctl(OpusMSDecoder_t *st, int32_t request, ...);
 void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
-
+int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);
 
 #ifdef __cplusplus
 }

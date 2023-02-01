@@ -2757,11 +2757,11 @@ int32_t celt_decoder_ctl(int32_t request, ...) {
             *value = cdec->error;
             cdec->error = 0;
         } break;
-        case OPUS_GET_LOOKAHEAD_REQUEST: {
-            int32_t *value = va_arg(ap, int32_t *);
-            if (value == NULL) goto bad_arg;
-            *value = cdec->overlap / cdec->downsample;
-        } break;
+        // case OPUS_GET_LOOKAHEAD_REQUEST: {
+        //     int32_t *value = va_arg(ap, int32_t *);
+        //     if (value == NULL) goto bad_arg;
+        //     *value = cdec->overlap / cdec->downsample;
+        // } break;
         case OPUS_RESET_STATE: {
             int32_t i;
             int16_t *lpc, *oldBandE, *oldLogE, *oldLogE2;
@@ -2778,11 +2778,11 @@ int32_t celt_decoder_ctl(int32_t request, ...) {
             for (i = 0; i < 2 * cdec->mode->nbEBands; i++) oldLogE[i] = oldLogE2[i] = -QCONST16(28.f, 10);
             cdec->skip_plc = 1;
         } break;
-        case OPUS_GET_PITCH_REQUEST: {
-            int32_t *value = va_arg(ap, int32_t *);
-            if (value == NULL) goto bad_arg;
-            *value = cdec->postfilter_period;
-        } break;
+        // case OPUS_GET_PITCH_REQUEST: {
+        //     int32_t *value = va_arg(ap, int32_t *);
+        //     if (value == NULL) goto bad_arg;
+        //     *value = cdec->postfilter_period;
+        // } break;
         case CELT_GET_MODE_REQUEST: {
             const CELTMode **value = va_arg(ap, const CELTMode **);
             if (value == 0) goto bad_arg;
@@ -2792,25 +2792,25 @@ int32_t celt_decoder_ctl(int32_t request, ...) {
             int32_t value = va_arg(ap, int32_t);
             cdec->signalling = value;
         } break;
-        case OPUS_GET_FINAL_RANGE_REQUEST: {
-            uint32_t *value = va_arg(ap, uint32_t *);
-            if (value == 0) goto bad_arg;
-            *value = cdec->rng;
-        } break;
-        case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST: {
-            int32_t value = va_arg(ap, int32_t);
-            if (value < 0 || value > 1) {
-                goto bad_arg;
-            }
-            cdec->disable_inv = value;
-        } break;
-        case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST: {
-            int32_t *value = va_arg(ap, int32_t *);
-            if (!value) {
-                goto bad_arg;
-            }
-            *value = cdec->disable_inv;
-        } break;
+        // case OPUS_GET_FINAL_RANGE_REQUEST: {
+        //     uint32_t *value = va_arg(ap, uint32_t *);
+        //     if (value == 0) goto bad_arg;
+        //     *value = cdec->rng;
+        // } break;
+        // case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST: {
+        //     int32_t value = va_arg(ap, int32_t);
+        //     if (value < 0 || value > 1) {
+        //         goto bad_arg;
+        //     }
+        //     cdec->disable_inv = value;
+        // } break;
+        // case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST: {
+        //     int32_t *value = va_arg(ap, int32_t *);
+        //     if (!value) {
+        //         goto bad_arg;
+        //     }
+        //     *value = cdec->disable_inv;
+        // } break;
         default:
             goto bad_request;
     }

@@ -51,18 +51,8 @@ extern "C" {
 #define OPUS_INVALID_STATE    -6
 #define OPUS_ALLOC_FAIL       -7
 
-
 #define OPUS_RESET_STATE 4028
-#define OPUS_GET_LOOKAHEAD_REQUEST 4027
 #define OPUS_GET_SAMPLE_RATE_REQUEST 4029
-#define OPUS_GET_FINAL_RANGE_REQUEST 4031
-#define OPUS_GET_PITCH_REQUEST 4033
-#define OPUS_SET_GAIN_REQUEST 4034
-#define OPUS_GET_GAIN_REQUEST 4045 /* Should have been 4035 */
-#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
-#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
-
-
 
 #define LEAK_BANDS 19
 
@@ -229,12 +219,9 @@ struct CELTMode {
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-#define S_MUL(a,b) MULT16_32_Q15(b, a)
+inline int32_t S_MUL(int32_t a, int16_t b){return (int64_t)b * a >> 15;}
 #define C_MUL(m,a,b)  do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
                           (m).i = ADD32_ovflw(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
-
-#define C_MULC(m,a,b) do{ (m).r = ADD32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
-                          (m).i = SUB32_ovflw(S_MUL((a).i,(b).r) , S_MUL((a).r,(b).i)); }while(0)
 
 #define C_MULBYSCALAR( c, s ) do{ (c).r =  S_MUL( (c).r , s ) ;  (c).i =  S_MUL( (c).i , s ) ; }while(0)
 
@@ -276,7 +263,8 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 
 
 /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
-#define MULT16_32_Q15(a,b) ((int32_t)((int64_t)((int16_t)(a))*(b) >> 15))
+inline int32_t MULT16_32_Q15(int16_t a, int32_t b){return (int64_t)a * b >> 15;}
+
 
 /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
 #define MULT32_32_Q31(a,b) ((int32_t)((int64_t)(a)*(int64_t)(b) >> 31))
