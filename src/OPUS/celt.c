@@ -724,7 +724,7 @@ static void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy
     int32_t k;
     int32_t t;
     int16_t g;
-
+    if(Ryy < 1) log_e("celt_ilog2 %i", Ryy);
     k = celt_ilog2(Ryy) >> 1;
     t = VSHR32(Ryy, 2 * (k - 7));
     g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
@@ -778,11 +778,12 @@ uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain) {
     int32_t i;
     int32_t k;
-    int32_t E;
+    uint32_t E;
     int16_t g;
     int32_t t;
     int16_t *xptr;
     E = EPSILON + celt_inner_prod(X, X, N);
+    if(E < 1) log_e("celt_ilog2 %i, X=%i, N=%i", E, X[N], N );  // assert E > 0
     k = celt_ilog2(E) >> 1;
     t = VSHR32(E, 2 * (k - 7));
     g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
@@ -1034,6 +1035,7 @@ void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, 
         thresh = MULT16_32_Q15(QCONST16(0.5f, 15), min(32767, thresh32)); {
             int32_t t;
             t = N0 << LM;
+            if(t < 1) log_e("celt_ilog2 %i", t);
             shift = celt_ilog2(t) >> 1;
             t = SHL32(t, (7 - shift) << 1);
             sqrt_1 = celt_rsqrt_norm(t);
@@ -1081,8 +1083,10 @@ void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, 
                 }
             }
             /* We just added some energy, so we need to renormalise */
-            if (renormalize)
+            if (renormalize){
+                // if(*X > 0xFFFF) log_e("X=%i", *X);
                 renormalise_vector(X, N0 << LM, 32767);
+            }
         } while (++c < C);
     }
 }
@@ -1092,7 +1096,7 @@ void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, 
    square distortion, which means that we use the square root of the value we would have been using if we wanted to
    minimize the MSE in the non-normalized domain. This roughly corresponds to some quick-and-dirty perceptual
    experiments I ran to measure inter-aural masking (there doesn't seem to be any published data on the topic). */
-static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
+void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
     int32_t minE;
 
     int32_t shift;
@@ -1102,6 +1106,7 @@ static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
     Ex = ADD32(Ex, minE / 3);
     Ey = ADD32(Ey, minE / 3);
 
+    if(EPSILON + max(Ex, Ey) < 1) log_e("celt_ilog2 %i", EPSILON + max(Ex, Ey));
     shift = celt_ilog2(EPSILON + max(Ex, Ey)) - 14;
 
     w[0] = VSHR32(Ex, shift);
@@ -1109,7 +1114,7 @@ static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
+void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
     int32_t j;
     for (j = 0; j < N; j++) {
         int32_t r, l;
@@ -1121,13 +1126,13 @@ static void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
+void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
     int32_t j;
     int32_t xp = 0, side = 0;
     int32_t El, Er;
     int16_t mid2;
 
-    int32_t kl, kr;
+    int32_t kl = 0, kr = 0;
 
     int32_t t, lgain, rgain;
 
@@ -1144,7 +1149,9 @@ static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
         return;
     }
 
+    if(El < 1) log_e("celt_ilog2 %i", El);
     kl = celt_ilog2(El) >> 1;
+    if(Er < 1) log_e("celt_ilog2 %i", Er);
     kr = celt_ilog2(Er) >> 1;
 
     t = VSHR32(El, (kl - 7) << 1);
@@ -1574,6 +1581,7 @@ static uint32_t quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int
                         }
                         cm = fill;
                     }
+                    // if(*X > 0xFFFF) log_e("X=%i", *X);
                     renormalise_vector(X, N, gain);
                 }
             }
@@ -2393,6 +2401,7 @@ static void celt_decode_lost(int32_t N, int32_t LM){
                     seed = celt_lcg_rand(seed);
                     X[boffs + j] = (int16_t)((int32_t)seed >> 20);
                 }
+                // log_e("X + boffs=%i", *(X + boffs));
                 renormalise_vector(X + boffs, blen, 32767);
             }
         }
@@ -2916,6 +2925,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
             ac0 += MULT16_16(xptr[i + 1], xptr[i + 1]) >> 9;
         }
 
+        if(ac0 < 1) log_e("celt_ilog2 %i", ac0);
         shift = celt_ilog2(ac0) - 30 + 10;
         shift = (shift) / 2;
         if (shift > 0) {
@@ -3537,6 +3547,7 @@ uint32_t isqrt32(uint32_t _val) {
 int32_t frac_div32(int32_t a, int32_t b) {
     int16_t rcp;
     int32_t result, rem;
+    if(b < 1) log_e("celt_ilog2 %i", b);
     int32_t shift = celt_ilog2(b) - 29;
     a = VSHR32(a, shift);
     b = VSHR32(b, shift);
@@ -3587,6 +3598,7 @@ int32_t celt_sqrt(int32_t x) {
         return 0;
     else if (x >= 1073741824)
         return 32767;
+    if(x < 1) log_e("celt_ilog2 %i", x);
     k = (celt_ilog2(x) >> 1) - 7;
     x = VSHR32(x, 2 * k);
     n = x - 32768;

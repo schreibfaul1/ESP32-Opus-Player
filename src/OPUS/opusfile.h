@@ -15,6 +15,7 @@
 #include "Arduino.h"
 #include "ogg.h"
 #include "opus_decoder.h"
+#include "celt.h"
 
 extern __attribute__((weak)) int32_t SD_read(uint8_t *buff, int32_t nbytes);
 

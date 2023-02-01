@@ -1116,7 +1116,7 @@ static int32_t op_init_buffer() {
 /*Read more samples from the stream, using the same API as op_read() or op_read_float().*/
 static int32_t op_read_native() {
 
-    int16_t *_pcm = NULL;
+//    int16_t *_pcm = NULL;
     int32_t _buf_size = 0;
     int32_t *_li = NULL;
 
@@ -1134,19 +1134,17 @@ static int32_t op_read_native() {
             /*If we have buffered samples, return them.*/
             if(nsamples > 0) {
                 if(nsamples * nchannels > _buf_size) nsamples = _buf_size / nchannels;
-                assert(_pcm!=NULL||nsamples<=0);
+                //assert(_pcm!=NULL||nsamples<=0);
                 /*Check nsamples again so we don't pass NULL to memcpy() if _buf_size
                  is zero.
                  That would technically be undefined behavior, even if the number of
                  bytes to copy were zero.*/
-                if(nsamples > 0) {
-                    #pragma clang diagnostic push
-                    #pragma clang diagnostic ignored "-Wnonnull"
-                    memcpy(_pcm, m_OggOpusFile->od_buffer + nchannels * od_buffer_pos, sizeof(*_pcm) * nchannels * nsamples);
-                    #pragma clang diagnostic pop
-                    od_buffer_pos += nsamples;
-                    m_OggOpusFile->od_buffer_pos = od_buffer_pos;
-                }
+                // if(nsamples > 0) {
+                //                     log_i("op_read_native");
+                //     memcpy(_pcm, m_OggOpusFile->od_buffer + nchannels * od_buffer_pos, sizeof(*_pcm) * nchannels * nsamples);
+                //     od_buffer_pos += nsamples;
+                //     m_OggOpusFile->od_buffer_pos = od_buffer_pos;
+                // }
                 if(_li != NULL) *_li = m_OggOpusFile->cur_link;
                 return nsamples;
             }
@@ -1198,31 +1196,31 @@ static int32_t op_read_native() {
                     m_OggOpusFile->bytes_tracked += pop->bytes;
                     m_OggOpusFile->samples_tracked += trimmed_duration - od_buffer_pos;
                 }
-                else {
-                    assert(_pcm!=NULL);
-                    /*Otherwise decode directly into the user's buffer.*/
-                    ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, _pcm, duration);
-                    if(ret < 0) return OP_EBADPACKET;
-                    if(trimmed_duration > 0) {
-                        /*Perform pre-skip/pre-roll.*/
-                        od_buffer_pos = (int32_t) _min(trimmed_duration, cur_discard_count);
-                        cur_discard_count -= od_buffer_pos;
-                        m_OggOpusFile->cur_discard_count = cur_discard_count;
-                        trimmed_duration -= od_buffer_pos;
-                        if((trimmed_duration>0) && (od_buffer_pos > 0)) {
-                            memmove(_pcm, _pcm + od_buffer_pos * nchannels,
-                                    sizeof(*_pcm) * trimmed_duration * nchannels);
-                        }
-                        /*Update bitrate tracking based on the actual samples we used from
-                         what was decoded.*/
-                        m_OggOpusFile->bytes_tracked += pop->bytes;
-                        m_OggOpusFile->samples_tracked += trimmed_duration;
-                        if(trimmed_duration > 0) {
-                            if(_li != NULL) *_li = m_OggOpusFile->cur_link;
-                            return trimmed_duration;
-                        }
-                    }
-                }
+                // else {
+                //     assert(_pcm!=NULL);
+                //     /*Otherwise decode directly into the user's buffer.*/
+                //     ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, _pcm, duration);
+                //     if(ret < 0) return OP_EBADPACKET;
+                //     if(trimmed_duration > 0) {
+                //         /*Perform pre-skip/pre-roll.*/
+                //         od_buffer_pos = (int32_t) _min(trimmed_duration, cur_discard_count);
+                //         cur_discard_count -= od_buffer_pos;
+                //         m_OggOpusFile->cur_discard_count = cur_discard_count;
+                //         trimmed_duration -= od_buffer_pos;
+                //         if((trimmed_duration>0) && (od_buffer_pos > 0)) {
+                //             memmove(_pcm, _pcm + od_buffer_pos * nchannels,
+                //                     sizeof(*_pcm) * trimmed_duration * nchannels);
+                //         }
+                //         /*Update bitrate tracking based on the actual samples we used from
+                //          what was decoded.*/
+                //         m_OggOpusFile->bytes_tracked += pop->bytes;
+                //         m_OggOpusFile->samples_tracked += trimmed_duration;
+                //         if(trimmed_duration > 0) {
+                //             if(_li != NULL) *_li = m_OggOpusFile->cur_link;
+                //             return trimmed_duration;
+                //         }
+                //     }
+                // }
                 /*Don't grab another page yet.
                  This one might have more packets, or might have buffered data now.*/
                 continue;

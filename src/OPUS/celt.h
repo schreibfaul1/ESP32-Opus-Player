@@ -385,10 +385,6 @@ int32_t celt_rcp(int32_t x);
 #define LOG_MAX_PSEUDO 6
 #define ALLOC_NONE 1
 
-extern const signed char tf_select_table[4][8];
-extern const uint32_t SMALL_DIV_TABLE[129];
-extern const uint8_t LOG2_FRAC_TABLE[24];
-
 /* Prototypes and inlines*/
 
 static inline int16_t SAT16(int32_t x) {
@@ -457,13 +453,13 @@ static inline int32_t celt_maxabs32(const int32_t *x, int32_t len) {
 }
 
 /** Integer log in base2. Undefined for zero and negative numbers */
-static inline int16_t celt_ilog2(int32_t x) {
+static inline int16_t celt_ilog2(uint32_t x) {
     assert(x > 0);
     return EC_ILOG(x) - 1;
 }
 
 /** Integer log in base2. Defined for zero, but not for negative numbers */
-static inline int16_t celt_zlog2(int32_t x) { return x <= 0 ? 0 : celt_ilog2(x); }
+static inline int16_t celt_zlog2(uint32_t x) { return x <= 0 ? 0 : celt_ilog2(x); }
 
 /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
 static inline int16_t celt_log2(int32_t x) {
@@ -514,10 +510,10 @@ static inline void dual_inner_prod(const int16_t *x, const int16_t *y01, const i
     *xy2 = xy02;
 }
 
-static inline int32_t celt_inner_prod(const int16_t *x, const int16_t *y, int32_t N) {
-    int32_t i;
-    int32_t xy = 0;
-    for (i = 0; i < N; i++) xy = MAC16_16(xy, x[i], y[i]);
+static inline uint32_t celt_inner_prod(const int16_t *x, const int16_t *y, int32_t N) {
+    int i;
+    uint32_t xy = 0;
+    for (i = 0; i < N; i++) xy = (int32_t)x[i] * (int32_t)y[i] + xy;
     return xy;
 }
 
@@ -575,9 +571,9 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
 void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed);
-static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
-static void stereo_split(int16_t * X, int16_t * Y, int32_t N);
-static void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N);
+void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
+void stereo_split(int16_t * X, int16_t * Y, int32_t N);
+void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N);
 static void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 static void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void haar1(int16_t *X, int32_t N0, int32_t stride);

@@ -119,7 +119,7 @@ static int32_t opus_packet_get_mode(const uint8_t *data) {
 //----------------------------------------------------------------------------------------------------------------------
 static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
                                  int32_t decode_fec) {
-    CELTDecoder   *celt_dec;
+
     int32_t        i, celt_ret = 0;
     ec_dec         dec;
     int32_t        audiosize;
@@ -128,7 +128,6 @@ static int32_t opus_decode_frame(OpusDecoder *st, const uint8_t *data, int32_t l
     int32_t        F2_5, F5, F10, F20;
     int32_t        celt_accum;
 
-    celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
     F20 = st->Fs / 50;
     F10 = F20 >> 1;
     F5 = F10 >> 1;
@@ -298,19 +297,14 @@ int32_t opus_decode(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *
     if (frame_size <= 0) return OPUS_BAD_ARG_;
     int32_t ret = opus_decode_native(st, data, len, pcm, frame_size, 0, 0);
     log_i("bytes_decoded = %i", ret);
-    ESP_LOGE("opus decode", "len=%i, frame_size=%i, decode_fec=%i", len, frame_size);
-
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...) {
-    //log_i("opus_decoder_ctl");
+
     int32_t ret = OPUS_OK;
     va_list ap;
-    CELTDecoder *celt_dec;
-
-    celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
 
     va_start(ap, request);
 
