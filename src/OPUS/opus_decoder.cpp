@@ -658,8 +658,7 @@ int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_multistream_decode_native(const uint8_t *data, int32_t len, void *pcm, int32_t frame_size) {
-    //log_i("opus_multistream_decode_native len %i", len);
+int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size) {
     int32_t Fs;
     int32_t s, c;
     int32_t do_plc = 0;
@@ -706,13 +705,13 @@ int32_t opus_multistream_decode_native(const uint8_t *data, int32_t len, void *p
             prev = -1;
             /* Copy "left" audio to the channel(s) where it belongs */
             while ((chan = opus_get_left_channel(s, prev)) != -1) {
-                opus_copy_channel_out_short(pcm, s_nb_channels, chan, buf, 2, frame_size, NULL);
+                opus_copy_channel_out_short(pcm, chan, buf, 2, frame_size);
                 prev = chan;
             }
             prev = -1;
             /* Copy "right" audio to the channel(s) where it belongs */
             while ((chan = opus_get_right_channel(s, prev)) != -1) {
-                opus_copy_channel_out_short(pcm, s_nb_channels, chan, buf + 1, 2, frame_size, NULL);
+                opus_copy_channel_out_short(pcm, chan, buf + 1, 2, frame_size);
                 prev = chan;
             }
         } else {
@@ -720,7 +719,7 @@ int32_t opus_multistream_decode_native(const uint8_t *data, int32_t len, void *p
             prev = -1;
             /* Copy audio to the channel(s) where it belongs */
             while ((chan = opus_get_mono_channel(s, prev)) != -1) {
-                opus_copy_channel_out_short(pcm, s_nb_channels, chan, buf, 1, frame_size, NULL);
+                opus_copy_channel_out_short(pcm, chan, buf, 1, frame_size);
                 prev = chan;
             }
         }
@@ -728,7 +727,7 @@ int32_t opus_multistream_decode_native(const uint8_t *data, int32_t len, void *p
     /* Handle muted channels */
     for (c = 0; c < s_nb_channels; c++) {
         if (s_mapping[c] == 255) {
-            opus_copy_channel_out_short(pcm, s_nb_channels, c, NULL, 0, frame_size, NULL);
+            opus_copy_channel_out_short(pcm, c, NULL, 0, frame_size);
         }
     }
 
@@ -736,23 +735,14 @@ int32_t opus_multistream_decode_native(const uint8_t *data, int32_t len, void *p
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_copy_channel_out_short(void *dst, int32_t dst_stride, int32_t dst_channel, const int16_t *src, int32_t src_stride,
-                                        int32_t frame_size, void *user_data) {
-    int16_t *short_dst;
+void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_t *src, int32_t src_stride, int32_t frame_size) {
     int32_t i;
-    (void)user_data;
-    short_dst = (int16_t *)dst;
     if (src != NULL) {
-        for (i = 0; i < frame_size; i++) short_dst[i * dst_stride + dst_channel] = src[i * src_stride];
+        for (i = 0; i < frame_size; i++) dst[i * s_nb_channels + dst_channel] = src[i * src_stride];
 
     } else {
-        for (i = 0; i < frame_size; i++) short_dst[i * dst_stride + dst_channel] = 0;
+        for (i = 0; i < frame_size; i++) dst[i * s_nb_channels + dst_channel] = 0;
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size) {
-    return opus_multistream_decode_native(data, len, pcm, frame_size);
 }
 //----------------------------------------------------------------------------------------------------------------------
 

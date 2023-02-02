@@ -122,8 +122,8 @@ int32_t opus_multistream_decoder_ctl(int32_t request, ...);
 int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);
 int32_t opus_decode_frame(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size, int32_t decode_fec);
 
-void opus_copy_channel_out_short(void *dst, int32_t dst_stride, int32_t dst_channel, const int16_t *src, int32_t src_stride,
-                                        int32_t frame_size, void *user_data);
+void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_t *src, int32_t src_stride,
+                                        int32_t frame_size);
 
 #ifdef __cplusplus
 }
