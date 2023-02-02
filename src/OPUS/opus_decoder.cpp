@@ -543,7 +543,7 @@ int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error) {
+bool opus_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error) {
 
     if(Fs != 48000 || (channels != 1 && channels != 2)) return false; // OPUS_BAD_ARG_;
 
@@ -552,15 +552,8 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
         if (error) *error = OPUS_BAD_ARG_;
         return false;
     }
-    //size_t omd = opus_decoder_get_size(2);
 
-    //char* st = (char*)malloc(omd);
     if(!CELTDecoder_AllocateBuffers()){if (error) *error = OPUS_ALLOC_FAIL; return false;}
-
-    // if (st == NULL) {
-    //     if (error) *error = OPUS_ALLOC_FAIL;
-    //     return false;
-    // }
 
     s_nb_channels = channels;
     s_nb_streams = 1;
@@ -568,17 +561,18 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
 
     for (int i = 0; i < s_nb_channels; i++) s_mapping[i] = mapping[i];
 
-//---------------------------------------------------------------------------------
-
     CELTDecoder_ClearBuffer();
 
     m_OpusDecoder.stream_channels = m_OpusDecoder.channels = channels;
-
     m_OpusDecoder.Fs = Fs;
 
     /* Initialize CELT decoder */
     ret = celt_decoder_init(Fs, channels);
     if(ret != OPUS_OK) return OPUS_INTERNAL_ERROR;
+
+    ret = opus_custom_decoder_init(channels);
+    if (ret != OPUS_OK)
+        return ret;
 
     celt_decoder_ctl(CELT_SET_SIGNALLING_REQUEST, 0);
 

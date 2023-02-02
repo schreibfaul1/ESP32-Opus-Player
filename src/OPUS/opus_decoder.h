@@ -93,7 +93,7 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
 int32_t opus_get_left_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);
-bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
+bool opus_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
 int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
 // void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
 int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);

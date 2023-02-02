@@ -2148,14 +2148,8 @@ void CELTDecoder_ClearBuffer(void){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-
-
 int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels){
-    //cdec = st;
-    int32_t ret;
-    ret = opus_custom_decoder_init(channels);
-    if (ret != OPUS_OK)
-        return ret;
+
     cdec->downsample = resampling_factor(sampling_rate);
     if (cdec->downsample == 0)
         return OPUS_BAD_ARG;
