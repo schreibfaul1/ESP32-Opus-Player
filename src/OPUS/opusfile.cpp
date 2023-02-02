@@ -15,7 +15,6 @@
 
 OggOpusFile_t    *m_OggOpusFile;
 OggOpusLink_t    *m_OggOpusLink;
-OpusMSDecoder_t  *m_od;
 
 #define OP_CHUNK_SIZE     (1024 * 8)
 #define OP_READ_SIZE      (2048)
@@ -651,17 +650,14 @@ static int32_t op_make_decode_ready() {
     coupled_count = head->coupled_count;
     channel_count = head->channel_count;
     /*Check to see if the current decoder is compatible with the current link.*/
-    if(m_od != NULL && m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
+    if(m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
             && m_OggOpusFile->od_channel_count == channel_count
             && memcmp(m_OggOpusFile->od_mapping, head->mapping, sizeof(*head->mapping) * channel_count) == 0) {
         opus_multistream_decoder_ctl(OPUS_RESET_STATE);
     }
     else {
         int32_t err;
-        // opus_multistream_decoder_destroy(m_od);
-        m_od = opus_multistream_decoder_create(48000, channel_count, head->mapping,
-                &err);
-        if(m_od == NULL) return OP_EFAULT;
+        if(!opus_multistream_decoder_create(48000, channel_count, head->mapping, &err)) return OP_EFAULT;
         m_OggOpusFile->od_stream_count = stream_count;
         m_OggOpusFile->od_coupled_count = coupled_count;
         m_OggOpusFile->od_channel_count = channel_count;
