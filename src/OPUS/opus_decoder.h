@@ -84,27 +84,8 @@ int32_t opus_packet_get_samples_per_frame(const uint8_t *data, int32_t Fs);
 int32_t opus_packet_get_nb_channels(const uint8_t *data);
 int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len);
 int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t Fs);
-
-CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 int32_t opus_decode_native(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
                        int32_t self_delimited, int32_t *packet_offset);
-
-/* Make sure everything is properly aligned. */
-static inline int32_t od_align(int32_t i) {
-    struct foo {
-        char c;
-        union {
-            void *p;
-            int32_t i;
-            int32_t v;
-        } u;
-    };
-    uint32_t alignment = offsetof(struct foo, u);
-
-    /* Optimizing compilers should optimize div and multiply into and
-       for all sensible alignment values. */
-    return ((i + alignment - 1) / alignment) * alignment;
-}
 
 int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_delimited, uint8_t *out_toc,
                            const uint8_t *frames[48], int16_t size[48], int32_t *payload_offset,

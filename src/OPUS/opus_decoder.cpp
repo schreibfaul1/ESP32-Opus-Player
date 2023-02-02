@@ -564,7 +564,7 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
         if (error) *error = OPUS_BAD_ARG_;
         return false;
     }
-    size_t omd = od_align(sizeof(OpusMSDecoder_t)) + od_align(opus_decoder_get_size(2));
+    size_t omd = opus_decoder_get_size(2);
     st = (OpusMSDecoder_t *)malloc(omd);
     if (st == NULL) {
         if (error) *error = OPUS_ALLOC_FAIL;
@@ -590,7 +590,7 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
     m_OpusDecoder.celt_dec_offset = 64;
 
     char *ptr;
-    ptr = (char *)st + od_align(sizeof(OpusMSDecoder_t));
+    ptr = (char *)st;
     celt_dec = (CELTDecoder *)((char *)ptr + m_OpusDecoder.celt_dec_offset);
     m_OpusDecoder.stream_channels = m_OpusDecoder.channels = channels;
 
