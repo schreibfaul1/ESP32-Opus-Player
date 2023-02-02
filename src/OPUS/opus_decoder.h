@@ -76,8 +76,8 @@ typedef struct OpusMSDecoder {
 
 int32_t opus_decoder_get_size(int32_t channels);
 int32_t opus_decoder_init(OpusDecoder *st, int32_t Fs, int32_t channels);
-int32_t opus_decode(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_decoder_ctl(OpusDecoder *st, int32_t request, ...);
+int32_t opus_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
+int32_t opus_decoder_ctl(int32_t request, ...);
 int32_t opus_packet_parse(const uint8_t *data, int32_t len, uint8_t *out_toc, const uint8_t *frames[48],
                       int16_t size[48], int32_t *payload_offset);
 int32_t opus_packet_get_bandwidth(const uint8_t *data);
@@ -87,7 +87,7 @@ int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len);
 int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t Fs);
 
 CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
-int32_t opus_decode_native(OpusDecoder *st, const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
+int32_t opus_decode_native(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
                        int32_t self_delimited, int32_t *packet_offset);
 
 /* Make sure everything is properly aligned. */
@@ -112,7 +112,7 @@ int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_de
                            int32_t *packet_offset);
 int32_t opus_multistream_decode_native(OpusMSDecoder_t *st, const uint8_t *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int32_t frame_size);
-int32_t opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int32_t request, va_list ap);
+int32_t opus_multistream_decoder_ctl_va_list(int32_t request, va_list ap);
 int32_t opus_get_left_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);
@@ -122,6 +122,7 @@ int32_t opus_multistream_decode(OpusMSDecoder_t *st, const uint8_t *data, int32_
 int32_t opus_multistream_decoder_ctl(OpusMSDecoder_t *st, int32_t request, ...);
 void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
 int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);
+int32_t opus_decode_frame(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size, int32_t decode_fec);
 
 #ifdef __cplusplus
 }
