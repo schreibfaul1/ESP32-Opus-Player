@@ -2117,9 +2117,41 @@ int32_t opus_custom_decoder_init(int32_t channels){
     return OPUS_OK;
 }
 //----------------------------------------------------------------------------------------------------------------------
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    // ESP32-S3: If there is PSRAM, prefer it
+    #define __malloc_heap_psram(size) \
+        heap_caps_malloc_prefer(size, 2, MALLOC_CAP_DEFAULT|MALLOC_CAP_SPIRAM, MALLOC_CAP_DEFAULT|MALLOC_CAP_INTERNAL)
+#else
+    // ESP32, PSRAM is too slow, prefer SRAM
+    #define __malloc_heap_psram(size) \
+        heap_caps_malloc_prefer(size, 2, MALLOC_CAP_DEFAULT|MALLOC_CAP_INTERNAL, MALLOC_CAP_DEFAULT|MALLOC_CAP_SPIRAM)
+#endif
 
-int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels){
-    cdec = st;
+bool CELTDecoder_AllocateBuffers(void) {
+    size_t omd = celt_decoder_get_size(2) + 64;
+    if(!cdec)       {cdec   = (CELTDecoder*) __malloc_heap_psram(omd);}
+    if(!cdec) {
+        CELTDecoder_FreeBuffers();
+        log_e("not enough memory to allocate celtdecoder buffers");
+        return false;
+    }
+    return true;
+}
+//----------------------------------------------------------------------------------------------------------------------
+void CELTDecoder_FreeBuffers(){
+    if(cdec){free(cdec); cdec = NULL;}
+}
+//----------------------------------------------------------------------------------------------------------------------
+void CELTDecoder_ClearBuffer(void){
+    size_t omd = celt_decoder_get_size(2) + 64;
+    memset(cdec, 0, omd * sizeof(char));
+}
+//----------------------------------------------------------------------------------------------------------------------
+
+
+
+int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels){
+    //cdec = st;
     int32_t ret;
     ret = opus_custom_decoder_init(channels);
     if (ret != OPUS_OK)

@@ -582,7 +582,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t celt_decoder_get_size(int32_t channels);
 int32_t opus_custom_decoder_init(int32_t channels);
-int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels);
+int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels);
 static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
                int32_t *mem, int32_t accum);
@@ -647,6 +647,10 @@ void unquant_fine_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t
 void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C);
 static void xcorr_kernel(const int16_t *x, const int16_t *y, int32_t sum[4], int32_t len);
+
+bool CELTDecoder_AllocateBuffers(void);
+void CELTDecoder_FreeBuffers();
+void CELTDecoder_ClearBuffer(void);
 
 #pragma GCC diagnostic pop
 

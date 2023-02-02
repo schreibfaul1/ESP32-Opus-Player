@@ -548,45 +548,36 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
     if(Fs != 48000 || (channels != 1 && channels != 2)) return false; // OPUS_BAD_ARG_;
 
     int32_t ret;
-    OpusMSDecoder_t *st;
     if (channels > 2){
         if (error) *error = OPUS_BAD_ARG_;
         return false;
     }
-    size_t omd = opus_decoder_get_size(2);
-    st = (OpusMSDecoder_t *)malloc(omd);
-    if (st == NULL) {
-        if (error) *error = OPUS_ALLOC_FAIL;
-        return false;
-    }
+    //size_t omd = opus_decoder_get_size(2);
 
-//    if (channels > 2) return OPUS_BAD_ARG_;
+    //char* st = (char*)malloc(omd);
+    if(!CELTDecoder_AllocateBuffers()){if (error) *error = OPUS_ALLOC_FAIL; return false;}
+
+    // if (st == NULL) {
+    //     if (error) *error = OPUS_ALLOC_FAIL;
+    //     return false;
+    // }
 
     s_nb_channels = channels;
     s_nb_streams = 1;
     s_nb_coupled_streams = 1;
 
     for (int i = 0; i < s_nb_channels; i++) s_mapping[i] = mapping[i];
-//    if (!od_validate_layout(st)) return OPUS_BAD_ARG_;
 
-    CELTDecoder *celt_dec;
-
-    int n = opus_decoder_get_size(channels);
 //---------------------------------------------------------------------------------
-    log_i("size %i", n);
-    memset(st, 0, n * sizeof(char));
 
-    m_OpusDecoder.celt_dec_offset = 64;
+    void CELTDecoder_FreeBuffers();
 
-    char *ptr;
-    ptr = (char *)st;
-    celt_dec = (CELTDecoder *)((char *)ptr + m_OpusDecoder.celt_dec_offset);
     m_OpusDecoder.stream_channels = m_OpusDecoder.channels = channels;
 
     m_OpusDecoder.Fs = Fs;
 
     /* Initialize CELT decoder */
-    ret = celt_decoder_init(celt_dec, Fs, channels);
+    ret = celt_decoder_init(Fs, channels);
     if(ret != OPUS_OK) return OPUS_INTERNAL_ERROR;
 
     celt_decoder_ctl(CELT_SET_SIGNALLING_REQUEST, 0);
@@ -598,14 +589,12 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
 //---------------------------------------------------------------------------------
 
     if (ret != OPUS_OK) {
-        free(st);
-        st = NULL;
+        CELTDecoder_FreeBuffers();
         return false;
     }
     if (error) *error = ret;
     if (ret != OPUS_OK) {
-        free(st);
-        st = NULL;
+        CELTDecoder_FreeBuffers();
         return false;
     }
     return true;

@@ -1130,17 +1130,6 @@ static int32_t op_read_native() {
             /*If we have buffered samples, return them.*/
             if(nsamples > 0) {
                 if(nsamples * nchannels > _buf_size) nsamples = _buf_size / nchannels;
-                //assert(_pcm!=NULL||nsamples<=0);
-                /*Check nsamples again so we don't pass NULL to memcpy() if _buf_size
-                 is zero.
-                 That would technically be undefined behavior, even if the number of
-                 bytes to copy were zero.*/
-                // if(nsamples > 0) {
-                //                     log_i("op_read_native");
-                //     memcpy(_pcm, m_OggOpusFile->od_buffer + nchannels * od_buffer_pos, sizeof(*_pcm) * nchannels * nsamples);
-                //     od_buffer_pos += nsamples;
-                //     m_OggOpusFile->od_buffer_pos = od_buffer_pos;
-                // }
                 if(_li != NULL) *_li = m_OggOpusFile->cur_link;
                 return nsamples;
             }
@@ -1208,7 +1197,7 @@ static int32_t op_read_native() {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int32_t op_read_stereo(int16_t *_pcm, int32_t _buf_size) {
+int32_t op_read_stereo(int16_t *outbuf, int32_t _buf_size) {
     int32_t ret;
     /*Ensure we have some decoded samples in our buffer.*/
     ret = op_read_native();
@@ -1224,13 +1213,11 @@ int32_t op_read_stereo(int16_t *_pcm, int32_t _buf_size) {
             int16_t *_src = m_OggOpusFile->od_buffer + nchannels * od_buffer_pos;
 
             ret = _min(ret, _buf_size >> 1);
-            if(nchannels == 2) memcpy(_pcm, _src, ret * 2 * sizeof(*_src));
+            if(nchannels == 2) memcpy(outbuf, _src, ret * 2 * sizeof(*_src));
             else {
-                int16_t *dst;
                 int32_t  i;
-                dst = (int16_t *)_pcm;
                 if(nchannels == 1) {
-                    for(i = 0; i < ret; i++) dst[2 * i + 0] = dst[2 * i + 1] = _src[i];
+                    for(i = 0; i < ret; i++) outbuf[2 * i + 0] = outbuf[2 * i + 1] = _src[i];
                 } else {
                     // noop, removed for RAM savings
                 }
