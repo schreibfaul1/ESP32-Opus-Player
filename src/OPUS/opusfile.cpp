@@ -654,11 +654,11 @@ static int32_t op_make_decode_ready() {
     if(m_od != NULL && m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
             && m_OggOpusFile->od_channel_count == channel_count
             && memcmp(m_OggOpusFile->od_mapping, head->mapping, sizeof(*head->mapping) * channel_count) == 0) {
-        opus_multistream_decoder_ctl(m_od, OPUS_RESET_STATE);
+        opus_multistream_decoder_ctl(OPUS_RESET_STATE);
     }
     else {
         int32_t err;
-        opus_multistream_decoder_destroy(m_od);
+        // opus_multistream_decoder_destroy(m_od);
         m_od = opus_multistream_decoder_create(48000, channel_count, head->mapping,
                 &err);
         if(m_od == NULL) return OP_EFAULT;
@@ -688,7 +688,7 @@ static void op_decode_clear() {
 static void op_clear() {
     OggOpusLink_t *links;
     free(m_OggOpusFile->od_buffer);
-    if(m_od != NULL) opus_multistream_decoder_destroy(m_od);
+//    if(m_od != NULL) opus_multistream_decoder_destroy(m_od);
     links = m_OggOpusLink;
     free(links);
     free(m_OggOpusFile->serialnos);
@@ -1182,7 +1182,7 @@ static int32_t op_read_native() {
                         if(ret < 0) return ret;
                         buf = m_OggOpusFile->od_buffer;
                     }
-                    ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, buf, duration);
+                    ret = opus_multistream_decode( pop->packet, pop->bytes, buf, duration);
                     if(ret < 0) return OP_EBADPACKET;
                     //if(ret < 0) return ret;
                     /*Perform pre-skip/pre-roll.*/
@@ -1196,31 +1196,6 @@ static int32_t op_read_native() {
                     m_OggOpusFile->bytes_tracked += pop->bytes;
                     m_OggOpusFile->samples_tracked += trimmed_duration - od_buffer_pos;
                 }
-                // else {
-                //     assert(_pcm!=NULL);
-                //     /*Otherwise decode directly into the user's buffer.*/
-                //     ret = opus_multistream_decode(m_od, pop->packet, pop->bytes, _pcm, duration);
-                //     if(ret < 0) return OP_EBADPACKET;
-                //     if(trimmed_duration > 0) {
-                //         /*Perform pre-skip/pre-roll.*/
-                //         od_buffer_pos = (int32_t) _min(trimmed_duration, cur_discard_count);
-                //         cur_discard_count -= od_buffer_pos;
-                //         m_OggOpusFile->cur_discard_count = cur_discard_count;
-                //         trimmed_duration -= od_buffer_pos;
-                //         if((trimmed_duration>0) && (od_buffer_pos > 0)) {
-                //             memmove(_pcm, _pcm + od_buffer_pos * nchannels,
-                //                     sizeof(*_pcm) * trimmed_duration * nchannels);
-                //         }
-                //         /*Update bitrate tracking based on the actual samples we used from
-                //          what was decoded.*/
-                //         m_OggOpusFile->bytes_tracked += pop->bytes;
-                //         m_OggOpusFile->samples_tracked += trimmed_duration;
-                //         if(trimmed_duration > 0) {
-                //             if(_li != NULL) *_li = m_OggOpusFile->cur_link;
-                //             return trimmed_duration;
-                //         }
-                //     }
-                // }
                 /*Don't grab another page yet.
                  This one might have more packets, or might have buffered data now.*/
                 continue;

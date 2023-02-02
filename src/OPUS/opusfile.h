@@ -118,3 +118,5 @@ typedef struct OggOpusFile{
 int32_t        opus_head_parse(OpusHead_t *_head, const uint8_t *_data, size_t _len);
 OggOpusFile_t *opus_init_decoder();
 int32_t        op_read_stereo(int16_t *_pcm, int32_t _buf_size);
+
+
