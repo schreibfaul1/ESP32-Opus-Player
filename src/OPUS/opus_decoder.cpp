@@ -570,7 +570,7 @@ bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t
 
 //---------------------------------------------------------------------------------
 
-    void CELTDecoder_FreeBuffers();
+    CELTDecoder_ClearBuffer();
 
     m_OpusDecoder.stream_channels = m_OpusDecoder.channels = channels;
 

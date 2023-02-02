@@ -2128,7 +2128,7 @@ int32_t opus_custom_decoder_init(int32_t channels){
 #endif
 
 bool CELTDecoder_AllocateBuffers(void) {
-    size_t omd = celt_decoder_get_size(2) + 64;
+    size_t omd = celt_decoder_get_size(2);
     if(!cdec)       {cdec   = (CELTDecoder*) __malloc_heap_psram(omd);}
     if(!cdec) {
         CELTDecoder_FreeBuffers();
@@ -2143,7 +2143,7 @@ void CELTDecoder_FreeBuffers(){
 }
 //----------------------------------------------------------------------------------------------------------------------
 void CELTDecoder_ClearBuffer(void){
-    size_t omd = celt_decoder_get_size(2) + 64;
+    size_t omd = celt_decoder_get_size(2);
     memset(cdec, 0, omd * sizeof(char));
 }
 //----------------------------------------------------------------------------------------------------------------------
