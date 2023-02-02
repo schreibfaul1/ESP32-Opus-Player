@@ -90,7 +90,6 @@ int32_t opus_decode_native(const uint8_t *data, int32_t len, int16_t *pcm, int32
 int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_delimited, uint8_t *out_toc,
                            const uint8_t *frames[48], int16_t size[48], int32_t *payload_offset,
                            int32_t *packet_offset);
-int32_t opus_multistream_decoder_ctl_va_list(int32_t request, int32_t* ap);
 int32_t opus_get_left_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);

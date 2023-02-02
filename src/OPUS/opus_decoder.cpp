@@ -735,7 +735,7 @@ void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_multistream_decoder_ctl_va_list(int32_t request, int32_t* ap) {
+int32_t opus_multistream_decoder_ctl(int32_t request, int32_t* ap) {
 
     int32_t ret = OPUS_OK;
 
@@ -756,13 +756,6 @@ int32_t opus_multistream_decoder_ctl_va_list(int32_t request, int32_t* ap) {
             ret = OPUS_UNIMPLEMENTED;
             break;
     }
-    return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t opus_multistream_decoder_ctl(int32_t request, int32_t* ap) {
-    int32_t ret;
-    ret = opus_multistream_decoder_ctl_va_list(request, ap);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
