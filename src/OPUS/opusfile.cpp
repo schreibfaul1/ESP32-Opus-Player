@@ -684,7 +684,7 @@ static void op_decode_clear() {
 static void op_clear() {
     OggOpusLink_t *links;
     free(m_OggOpusFile->od_buffer);
-//    if(m_od != NULL) opus_multistream_decoder_destroy(m_od);
+//    if(m_od != NULL) opus_decoder_destroy(m_od);
     links = m_OggOpusLink;
     free(links);
     free(m_OggOpusFile->serialnos);

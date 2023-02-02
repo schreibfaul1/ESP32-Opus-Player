@@ -298,9 +298,6 @@ int32_t opus_decoder_ctl(int32_t request, int32_t* ap) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-// void opus_decoder_destroy(OpusDecoder *st) { free(st); }
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t opus_packet_get_bandwidth(const uint8_t *data) {
     int32_t bandwidth;
     if (data[0] & 0x80) {
@@ -705,7 +702,4 @@ void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_
         for (i = 0; i < frame_size; i++) dst[i * s_nb_channels + dst_channel] = 0;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-// void opus_multistream_decoder_destroy(OpusMSDecoder_t *st) { free(st); }
 //----------------------------------------------------------------------------------------------------------------------
