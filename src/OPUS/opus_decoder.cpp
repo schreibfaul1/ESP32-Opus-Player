@@ -735,14 +735,14 @@ void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_multistream_decoder_ctl_va_list(int32_t request, va_list ap) {
+int32_t opus_multistream_decoder_ctl_va_list(int32_t request, int32_t* ap) {
 
     int32_t ret = OPUS_OK;
 
     switch (request) {
         case OPUS_GET_SAMPLE_RATE_REQUEST: {
             /* For int32* GET params, just query the first stream */
-            int32_t *value = va_arg(ap, int32_t *);
+            int32_t *value = ap;
             ret = opus_decoder_ctl(request, value);
         } break;
         case OPUS_RESET_STATE: {
@@ -760,12 +760,9 @@ int32_t opus_multistream_decoder_ctl_va_list(int32_t request, va_list ap) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_multistream_decoder_ctl(int32_t request, ...) {
+int32_t opus_multistream_decoder_ctl(int32_t request, int32_t* ap) {
     int32_t ret;
-    va_list ap;
-    va_start(ap, request);
     ret = opus_multistream_decoder_ctl_va_list(request, ap);
-    va_end(ap);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
