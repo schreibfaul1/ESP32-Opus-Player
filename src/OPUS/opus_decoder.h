@@ -76,7 +76,7 @@ typedef struct OpusMSDecoder {
 
 int32_t opus_decoder_get_size(int32_t channels);
 int32_t opus_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_decoder_ctl(int32_t request, ...);
+int32_t opus_decoder_ctl(int32_t request, int32_t* ap);
 int32_t opus_packet_parse(const uint8_t *data, int32_t len, uint8_t *out_toc, const uint8_t *frames[48],
                       int16_t size[48], int32_t *payload_offset);
 int32_t opus_packet_get_bandwidth(const uint8_t *data);
@@ -95,7 +95,6 @@ int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
 int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);
 bool opus_multistream_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
 int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_multistream_decoder_ctl(int32_t request, int32_t* ap);
 // void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
 int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);
 int32_t opus_decode_frame(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size, int32_t decode_fec);

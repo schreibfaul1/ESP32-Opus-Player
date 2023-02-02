@@ -653,7 +653,7 @@ static int32_t op_make_decode_ready() {
     if(m_OggOpusFile->od_stream_count == stream_count && m_OggOpusFile->od_coupled_count == coupled_count
             && m_OggOpusFile->od_channel_count == channel_count
             && memcmp(m_OggOpusFile->od_mapping, head->mapping, sizeof(*head->mapping) * channel_count) == 0) {
-        opus_multistream_decoder_ctl(OPUS_RESET_STATE, NULL);
+        opus_decoder_ctl(OPUS_RESET_STATE, NULL);
     }
     else {
         int32_t err;

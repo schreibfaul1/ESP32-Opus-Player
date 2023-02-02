@@ -268,12 +268,9 @@ int32_t opus_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t fram
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_decoder_ctl(int32_t request, ...) {
+int32_t opus_decoder_ctl(int32_t request, int32_t* ap) {
 
     int32_t ret = OPUS_OK;
-    va_list ap;
-
-    va_start(ap, request);
 
     switch (request) {
         case OPUS_RESET_STATE: {
@@ -289,11 +286,7 @@ int32_t opus_decoder_ctl(int32_t request, ...) {
             m_OpusDecoder.frame_size = m_OpusDecoder.Fs / 400;
         } break;
         case OPUS_GET_SAMPLE_RATE_REQUEST: {
-            int32_t *value = va_arg(ap, int32_t *);
-            if (!value) {
-                goto bad_arg;
-            }
-            *value = m_OpusDecoder.Fs;
+            *ap = m_OpusDecoder.Fs;
         } break;
         default:
             /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
@@ -301,11 +294,7 @@ int32_t opus_decoder_ctl(int32_t request, ...) {
             break;
     }
 
-    va_end(ap);
     return ret;
-bad_arg:
-    va_end(ap);
-    return OPUS_BAD_ARG_;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -655,7 +644,7 @@ int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, 
         return OPUS_BAD_ARG_;
     }
     /* Limit frame_size to avoid excessive stack allocations. */
-    opus_multistream_decoder_ctl(OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
+    opus_decoder_ctl(OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
     frame_size = min(frame_size, Fs / 25 * 3);
     int16_t buf[2 * frame_size];
 
@@ -732,31 +721,6 @@ void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_
     } else {
         for (i = 0; i < frame_size; i++) dst[i * s_nb_channels + dst_channel] = 0;
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t opus_multistream_decoder_ctl(int32_t request, int32_t* ap) {
-
-    int32_t ret = OPUS_OK;
-
-    switch (request) {
-        case OPUS_GET_SAMPLE_RATE_REQUEST: {
-            /* For int32* GET params, just query the first stream */
-            int32_t *value = ap;
-            ret = opus_decoder_ctl(request, value);
-        } break;
-        case OPUS_RESET_STATE: {
-            int32_t s;
-            for (s = 0; s < s_nb_streams; s++) {
-                ret = opus_decoder_ctl(OPUS_RESET_STATE);
-                if (ret != OPUS_OK) break;
-            }
-        } break;
-        default:
-            ret = OPUS_UNIMPLEMENTED;
-            break;
-    }
-    return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
