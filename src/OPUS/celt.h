@@ -192,17 +192,11 @@ struct CELTMode {
     int32_t nbEBands;
     int32_t effEBands;
     int16_t preemph[4];
-    const int16_t *eBands; /**< Definition for each "pseudo-critical band" */
-
     int32_t maxLM;
     int32_t nbShortMdcts;
     int32_t shortMdctSize;
 
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
-    const uint8_t *allocVectors; /**< Number of bits in each band for several rates */
-    const int16_t *logN;
-
-    const int16_t *window;
     mdct_lookup mdct;
 };
 
@@ -534,7 +528,7 @@ inline int32_t pulses2bits(int32_t band, int32_t LM, int32_t pulses){
 int32_t  resampling_factor(int32_t rate);
 void     comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
 void     comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0,
-                     int32_t tapset1, const int16_t *window, int32_t overlap);
+                     int32_t tapset1, int32_t overlap);
 void     init_caps(int32_t *cap, int32_t LM, int32_t C);
 uint32_t celt_lcg_rand(uint32_t seed);
 int16_t  bitexact_cos(int16_t x);
