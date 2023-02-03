@@ -30,10 +30,9 @@
 #include <stdarg.h>
 #include "opus_decoder.h"
 
-extern uint32_t CELT_SET_SIGNALLING_REQUEST;
-extern uint32_t CELT_SET_END_BAND_REQUEST;
-extern uint32_t CELT_GET_MODE_REQUEST;
-
+const uint32_t CELT_SET_SIGNALLING_REQUEST      = 10016;
+const uint32_t CELT_SET_END_BAND_REQUEST        = 10012;
+const uint32_t CELT_GET_MODE_REQUEST            = 10015;
 
 struct OpusDecoder {
     int32_t   celt_dec_offset;
@@ -111,7 +110,7 @@ int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, in
         audiosize = m_OpusDecoder.frame_size;
         mode = m_OpusDecoder.mode;
         bandwidth = m_OpusDecoder.bandwidth;
-        ec_dec_init(&dec, (uint8_t *)inbuf, len);
+        ec_dec_init((uint8_t *)inbuf, len);
     }
     else {
         audiosize = frame_size;
