@@ -88,7 +88,7 @@ static int32_t opus_packet_get_mode(const uint8_t *data) {
 int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size) {
 
     int32_t        i, celt_ret = 0;
-    ec_dec         dec;
+    ec_ctx_t       dec;
     int32_t        audiosize;
     int32_t        mode;
     int32_t        bandwidth;
