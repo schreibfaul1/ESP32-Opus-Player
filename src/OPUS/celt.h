@@ -585,13 +585,12 @@ int32_t opus_custom_decoder_init(int32_t channels);
 int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels);
 static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
-               int32_t *mem, int32_t accum);
+               int32_t *mem);
 static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                            int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence);
 static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec);
 static void celt_decode_lost(int32_t N, int32_t LM);
-int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
-                        int32_t frame_size, ec_dec *dec, int32_t accum);
+int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_dec *dec);
 int32_t celt_decoder_ctl(int32_t request, ...);
 void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem);

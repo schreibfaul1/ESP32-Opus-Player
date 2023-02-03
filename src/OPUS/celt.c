@@ -2185,14 +2185,14 @@ static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, con
 //----------------------------------------------------------------------------------------------------------------------
 
 static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
-               int32_t *mem, int32_t accum) {
+               int32_t *mem) {
     int32_t c;
     int32_t Nd;
     int32_t apply_downsampling = 0;
     int16_t coef0;
 
     /* Short version for common case. */
-    if (downsample == 1 && C == 2 && !accum) {
+    if (downsample == 1 && C == 2) {
         deemphasis_stereo_simple(in, pcm, N, coef[0], mem);
         return;
     }
@@ -2221,19 +2221,10 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
         else {
             /* Shortcut for the standard (non-custom modes) case */
 
-            if (accum) {
-                for (j = 0; j < N; j++) {
-                    int32_t tmp = x[j] + m + VERY_SMALL;
-                    m = MULT16_32_Q15(coef0, tmp);
-                    y[j * C] = SAT16(ADD32(y[j * C], sig2word16(tmp)));
-                }
-            }
-            else {
-                for (j = 0; j < N; j++) {
-                    int32_t tmp = x[j] + VERY_SMALL + m;
-                    m = MULT16_32_Q15(coef0, tmp);
-                    y[j * C] = sig2word16(tmp);
-                }
+            for (j = 0; j < N; j++) {
+                int32_t tmp = x[j] + VERY_SMALL + m;
+                m = MULT16_32_Q15(coef0, tmp);
+                y[j * C] = sig2word16(tmp);
             }
         }
         mem[c] = m;
@@ -2241,14 +2232,8 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
         if (apply_downsampling) {
             /* Perform down-sampling */
 
-            if (accum)  {
-                for (j = 0; j < Nd; j++)
-                    y[j * C] = SAT16(ADD32(y[j * C], sig2word16(scratch[j * downsample])));
-            }
-            else {
-                for (j = 0; j < Nd; j++)
-                    y[j * C] = sig2word16(scratch[j * downsample]);
-            }
+            for (j = 0; j < Nd; j++)
+                y[j * C] = sig2word16(scratch[j * downsample]);
         }
     } while (++c < C);
 }
@@ -2448,8 +2433,7 @@ static void celt_decode_lost(int32_t N, int32_t LM){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
-                        int32_t frame_size, ec_dec *dec, int32_t accum) {
+int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_dec *dec) {
     int32_t c, i, N;
     int32_t spread_decision;
     int32_t bits;
@@ -2511,7 +2495,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
 
     M = 1 << LM;
 
-    if (len < 0 || len > 1275 || pcm == NULL)
+    if (len < 0 || len > 1275 || outbuf == NULL)
         return OPUS_BAD_ARG;
 
     N = M * m_CELTMode.shortMdctSize;
@@ -2525,9 +2509,9 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     if (effEnd > m_CELTMode.effEBands)
         effEnd = m_CELTMode.effEBands;
 
-    if (data == NULL || len <= 1) {
+    if (inbuf == NULL || len <= 1) {
         celt_decode_lost(N, LM);
-        deemphasis(out_syn, pcm, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD, accum);
+        deemphasis(out_syn, outbuf, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD);
 
         return frame_size / cdec->downsample;
     }
@@ -2537,7 +2521,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     cdec->skip_plc = 0;
 
     if (dec == NULL) {
-        ec_dec_init(&_dec, (uint8_t *)data, len);
+        ec_dec_init(&_dec, (uint8_t *)inbuf, len);
         dec = &_dec;
     }
 
@@ -2747,7 +2731,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     } while (++c < 2);
     cdec->rng = dec->rng;
 
-    deemphasis(out_syn, pcm, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD, accum);
+    deemphasis(out_syn, outbuf, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD);
 
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;
