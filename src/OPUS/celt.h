@@ -94,10 +94,7 @@ typedef struct _ec_ctx {
     int32_t  error; /*Nonzero if an error occurred.*/
 } ec_ctx_t;
 
-//ec_ctx_t ec_ctx;
-//ec_ctx_t ec_dec;
-
-struct band_ctx{
+typedef struct _band_ctx{
     int32_t encode;
     int32_t resynth;
     const CELTMode *m;
@@ -112,7 +109,7 @@ struct band_ctx{
     int32_t theta_round;
     int32_t disable_inv;
     int32_t avoid_split_noise;
-};
+} band_ctx_t;
 
 struct split_ctx{
     int32_t inv;
@@ -566,14 +563,14 @@ static void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_
 static void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void haar1(int16_t *X, int32_t N0, int32_t stride);
 static int32_t compute_qn(int32_t N, int32_t b, int32_t offset, int32_t pulse_cap, int32_t stereo);
-static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
+static void compute_theta(band_ctx_t *band_ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
                           int32_t __B0, int32_t LM, int32_t stereo, int32_t *fill);
-static uint32_t quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out);
-static uint32_t quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+static uint32_t quant_band_n1(band_ctx_t *band_ctx, int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out);
+static uint32_t quant_partition(band_ctx_t *band_ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                                 int16_t gain, int32_t fill);
-static uint32_t quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+static uint32_t quant_band(band_ctx_t *band_ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                            int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill);
-static uint32_t quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
+static uint32_t quant_band_stereo(band_ctx_t *band_ctx, int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                                   int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
 static void special_hybrid_folding(int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
