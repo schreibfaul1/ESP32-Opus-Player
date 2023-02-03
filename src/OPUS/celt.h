@@ -74,8 +74,7 @@ typedef struct {
 
 /*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a larger type, you can speed up the
  decoder by using it here.*/
-// typedef struct ec_ctx         ec_ctx;
-// typedef struct ec_ctx         ec_dec;
+
 typedef struct CELTMode       CELTMode;
 typedef struct CELTDecoder    CELTDecoder;
 
@@ -134,7 +133,6 @@ struct CELTDecoder {
     int32_t error;
     int32_t last_pitch_index;
     int32_t loss_count;
-    int32_t skip_plc;
     int32_t postfilter_period;
     int32_t postfilter_period_old;
     int16_t postfilter_gain;
@@ -402,15 +400,15 @@ static inline int16_t celt_atan01(int16_t x) {
 
 /* atan2() approximation valid for positive input values */
 static inline int16_t celt_atan2p(int16_t y, int16_t x) {
-    if (y < x) {
+    if(y < x) {
         int32_t arg;
         arg = celt_div(SHL32(EXTEND32(y), 15), x);
-        if (arg >= 32767) arg = 32767;
+        if(arg >= 32767) arg = 32767;
         return SHR16(celt_atan01((int16_t)(arg)), 1);
     } else {
         int32_t arg;
         arg = celt_div(SHL32(EXTEND32(x), 15), y);
-        if (arg >= 32767) arg = 32767;
+        if(arg >= 32767) arg = 32767;
         return 25736 - SHR16(celt_atan01((int16_t)(arg)), 1);
     }
 }
@@ -419,7 +417,7 @@ static inline int32_t celt_maxabs16(const int16_t *x, int32_t len) {
     int32_t i;
     int16_t maxval = 0;
     int16_t minval = 0;
-    for (i = 0; i < len; i++) {
+    for(i = 0; i < len; i++) {
         maxval = max(maxval, x[i]);
         minval = min(minval, x[i]);
     }
@@ -430,7 +428,7 @@ static inline int32_t celt_maxabs32(const int32_t *x, int32_t len) {
     int32_t i;
     int32_t maxval = 0;
     int32_t minval = 0;
-    for (i = 0; i < len; i++) {
+    for(i = 0; i < len; i++) {
         maxval = max(maxval, x[i]);
         minval = min(minval, x[i]);
     }
@@ -449,25 +447,21 @@ static inline int16_t celt_zlog2(uint32_t x) { return x <= 0 ? 0 : celt_ilog2(x)
 /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
 static inline int16_t celt_log2(int32_t x) {
     int32_t i;
-    int16_t n, frac;
-    /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
-        0.15530808010959576, -0.08556153059057618 */
+    int16_t n, frac, var1;
+    /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605, 0.15530808010959576, -0.08556153059057618 */
     static const int16_t C[5] = {-6801 + (1 << 3), 15746, -5217, 2545, -1401};
-    if (x == 0) return -32767;
+    if(x == 0) return -32767;
     i = celt_ilog2(x);
     n = VSHR32(x, i - 15) - 32768 - 16384;
-    frac = ADD16(
-        C[0],
-        MULT16_16_Q15(
-            n, ADD16(C[1], MULT16_16_Q15(n, ADD16(C[2], MULT16_16_Q15(n, ADD16(C[3], MULT16_16_Q15(n, C[4]))))))));
+    var1 = MULT16_16_Q15(n, ADD16(C[3], MULT16_16_Q15(n, C[4])));
+    frac = ADD16(C[0], MULT16_16_Q15(n, ADD16(C[1], MULT16_16_Q15(n, ADD16(C[2], var1)))));
     return SHL16(i - 13, 10) + SHR16(frac, 14 - 10);
 }
 
 static inline int32_t celt_exp2_frac(int16_t x) {
-    int16_t frac;
-    frac = SHL16(x, 4);
-    return ADD16(16383,
-                 MULT16_16_Q15(frac, ADD16(22804, MULT16_16_Q15(frac, ADD16(14819, MULT16_16_Q15(10204, frac))))));
+    int16_t frac = SHL16(x, 4);
+    int16_t var1 = ADD16(14819, MULT16_16_Q15(10204, frac));
+    return ADD16(16383, MULT16_16_Q15(frac, ADD16(22804, MULT16_16_Q15(frac, var1))));
 }
 /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
 static inline int32_t celt_exp2(int16_t x) {
@@ -483,11 +477,11 @@ static inline int32_t celt_exp2(int16_t x) {
 }
 
 static inline void dual_inner_prod(const int16_t *x, const int16_t *y01, const int16_t *y02, int32_t N, int32_t *xy1,
-                                     int32_t *xy2) {
+                                   int32_t *xy2) {
     int32_t i;
     int32_t xy01 = 0;
     int32_t xy02 = 0;
-    for (i = 0; i < N; i++) {
+    for(i = 0; i < N; i++) {
         xy01 = MAC16_16(xy01, x[i], y01[i]);
         xy02 = MAC16_16(xy02, x[i], y02[i]);
     }
@@ -540,8 +534,8 @@ static inline int32_t pulses2bits(const CELTMode *m, int32_t band, int32_t LM, i
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wunused-function"
 
 int32_t resampling_factor(int32_t rate);
 void comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
@@ -585,7 +579,6 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, const 
 static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                            int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t silence);
 static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_ctx_t *dec);
-static void celt_decode_lost(int32_t N, int32_t LM);
 int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_ctx_t *dec);
 int32_t celt_decoder_ctl(int32_t request, ...);
 void celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord);
@@ -647,7 +640,7 @@ bool CELTDecoder_AllocateBuffers(void);
 void CELTDecoder_FreeBuffers();
 void CELTDecoder_ClearBuffer(void);
 
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
 
 #ifdef __cplusplus
 }

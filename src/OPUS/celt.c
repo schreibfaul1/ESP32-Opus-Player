@@ -1838,6 +1838,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx_t *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
+
     int32_t i;
     int32_t remaining_bits;
     const int16_t * eBands = m_CELTMode.eBands;
@@ -2107,7 +2108,7 @@ int32_t opus_custom_decoder_init(int32_t channels){
     cdec->channels = channels;
 
     cdec->start = 0;
-    cdec->end = cdec->mode->effEBands;
+    cdec->end = cdec->mode->effEBands; // 21
     cdec->signalling = 1;
 
     cdec->disable_inv = channels == 1;
@@ -2328,90 +2329,6 @@ static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void celt_decode_lost(int32_t N, int32_t LM){
-    int32_t c;
-    int32_t i;
-    const int32_t C = cdec->channels;
-    int32_t *decode_mem[2];
-    int32_t *out_syn[2];
-    int16_t *lpc;
-    int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
-    int32_t nbEBands;
-    int32_t overlap;
-    int32_t start;
-    int32_t noise_based;
-    const int16_t *eBands;
-
-    nbEBands = m_CELTMode.nbEBands;
-    overlap = m_CELTMode.overlap;
-    eBands = m_CELTMode.eBands;
-
-    c = 0;
-    do {
-        decode_mem[c] = cdec->_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
-        out_syn[c] = decode_mem[c] + DECODE_BUFFER_SIZE - N;
-    } while (++c < C);
-    lpc = (int16_t *)(cdec->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * C);
-    oldBandE = lpc + C * 24;
-    oldLogE = oldBandE + 2 * nbEBands;
-    oldLogE2 = oldLogE + 2 * nbEBands;
-    backgroundLogE = oldLogE2 + 2 * nbEBands;
-
-    start = cdec->start;
-    noise_based = start != 0 || cdec->skip_plc;
-    if (noise_based){
-        /* Noise-based PLC/CNG */
-        uint32_t seed;
-        int32_t end;
-        int32_t effEnd;
-        int16_t decay;
-        end = cdec->end;
-        effEnd = max(start, min(end, m_CELTMode.effEBands));
-
-        int16_t X[C * N]; /**< Interleaved normalised MDCTs */
-
-        /* Energy decay */
-        decay = QCONST16(1.5f, 10);
-        c = 0;
-        do {
-            for (i = start; i < end; i++)
-                oldBandE[c * nbEBands + i] = max(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
-        } while (++c < C);
-        seed = cdec->rng;
-        for (c = 0; c < C; c++) {
-            for (i = start; i < effEnd; i++)
-            {
-                int32_t j;
-                int32_t boffs;
-                int32_t blen;
-                boffs = N * c + (eBands[i] << LM);
-                blen = (eBands[i + 1] - eBands[i]) << LM;
-                for (j = 0; j < blen; j++)
-                {
-                    seed = celt_lcg_rand(seed);
-                    X[boffs + j] = (int16_t)((int32_t)seed >> 20);
-                }
-                // log_e("X + boffs=%i", *(X + boffs));
-                renormalise_vector(X + boffs, blen, 32767);
-            }
-        }
-        cdec->rng = seed;
-
-        c = 0;
-        do {
-            OPUS_MOVE(decode_mem[c], decode_mem[c] + N,
-                      DECODE_BUFFER_SIZE - N + (overlap >> 1));
-        } while (++c < C);
-
-        celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, 0);
-    }
-    else{
-        log_e("something is wrong");
-        // an error catching routine could go here
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_ctx_t *dec) {
     int32_t c, i, N;
     int32_t spread_decision;
@@ -2487,16 +2404,9 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
     if (effEnd > m_CELTMode.effEBands)
         effEnd = m_CELTMode.effEBands;
 
-    if (inbuf == NULL || len <= 1) {
-        celt_decode_lost(N, LM);
-        deemphasis(out_syn, outbuf, N, CC, m_CELTMode.preemph, cdec->preemph_memD);
-
-        return frame_size;
+    if (len <= 1) {
+        return OPUS_BAD_ARG;
     }
-
-    /* Check if there are at least two packets received consecutively before
-     * turning on the pitch-based PLC */
-    cdec->skip_plc = 0;
 
     if (dec == NULL) {
         ec_dec_init(&_dec, (uint8_t *)inbuf, len);
@@ -2758,7 +2668,6 @@ int32_t celt_decoder_ctl(int32_t request, ...) {
             memset(dest, 0,  n - (dest - offset) * sizeof(cdec));
 
             for (i = 0; i < 2 * cdec->mode->nbEBands; i++) oldLogE[i] = oldLogE2[i] = -QCONST16(28.f, 10);
-            cdec->skip_plc = 1;
         } break;
         // case OPUS_GET_PITCH_REQUEST: {
         //     int32_t *value = va_arg(ap, int32_t *);
