@@ -949,7 +949,7 @@ int32_t bitexact_log2tan(int32_t isin, int32_t icos) {
 
 /* De-normalise the energy to produce the synthesis from the unit-energy bands */
 void denormalise_bands(const int16_t * X, int32_t * freq,
-                       const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence) {
+                       const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t silence) {
     int32_t i, N;
     int32_t bound;
     int32_t * f;
@@ -957,7 +957,6 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
     const int16_t *eBands = m_CELTMode.eBands;
     N = M * m_CELTMode.shortMdctSize;
     bound = M * eBands[end];
-    if (downsample != 1) bound = min(bound, N / downsample);
     if (silence) {
         bound = 0;
         start = end = 0;
@@ -2106,7 +2105,6 @@ int32_t opus_custom_decoder_init(int32_t channels){
     cdec->stream_channels = channels;
     cdec->channels = channels;
 
-    cdec->downsample = 1;
     cdec->start = 0;
     cdec->end = cdec->mode->effEBands;
     cdec->signalling = 1;
@@ -2150,10 +2148,6 @@ void CELTDecoder_ClearBuffer(void){
 
 int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels){
 
-    cdec->downsample = resampling_factor(sampling_rate);
-    if (cdec->downsample == 0)
-        return OPUS_BAD_ARG;
-    else
         return OPUS_OK;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -2184,7 +2178,7 @@ static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, con
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
+static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, const int16_t *coef,
                int32_t *mem) {
     int32_t c;
     int32_t Nd;
@@ -2192,14 +2186,14 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
     int16_t coef0;
 
     /* Short version for common case. */
-    if (downsample == 1 && C == 2) {
+    if (C == 2) {
         deemphasis_stereo_simple(in, pcm, N, coef[0], mem);
         return;
     }
 
     int32_t scratch[N];
     coef0 = coef[0];
-    Nd = N / downsample;
+    Nd = N;
     c = 0;
     do  {
         int32_t j;
@@ -2209,38 +2203,26 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_
         x = in[c];
         y = pcm + c;
 
-        if (downsample > 1) {
-            /* Shortcut for the standard (non-custom modes) case */
-            for (j = 0; j < N; j++) {
-                int32_t tmp = x[j] + VERY_SMALL + m;
-                m = MULT16_32_Q15(coef0, tmp);
-                scratch[j] = tmp;
-            }
-            apply_downsampling = 1;
+        for (j = 0; j < N; j++) {
+            int32_t tmp = x[j] + VERY_SMALL + m;
+            m = MULT16_32_Q15(coef0, tmp);
+            y[j * C] = sig2word16(tmp);
         }
-        else {
-            /* Shortcut for the standard (non-custom modes) case */
 
-            for (j = 0; j < N; j++) {
-                int32_t tmp = x[j] + VERY_SMALL + m;
-                m = MULT16_32_Q15(coef0, tmp);
-                y[j * C] = sig2word16(tmp);
-            }
-        }
         mem[c] = m;
 
         if (apply_downsampling) {
             /* Perform down-sampling */
 
             for (j = 0; j < Nd; j++)
-                y[j * C] = sig2word16(scratch[j * downsample]);
+                y[j * C] = sig2word16(scratch[j]);
         }
     } while (++c < C);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start, int32_t effEnd, int32_t C,
-                        int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence){
+                        int32_t CC, int32_t isTransient, int32_t LM, int32_t silence){
     int32_t c, i;
     int32_t M;
     int32_t b;
@@ -2270,8 +2252,7 @@ static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, in
     if (CC == 2 && C == 1) {
         /* Copying a mono streams to two channels */
         int32_t *freq2;
-        denormalise_bands(X, freq, oldBandE, start, effEnd, M,
-                          downsample, silence);
+        denormalise_bands(X, freq, oldBandE, start, effEnd, M, silence);
         /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
         freq2 = out_syn[1] + overlap / 2;
         memcpy(freq2, freq, N * sizeof(*freq2));
@@ -2284,11 +2265,9 @@ static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, in
         /* Downmixing a stereo stream to mono */
         int32_t *freq2;
         freq2 = out_syn[0] + overlap / 2;
-        denormalise_bands(X, freq, oldBandE, start, effEnd, M,
-                          downsample, silence);
+        denormalise_bands(X, freq, oldBandE, start, effEnd, M, silence);
         /* Use the output buffer as temp array before downmixing. */
-        denormalise_bands(X + N, freq2, oldBandE + nbEBands, start, effEnd, M,
-                          downsample, silence);
+        denormalise_bands(X + N, freq2, oldBandE + nbEBands, start, effEnd, M, silence);
         for (i = 0; i < N; i++)
             freq[i] = (int32_t)HALF32(freq[i]) + (int32_t)HALF32(freq2[i]);
         for (b = 0; b < B; b++)
@@ -2298,8 +2277,7 @@ static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, in
         /* Normal case (mono or stereo) */
         c = 0;
         do {
-            denormalise_bands(X + c * N, freq, oldBandE + c * nbEBands, start, effEnd, M,
-                              downsample, silence);
+            denormalise_bands(X + c * N, freq, oldBandE + c * nbEBands, start, effEnd, M, silence);
             for (b = 0; b < B; b++)
                 clt_mdct_backward(&freq[b], out_syn[c] + NB * b, overlap, shift, B);
         } while (++c < CC);
@@ -2424,7 +2402,7 @@ static void celt_decode_lost(int32_t N, int32_t LM){
                       DECODE_BUFFER_SIZE - N + (overlap >> 1));
         } while (++c < C);
 
-        celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, cdec->downsample, 0);
+        celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, 0);
     }
     else{
         log_e("something is wrong");
@@ -2477,7 +2455,6 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
     eBands = m_CELTMode.eBands;
     start = cdec->start;
     end = cdec->end;
-    frame_size *= cdec->downsample;
 
     lpc = (int16_t *)(cdec->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * CC);
     oldBandE = lpc + CC * 24;
@@ -2511,9 +2488,9 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
 
     if (inbuf == NULL || len <= 1) {
         celt_decode_lost(N, LM);
-        deemphasis(out_syn, outbuf, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD);
+        deemphasis(out_syn, outbuf, N, CC, m_CELTMode.preemph, cdec->preemph_memD);
 
-        return frame_size / cdec->downsample;
+        return frame_size;
     }
 
     /* Check if there are at least two packets received consecutively before
@@ -2668,8 +2645,7 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
             oldBandE[i] = -QCONST16(28.f, 10);
     }
 
-    celt_synthesis(X, out_syn, oldBandE, start, effEnd,
-                   C, CC, isTransient, LM, cdec->downsample, silence);
+    celt_synthesis(X, out_syn, oldBandE, start, effEnd, C, CC, isTransient, LM, silence);
 
     c = 0;
     do  {
@@ -2731,13 +2707,13 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
     } while (++c < 2);
     cdec->rng = dec->rng;
 
-    deemphasis(out_syn, outbuf, N, CC, cdec->downsample, m_CELTMode.preemph, cdec->preemph_memD);
+    deemphasis(out_syn, outbuf, N, CC, m_CELTMode.preemph, cdec->preemph_memD);
 
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;
     if (dec->error)
         cdec->error = 1;
-    return frame_size / cdec->downsample;
+    return frame_size;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2767,11 +2743,6 @@ int32_t celt_decoder_ctl(int32_t request, ...) {
             *value = cdec->error;
             cdec->error = 0;
         } break;
-        // case OPUS_GET_LOOKAHEAD_REQUEST: {
-        //     int32_t *value = va_arg(ap, int32_t *);
-        //     if (value == NULL) goto bad_arg;
-        //     *value = cdec->overlap / cdec->downsample;
-        // } break;
         case OPUS_RESET_STATE: {
             int32_t i;
             int16_t *lpc, *oldBandE, *oldLogE, *oldLogE2;

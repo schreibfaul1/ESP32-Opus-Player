@@ -275,8 +275,8 @@ void setup() {
 
 //    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
 //    file = SD_MMC.open("/opus/testfile.opus");
-
     file = SD_MMC.open("/opus/links_rechts.opus");
+
     log_i("free heap before %d", ESP.getFreeHeap());
     opus_init_decoder();
     log_i("free heap after %d", ESP.getFreeHeap());

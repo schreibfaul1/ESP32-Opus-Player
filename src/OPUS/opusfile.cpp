@@ -76,7 +76,7 @@ static int64_t op_get_next_page( ogg_page *_og, int64_t _boundary) {
                 read_nbytes = (int32_t) _min(_boundary - position, OP_READ_SIZE);
             }
             ret = op_get_data(read_nbytes);
-            log_i("read_nbytes %i", read_nbytes);
+            // log_i("read_nbytes %i", read_nbytes);
             if(ret < 0) return OP_EREAD;
             if(ret == 0) {
                 /*Only fail cleanly on EOF if we didn't have a known boundary.

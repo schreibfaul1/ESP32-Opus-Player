@@ -128,7 +128,6 @@ struct CELTDecoder {
     int32_t channels;
     int32_t stream_channels;
 
-    int32_t downsample;
     int32_t start, end;
     int32_t signalling;
     int32_t disable_inv;
@@ -555,7 +554,7 @@ uint32_t celt_lcg_rand(uint32_t seed);
 int16_t bitexact_cos(int16_t x);
 int32_t bitexact_log2tan(int32_t isin, int32_t icos);
 void denormalise_bands(const int16_t * X, int32_t * freq,
-                       const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
+                       const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t silence);
 void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed);
@@ -584,10 +583,9 @@ int32_t celt_decoder_get_size(int32_t channels);
 int32_t opus_custom_decoder_init(int32_t channels);
 int32_t celt_decoder_init(int32_t sampling_rate, int32_t channels);
 static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
-static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
-               int32_t *mem);
+static void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, const int16_t *coef, int32_t *mem);
 static void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
-                           int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence);
+                           int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t silence);
 static void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec);
 static void celt_decode_lost(int32_t N, int32_t LM);
 int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_dec *dec);
