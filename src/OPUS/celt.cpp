@@ -342,14 +342,14 @@ static const int16_t logN400[21] = {
     0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36,
 };
 
-static const int16_t cache_index50[105] = {
+const int16_t cache_index50[105] = {
     -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0,   0,   0,   0,   41,  41,  41,  82,  82,  123, 164, 200, 222,
     0,   0,   0,   0,   0,   0,   0,   0,   41,  41,  41,  41,  123, 123, 123, 164, 164, 240, 266, 283, 295,
     41,  41,  41,  41,  41,  41,  41,  41,  123, 123, 123, 123, 240, 240, 240, 266, 266, 305, 318, 328, 336,
     123, 123, 123, 123, 123, 123, 123, 123, 240, 240, 240, 240, 305, 305, 305, 318, 318, 343, 351, 358, 364,
     240, 240, 240, 240, 240, 240, 240, 240, 305, 305, 305, 305, 343, 343, 343, 351, 351, 370, 376, 382, 387,
 };
-static const uint8_t cache_bits50[392] = {
+const uint8_t cache_bits50[392] = {
     40,  7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
     7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   40,  15,  23,
     28,  31,  34,  36,  38,  39,  41,  42,  43,  44,  45,  46,  47,  47,  49,  50,  51,  52,  53,  54,  55,  55,
@@ -607,7 +607,7 @@ static const kiss_fft_state fft_state48000_960_3 = {
     fft_twiddles48000_960, /* bitrev */
 };
 
-static const CELTMode m_CELTMode = {
+const CELTMode m_CELTMode = {
     48000,                  /* Fs */
     120,                    /* overlap */
     21,                     /* nbEBands */
@@ -628,9 +628,7 @@ static const CELTMode m_CELTMode = {
          &fft_state48000_960_3,
      },
      mdct_twiddles960},                               /* mdct */
-    {392, cache_index50, cache_bits50, cache_caps50}, /* cache */
 };
-
 
 
 const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
@@ -904,7 +902,7 @@ void init_caps(int32_t *cap, int32_t LM, int32_t C) {
     {
         int32_t N;
         N = (m_CELTMode.eBands[i + 1] - m_CELTMode.eBands[i]) << LM;
-        cap[i] = (m_CELTMode.cache.caps[m_CELTMode.nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
+        cap[i] = (cache_caps50[m_CELTMode.nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1266,15 +1264,13 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     int32_t offset;
     int32_t tell;
     int32_t inv = 0;
-    const CELTMode *m;
     int32_t i;
     int32_t intensity;
-    m = s_band_ctx.m;
     i = s_band_ctx.i;
     intensity = s_band_ctx.intensity;
 
     /* Decide on the resolution to give to the split parameter theta */
-    pulse_cap = m->logN[i] + LM * (1 << BITRES);
+    pulse_cap = m_CELTMode.logN[i] + LM * (1 << BITRES);
     offset = (pulse_cap >> 1) - (stereo && N == 2 ? QTHETA_OFFSET_TWOPHASE : QTHETA_OFFSET);
     qn = compute_qn(N, *b, offset, pulse_cap, stereo);
     if (stereo && i >= intensity)
@@ -1412,15 +1408,13 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     int16_t mid = 0, side = 0;
     uint32_t cm = 0;
     int16_t *Y = NULL;
-    const CELTMode *m;
     int32_t i;
     int32_t spread;
-    m = s_band_ctx.m;
     i = s_band_ctx.i;
     spread = s_band_ctx.spread;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
-    cache = m->cache.bits + m->cache.index[(LM + 1) * m->nbEBands + i];
+    cache = cache_bits50 + cache_index50[(LM + 1) * m_CELTMode.nbEBands + i];
     if (LM != -1 && b > cache[cache[0]] + 12 && N > 2) {
         int32_t mbits, sbits, delta;
         int32_t itheta;
@@ -1486,15 +1480,15 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     }
     else {
         /* This is the basic no-split case */
-        q = bits2pulses(m, i, LM, b);
-        curr_bits = pulses2bits(m, i, LM, q);
+        q = bits2pulses(i, LM, b);
+        curr_bits = pulses2bits(i, LM, q);
         s_band_ctx.remaining_bits -= curr_bits;
 
         /* Ensures we can never bust the budget */
         while (s_band_ctx.remaining_bits < 0 && q > 0) {
             s_band_ctx.remaining_bits += curr_bits;
             q--;
-            curr_bits = pulses2bits(m, i, LM, q);
+            curr_bits = pulses2bits(i, LM, q);
             s_band_ctx.remaining_bits -= curr_bits;
         }
 
@@ -1837,7 +1831,6 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
     s_band_ctx.bandE = bandE;
     s_band_ctx.encode = 0;
     s_band_ctx.intensity = intensity;
-    s_band_ctx.m = &m_CELTMode;
     s_band_ctx.seed = *seed;
     s_band_ctx.spread = spread;
     s_band_ctx.disable_inv = disable_inv;

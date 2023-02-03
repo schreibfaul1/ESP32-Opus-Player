@@ -89,16 +89,16 @@ typedef struct _ec_ctx {
 } ec_ctx_t;
 
 extern ec_ctx_t s_ec;
+extern const uint8_t cache_bits50[392];
+extern const int16_t cache_index50[105];
 
 typedef struct _band_ctx{
     int32_t encode;
     int32_t resynth;
-    const CELTMode *m;
     int32_t i;
     int32_t intensity;
     int32_t spread;
     int32_t tf_change;
-//    ec_ctx_t *ec;
     int32_t remaining_bits;
     const int32_t *bandE;
     uint32_t seed;
@@ -176,12 +176,11 @@ typedef struct {
    const int16_t *  trig;
 } mdct_lookup;
 
-typedef struct {
-    int32_t size;
-    const int16_t *index;
-    const uint8_t *bits;
-    const uint8_t *caps;
-} PulseCache;
+// typedef struct {
+//     const int16_t *index;
+//     const uint8_t *bits;
+//     const uint8_t *caps;
+// } PulseCache;
 
 /** Mode definition (opaque)
  @brief Mode definition
@@ -205,8 +204,9 @@ struct CELTMode {
 
     const int16_t *window;
     mdct_lookup mdct;
-    PulseCache cache;
 };
+
+extern const CELTMode m_CELTMode;
 
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
@@ -497,13 +497,13 @@ inline int32_t get_pulses(int32_t i){
    return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
 }
 
-inline int32_t bits2pulses(const CELTMode *m, int32_t band, int32_t LM, int32_t bits){
+inline int32_t bits2pulses(int32_t band, int32_t LM, int32_t bits){
    int32_t i;
    int32_t lo, hi;
    const uint8_t *cache;
 
    LM++;
-   cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM * m_CELTMode.nbEBands + band];
 
    lo = 0;
    hi = cache[0];
@@ -523,11 +523,11 @@ inline int32_t bits2pulses(const CELTMode *m, int32_t band, int32_t LM, int32_t 
       return hi;
 }
 
-inline int32_t pulses2bits(const CELTMode *m, int32_t band, int32_t LM, int32_t pulses){
+inline int32_t pulses2bits(int32_t band, int32_t LM, int32_t pulses){
    const uint8_t *cache;
 
    LM++;
-   cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM * m_CELTMode.nbEBands + band];
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
