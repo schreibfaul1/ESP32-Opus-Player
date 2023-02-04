@@ -2242,7 +2242,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_ctx_t *dec) {
+int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size) {
     int32_t  c, i, N;
     int32_t  spread_decision;
     int32_t  bits;
@@ -2315,10 +2315,9 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
 
     if(len <= 1) { return OPUS_BAD_ARG; }
 
-    if(dec == NULL) {
-        ec_dec_init((uint8_t *)inbuf, len);
-        dec = &_dec;
-    }
+
+    //    ec_dec_init((uint8_t *)inbuf, len);
+
 
     if(C == 1) {
         for(i = 0; i < nbEBands; i++) oldBandE[i] = max(oldBandE[i], oldBandE[nbEBands + i]);
@@ -2498,7 +2497,7 @@ int32_t celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, 
             oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -QCONST16(28.f, 10);
         }
     } while(++c < 2);
-    cdec->rng = dec->rng;
+    cdec->rng = 0; //dec->rng;
 
     deemphasis(out_syn, outbuf, N, CC, m_CELTMode.preemph, cdec->preemph_memD);
 

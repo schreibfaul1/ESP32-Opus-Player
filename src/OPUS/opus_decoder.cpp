@@ -87,7 +87,6 @@ static int32_t opus_packet_get_mode(const uint8_t *data) {
 int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size) {
 
     int32_t        i, celt_ret = 0;
-    ec_ctx_t       dec;
     int32_t        audiosize;
     int32_t        mode;
     int32_t        bandwidth;
@@ -175,8 +174,8 @@ int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, in
     /* Make sure to discard any previous CELT state */
     if(mode != m_OpusDecoder.prev_mode && m_OpusDecoder.prev_mode > 0 && !m_OpusDecoder.prev_redundancy) celt_decoder_ctl(OPUS_RESET_STATE);
     /* Decode CELT */
-//    log_i("decode %i, celt_frame_size %i", len, celt_frame_size);
-    celt_ret = celt_decode_with_ec(inbuf, len, outbuf, celt_frame_size, &dec);
+    log_i("decode %i, celt_frame_size %i", len, celt_frame_size);
+    celt_ret = celt_decode_with_ec(inbuf, len, outbuf, celt_frame_size);
 
 
     const CELTMode *celt_mode;
