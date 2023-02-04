@@ -174,13 +174,9 @@ typedef struct {
    int32_t maxshift;
    const kiss_fft_state *kfft[4];
    const int16_t *  trig;
-} mdct_lookup;
+} mdct_lookup_t;
 
-// typedef struct {
-//     const int16_t *index;
-//     const uint8_t *bits;
-//     const uint8_t *caps;
-// } PulseCache;
+
 
 /** Mode definition (opaque)
  @brief Mode definition
@@ -188,16 +184,13 @@ typedef struct {
 struct CELTMode {
     int32_t Fs;
     int32_t overlap;
-
     int32_t nbEBands;
     int32_t effEBands;
     int16_t preemph[4];
     int32_t maxLM;
     int32_t nbShortMdcts;
     int32_t shortMdctSize;
-
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
-    mdct_lookup mdct;
 };
 
 extern const CELTMode m_CELTMode;

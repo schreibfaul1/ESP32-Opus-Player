@@ -32,9 +32,10 @@
 #include <Arduino.h>
 #include "celt.h"
 
-CELTDecoder* cdec;
-band_ctx_t s_band_ctx;
-ec_ctx_t   s_ec;
+CELTDecoder  *cdec;
+band_ctx_t    s_band_ctx;
+ec_ctx_t      s_ec;
+
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
 const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
@@ -617,15 +618,17 @@ const CELTMode m_CELTMode = {
     8,                      /* nbShortMdcts */
     120,                    /* shortMdctSize */
     11,                     /* nbAllocVectors */
-    {1920,3, {
+};
+
+const mdct_lookup_t m_mdct_lookup = {
+    1920,3, {
          &fft_state48000_960_0,
          &fft_state48000_960_1,
          &fft_state48000_960_2,
          &fft_state48000_960_3,
      },
-     mdct_twiddles960},                               /* mdct */
+     mdct_twiddles960,                               /* mdct */
 };
-
 
 const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
 
@@ -3509,8 +3512,8 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
     int32_t N, N2, N4;
     const int16_t *trig;
 
-    N = m_CELTMode.mdct.n;
-    trig = m_CELTMode.mdct.trig;
+    N = m_mdct_lookup.n;
+    trig = m_mdct_lookup.trig;
     for (i = 0; i < shift; i++) {
         N >>= 1;
         trig += N;
@@ -3525,7 +3528,7 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
         const int32_t * xp2 = in + stride * (N2 - 1);
         int32_t * yp = out + (overlap >> 1);
         const int16_t * t = &trig[0];
-        const int16_t * bitrev = m_CELTMode.mdct.kfft[shift]->bitrev;
+        const int16_t * bitrev = m_mdct_lookup.kfft[shift]->bitrev;
         for (i = 0; i < N4; i++) {
             int32_t rev;
             int32_t yr, yi;
@@ -3541,7 +3544,7 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
         }
     }
 
-    opus_fft_impl(m_CELTMode.mdct.kfft[shift], (kiss_fft_cpx *)(out + (overlap >> 1)));
+    opus_fft_impl(m_mdct_lookup.kfft[shift], (kiss_fft_cpx *)(out + (overlap >> 1)));
 
     /* Post-rotate and de-shuffle from both ends of the buffer at once to make
        it in-place. */

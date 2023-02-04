@@ -250,7 +250,7 @@ void opusTask(void *parameter) {
             playChunk();
         }
         vTaskDelay(5);
-        //log_e("%u", uxTaskGetStackHighWaterMark(NULL));
+        log_e("%u", uxTaskGetStackHighWaterMark(NULL));
     } while(ret > 0);
     vTaskDelete(opus_task);
 }
