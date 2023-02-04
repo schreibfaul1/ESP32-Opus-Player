@@ -518,7 +518,6 @@ inline int32_t pulses2bits(int32_t band, int32_t LM, int32_t pulses){
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
-int32_t  resampling_factor(int32_t rate);
 void     comb_filter_const(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
 void     comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0,
                      int32_t tapset1, int32_t overlap);
@@ -553,8 +552,7 @@ void     quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_, u
                          int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, int32_t LM,
                          int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t  celt_decoder_get_size(int32_t channels);
-int32_t  opus_custom_decoder_init(int32_t channels);
-int32_t  celt_decoder_init(int32_t sampling_rate, int32_t channels);
+int32_t  celt_decoder_init(int32_t channels);
 void     deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 void     deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, const int16_t *coef, int32_t *mem);
 void     celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start, int32_t effEnd, int32_t C,
@@ -562,9 +560,6 @@ void     celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32
 void     tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM);
 int32_t  celt_decode_with_ec(const uint8_t *inbuf, int32_t len, int16_t *outbuf, int32_t frame_size, ec_ctx_t *dec);
 int32_t  celt_decoder_ctl(int32_t request, ...);
-void     celt_fir(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord);
-void     celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem);
-int32_t  _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int32_t overlap, int32_t lag, int32_t n);
 int32_t  cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y);
 int32_t  decode_pulses(int32_t *_y, int32_t _n, int32_t _k);
 uint32_t ec_tell_frac();
@@ -587,7 +582,6 @@ void     opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
 uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay);
 int32_t  ec_laplace_decode(uint32_t fs, int32_t decay);
 uint32_t isqrt32(uint32_t _val);
-int32_t  frac_div32(int32_t a, int32_t b);
 int16_t  celt_rsqrt_norm(int32_t x);
 int32_t  celt_sqrt(int32_t x);
 int16_t  celt_cos_norm(int32_t x);
@@ -599,9 +593,6 @@ void     normalise_residual(int32_t *iy, int16_t *X, int32_t N, int32_t Ryy, int
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain);
 void     renormalise_vector(int16_t *X, int32_t N, int16_t gain);
-
-int32_t celt_pitch_xcorr(const int16_t *_x, const int16_t *_y, int32_t *xcorr, int32_t len, int32_t max_pitch);
-
 int32_t  interp_bits2pulses(int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                             const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance,
                             int32_t skip_rsv, int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo,
@@ -615,7 +606,6 @@ void     unquant_coarse_energy(int32_t start, int32_t end, int16_t *oldEBands, i
 void     unquant_fine_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, int32_t C);
 void     unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                                  int32_t *fine_priority, int32_t bits_left, int32_t C);
-void     xcorr_kernel(const int16_t *x, const int16_t *y, int32_t sum[4], int32_t len);
 uint32_t celt_pvq_u_row(uint32_t row, uint32_t data);
 
 bool CELTDecoder_AllocateBuffers(void);

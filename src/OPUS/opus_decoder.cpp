@@ -561,11 +561,7 @@ bool opus_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, i
     m_OpusDecoder.stream_channels = m_OpusDecoder.channels = channels;
     m_OpusDecoder.Fs = Fs;
 
-    /* Initialize CELT decoder */
-    ret = celt_decoder_init(Fs, channels);
-    if(ret != OPUS_OK) return OPUS_INTERNAL_ERROR;
-
-    ret = opus_custom_decoder_init(channels);
+    ret = celt_decoder_init(channels);
     if (ret != OPUS_OK)
         return ret;
 
