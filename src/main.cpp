@@ -39,7 +39,8 @@ uint8_t             m_channels=2;
 int16_t             m_outBuff[2048*2];              // Interleaved L/R
 int16_t             m_validSamples = 0;
 int16_t             m_curSample = 0;
-boolean             m_f_forceMono = false;
+bool                m_f_forceMono = false;
+bool                m_f_isPlaying = false;
 
 typedef enum { LEFTCHANNEL=0, RIGHTCHANNEL=1 } SampleIndex;
 
@@ -241,7 +242,7 @@ int SD_read(unsigned char* buff, int nbytes){
     if (nbytes == 0) return -1;
     return nbytes;
 }
-void opusTask(void *parameter) {
+void opusTask() {
     int ret;
     do {
         ret = op_read_stereo(m_outBuff, 2048);
@@ -252,7 +253,8 @@ void opusTask(void *parameter) {
         vTaskDelay(5);
         // log_e("%u", uxTaskGetStackHighWaterMark(NULL));
     } while(ret > 0);
-    vTaskDelete(opus_task);
+    m_f_isPlaying = false;
+    log_i("stop");
 }
 //---------------------------------------------------------------------------------------------------------------------
 void setup() {
@@ -281,18 +283,10 @@ void setup() {
     log_i("free heap before %d", ESP.getFreeHeap());
     opus_init_decoder();
     log_i("free heap after %d", ESP.getFreeHeap());
-    xTaskCreatePinnedToCore(
-            opusTask, /* Function to implement the task */
-            "OPUS", /* Name of the task */
-            4096 * 4,  /* Stack size in words */
-            NULL,  /* Task input parameter */
-            2,  /* Priority of the task */
-            &opus_task,  /* Task handle. */
-            1 /* Core where the task should run */
-    );
+    m_f_isPlaying = true;
 }
 
 void loop() {
-    ;
+    if(m_f_isPlaying) opusTask();
 }
 //---------------------------------------------------------------------------------------------------------------------
