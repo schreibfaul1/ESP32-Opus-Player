@@ -1214,6 +1214,7 @@ int32_t op_read_stereo(int16_t *outbuf, int32_t _buf_size) {
             int16_t *_src = m_OggOpusFile->od_buffer + nchannels * od_buffer_pos;
 
             ret = _min(ret, _buf_size >> 1);
+//            log_i("ret %i", ret);
             if(nchannels == 2) memcpy(outbuf, _src, ret * 2 * sizeof(*_src));
             else {
                 int32_t  i;

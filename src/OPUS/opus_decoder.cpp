@@ -56,20 +56,6 @@ struct OpusDecoder {
     uint8_t s_mapping[2];
 
 //----------------------------------------------------------------------------------------------------------------------
-
-int32_t opus_decoder_get_size(int32_t channels)
-{
-    int32_t celtDecSizeBytes;
-    if (channels < 1 || channels > 2)
-        return 0;
-
-    celtDecSizeBytes = celt_decoder_get_size(channels);
-
-    size_t sizeOfDecoders = 64 + celtDecSizeBytes;
-//   log_i("sizeOfDecoders %d", sizeOfDecoders);
-    return sizeOfDecoders;
-}
-//----------------------------------------------------------------------------------------------------------------------
 static int32_t opus_packet_get_mode(const uint8_t *data) {
     static int32_t oldmode;
     int32_t        mode;
@@ -89,7 +75,6 @@ int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, in
     int32_t        i, celt_ret = 0;
     int32_t        audiosize;
     int32_t        mode;
-    int32_t        bandwidth;
     int32_t        F2_5, F5, F10, F20;
 
     F20 = m_OpusDecoder.Fs / 50;
@@ -108,93 +93,26 @@ int32_t opus_decode_frame(const uint8_t *inbuf, int32_t len, int16_t *outbuf, in
     if(inbuf != NULL) {
         audiosize = m_OpusDecoder.frame_size;
         mode = m_OpusDecoder.mode;
-        bandwidth = m_OpusDecoder.bandwidth;
         ec_dec_init((uint8_t *)inbuf, len);
-    }
-    else {
-        audiosize = frame_size;
-        mode = m_OpusDecoder.prev_mode;
-        bandwidth = 0;
-
-        if(mode == 0) {
-            /* If we haven't got any packet yet, all we can do is return zeros */
-            for(i = 0; i < audiosize * m_OpusDecoder.channels; i++) outbuf[i] = 0;
-
-            return audiosize;
-        }
-
-        /* Avoids trying to run the PLC on sizes other than 2.5 (CELT), 5 (CELT),
-           10, or 20 (e.g. 12.5 or 30 ms). */
-        if(audiosize > F20) {
-            do {
-                int32_t ret = opus_decode_frame(NULL, 0, outbuf, min(audiosize, F20));
-                if(ret < 0) { return ret; }
-                outbuf += ret * m_OpusDecoder.channels;
-                audiosize -= ret;
-            } while(audiosize > 0);
-
-            return frame_size;
-        }
-        else if(audiosize < F20) {
-            if(audiosize > F10) audiosize = F10;
-        }
-    }
-
-    if(audiosize > frame_size) {
-        /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
-
-        return OPUS_BAD_ARG_;
-    }
-    else { frame_size = audiosize; }
-
-    if(bandwidth) {
-        int32_t endband = 21;
-
-        switch(bandwidth) {
-            case OPUS_BANDWIDTH_NARROWBAND:
-                endband = 13;
-                break;
-            case OPUS_BANDWIDTH_MEDIUMBAND:
-            case OPUS_BANDWIDTH_WIDEBAND:
-                endband = 17;
-                break;
-            case OPUS_BANDWIDTH_SUPERWIDEBAND:
-                endband = 19;
-                break;
-            case OPUS_BANDWIDTH_FULLBAND:
-                endband = 21;
-                break;
-            default:
-                break;
-        }
-        celt_decoder_ctl(CELT_SET_END_BAND_REQUEST, endband);
     }
 
     int32_t celt_frame_size = min(F20, frame_size);
     /* Make sure to discard any previous CELT state */
     if(mode != m_OpusDecoder.prev_mode && m_OpusDecoder.prev_mode > 0 && !m_OpusDecoder.prev_redundancy) celt_decoder_ctl(OPUS_RESET_STATE);
     /* Decode CELT */
-    log_i("decode %i, celt_frame_size %i", len, celt_frame_size);
+    //log_i("decode %i, celt_frame_size %i", len, celt_frame_size);
+    // static uint32_t ms = millis();
+    // log_i("diff %u", millis()-ms);
+    // ms = millis();
     celt_ret = celt_decode_with_ec(inbuf, len, outbuf, celt_frame_size);
+    //log_i("celt_ret %i", celt_ret );
 
-
-    const CELTMode *celt_mode;
-    celt_decoder_ctl(CELT_GET_MODE_REQUEST, (const CELTMode **)(&celt_mode));
-
-    if(m_OpusDecoder.decode_gain) {
-        int32_t gain;
-        gain = celt_exp2(MULT16_16_P15(QCONST16(6.48814081e-4f, 25), m_OpusDecoder.decode_gain));
-        for(i = 0; i < frame_size * m_OpusDecoder.channels; i++) {
-            int32_t x;
-            x = MULT16_32_P16(outbuf[i], gain);
-            outbuf[i] = SATURATE(x, 32767);
-        }
-    }
 
     if(len <= 1) m_OpusDecoder.rangeFinal = 0;
-
     m_OpusDecoder.prev_mode = mode;
-    return celt_ret < 0 ? celt_ret : audiosize;
+    int x = celt_ret < 0 ? celt_ret : audiosize;
+//     log_i("x %i", x);
+    return x;
 }
 //----------------------------------------------------------------------------------------------------------------------
 int32_t opus_decode_native(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
@@ -617,7 +535,7 @@ int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, 
         return OPUS_BAD_ARG_;
     }
     /* Limit frame_size to avoid excessive stack allocations. */
-    opus_decoder_ctl(OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
+    Fs =  m_OpusDecoder.Fs;
     frame_size = min(frame_size, Fs / 25 * 3);
     int16_t buf[2 * frame_size];
 

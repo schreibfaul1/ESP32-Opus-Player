@@ -41,6 +41,33 @@
 extern "C" {
 #endif
 
+enum : int8_t  {OPUS_PARSE_OGG_DONE = 100,
+                ERR_OPUS_NONE = 0,
+                ERR_OPUS_CHANNELS_OUT_OF_RANGE = -1,
+                ERR_OPUS_INVALID_SAMPLERATE = -2,
+                ERR_OPUS_EXTRA_CHANNELS_UNSUPPORTED = -3,
+                ERR_OPUS_DECODER_ASYNC = -4,
+                ERR_OPUS_SILK_MODE_UNSUPPORTED = -5,
+                ERR_OPUS_HYBRID_MODE_UNSUPPORTED = -6,
+                ERR_OPUS_OGG_SYNC_NOT_FOUND = - 7,
+                ERR_OPUS_CELT_BAD_ARG = -18,
+                ERR_OPUS_CELT_INTERNAL_ERROR = -19,
+                ERR_OPUS_CELT_UNIMPLEMENTED = -20,
+                ERR_OPUS_CELT_ALLOC_FAIL = -21,
+                ERR_OPUS_CELT_UNKNOWN_REQUEST = -22,
+                ERR_OPUS_CELT_GET_MODE_REQUEST = - 23,
+                ERR_OPUS_CELT_CLEAR_REQUEST = -24,
+                ERR_OPUS_CELT_SET_CHANNELS = -25,
+                ERR_OPUS_CELT_END_BAND = -26,
+                ERR_CELT_OPUS_INTERNAL_ERROR = -27};
+
+
+
+
+
+
+
+
 #define OPUS_OK                0
 #define OPUS_BAD_ARG_         -1
 #define OPUS_BUFFER_TOO_SMALL -2
@@ -72,9 +99,6 @@ typedef void (*opus_copy_channel_out_func)(void *dst, int32_t dst_stride, int32_
 typedef struct OpusMSDecoder {
 }OpusMSDecoder_t;
 
-
-
-int32_t opus_decoder_get_size(int32_t channels);
 int32_t opus_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
 int32_t opus_decoder_ctl(int32_t request, int32_t* ap);
 int32_t opus_packet_parse(const uint8_t *data, int32_t len, uint8_t *out_toc, const uint8_t *frames[48],
