@@ -11,9 +11,9 @@
 
 // Digital I/O used
 #ifdef CONFIG_IDF_TARGET_ESP32S3
-    #define SD_MMC_D0     11
-    #define SD_MMC_CLK    13
-    #define SD_MMC_CMD    14
+    #define SD_MMC_D0     21
+    #define SD_MMC_CLK    20
+    #define SD_MMC_CMD    19
     #define I2S_DOUT       9
     #define I2S_BCLK       3
     #define I2S_LRC        1
@@ -277,7 +277,7 @@ void setup() {
     }
 
 //    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
-    file = SD_MMC.open("/opus/testfile.opus");
+    file = SD_MMC.open("/opus/nrj.opus");
     log_i("free heap before %d", ESP.getFreeHeap());
     opus_init_decoder();
     log_i("free heap after %d", ESP.getFreeHeap());
