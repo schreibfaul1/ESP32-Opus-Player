@@ -521,8 +521,6 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
 
-#define silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch), silk_VAD_GetSA_Q8_c(psEnC, pIn))
-
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch) \
     ((void)arch, silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
@@ -1228,7 +1226,6 @@ void silk_process_NLSFs(silk_encoder_state *psEncC, int16_t PredCoef_Q12[2][MAX_
 void silk_NLSF_VQ(int32_t err_Q26[], const int16_t in_Q15[], const uint8_t pCB_Q8[], const int16_t pWght_Q9[],
                   const int32_t K, const int32_t LPC_order);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
-int32_t silk_VAD_GetSA_Q8_c(silk_encoder_state *psEncC, const int16_t pIn[]);
 int32_t silk_VAD_Init(silk_VAD_state *psSilk_VAD);
 void silk_stereo_LR_to_MS(stereo_enc_state *state, int16_t x1[], int16_t x2[], int8_t ix[2][3], int8_t *mid_only_flag,
                           int32_t mid_side_rates_bps[], int32_t total_rate_bps, int32_t prev_speech_act_Q8,
@@ -1238,18 +1235,11 @@ void silk_stereo_MS_to_LR(stereo_dec_state *state, int16_t x1[], int16_t x2[], c
 int32_t silk_stereo_find_predictor(int32_t *ratio_Q14, const int16_t x[], const int16_t y[], int32_t mid_res_amp_Q0[],
                                    int32_t length, int32_t smooth_coef_Q16);
 void silk_stereo_quant_pred(int32_t pred_Q13[], int8_t ix[2][3]);
-void silk_stereo_encode_pred(ec_enc *psRangeEnc, int8_t ix[2][3]);
-void silk_stereo_encode_mid_only(ec_enc *psRangeEnc, int8_t mid_only_flag);
 void silk_stereo_decode_pred(ec_dec *psRangeDec, int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(ec_dec *psRangeDec, int32_t *decode_only_mid);
-void silk_encode_signs(ec_enc *psRangeEnc, const int8_t pulses[], int32_t length, const int32_t signalType,
-                       const int32_t quantOffsetType, const int32_t sum_pulses[MAX_NB_SHELL_BLOCKS]);
 void silk_decode_signs(ec_dec *psRangeDec, int16_t pulses[], int32_t length, const int32_t signalType,
                        const int32_t quantOffsetType, const int32_t sum_pulses[MAX_NB_SHELL_BLOCKS]);
 int32_t silk_control_SNR(silk_encoder_state *psEncC, int32_t TargetRate_bps);
-void silk_encode_pulses(ec_enc *psRangeEnc, const int32_t signalType, const int32_t quantOffsetType, int8_t pulses[],
-                        const int32_t frame_length);
-void silk_shell_encoder(ec_enc *psRangeEnc, const int32_t *pulses0);
 void silk_shell_decoder(int16_t *pulses0, ec_dec *psRangeDec, const int32_t pulses4);
 void silk_gains_quant(int8_t ind[MAX_NB_SUBFR], int32_t gain_Q16[MAX_NB_SUBFR], int8_t *prev_ind,
                       const int32_t conditional, const int32_t nb_subfr);
