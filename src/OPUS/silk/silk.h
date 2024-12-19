@@ -531,7 +531,7 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
     ((void)(arch), silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
 #define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) \
     ((void)(arch), silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, out, len))
-#define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((void)(arch), silk_LPC_inverse_pred_gain_c(A_Q12, order))
+#define silk_LPC_inverse_pred_gain(A_Q12, order) ((void)(arch), silk_LPC_inverse_pred_gain_c(A_Q12, order))
 
 #define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))
 #define RAND_MULTIPLIER                     196314165
@@ -1040,11 +1040,6 @@ static inline int32_t silk_ROR32(int32_t a32, int32_t rot) {
     }
 }
 
-/* Silk VAD noise level estimation */
-static void silk_VAD_GetNoiseLevels(const int32_t pX[VAD_N_BANDS], /* I    subband energies */
-                                    silk_VAD_state *psSilk_VAD     /* I/O  Pointer to Silk VAD state     */
-);
-
 /* get number of leading zeros and fractional part (the bits right after the leading one */
 static inline void silk_CLZ_FRAC(int32_t in,      /* I  input                               */
                                       int32_t *lz,     /* O  number of leading zeros             */
@@ -1293,8 +1288,7 @@ int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t
                                       const int32_t len);
 int32_t silk_lin2log(const int32_t inLin);
 int32_t silk_log2lin(const int32_t inLog_Q7);
-void silk_LPC_analysis_filter(int16_t *out, const int16_t *in, const int16_t *B, const int32_t len, const int32_t d,
-                              int arch);
+void silk_LPC_analysis_filter(int16_t *out, const int16_t *in, const int16_t *B, const int32_t len, const int32_t d);
 void silk_LPC_fit(int16_t *a_QOUT, int32_t *a_QIN, const int32_t QOUT, const int32_t QIN, const int32_t d);
 static int32_t LPC_inverse_pred_gain_QA_c(int32_t A_QA[SILK_MAX_ORDER_LPC], const int32_t order);
 int32_t silk_LPC_inverse_pred_gain_c(const int16_t *A_Q12, const int32_t order);
