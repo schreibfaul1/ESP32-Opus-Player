@@ -514,13 +514,6 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
     (silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13,                 \
                               HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
-#define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, \
-                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14)                  \
-    (                                                                                                 \
-     silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,  \
-                        Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
-
-
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order) \
     (silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
@@ -1256,13 +1249,6 @@ void silk_NSQ_c(const silk_encoder_state *psEncC, silk_nsq_state *NSQ, SideInfoI
                 const int32_t Tilt_Q14[MAX_NB_SUBFR], const int32_t LF_shp_Q14[MAX_NB_SUBFR],
                 const int32_t Gains_Q16[MAX_NB_SUBFR], const int32_t pitchL[MAX_NB_SUBFR], const int32_t Lambda_Q10,
                 const int32_t LTP_scale_Q14);
-void silk_NSQ_del_dec_c(const silk_encoder_state *psEncC, silk_nsq_state *NSQ, SideInfoIndices *psIndices,
-                        const int16_t x16[], int8_t pulses[], const int16_t PredCoef_Q12[2 * MAX_LPC_ORDER],
-                        const int16_t LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR],
-                        const int16_t AR_Q13[MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER],
-                        const int32_t HarmShapeGain_Q14[MAX_NB_SUBFR], const int32_t Tilt_Q14[MAX_NB_SUBFR],
-                        const int32_t LF_shp_Q14[MAX_NB_SUBFR], const int32_t Gains_Q16[MAX_NB_SUBFR],
-                        const int32_t pitchL[MAX_NB_SUBFR], const int32_t Lambda_Q10, const int32_t LTP_scale_Q14);
 void silk_CNG_Reset(silk_decoder_state *psDec);
 void silk_CNG(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t length);
 void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR,
