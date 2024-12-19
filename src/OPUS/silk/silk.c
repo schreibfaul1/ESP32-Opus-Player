@@ -772,12 +772,12 @@ void silk_stereo_decode_pred(ec_dec *psRangeDec, /* I/O  Compressor data structu
     int32_t low_Q13, step_Q13;
 
     /* Entropy decoding */
-    n = ec_dec_icdf(psRangeDec, silk_stereo_pred_joint_iCDF, 8);
+    n = ec_dec_icdf(silk_stereo_pred_joint_iCDF, 8);
     ix[0][2] = silk_DIV32_16(n, 5);
     ix[1][2] = n - 5 * ix[0][2];
     for (n = 0; n < 2; n++) {
-        ix[n][0] = ec_dec_icdf(psRangeDec, silk_uniform3_iCDF, 8);
-        ix[n][1] = ec_dec_icdf(psRangeDec, silk_uniform5_iCDF, 8);
+        ix[n][0] = ec_dec_icdf(silk_uniform3_iCDF, 8);
+        ix[n][1] = ec_dec_icdf(silk_uniform5_iCDF, 8);
     }
 
     /* Dequantize */
@@ -797,7 +797,7 @@ void silk_stereo_decode_mid_only(ec_dec *psRangeDec,      /* I/O  Compressor dat
                                  int32_t *decode_only_mid /* O    Flag that only mid channel has been coded   */
 ) {
     /* Decode flag that only mid channel is coded */
-    *decode_only_mid = ec_dec_icdf(psRangeDec, silk_stereo_only_code_mid_iCDF, 8);
+    *decode_only_mid = ec_dec_icdf(silk_stereo_only_code_mid_iCDF, 8);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* helper function for NLSF2A(intermediate polynomial, Q[dd+1], vector of interleaved 2*cos(LSFs), QA_[d], polynomial order (= 1/2 * filter order)  ) */
@@ -902,9 +902,9 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /* Decode signal type and quantizer offset */
     /*******************************************/
     if (decode_LBRR || psDec->VAD_flags[FrameIndex]) {
-        Ix = ec_dec_icdf(psRangeDec, silk_type_offset_VAD_iCDF, 8) + 2;
+        Ix = ec_dec_icdf(silk_type_offset_VAD_iCDF, 8) + 2;
     } else {
-        Ix = ec_dec_icdf(psRangeDec, silk_type_offset_no_VAD_iCDF, 8);
+        Ix = ec_dec_icdf(silk_type_offset_no_VAD_iCDF, 8);
     }
     psDec->indices.signalType = (int8_t)silk_RSHIFT(Ix, 1);
     psDec->indices.quantOffsetType = (int8_t)(Ix & 1);
@@ -915,39 +915,39 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /* First subframe */
     if(condCoding == CODE_CONDITIONALLY) {
         /* Conditional coding */
-        psDec->indices.GainsIndices[0] = (int8_t)ec_dec_icdf(psRangeDec, silk_delta_gain_iCDF, 8);
+        psDec->indices.GainsIndices[0] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
     } else {
         /* Independent coding, in two stages: MSB bits followed by 3 LSBs */
         psDec->indices.GainsIndices[0] =
-            (int8_t)silk_LSHIFT(ec_dec_icdf(psRangeDec, silk_gain_iCDF[psDec->indices.signalType], 8), 3);
-        psDec->indices.GainsIndices[0] += (int8_t)ec_dec_icdf(psRangeDec, silk_uniform8_iCDF, 8);
+            (int8_t)silk_LSHIFT(ec_dec_icdf(silk_gain_iCDF[psDec->indices.signalType], 8), 3);
+        psDec->indices.GainsIndices[0] += (int8_t)ec_dec_icdf(silk_uniform8_iCDF, 8);
     }
 
     /* Remaining subframes */
     for (i = 1; i < psDec->nb_subfr; i++) {
-        psDec->indices.GainsIndices[i] = (int8_t)ec_dec_icdf(psRangeDec, silk_delta_gain_iCDF, 8);
+        psDec->indices.GainsIndices[i] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
     }
 
     /**********************/
     /* Decode LSF Indices */
     /**********************/
     psDec->indices.NLSFIndices[0] = (int8_t)ec_dec_icdf(
-        psRangeDec, &psDec->psNLSF_CB->CB1_iCDF[(psDec->indices.signalType >> 1) * psDec->psNLSF_CB->nVectors], 8);
+        &psDec->psNLSF_CB->CB1_iCDF[(psDec->indices.signalType >> 1) * psDec->psNLSF_CB->nVectors], 8);
     silk_NLSF_unpack(ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[0]);
     assert(psDec->psNLSF_CB->order == psDec->LPC_order);
     for (i = 0; i < psDec->psNLSF_CB->order; i++) {
-        Ix = ec_dec_icdf(psRangeDec, &psDec->psNLSF_CB->ec_iCDF[ec_ix[i]], 8);
+        Ix = ec_dec_icdf(&psDec->psNLSF_CB->ec_iCDF[ec_ix[i]], 8);
         if (Ix == 0) {
-            Ix -= ec_dec_icdf(psRangeDec, silk_NLSF_EXT_iCDF, 8);
+            Ix -= ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
         } else if (Ix == 2 * NLSF_QUANT_MAX_AMPLITUDE) {
-            Ix += ec_dec_icdf(psRangeDec, silk_NLSF_EXT_iCDF, 8);
+            Ix += ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
         }
         psDec->indices.NLSFIndices[i + 1] = (int8_t)(Ix - NLSF_QUANT_MAX_AMPLITUDE);
     }
 
     /* Decode LSF interpolation factor */
     if (psDec->nb_subfr == MAX_NB_SUBFR) {
-        psDec->indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(psRangeDec, silk_NLSF_interpolation_factor_iCDF, 8);
+        psDec->indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(silk_NLSF_interpolation_factor_iCDF, 8);
     } else {
         psDec->indices.NLSFInterpCoef_Q2 = 4;
     }
@@ -960,7 +960,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         decode_absolute_lagIndex = 1;
         if(condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
             /* Decode Delta index */
-            delta_lagIndex = (int16_t)ec_dec_icdf(psRangeDec, silk_pitch_delta_iCDF, 8);
+            delta_lagIndex = (int16_t)ec_dec_icdf(silk_pitch_delta_iCDF, 8);
             if (delta_lagIndex > 0) {
                 delta_lagIndex = delta_lagIndex - 9;
                 psDec->indices.lagIndex = (int16_t)(psDec->ec_prevLagIndex + delta_lagIndex);
@@ -970,30 +970,30 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         if(decode_absolute_lagIndex) {
             /* Absolute decoding */
             psDec->indices.lagIndex =
-                (int16_t)ec_dec_icdf(psRangeDec, silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
-            psDec->indices.lagIndex += (int16_t)ec_dec_icdf(psRangeDec, psDec->pitch_lag_low_bits_iCDF, 8);
+                (int16_t)ec_dec_icdf(silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
+            psDec->indices.lagIndex += (int16_t)ec_dec_icdf(psDec->pitch_lag_low_bits_iCDF, 8);
         }
         psDec->ec_prevLagIndex = psDec->indices.lagIndex;
 
         /* Get countour index */
-        psDec->indices.contourIndex = (int8_t)ec_dec_icdf(psRangeDec, psDec->pitch_contour_iCDF, 8);
+        psDec->indices.contourIndex = (int8_t)ec_dec_icdf(psDec->pitch_contour_iCDF, 8);
 
         /********************/
         /* Decode LTP gains */
         /********************/
         /* Decode PERIndex value */
-        psDec->indices.PERIndex = (int8_t)ec_dec_icdf(psRangeDec, silk_LTP_per_index_iCDF, 8);
+        psDec->indices.PERIndex = (int8_t)ec_dec_icdf(silk_LTP_per_index_iCDF, 8);
 
         for (k = 0; k < psDec->nb_subfr; k++) {
             psDec->indices.LTPIndex[k] =
-                (int8_t)ec_dec_icdf(psRangeDec, silk_LTP_gain_iCDF_ptrs[psDec->indices.PERIndex], 8);
+                (int8_t)ec_dec_icdf(silk_LTP_gain_iCDF_ptrs[psDec->indices.PERIndex], 8);
         }
 
         /**********************/
         /* Decode LTP scaling */
         /**********************/
         if (condCoding == CODE_INDEPENDENTLY) {
-            psDec->indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(psRangeDec, silk_LTPscale_iCDF, 8);
+            psDec->indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(silk_LTPscale_iCDF, 8);
         } else {
             psDec->indices.LTP_scaleIndex = 0;
         }
@@ -1003,7 +1003,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /***************/
     /* Decode seed */
     /***************/
-    psDec->indices.Seed = (int8_t)ec_dec_icdf(psRangeDec, silk_uniform4_iCDF, 8);
+    psDec->indices.Seed = (int8_t)ec_dec_icdf(silk_uniform4_iCDF, 8);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1095,7 +1095,7 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /*********************/
     /* Decode rate level */
     /*********************/
-    RateLevelIndex = ec_dec_icdf(psRangeDec, silk_rate_levels_iCDF[signalType >> 1], 8);
+    RateLevelIndex = ec_dec_icdf(silk_rate_levels_iCDF[signalType >> 1], 8);
 
     /* Calculate number of shell blocks */
     assert(1 << LOG2_SHELL_CODEC_FRAME_LENGTH == SHELL_CODEC_FRAME_LENGTH);
@@ -1111,14 +1111,14 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     cdf_ptr = silk_pulses_per_block_iCDF[RateLevelIndex];
     for(i = 0; i < iter; i++) {
         nLshifts[i] = 0;
-        sum_pulses[i] = ec_dec_icdf(psRangeDec, cdf_ptr, 8);
+        sum_pulses[i] = ec_dec_icdf(cdf_ptr, 8);
 
         /* LSB indication */
         while(sum_pulses[i] == SILK_MAX_PULSES + 1) {
             nLshifts[i]++;
             /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
             sum_pulses[i] =
-                ec_dec_icdf(psRangeDec, silk_pulses_per_block_iCDF[N_RATE_LEVELS - 1] + (nLshifts[i] == 10), 8);
+                ec_dec_icdf(silk_pulses_per_block_iCDF[N_RATE_LEVELS - 1] + (nLshifts[i] == 10), 8);
         }
     }
 
@@ -1145,7 +1145,7 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
                 abs_q = pulses_ptr[k];
                 for(j = 0; j < nLS; j++) {
                     abs_q = silk_LSHIFT(abs_q, 1);
-                    abs_q += ec_dec_icdf(psRangeDec, silk_lsb_iCDF, 8);
+                    abs_q += ec_dec_icdf(silk_lsb_iCDF, 8);
                 }
                 pulses_ptr[k] = abs_q;
             }
@@ -1335,7 +1335,7 @@ static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitu
                                      const uint8_t *shell_table /* I    table of shell cdfs                         */
 ) {
     if (p > 0) {
-        p_child1[0] = ec_dec_icdf(psRangeDec, &shell_table[silk_shell_code_table_offsets[p]], 8);
+        p_child1[0] = ec_dec_icdf(&shell_table[silk_shell_code_table_offsets[p]], 8);
         p_child2[0] = p - p_child1[0];
     }
     else {
@@ -1652,7 +1652,7 @@ void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data st
                 if(q_ptr[j] > 0) {
                     /* attach sign */
                     /* implementation with shift, subtraction, multiplication */
-                    q_ptr[j] *= silk_dec_map(ec_dec_icdf(psRangeDec, icdf, 8));
+                    q_ptr[j] *= silk_dec_map(ec_dec_icdf(icdf, 8));
                 }
             }
         }
@@ -1767,7 +1767,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                     channel_state[n].LBRR_flags[0] = 1;
                 } else {
                     LBRR_symbol =
-                        ec_dec_icdf(psRangeDec, silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
+                        ec_dec_icdf(silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
                     for (i = 0; i < channel_state[n].nFramesPerPacket; i++) {
                         channel_state[n].LBRR_flags[i] = silk_RSHIFT(LBRR_symbol, i) & 1;
                     }
@@ -2001,9 +2001,7 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 ) {
     int32_t i, k, lag = 0, start_idx, sLTP_buf_idx, NLSF_interpolation_flag, signalType;
     int16_t *A_Q12, *B_Q14, *pxq, A_Q12_tmp[MAX_LPC_ORDER];
-    VARDECL(int16_t, sLTP);
-    VARDECL(int32_t, sLTP_Q15);
-    int32_t LTP_pred_Q13, LPC_pred_Q10, Gain_Q10, inv_gain_Q31, gain_adj_Q16, rand_seed, offset_Q10;
+    int32_t  LTP_pred_Q13, LPC_pred_Q10, Gain_Q10, inv_gain_Q31, gain_adj_Q16, rand_seed, offset_Q10;
     int32_t *pred_lag_ptr, *pexc_Q14, *pres_Q14;
     VARDECL(int32_t, res_Q14);
     VARDECL(int32_t, sLPC_Q14);
@@ -2551,29 +2549,26 @@ void silk_LPC_fit(int16_t*      a_QOUT, /* O    Output signal                   
             a_QOUT[k] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(a_QIN[k], QIN - QOUT));
             a_QIN[k] = silk_LSHIFT((int32_t)a_QOUT[k], QIN - QOUT);
         }
-    } else {
-        for (k = 0; k < d; k++) {
-            a_QOUT[k] = (int16_t)silk_RSHIFT_ROUND(a_QIN[k], QIN - QOUT);
-        }
+    }
+    else {
+        for(k = 0; k < d; k++) { a_QOUT[k] = (int16_t)silk_RSHIFT_ROUND(a_QIN[k], QIN - QOUT); }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static int32_t LPC_inverse_pred_gain_QA_c(/* O   Returns inverse prediction gain in energy domain, Q30    */
-                                          int32_t A_QA[SILK_MAX_ORDER_LPC], /* I   Prediction coefficients */
-                                          const int32_t order               /* I   Prediction order               */
+int32_t LPC_inverse_pred_gain_QA_c(                                        /* O   Returns inverse prediction gain in energy domain, Q30    */
+                                          int32_t       A_QA[SILK_MAX_ORDER_LPC], /* I   Prediction coefficients */
+                                          const int32_t order                     /* I   Prediction order               */
 ) {
     const uint8_t QA24 = 24;
-    int32_t k, n, mult2Q;
-    int32_t invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
+    int32_t       k, n, mult2Q;
+    int32_t       invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
 
     invGain_Q30 = SILK_FIX_CONST(1, 30);
-    for (k = order - 1; k > 0; k--) {
+    for(k = order - 1; k > 0; k--) {
         /* Check for stability */
-        if ((A_QA[k] > A_LIMIT) || (A_QA[k] < -A_LIMIT)) {
-            return 0;
-        }
+        if((A_QA[k] > A_LIMIT) || (A_QA[k] < -A_LIMIT)) { return 0; }
 
         /* Set RC equal to negated AR coef */
         rc_Q31 = -silk_LSHIFT(A_QA[k], 31 - QA24);
@@ -2588,38 +2583,28 @@ static int32_t LPC_inverse_pred_gain_QA_c(/* O   Returns inverse prediction gain
         invGain_Q30 = silk_LSHIFT(silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
         assert(invGain_Q30 >= 0);
         assert(invGain_Q30 <= (1 << 30));
-        if (invGain_Q30 < SILK_FIX_CONST(1.0f / MAX_PREDICTION_POWER_GAIN, 30)) {
-            return 0;
-        }
+        if(invGain_Q30 < SILK_FIX_CONST(1.0f / MAX_PREDICTION_POWER_GAIN, 30)) { return 0; }
 
         /* rc_mult2 range: [ 2^30 : silk_int32_MAX ] */
         mult2Q = 32 - silk_CLZ32(silk_abs(rc_mult1_Q30));
         rc_mult2 = silk_INVERSE32_varQ(rc_mult1_Q30, mult2Q + 30);
 
         /* Update AR coefficient */
-        for (n = 0; n < (k + 1) >> 1; n++) {
+        for(n = 0; n < (k + 1) >> 1; n++) {
             int64_t tmp64;
             tmp1 = A_QA[n];
             tmp2 = A_QA[k - n - 1];
-            tmp64 =
-                silk_RSHIFT_ROUND64(silk_SMULL(silk_SUB_SAT32(tmp1, MUL32_FRAC_Q(tmp2, rc_Q31, 31)), rc_mult2), mult2Q);
-            if (tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN) {
-                return 0;
-            }
+            tmp64 = silk_RSHIFT_ROUND64(silk_SMULL(silk_SUB_SAT32(tmp1, MUL32_FRAC_Q(tmp2, rc_Q31, 31)), rc_mult2), mult2Q);
+            if(tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN) { return 0; }
             A_QA[n] = (int32_t)tmp64;
-            tmp64 =
-                silk_RSHIFT_ROUND64(silk_SMULL(silk_SUB_SAT32(tmp2, MUL32_FRAC_Q(tmp1, rc_Q31, 31)), rc_mult2), mult2Q);
-            if (tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN) {
-                return 0;
-            }
+            tmp64 = silk_RSHIFT_ROUND64(silk_SMULL(silk_SUB_SAT32(tmp2, MUL32_FRAC_Q(tmp1, rc_Q31, 31)), rc_mult2), mult2Q);
+            if(tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN) { return 0; }
             A_QA[k - n - 1] = (int32_t)tmp64;
         }
     }
 
     /* Check for stability */
-    if ((A_QA[k] > A_LIMIT) || (A_QA[k] < -A_LIMIT)) {
-        return 0;
-    }
+    if((A_QA[k] > A_LIMIT) || (A_QA[k] < -A_LIMIT)) { return 0; }
 
     /* Set RC equal to negated AR coef */
     rc_Q31 = -silk_LSHIFT(A_QA[0], 31 - QA24);
@@ -2632,72 +2617,64 @@ static int32_t LPC_inverse_pred_gain_QA_c(/* O   Returns inverse prediction gain
     invGain_Q30 = silk_LSHIFT(silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
     assert(invGain_Q30 >= 0);
     assert(invGain_Q30 <= (1 << 30));
-    if (invGain_Q30 < SILK_FIX_CONST(1.0f / MAX_PREDICTION_POWER_GAIN, 30)) {
-        return 0;
-    }
+    if(invGain_Q30 < SILK_FIX_CONST(1.0f / MAX_PREDICTION_POWER_GAIN, 30)) { return 0; }
 
     return invGain_Q30;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* For input in Q12 domain */
-int32_t silk_LPC_inverse_pred_gain_c(/* O   Returns inverse prediction gain in energy domain, Q30        */
-                                     const int16_t *A_Q12, /* I   Prediction coefficients, Q12 [order] */
-                                     const int32_t order   /* I   Prediction order   */
+int32_t silk_LPC_inverse_pred_gain_c(                      /* O   Returns inverse prediction gain in energy domain, Q30        */
+                                     const int16_t* A_Q12, /* I   Prediction coefficients, Q12 [order] */
+                                     const int32_t  order  /* I   Prediction order   */
 ) {
-    int32_t k;
-    int32_t Atmp_QA[SILK_MAX_ORDER_LPC];
-    int32_t DC_resp = 0;
+    int32_t        k;
+    int32_t        Atmp_QA[SILK_MAX_ORDER_LPC];
+    int32_t        DC_resp = 0;
     const uint32_t QA24 = 24;
 
     /* Increase Q domain of the AR coefficients */
-    for (k = 0; k < order; k++) {
+    for(k = 0; k < order; k++) {
         DC_resp += (int32_t)A_Q12[k];
         Atmp_QA[k] = silk_LSHIFT32((int32_t)A_Q12[k], QA24 - 12);
     }
     /* If the DC is unstable, we don't even need to do the full calculations */
-    if (DC_resp >= 4096) {
-        return 0;
-    }
+    if(DC_resp >= 4096) { return 0; }
     return LPC_inverse_pred_gain_QA_c(Atmp_QA, order);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Predictive dequantizer for NLSF residuals */
-static  void
-silk_NLSF_residual_dequant(                                   /* O    Returns RD value in Q30                     */
-                           int16_t x_Q10[],                   /* O    Output [ order ]                            */
-                           const int8_t indices[],            /* I    Quantization indices [ order ]              */
-                           const uint8_t pred_coef_Q8[],      /* I    Backward predictor coefs [ order ]          */
-                           const int32_t quant_step_size_Q16, /* I    Quantization step size                      */
-                           const int16_t order                /* I    Number of input values                      */
+void silk_NLSF_residual_dequant(                                   /* O    Returns RD value in Q30                     */
+                                int16_t       x_Q10[],             /* O    Output [ order ]                            */
+                                const int8_t  indices[],           /* I    Quantization indices [ order ]              */
+                                const uint8_t pred_coef_Q8[],      /* I    Backward predictor coefs [ order ]          */
+                                const int32_t quant_step_size_Q16, /* I    Quantization step size                      */
+                                const int16_t order                /* I    Number of input values                      */
 ) {
     int32_t i, out_Q10, pred_Q10;
 
     out_Q10 = 0;
-    for (i = order - 1; i >= 0; i--) {
+    for(i = order - 1; i >= 0; i--) {
         pred_Q10 = silk_RSHIFT(silk_SMULBB(out_Q10, (int16_t)pred_coef_Q8[i]), 8);
         out_Q10 = silk_LSHIFT(indices[i], 10);
-        if (out_Q10 > 0) {
-            out_Q10 = silk_SUB16(out_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-        } else if (out_Q10 < 0) {
-            out_Q10 = silk_ADD16(out_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-        }
+        if(out_Q10 > 0) { out_Q10 = silk_SUB16(out_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10)); }
+        else if(out_Q10 < 0) { out_Q10 = out_Q10 + SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10); }
         out_Q10 = silk_SMLAWB(pred_Q10, (int32_t)out_Q10, quant_step_size_Q16);
         x_Q10[i] = out_Q10;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* NLSF vector decoder */
-void silk_NLSF_decode(int16_t *pNLSF_Q15,                  /* O    Quantized NLSF vector [ LPC_ORDER ]         */
-                      int8_t *NLSFIndices,                 /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
-                      const silk_NLSF_CB_struct *psNLSF_CB /* I    Codebook object                             */
+void silk_NLSF_decode(int16_t*                   pNLSF_Q15,   /* O    Quantized NLSF vector [ LPC_ORDER ]         */
+                      int8_t*                    NLSFIndices, /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
+                      const silk_NLSF_CB_struct* psNLSF_CB    /* I    Codebook object                             */
 ) {
-    int32_t i;
-    uint8_t pred_Q8[MAX_LPC_ORDER];
-    int16_t ec_ix[MAX_LPC_ORDER];
-    int16_t res_Q10[MAX_LPC_ORDER];
-    int32_t NLSF_Q15_tmp;
-    const uint8_t *pCB_element;
-    const int16_t *pCB_Wght_Q9;
+    int32_t        i;
+    uint8_t        pred_Q8[MAX_LPC_ORDER];
+    int16_t        ec_ix[MAX_LPC_ORDER];
+    int16_t        res_Q10[MAX_LPC_ORDER];
+    int32_t        NLSF_Q15_tmp;
+    const uint8_t* pCB_element;
+    const int16_t* pCB_Wght_Q9;
 
     /* Unpack entropy table indices and predictor for current CB1 index */
     silk_NLSF_unpack(ec_ix, pred_Q8, psNLSF_CB, NLSFIndices[0]);
@@ -2708,57 +2685,55 @@ void silk_NLSF_decode(int16_t *pNLSF_Q15,                  /* O    Quantized NLS
     /* Apply inverse square-rooted weights to first stage and add to output */
     pCB_element = &psNLSF_CB->CB1_NLSF_Q8[NLSFIndices[0] * psNLSF_CB->order];
     pCB_Wght_Q9 = &psNLSF_CB->CB1_Wght_Q9[NLSFIndices[0] * psNLSF_CB->order];
-    for (i = 0; i < psNLSF_CB->order; i++) {
-        NLSF_Q15_tmp = silk_ADD_LSHIFT32(silk_DIV32_16(silk_LSHIFT((int32_t)res_Q10[i], 14), pCB_Wght_Q9[i]),
-                                         (int16_t)pCB_element[i], 7);
+    for(i = 0; i < psNLSF_CB->order; i++) {
+        NLSF_Q15_tmp = silk_ADD_LSHIFT32(silk_DIV32_16(silk_LSHIFT((int32_t)res_Q10[i], 14), pCB_Wght_Q9[i]), (int16_t)pCB_element[i], 7);
         pNLSF_Q15[i] = (int16_t)silk_LIMIT(NLSF_Q15_tmp, 0, 32767);
     }
 
     /* NLSF stabilization */
     silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB->deltaMin_Q15, psNLSF_CB->order);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Delayed-decision quantizer for NLSF residuals */
-int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD value in Q25                     */
-                                int8_t indices[],             /* O    Quantization indices [ order ]              */
-                                const int16_t x_Q10[],        /* I    Input [ order ]                             */
-                                const int16_t w_Q5[],         /* I    Weights [ order ]                           */
-                                const uint8_t pred_coef_Q8[], /* I    Backward predictor coefs [ order ]          */
-                                const int16_t ec_ix[],        /* I    Indices to entropy coding tables [ order ]  */
-                                const uint8_t ec_rates_Q5[],  /* I    Rates []                                    */
+int32_t silk_NLSF_del_dec_quant(                                      /* O    Returns RD value in Q25                     */
+                                int8_t        indices[],              /* O    Quantization indices [ order ]              */
+                                const int16_t x_Q10[],                /* I    Input [ order ]                             */
+                                const int16_t w_Q5[],                 /* I    Weights [ order ]                           */
+                                const uint8_t pred_coef_Q8[],         /* I    Backward predictor coefs [ order ]          */
+                                const int16_t ec_ix[],                /* I    Indices to entropy coding tables [ order ]  */
+                                const uint8_t ec_rates_Q5[],          /* I    Rates []                                    */
                                 const int32_t quant_step_size_Q16,    /* I    Quantization step size    */
                                 const int16_t inv_quant_step_size_Q6, /* I    Inverse quantization step size */
-                                const int32_t mu_Q20, /* I    R/D tradeoff                                */
-                                const int16_t order   /* I    Number of input values                      */
+                                const int32_t mu_Q20,                 /* I    R/D tradeoff                                */
+                                const int16_t order                   /* I    Number of input values                      */
 ) {
-    int32_t i, j, nStates, ind_tmp, ind_min_max, ind_max_min, in_Q10, res_Q10;
-    int32_t pred_Q10, diff_Q10, rate0_Q5, rate1_Q5;
-    int16_t out0_Q10, out1_Q10;
-    int32_t RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25;
-    int32_t ind_sort[NLSF_QUANT_DEL_DEC_STATES];
-    int8_t ind[NLSF_QUANT_DEL_DEC_STATES][MAX_LPC_ORDER];
-    int16_t prev_out_Q10[2 * NLSF_QUANT_DEL_DEC_STATES];
-    int32_t RD_Q25[2 * NLSF_QUANT_DEL_DEC_STATES];
-    int32_t RD_min_Q25[NLSF_QUANT_DEL_DEC_STATES];
-    int32_t RD_max_Q25[NLSF_QUANT_DEL_DEC_STATES];
-    const uint8_t *rates_Q5;
+    int32_t        i, j, nStates, ind_tmp, ind_min_max, ind_max_min, in_Q10, res_Q10;
+    int32_t        pred_Q10, diff_Q10, rate0_Q5, rate1_Q5;
+    int16_t        out0_Q10, out1_Q10;
+    int32_t        RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25;
+    int32_t        ind_sort[NLSF_QUANT_DEL_DEC_STATES];
+    int8_t         ind[NLSF_QUANT_DEL_DEC_STATES][MAX_LPC_ORDER];
+    int16_t        prev_out_Q10[2 * NLSF_QUANT_DEL_DEC_STATES];
+    int32_t        RD_Q25[2 * NLSF_QUANT_DEL_DEC_STATES];
+    int32_t        RD_min_Q25[NLSF_QUANT_DEL_DEC_STATES];
+    int32_t        RD_max_Q25[NLSF_QUANT_DEL_DEC_STATES];
+    const uint8_t* rates_Q5;
 
     int32_t out0_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
     int32_t out1_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
 
-    for (i = -NLSF_QUANT_MAX_AMPLITUDE_EXT; i <= NLSF_QUANT_MAX_AMPLITUDE_EXT - 1; i++) {
+    for(i = -NLSF_QUANT_MAX_AMPLITUDE_EXT; i <= NLSF_QUANT_MAX_AMPLITUDE_EXT - 1; i++) {
         out0_Q10 = silk_LSHIFT(i, 10);
-        out1_Q10 = silk_ADD16(out0_Q10, 1024);
-        if (i > 0) {
+        out1_Q10 = out0_Q10 + 1024;
+        if(i > 0) {
             out0_Q10 = silk_SUB16(out0_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
             out1_Q10 = silk_SUB16(out1_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-        } else if (i == 0) {
-            out1_Q10 = silk_SUB16(out1_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-        } else if (i == -1) {
-            out0_Q10 = silk_ADD16(out0_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-        } else {
-            out0_Q10 = silk_ADD16(out0_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
-            out1_Q10 = silk_ADD16(out1_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
+        }
+        else if(i == 0) { out1_Q10 = silk_SUB16(out1_Q10, SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10)); }
+        else if(i == -1) { out0_Q10 = out0_Q10 + SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10); }
+        else {
+            out0_Q10 = out0_Q10 + SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10);
+            out1_Q10 = out1_Q10 + SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10);
         }
         out0_Q10_table[i + NLSF_QUANT_MAX_AMPLITUDE_EXT] = silk_RSHIFT(silk_SMULBB(out0_Q10, quant_step_size_Q16), 16);
         out1_Q10_table[i + NLSF_QUANT_MAX_AMPLITUDE_EXT] = silk_RSHIFT(silk_SMULBB(out1_Q10, quant_step_size_Q16), 16);
@@ -2769,10 +2744,10 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
     nStates = 1;
     RD_Q25[0] = 0;
     prev_out_Q10[0] = 0;
-    for (i = order - 1; i >= 0; i--) {
+    for(i = order - 1; i >= 0; i--) {
         rates_Q5 = &ec_rates_Q5[ec_ix[i]];
         in_Q10 = x_Q10[i];
-        for (j = 0; j < nStates; j++) {
+        for(j = 0; j < nStates; j++) {
             pred_Q10 = silk_RSHIFT(silk_SMULBB((int16_t)pred_coef_Q8[i], prev_out_Q10[j]), 8);
             res_Q10 = silk_SUB16(in_Q10, pred_Q10);
             ind_tmp = silk_RSHIFT(silk_SMULBB(inv_quant_step_size_Q6, res_Q10), 16);
@@ -2783,29 +2758,33 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
             out0_Q10 = out0_Q10_table[ind_tmp + NLSF_QUANT_MAX_AMPLITUDE_EXT];
             out1_Q10 = out1_Q10_table[ind_tmp + NLSF_QUANT_MAX_AMPLITUDE_EXT];
 
-            out0_Q10 = silk_ADD16(out0_Q10, pred_Q10);
-            out1_Q10 = silk_ADD16(out1_Q10, pred_Q10);
+            out0_Q10 = out0_Q10 + pred_Q10;
+            out1_Q10 = out1_Q10 + pred_Q10;
             prev_out_Q10[j] = out0_Q10;
             prev_out_Q10[j + nStates] = out1_Q10;
 
             /* compute RD for ind_tmp and ind_tmp + 1 */
-            if (ind_tmp + 1 >= NLSF_QUANT_MAX_AMPLITUDE) {
-                if (ind_tmp + 1 == NLSF_QUANT_MAX_AMPLITUDE) {
+            if(ind_tmp + 1 >= NLSF_QUANT_MAX_AMPLITUDE) {
+                if(ind_tmp + 1 == NLSF_QUANT_MAX_AMPLITUDE) {
                     rate0_Q5 = rates_Q5[ind_tmp + NLSF_QUANT_MAX_AMPLITUDE];
                     rate1_Q5 = 280;
-                } else {
-                    rate0_Q5 = silk_SMLABB(280 - 43 * NLSF_QUANT_MAX_AMPLITUDE, 43, ind_tmp);
-                    rate1_Q5 = silk_ADD16(rate0_Q5, 43);
                 }
-            } else if (ind_tmp <= -NLSF_QUANT_MAX_AMPLITUDE) {
-                if (ind_tmp == -NLSF_QUANT_MAX_AMPLITUDE) {
+                else {
+                    rate0_Q5 = silk_SMLABB(280 - 43 * NLSF_QUANT_MAX_AMPLITUDE, 43, ind_tmp);
+                    rate1_Q5 = rate0_Q5 + 43;
+                }
+            }
+            else if(ind_tmp <= -NLSF_QUANT_MAX_AMPLITUDE) {
+                if(ind_tmp == -NLSF_QUANT_MAX_AMPLITUDE) {
                     rate0_Q5 = 280;
                     rate1_Q5 = rates_Q5[ind_tmp + 1 + NLSF_QUANT_MAX_AMPLITUDE];
-                } else {
+                }
+                else {
                     rate0_Q5 = silk_SMLABB(280 - 43 * NLSF_QUANT_MAX_AMPLITUDE, -43, ind_tmp);
                     rate1_Q5 = silk_SUB16(rate0_Q5, 43);
                 }
-            } else {
+            }
+            else {
                 rate0_Q5 = rates_Q5[ind_tmp + NLSF_QUANT_MAX_AMPLITUDE];
                 rate1_Q5 = rates_Q5[ind_tmp + 1 + NLSF_QUANT_MAX_AMPLITUDE];
             }
@@ -2813,23 +2792,19 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
             diff_Q10 = silk_SUB16(in_Q10, out0_Q10);
             RD_Q25[j] = silk_SMLABB(silk_MLA(RD_tmp_Q25, silk_SMULBB(diff_Q10, diff_Q10), w_Q5[i]), mu_Q20, rate0_Q5);
             diff_Q10 = silk_SUB16(in_Q10, out1_Q10);
-            RD_Q25[j + nStates] =
-                silk_SMLABB(silk_MLA(RD_tmp_Q25, silk_SMULBB(diff_Q10, diff_Q10), w_Q5[i]), mu_Q20, rate1_Q5);
+            RD_Q25[j + nStates] = silk_SMLABB(silk_MLA(RD_tmp_Q25, silk_SMULBB(diff_Q10, diff_Q10), w_Q5[i]), mu_Q20, rate1_Q5);
         }
 
-        if (nStates <= NLSF_QUANT_DEL_DEC_STATES / 2) {
+        if(nStates <= NLSF_QUANT_DEL_DEC_STATES / 2) {
             /* double number of states and copy */
-            for (j = 0; j < nStates; j++) {
-                ind[j + nStates][i] = ind[j][i] + 1;
-            }
+            for(j = 0; j < nStates; j++) { ind[j + nStates][i] = ind[j][i] + 1; }
             nStates = silk_LSHIFT(nStates, 1);
-            for (j = nStates; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
-                ind[j][i] = ind[j - nStates][i];
-            }
-        } else {
+            for(j = nStates; j < NLSF_QUANT_DEL_DEC_STATES; j++) { ind[j][i] = ind[j - nStates][i]; }
+        }
+        else {
             /* sort lower and upper half of RD_Q25, pairwise */
-            for (j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
-                if (RD_Q25[j] > RD_Q25[j + NLSF_QUANT_DEL_DEC_STATES]) {
+            for(j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
+                if(RD_Q25[j] > RD_Q25[j + NLSF_QUANT_DEL_DEC_STATES]) {
                     RD_max_Q25[j] = RD_Q25[j];
                     RD_min_Q25[j] = RD_Q25[j + NLSF_QUANT_DEL_DEC_STATES];
                     RD_Q25[j] = RD_min_Q25[j];
@@ -2839,7 +2814,8 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
                     prev_out_Q10[j] = prev_out_Q10[j + NLSF_QUANT_DEL_DEC_STATES];
                     prev_out_Q10[j + NLSF_QUANT_DEL_DEC_STATES] = out0_Q10;
                     ind_sort[j] = j + NLSF_QUANT_DEL_DEC_STATES;
-                } else {
+                }
+                else {
                     RD_min_Q25[j] = RD_Q25[j];
                     RD_max_Q25[j] = RD_Q25[j + NLSF_QUANT_DEL_DEC_STATES];
                     ind_sort[j] = j;
@@ -2848,49 +2824,45 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
             /* compare the highest RD values of the winning half with the lowest one in the losing half, and copy if
              * necessary */
             /* afterwards ind_sort[] will contain the indices of the NLSF_QUANT_DEL_DEC_STATES winning RD values */
-            while (1) {
+            while(1) {
                 min_max_Q25 = silk_int32_MAX;
                 max_min_Q25 = 0;
                 ind_min_max = 0;
                 ind_max_min = 0;
-                for (j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
-                    if (min_max_Q25 > RD_max_Q25[j]) {
+                for(j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
+                    if(min_max_Q25 > RD_max_Q25[j]) {
                         min_max_Q25 = RD_max_Q25[j];
                         ind_min_max = j;
                     }
-                    if (max_min_Q25 < RD_min_Q25[j]) {
+                    if(max_min_Q25 < RD_min_Q25[j]) {
                         max_min_Q25 = RD_min_Q25[j];
                         ind_max_min = j;
                     }
                 }
-                if (min_max_Q25 >= max_min_Q25) {
-                    break;
-                }
+                if(min_max_Q25 >= max_min_Q25) { break; }
                 /* copy ind_min_max to ind_max_min */
                 ind_sort[ind_max_min] = ind_sort[ind_min_max] ^ NLSF_QUANT_DEL_DEC_STATES;
                 RD_Q25[ind_max_min] = RD_Q25[ind_min_max + NLSF_QUANT_DEL_DEC_STATES];
                 prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + NLSF_QUANT_DEL_DEC_STATES];
                 RD_min_Q25[ind_max_min] = 0;
                 RD_max_Q25[ind_min_max] = silk_int32_MAX;
-                silk_memcpy(ind[ind_max_min], ind[ind_min_max], MAX_LPC_ORDER * sizeof(int8_t));
+                memcpy(ind[ind_max_min], ind[ind_min_max], MAX_LPC_ORDER * sizeof(int8_t));
             }
             /* increment index if it comes from the upper half */
-            for (j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) {
-                ind[j][i] += silk_RSHIFT(ind_sort[j], NLSF_QUANT_DEL_DEC_STATES_LOG2);
-            }
+            for(j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++) { ind[j][i] += silk_RSHIFT(ind_sort[j], NLSF_QUANT_DEL_DEC_STATES_LOG2); }
         }
     }
 
     /* last sample: find winner, copy indices and return RD value */
     ind_tmp = 0;
     min_Q25 = silk_int32_MAX;
-    for (j = 0; j < 2 * NLSF_QUANT_DEL_DEC_STATES; j++) {
-        if (min_Q25 > RD_Q25[j]) {
+    for(j = 0; j < 2 * NLSF_QUANT_DEL_DEC_STATES; j++) {
+        if(min_Q25 > RD_Q25[j]) {
             min_Q25 = RD_Q25[j];
             ind_tmp = j;
         }
     }
-    for (j = 0; j < order; j++) {
+    for(j = 0; j < order; j++) {
         indices[j] = ind[ind_tmp & (NLSF_QUANT_DEL_DEC_STATES - 1)][j];
         assert(indices[j] >= -NLSF_QUANT_MAX_AMPLITUDE_EXT);
         assert(indices[j] <= NLSF_QUANT_MAX_AMPLITUDE_EXT);
@@ -2900,12 +2872,11 @@ int32_t silk_NLSF_del_dec_quant(                              /* O    Returns RD
     assert(min_Q25 >= 0);
     return min_Q25;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* NLSF stabilizer, for a single input data vector */
-void silk_NLSF_stabilize(
-    int16_t *NLSF_Q15,            /* I/O   Unstable/stabilized normalized LSF vector in Q15 [L]       */
-    const int16_t *NDeltaMin_Q15, /* I     Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]   */
-    const int32_t L               /* I     Number of NLSF parameters in the input vector              */
+void silk_NLSF_stabilize(int16_t*       NLSF_Q15,      /* I/O   Unstable/stabilized normalized LSF vector in Q15 [L]       */
+                         const int16_t* NDeltaMin_Q15, /* I     Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]   */
+                         const int32_t  L              /* I     Number of NLSF parameters in the input vector              */
 ) {
     int32_t i, I = 0, k, loops;
     int16_t center_freq_Q15;
@@ -2914,7 +2885,7 @@ void silk_NLSF_stabilize(
     /* This is necessary to ensure an output within range of a int16_t */
     assert(NDeltaMin_Q15[L] >= 1);
 
-    for (loops = 0; loops < MAX_LOOPS; loops++) {
+    for(loops = 0; loops < MAX_LOOPS; loops++) {
         /**************************/
         /* Find smallest distance */
         /**************************/
@@ -2922,16 +2893,16 @@ void silk_NLSF_stabilize(
         min_diff_Q15 = NLSF_Q15[0] - NDeltaMin_Q15[0];
         I = 0;
         /* Middle elements */
-        for (i = 1; i <= L - 1; i++) {
+        for(i = 1; i <= L - 1; i++) {
             diff_Q15 = NLSF_Q15[i] - (NLSF_Q15[i - 1] + NDeltaMin_Q15[i]);
-            if (diff_Q15 < min_diff_Q15) {
+            if(diff_Q15 < min_diff_Q15) {
                 min_diff_Q15 = diff_Q15;
                 I = i;
             }
         }
         /* Last element */
         diff_Q15 = (1 << 15) - (NLSF_Q15[L - 1] + NDeltaMin_Q15[L]);
-        if (diff_Q15 < min_diff_Q15) {
+        if(diff_Q15 < min_diff_Q15) {
             min_diff_Q15 = diff_Q15;
             I = L;
         }
@@ -2939,43 +2910,36 @@ void silk_NLSF_stabilize(
         /***************************************************/
         /* Now check if the smallest distance non-negative */
         /***************************************************/
-        if (min_diff_Q15 >= 0) {
-            return;
-        }
+        if(min_diff_Q15 >= 0) { return; }
 
-        if (I == 0) {
+        if(I == 0) {
             /* Move away from lower limit */
             NLSF_Q15[0] = NDeltaMin_Q15[0];
-
-        } else if (I == L) {
+        }
+        else if(I == L) {
             /* Move away from higher limit */
             NLSF_Q15[L - 1] = (1 << 15) - NDeltaMin_Q15[L];
-
-        } else {
+        }
+        else {
             /* Find the lower extreme for the location of the current center frequency */
             min_center_Q15 = 0;
-            for (k = 0; k < I; k++) {
-                min_center_Q15 += NDeltaMin_Q15[k];
-            }
+            for(k = 0; k < I; k++) { min_center_Q15 += NDeltaMin_Q15[k]; }
             min_center_Q15 += silk_RSHIFT(NDeltaMin_Q15[I], 1);
 
             /* Find the upper extreme for the location of the current center frequency */
             max_center_Q15 = 1 << 15;
-            for (k = L; k > I; k--) {
-                max_center_Q15 -= NDeltaMin_Q15[k];
-            }
+            for(k = L; k > I; k--) { max_center_Q15 -= NDeltaMin_Q15[k]; }
             max_center_Q15 -= silk_RSHIFT(NDeltaMin_Q15[I], 1);
 
             /* Move apart, sorted by value, keeping the same center frequency */
-            center_freq_Q15 = (int16_t)silk_LIMIT_32(
-                silk_RSHIFT_ROUND((int32_t)NLSF_Q15[I - 1] + (int32_t)NLSF_Q15[I], 1), min_center_Q15, max_center_Q15);
+            center_freq_Q15 = (int16_t)silk_LIMIT_32(silk_RSHIFT_ROUND((int32_t)NLSF_Q15[I - 1] + (int32_t)NLSF_Q15[I], 1), min_center_Q15, max_center_Q15);
             NLSF_Q15[I - 1] = center_freq_Q15 - silk_RSHIFT(NDeltaMin_Q15[I], 1);
             NLSF_Q15[I] = NLSF_Q15[I - 1] + NDeltaMin_Q15[I];
         }
     }
 
     /* Safe and simple fall back method, which is less ideal than the above */
-    if (loops == MAX_LOOPS) {
+    if(loops == MAX_LOOPS) {
         /* Insertion sort (fast for already almost sorted arrays):   */
         /* Best case:  O(n)   for an already sorted array            */
         /* Worst case: O(n^2) for an inversely sorted array          */
@@ -2985,29 +2949,28 @@ void silk_NLSF_stabilize(
         NLSF_Q15[0] = silk_max_int(NLSF_Q15[0], NDeltaMin_Q15[0]);
 
         /* Keep delta_min distance between the NLSFs */
-        for (i = 1; i < L; i++)
-            NLSF_Q15[i] = silk_max_int(NLSF_Q15[i], silk_ADD_SAT16(NLSF_Q15[i - 1], NDeltaMin_Q15[i]));
+        for(i = 1; i < L; i++) NLSF_Q15[i] = silk_max_int(NLSF_Q15[i], silk_ADD_SAT16(NLSF_Q15[i - 1], NDeltaMin_Q15[i]));
 
         /* Last NLSF should be no higher than 1 - NDeltaMin[L] */
         NLSF_Q15[L - 1] = silk_min_int(NLSF_Q15[L - 1], (1 << 15) - NDeltaMin_Q15[L]);
 
         /* Keep NDeltaMin distance between the NLSFs */
-        for (i = L - 2; i >= 0; i--) NLSF_Q15[i] = silk_min_int(NLSF_Q15[i], NLSF_Q15[i + 1] - NDeltaMin_Q15[i + 1]);
+        for(i = L - 2; i >= 0; i--) NLSF_Q15[i] = silk_min_int(NLSF_Q15[i], NLSF_Q15[i + 1] - NDeltaMin_Q15[i + 1]);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Unpack predictor values and indices for entropy coding tables */
-void silk_NLSF_unpack(int16_t ec_ix[],                      /* O    Indices to entropy tables [ LPC_ORDER ]     */
-                      uint8_t pred_Q8[],                    /* O    LSF predictor [ LPC_ORDER ]                 */
-                      const silk_NLSF_CB_struct *psNLSF_CB, /* I    Codebook object                             */
-                      const int32_t CB1_index               /* I    Index of vector in first LSF codebook       */
+void silk_NLSF_unpack(int16_t                    ec_ix[],   /* O    Indices to entropy tables [ LPC_ORDER ]     */
+                      uint8_t                    pred_Q8[], /* O    LSF predictor [ LPC_ORDER ]                 */
+                      const silk_NLSF_CB_struct* psNLSF_CB, /* I    Codebook object                             */
+                      const int32_t              CB1_index  /* I    Index of vector in first LSF codebook       */
 ) {
-    int32_t i;
-    uint8_t entry;
-    const uint8_t *ec_sel_ptr;
+    int32_t        i;
+    uint8_t        entry;
+    const uint8_t* ec_sel_ptr;
 
     ec_sel_ptr = &psNLSF_CB->ec_sel[CB1_index * psNLSF_CB->order / 2];
-    for (i = 0; i < psNLSF_CB->order; i += 2) {
+    for(i = 0; i < psNLSF_CB->order; i += 2) {
         entry = *ec_sel_ptr++;
         ec_ix[i] = silk_SMULBB(silk_RSHIFT(entry, 1) & 7, 2 * NLSF_QUANT_MAX_AMPLITUDE + 1);
         pred_Q8[i] = psNLSF_CB->pred_Q8[i + (entry & 1) * (psNLSF_CB->order - 1)];
@@ -3015,11 +2978,11 @@ void silk_NLSF_unpack(int16_t ec_ix[],                      /* O    Indices to e
         pred_Q8[i + 1] = psNLSF_CB->pred_Q8[i + (silk_RSHIFT(entry, 4) & 1) * (psNLSF_CB->order - 1) + 1];
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Laroia low complexity NLSF weights */
-void silk_NLSF_VQ_weights_laroia(int16_t *pNLSFW_Q_OUT,    /* O     Pointer to input vector weights [D]    */
-                                 const int16_t *pNLSF_Q15, /* I     Pointer to input vector         [D] */
-                                 const int32_t D /* I     Input vector dimension (even)                              */
+void silk_NLSF_VQ_weights_laroia(int16_t*       pNLSFW_Q_OUT, /* O     Pointer to input vector weights [D]    */
+                                 const int16_t* pNLSF_Q15,    /* I     Pointer to input vector         [D] */
+                                 const int32_t  D             /* I     Input vector dimension (even)                              */
 ) {
     int32_t k;
     int32_t tmp1_int, tmp2_int;
@@ -3054,39 +3017,39 @@ void silk_NLSF_VQ_weights_laroia(int16_t *pNLSFW_Q_OUT,    /* O     Pointer to i
     pNLSFW_Q_OUT[D - 1] = (int16_t)silk_min_int(tmp1_int + tmp2_int, silk_int16_MAX);
     assert(pNLSFW_Q_OUT[D - 1] > 0);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Compute quantization errors for an LPC_order element input vector for a VQ codebook */
-void silk_NLSF_VQ(int32_t err_Q24[],        /* O    Quantization errors [K]                     */
+void silk_NLSF_VQ(int32_t       err_Q24[],  /* O    Quantization errors [K]                     */
                   const int16_t in_Q15[],   /* I    Input vectors to be quantized [LPC_order]   */
                   const uint8_t pCB_Q8[],   /* I    Codebook vectors [K*LPC_order]              */
                   const int16_t pWght_Q9[], /* I    Codebook weights [K*LPC_order]              */
                   const int32_t K,          /* I    Number of codebook vectors                  */
                   const int32_t LPC_order   /* I    Number of LPCs                              */
 ) {
-    int32_t i, m;
-    int32_t diff_Q15, diffw_Q24, sum_error_Q24, pred_Q24;
-    const int16_t *w_Q9_ptr;
-    const uint8_t *cb_Q8_ptr;
+    int32_t        i, m;
+    int32_t        diff_Q15, diffw_Q24, sum_error_Q24, pred_Q24;
+    const int16_t* w_Q9_ptr;
+    const uint8_t* cb_Q8_ptr;
 
     assert((LPC_order & 1) == 0);
 
     /* Loop over codebook */
     cb_Q8_ptr = pCB_Q8;
     w_Q9_ptr = pWght_Q9;
-    for (i = 0; i < K; i++) {
+    for(i = 0; i < K; i++) {
         sum_error_Q24 = 0;
         pred_Q24 = 0;
-        for (m = LPC_order - 2; m >= 0; m -= 2) {
+        for(m = LPC_order - 2; m >= 0; m -= 2) {
             /* Compute weighted absolute predictive quantization error for index m + 1 */
             diff_Q15 = silk_SUB_LSHIFT32(in_Q15[m + 1], (int32_t)cb_Q8_ptr[m + 1], 7); /* range: [ -32767 : 32767 ]*/
             diffw_Q24 = silk_SMULBB(diff_Q15, w_Q9_ptr[m + 1]);
-            sum_error_Q24 = silk_ADD32(sum_error_Q24, silk_abs(silk_SUB_RSHIFT32(diffw_Q24, pred_Q24, 1)));
+            sum_error_Q24 = sum_error_Q24 + silk_abs(silk_SUB_RSHIFT32(diffw_Q24, pred_Q24, 1));
             pred_Q24 = diffw_Q24;
 
             /* Compute weighted absolute predictive quantization error for index m */
             diff_Q15 = silk_SUB_LSHIFT32(in_Q15[m], (int32_t)cb_Q8_ptr[m], 7); /* range: [ -32767 : 32767 ]*/
             diffw_Q24 = silk_SMULBB(diff_Q15, w_Q9_ptr[m]);
-            sum_error_Q24 = silk_ADD32(sum_error_Q24, silk_abs(silk_SUB_RSHIFT32(diffw_Q24, pred_Q24, 1)));
+            sum_error_Q24 = sum_error_Q24 + silk_abs(silk_SUB_RSHIFT32(diffw_Q24, pred_Q24, 1));
             pred_Q24 = diffw_Q24;
 
             assert(sum_error_Q24 >= 0);
@@ -3096,363 +3059,8 @@ void silk_NLSF_VQ(int32_t err_Q24[],        /* O    Quantization errors [K]     
         w_Q9_ptr += LPC_order;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-/* Noise shape quantizer for one subframe */
-static void silk_noise_shape_quantizer_del_dec(
-    silk_nsq_state *NSQ,            /* I/O  NSQ state                           */
-    NSQ_del_dec_struct psDelDec[],  /* I/O  Delayed decision states             */
-    int32_t signalType,             /* I    Signal type                         */
-    const int32_t x_Q10[],          /* I                                        */
-    int8_t pulses[],                /* O                                        */
-    int16_t xq[],                   /* O                                        */
-    int32_t sLTP_Q15[],             /* I/O  LTP filter state                    */
-    int32_t delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
-    const int16_t a_Q12[],          /* I    Short term prediction coefs         */
-    const int16_t b_Q14[],          /* I    Long term prediction coefs          */
-    const int16_t AR_shp_Q13[],     /* I    Noise shaping coefs                 */
-    int32_t lag,                    /* I    Pitch lag                           */
-    int32_t HarmShapeFIRPacked_Q14, /* I                                        */
-    int32_t Tilt_Q14,               /* I    Spectral tilt                       */
-    int32_t LF_shp_Q14,             /* I                                        */
-    int32_t Gain_Q16,               /* I                                        */
-    int32_t Lambda_Q10,             /* I                                        */
-    int32_t offset_Q10,             /* I                                        */
-    int32_t length,                 /* I    Input length                        */
-    int32_t subfr,                  /* I    Subframe number                     */
-    int32_t shapingLPCOrder,        /* I    Shaping LPC filter order            */
-    int32_t predictLPCOrder,        /* I    Prediction filter order             */
-    int32_t warping_Q16,            /* I                                        */
-    int32_t nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    int32_t *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
-    int32_t decisionDelay           /* I                                        */
-);
-//----------------------------------------------------------------------------------------------------------------------
-/* Noise shape quantizer for one subframe */
-static void silk_noise_shape_quantizer_del_dec(
-    silk_nsq_state *NSQ,            /* I/O  NSQ state                           */
-    NSQ_del_dec_struct psDelDec[],  /* I/O  Delayed decision states             */
-    int32_t signalType,             /* I    Signal type                         */
-    const int32_t x_Q10[],          /* I                                        */
-    int8_t pulses[],                /* O                                        */
-    int16_t xq[],                   /* O                                        */
-    int32_t sLTP_Q15[],             /* I/O  LTP filter state                    */
-    int32_t delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
-    const int16_t a_Q12[],          /* I    Short term prediction coefs         */
-    const int16_t b_Q14[],          /* I    Long term prediction coefs          */
-    const int16_t AR_shp_Q13[],     /* I    Noise shaping coefs                 */
-    int32_t lag,                    /* I    Pitch lag                           */
-    int32_t HarmShapeFIRPacked_Q14, /* I                                        */
-    int32_t Tilt_Q14,               /* I    Spectral tilt                       */
-    int32_t LF_shp_Q14,             /* I                                        */
-    int32_t Gain_Q16,               /* I                                        */
-    int32_t Lambda_Q10,             /* I                                        */
-    int32_t offset_Q10,             /* I                                        */
-    int32_t length,                 /* I    Input length                        */
-    int32_t subfr,                  /* I    Subframe number                     */
-    int32_t shapingLPCOrder,        /* I    Shaping LPC filter order            */
-    int32_t predictLPCOrder,        /* I    Prediction filter order             */
-    int32_t warping_Q16,            /* I                                        */
-    int32_t nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    int32_t *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
-    int32_t decisionDelay           /* I                                        */
-) {
-    int32_t i, j, k, Winner_ind, RDmin_ind, RDmax_ind, last_smple_idx;
-    int32_t Winner_rand_state;
-    int32_t LTP_pred_Q14, LPC_pred_Q14, n_AR_Q14, n_LTP_Q14;
-    int32_t n_LF_Q14, r_Q10, rr_Q10, rd1_Q10, rd2_Q10, RDmin_Q10, RDmax_Q10;
-    int32_t q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
-    int32_t tmp1, tmp2, sLF_AR_shp_Q14;
-    int32_t *pred_lag_ptr, *shp_lag_ptr, *psLPC_Q14;
-
-    VARDECL(NSQ_sample_pair, psSampleState);
-    NSQ_del_dec_struct *psDD;
-    NSQ_sample_struct *psSS;
-
-    assert(nStatesDelayedDecision > 0);
-    ALLOC(psSampleState, nStatesDelayedDecision, NSQ_sample_pair);
-
-    shp_lag_ptr = &NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2];
-    pred_lag_ptr = &sLTP_Q15[NSQ->sLTP_buf_idx - lag + LTP_ORDER / 2];
-    Gain_Q10 = silk_RSHIFT(Gain_Q16, 6);
-
-
-
-    for (i = 0; i < length; i++) {
-        /* Perform common calculations used in all states */
-
-        /* Long-term prediction */
-        if (signalType == TYPE_VOICED) {
-            /* Unrolled loop */
-            /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
-            LTP_pred_Q14 = 2;
-            LTP_pred_Q14 = silk_SMLAWB(LTP_pred_Q14, pred_lag_ptr[0], b_Q14[0]);
-            LTP_pred_Q14 = silk_SMLAWB(LTP_pred_Q14, pred_lag_ptr[-1], b_Q14[1]);
-            LTP_pred_Q14 = silk_SMLAWB(LTP_pred_Q14, pred_lag_ptr[-2], b_Q14[2]);
-            LTP_pred_Q14 = silk_SMLAWB(LTP_pred_Q14, pred_lag_ptr[-3], b_Q14[3]);
-            LTP_pred_Q14 = silk_SMLAWB(LTP_pred_Q14, pred_lag_ptr[-4], b_Q14[4]);
-            LTP_pred_Q14 = silk_LSHIFT(LTP_pred_Q14, 1); /* Q13 -> Q14 */
-            pred_lag_ptr++;
-        } else {
-            LTP_pred_Q14 = 0;
-        }
-
-        /* Long-term shaping */
-        if (lag > 0) {
-            /* Symmetric, packed FIR coefficients */
-            n_LTP_Q14 = silk_SMULWB(silk_ADD32(shp_lag_ptr[0], shp_lag_ptr[-2]), HarmShapeFIRPacked_Q14);
-            n_LTP_Q14 = silk_SMLAWT(n_LTP_Q14, shp_lag_ptr[-1], HarmShapeFIRPacked_Q14);
-            n_LTP_Q14 = silk_SUB_LSHIFT32(LTP_pred_Q14, n_LTP_Q14, 2); /* Q12 -> Q14 */
-            shp_lag_ptr++;
-        } else {
-            n_LTP_Q14 = 0;
-        }
-
-        for (k = 0; k < nStatesDelayedDecision; k++) {
-            /* Delayed decision state */
-            psDD = &psDelDec[k];
-
-            /* Sample state */
-            psSS = psSampleState[k];
-
-            /* Generate dither */
-            psDD->Seed = silk_RAND(psDD->Seed);
-
-            /* Pointer used in short term prediction and shaping */
-            psLPC_Q14 = &psDD->sLPC_Q14[NSQ_LPC_BUF_LENGTH - 1 + i];
-            /* Short-term prediction */
-        //    LPC_pred_Q14 =
-        //        silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
-            LPC_pred_Q14 = silk_LSHIFT(LPC_pred_Q14, 4); /* Q10 -> Q14 */
-
-            /* Noise shape feedback */
-            assert((shapingLPCOrder & 1) == 0); /* check that order is even */
-            /* Output of lowpass section */
-            tmp2 = silk_SMLAWB(psDD->Diff_Q14, psDD->sAR2_Q14[0], warping_Q16);
-            /* Output of allpass section */
-            tmp1 = silk_SMLAWB(psDD->sAR2_Q14[0], psDD->sAR2_Q14[1] - tmp2, warping_Q16);
-            psDD->sAR2_Q14[0] = tmp2;
-            n_AR_Q14 = silk_RSHIFT(shapingLPCOrder, 1);
-            n_AR_Q14 = silk_SMLAWB(n_AR_Q14, tmp2, AR_shp_Q13[0]);
-            /* Loop over allpass sections */
-            for (j = 2; j < shapingLPCOrder; j += 2) {
-                /* Output of allpass section */
-                tmp2 = silk_SMLAWB(psDD->sAR2_Q14[j - 1], psDD->sAR2_Q14[j + 0] - tmp1, warping_Q16);
-                psDD->sAR2_Q14[j - 1] = tmp1;
-                n_AR_Q14 = silk_SMLAWB(n_AR_Q14, tmp1, AR_shp_Q13[j - 1]);
-                /* Output of allpass section */
-                tmp1 = silk_SMLAWB(psDD->sAR2_Q14[j + 0], psDD->sAR2_Q14[j + 1] - tmp2, warping_Q16);
-                psDD->sAR2_Q14[j + 0] = tmp2;
-                n_AR_Q14 = silk_SMLAWB(n_AR_Q14, tmp2, AR_shp_Q13[j]);
-            }
-            psDD->sAR2_Q14[shapingLPCOrder - 1] = tmp1;
-            n_AR_Q14 = silk_SMLAWB(n_AR_Q14, tmp1, AR_shp_Q13[shapingLPCOrder - 1]);
-
-            n_AR_Q14 = silk_LSHIFT(n_AR_Q14, 1);                         /* Q11 -> Q12 */
-            n_AR_Q14 = silk_SMLAWB(n_AR_Q14, psDD->LF_AR_Q14, Tilt_Q14); /* Q12 */
-            n_AR_Q14 = silk_LSHIFT(n_AR_Q14, 2);                         /* Q12 -> Q14 */
-
-            n_LF_Q14 = silk_SMULWB(psDD->Shape_Q14[*smpl_buf_idx], LF_shp_Q14); /* Q12 */
-            n_LF_Q14 = silk_SMLAWT(n_LF_Q14, psDD->LF_AR_Q14, LF_shp_Q14);      /* Q12 */
-            n_LF_Q14 = silk_LSHIFT(n_LF_Q14, 2);                                /* Q12 -> Q14 */
-
-            /* Input minus prediction plus noise feedback                       */
-            /* r = x[ i ] - LTP_pred - LPC_pred + n_AR + n_Tilt + n_LF + n_LTP  */
-            tmp1 = silk_ADD32(n_AR_Q14, n_LF_Q14);      /* Q14 */
-            tmp2 = silk_ADD32(n_LTP_Q14, LPC_pred_Q14); /* Q13 */
-            tmp1 = silk_SUB32(tmp2, tmp1);              /* Q13 */
-            tmp1 = silk_RSHIFT_ROUND(tmp1, 4);          /* Q10 */
-
-            r_Q10 = silk_SUB32(x_Q10[i], tmp1); /* residual error Q10 */
-
-            /* Flip sign depending on dither */
-            if (psDD->Seed < 0) {
-                r_Q10 = -r_Q10;
-            }
-            r_Q10 = silk_LIMIT_32(r_Q10, -(31 << 10), 30 << 10);
-
-            /* Find two quantization level candidates and measure their rate-distortion */
-            q1_Q10 = silk_SUB32(r_Q10, offset_Q10);
-            q1_Q0 = silk_RSHIFT(q1_Q10, 10);
-            if (Lambda_Q10 > 2048) {
-                /* For aggressive RDO, the bias becomes more than one pulse. */
-                int rdo_offset = Lambda_Q10 / 2 - 512;
-                if (q1_Q10 > rdo_offset) {
-                    q1_Q0 = silk_RSHIFT(q1_Q10 - rdo_offset, 10);
-                } else if (q1_Q10 < -rdo_offset) {
-                    q1_Q0 = silk_RSHIFT(q1_Q10 + rdo_offset, 10);
-                } else if (q1_Q10 < 0) {
-                    q1_Q0 = -1;
-                } else {
-                    q1_Q0 = 0;
-                }
-            }
-            if (q1_Q0 > 0) {
-                q1_Q10 = silk_SUB32(silk_LSHIFT(q1_Q0, 10), QUANT_LEVEL_ADJUST_Q10);
-                q1_Q10 = silk_ADD32(q1_Q10, offset_Q10);
-                q2_Q10 = silk_ADD32(q1_Q10, 1024);
-                rd1_Q10 = silk_SMULBB(q1_Q10, Lambda_Q10);
-                rd2_Q10 = silk_SMULBB(q2_Q10, Lambda_Q10);
-            } else if (q1_Q0 == 0) {
-                q1_Q10 = offset_Q10;
-                q2_Q10 = silk_ADD32(q1_Q10, 1024 - QUANT_LEVEL_ADJUST_Q10);
-                rd1_Q10 = silk_SMULBB(q1_Q10, Lambda_Q10);
-                rd2_Q10 = silk_SMULBB(q2_Q10, Lambda_Q10);
-            } else if (q1_Q0 == -1) {
-                q2_Q10 = offset_Q10;
-                q1_Q10 = silk_SUB32(q2_Q10, 1024 - QUANT_LEVEL_ADJUST_Q10);
-                rd1_Q10 = silk_SMULBB(-q1_Q10, Lambda_Q10);
-                rd2_Q10 = silk_SMULBB(q2_Q10, Lambda_Q10);
-            } else { /* q1_Q0 < -1 */
-                q1_Q10 = silk_ADD32(silk_LSHIFT(q1_Q0, 10), QUANT_LEVEL_ADJUST_Q10);
-                q1_Q10 = silk_ADD32(q1_Q10, offset_Q10);
-                q2_Q10 = silk_ADD32(q1_Q10, 1024);
-                rd1_Q10 = silk_SMULBB(-q1_Q10, Lambda_Q10);
-                rd2_Q10 = silk_SMULBB(-q2_Q10, Lambda_Q10);
-            }
-            rr_Q10 = silk_SUB32(r_Q10, q1_Q10);
-            rd1_Q10 = silk_RSHIFT(silk_SMLABB(rd1_Q10, rr_Q10, rr_Q10), 10);
-            rr_Q10 = silk_SUB32(r_Q10, q2_Q10);
-            rd2_Q10 = silk_RSHIFT(silk_SMLABB(rd2_Q10, rr_Q10, rr_Q10), 10);
-
-            if (rd1_Q10 < rd2_Q10) {
-                psSS[0].RD_Q10 = silk_ADD32(psDD->RD_Q10, rd1_Q10);
-                psSS[1].RD_Q10 = silk_ADD32(psDD->RD_Q10, rd2_Q10);
-                psSS[0].Q_Q10 = q1_Q10;
-                psSS[1].Q_Q10 = q2_Q10;
-            } else {
-                psSS[0].RD_Q10 = silk_ADD32(psDD->RD_Q10, rd2_Q10);
-                psSS[1].RD_Q10 = silk_ADD32(psDD->RD_Q10, rd1_Q10);
-                psSS[0].Q_Q10 = q2_Q10;
-                psSS[1].Q_Q10 = q1_Q10;
-            }
-
-            /* Update states for best quantization */
-
-            /* Quantized excitation */
-            exc_Q14 = silk_LSHIFT32(psSS[0].Q_Q10, 4);
-            if (psDD->Seed < 0) {
-                exc_Q14 = -exc_Q14;
-            }
-
-            /* Add predictions */
-            LPC_exc_Q14 = silk_ADD32(exc_Q14, LTP_pred_Q14);
-            xq_Q14 = silk_ADD32(LPC_exc_Q14, LPC_pred_Q14);
-
-            /* Update states */
-            psSS[0].Diff_Q14 = silk_SUB_LSHIFT32(xq_Q14, x_Q10[i], 4);
-            sLF_AR_shp_Q14 = silk_SUB32(psSS[0].Diff_Q14, n_AR_Q14);
-            psSS[0].sLTP_shp_Q14 = silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
-            psSS[0].LF_AR_Q14 = sLF_AR_shp_Q14;
-            psSS[0].LPC_exc_Q14 = LPC_exc_Q14;
-            psSS[0].xq_Q14 = xq_Q14;
-
-            /* Update states for second best quantization */
-
-            /* Quantized excitation */
-            exc_Q14 = silk_LSHIFT32(psSS[1].Q_Q10, 4);
-            if (psDD->Seed < 0) {
-                exc_Q14 = -exc_Q14;
-            }
-
-            /* Add predictions */
-            LPC_exc_Q14 = silk_ADD32(exc_Q14, LTP_pred_Q14);
-            xq_Q14 = silk_ADD32(LPC_exc_Q14, LPC_pred_Q14);
-
-            /* Update states */
-            psSS[1].Diff_Q14 = silk_SUB_LSHIFT32(xq_Q14, x_Q10[i], 4);
-            sLF_AR_shp_Q14 = silk_SUB32(psSS[1].Diff_Q14, n_AR_Q14);
-            psSS[1].sLTP_shp_Q14 = silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
-            psSS[1].LF_AR_Q14 = sLF_AR_shp_Q14;
-            psSS[1].LPC_exc_Q14 = LPC_exc_Q14;
-            psSS[1].xq_Q14 = xq_Q14;
-        }
-
-        *smpl_buf_idx = (*smpl_buf_idx - 1) % DECISION_DELAY;
-        if (*smpl_buf_idx < 0) *smpl_buf_idx += DECISION_DELAY;
-        last_smple_idx = (*smpl_buf_idx + decisionDelay) % DECISION_DELAY;
-
-        /* Find winner */
-        RDmin_Q10 = psSampleState[0][0].RD_Q10;
-        Winner_ind = 0;
-        for (k = 1; k < nStatesDelayedDecision; k++) {
-            if (psSampleState[k][0].RD_Q10 < RDmin_Q10) {
-                RDmin_Q10 = psSampleState[k][0].RD_Q10;
-                Winner_ind = k;
-            }
-        }
-
-        /* Increase RD values of expired states */
-        Winner_rand_state = psDelDec[Winner_ind].RandState[last_smple_idx];
-        for (k = 0; k < nStatesDelayedDecision; k++) {
-            if (psDelDec[k].RandState[last_smple_idx] != Winner_rand_state) {
-                psSampleState[k][0].RD_Q10 = silk_ADD32(psSampleState[k][0].RD_Q10, silk_int32_MAX >> 4);
-                psSampleState[k][1].RD_Q10 = silk_ADD32(psSampleState[k][1].RD_Q10, silk_int32_MAX >> 4);
-                assert(psSampleState[k][0].RD_Q10 >= 0);
-            }
-        }
-
-        /* Find worst in first set and best in second set */
-        RDmax_Q10 = psSampleState[0][0].RD_Q10;
-        RDmin_Q10 = psSampleState[0][1].RD_Q10;
-        RDmax_ind = 0;
-        RDmin_ind = 0;
-        for (k = 1; k < nStatesDelayedDecision; k++) {
-            /* find worst in first set */
-            if (psSampleState[k][0].RD_Q10 > RDmax_Q10) {
-                RDmax_Q10 = psSampleState[k][0].RD_Q10;
-                RDmax_ind = k;
-            }
-            /* find best in second set */
-            if (psSampleState[k][1].RD_Q10 < RDmin_Q10) {
-                RDmin_Q10 = psSampleState[k][1].RD_Q10;
-                RDmin_ind = k;
-            }
-        }
-
-        /* Replace a state if best from second set outperforms worst in first set */
-        if (RDmin_Q10 < RDmax_Q10) {
-            silk_memcpy(((int32_t *)&psDelDec[RDmax_ind]) + i, ((int32_t *)&psDelDec[RDmin_ind]) + i,
-                        sizeof(NSQ_del_dec_struct) - i * sizeof(int32_t));
-            silk_memcpy(&psSampleState[RDmax_ind][0], &psSampleState[RDmin_ind][1], sizeof(NSQ_sample_struct));
-        }
-
-        /* Write samples from winner to output and long-term filter states */
-        psDD = &psDelDec[Winner_ind];
-        if (subfr > 0 || i >= decisionDelay) {
-            pulses[i - decisionDelay] = (int8_t)silk_RSHIFT_ROUND(psDD->Q_Q10[last_smple_idx], 10);
-            xq[i - decisionDelay] = (int16_t)silk_SAT16(
-                silk_RSHIFT_ROUND(silk_SMULWW(psDD->Xq_Q14[last_smple_idx], delayedGain_Q10[last_smple_idx]), 8));
-            NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - decisionDelay] = psDD->Shape_Q14[last_smple_idx];
-            sLTP_Q15[NSQ->sLTP_buf_idx - decisionDelay] = psDD->Pred_Q15[last_smple_idx];
-        }
-        NSQ->sLTP_shp_buf_idx++;
-        NSQ->sLTP_buf_idx++;
-
-        /* Update states */
-        for (k = 0; k < nStatesDelayedDecision; k++) {
-            psDD = &psDelDec[k];
-            psSS = &psSampleState[k][0];
-            psDD->LF_AR_Q14 = psSS->LF_AR_Q14;
-            psDD->Diff_Q14 = psSS->Diff_Q14;
-            psDD->sLPC_Q14[NSQ_LPC_BUF_LENGTH + i] = psSS->xq_Q14;
-            psDD->Xq_Q14[*smpl_buf_idx] = psSS->xq_Q14;
-            psDD->Q_Q10[*smpl_buf_idx] = psSS->Q_Q10;
-            psDD->Pred_Q15[*smpl_buf_idx] = silk_LSHIFT32(psSS->LPC_exc_Q14, 1);
-            psDD->Shape_Q14[*smpl_buf_idx] = psSS->sLTP_shp_Q14;
-            psDD->Seed = silk_ADD32_ovflw(psDD->Seed, silk_RSHIFT_ROUND(psSS->Q_Q10, 10));
-            psDD->RandState[*smpl_buf_idx] = psDD->Seed;
-            psDD->RD_Q10 = psSS->RD_Q10;
-        }
-        delayedGain_Q10[*smpl_buf_idx] = Gain_Q10;
-    }
-    /* Update LPC states */
-    for (k = 0; k < nStatesDelayedDecision; k++) {
-        psDD = &psDelDec[k];
-        silk_memcpy(psDD->sLPC_Q14, &psDD->sLPC_Q14[length], NSQ_LPC_BUF_LENGTH * sizeof(int32_t));
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-void silk_PLC_Reset(silk_decoder_state *psDec) { /* I/O Decoder state        */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_PLC_Reset(silk_decoder_state* psDec) { /* I/O Decoder state        */
 
     psDec->sPLC.pitchL_Q8 = silk_LSHIFT(psDec->frame_length, 8 - 1);
     psDec->sPLC.prevGain_Q16[0] = SILK_FIX_CONST(1, 16);

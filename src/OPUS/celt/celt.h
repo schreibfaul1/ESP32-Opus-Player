@@ -743,7 +743,7 @@ unsigned ec_decode(ec_dec *_this, unsigned _ft);
 unsigned ec_decode_bin(ec_dec *_this, unsigned _bits);
 void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft);
 int ec_dec_bit_logp(ec_dec *_this, unsigned _logp);
-int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb);
+int ec_dec_icdf(const unsigned char *_icdf, unsigned _ftb);
 uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft);
 uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits);
 static int ec_write_byte(ec_enc *_this, unsigned _value);

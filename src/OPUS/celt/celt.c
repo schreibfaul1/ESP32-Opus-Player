@@ -36,6 +36,8 @@
 #include <pgmspace.h>
 #include "celt.h"
 
+ec_dec* s_ec_dec = NULL;
+
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
 const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
 const uint32_t CELT_SET_START_BAND_REQUEST      = 10010;
@@ -3395,7 +3397,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
             postfilter_pitch = (16 << octave) + ec_dec_bits(dec, 4 + octave) - 1;
             qg = ec_dec_bits(dec, 3);
             if (ec_tell(dec) + 2 <= total_bits)
-                postfilter_tapset = ec_dec_icdf(dec, tapset_icdf, 2);
+                postfilter_tapset = ec_dec_icdf(tapset_icdf, 2);
             postfilter_gain = QCONST16(.09375f, 15) * (qg + 1);
         }
         tell = ec_tell(dec);
@@ -3425,7 +3427,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     tell = ec_tell(dec);
     spread_decision = SPREAD_NORMAL;
     if (tell + 4 <= total_bits)
-        spread_decision = ec_dec_icdf(dec, spread_icdf, 5);
+        spread_decision = ec_dec_icdf(spread_icdf, 5);
 
     ALLOC(cap, nbEBands, int);
 
@@ -3464,7 +3466,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     }
 
     ALLOC(fine_quant, nbEBands, int);
-    alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(dec, trim_icdf, 7) : 5;
+    alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
     bits = (((int32_t)len * 8) << BITRES) - ec_tell_frac(dec) - 1;
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
@@ -4234,19 +4236,22 @@ static void ec_dec_normalize(ec_dec *_this) {
 //----------------------------------------------------------------------------------------------------------------------
 
 void ec_dec_init(ec_dec *_this, unsigned char *_buf, uint32_t _storage) {
-    _this->buf = _buf;
-    _this->storage = _storage;
-    _this->end_offs = 0;
-    _this->end_window = 0;
-    _this->nend_bits = 0;
-    _this->nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
-    _this->offs = 0;
-    _this->rng = 1U << EC_CODE_EXTRA;
-    _this->rem = ec_read_byte(_this);
-    _this->val = _this->rng - 1 - (_this->rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
-    _this->error = 0;
+
+    s_ec_dec = _this;
+
+    s_ec_dec->buf = _buf;
+    s_ec_dec->storage = _storage;
+    s_ec_dec->end_offs = 0;
+    s_ec_dec->end_window = 0;
+    s_ec_dec->nend_bits = 0;
+    s_ec_dec->nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
+    s_ec_dec->offs = 0;
+    s_ec_dec->rng = 1U << EC_CODE_EXTRA;
+    s_ec_dec->rem = ec_read_byte(s_ec_dec);
+    s_ec_dec->val = s_ec_dec->rng - 1 - (s_ec_dec->rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+    s_ec_dec->error = 0;
     /*Normalize the interval.*/
-    ec_dec_normalize(_this);
+    ec_dec_normalize(s_ec_dec);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4298,23 +4303,23 @@ int ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
+int ec_dec_icdf(const unsigned char *_icdf, unsigned _ftb) {
     uint32_t r;
     uint32_t d;
     uint32_t s;
     uint32_t t;
     int ret;
-    s = _this->rng;
-    d = _this->val;
+    s = s_ec_dec->rng;
+    d = s_ec_dec->val;
     r = s >> _ftb;
     ret = -1;
     do {
         t = s;
         s = r * _icdf[++ret];
     } while (d < s);
-    _this->val = d - s;
-    _this->rng = t - s;
-    ec_dec_normalize(_this);
+    s_ec_dec->val = d - s;
+    s_ec_dec->rng = t - s;
+    ec_dec_normalize(s_ec_dec);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -6028,7 +6033,7 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEB
                 pi = 2 * min(i, 20);
                 qi = ec_laplace_decode(dec, prob_model[pi] << 7, prob_model[pi + 1] << 6);
             } else if (budget - tell >= 2) {
-                qi = ec_dec_icdf(dec, small_energy_icdf, 2);
+                qi = ec_dec_icdf(small_energy_icdf, 2);
                 qi = (qi >> 1) ^ -(qi & 1);
             } else if (budget - tell >= 1) {
                 qi = -ec_dec_bit_logp(dec, 1);
