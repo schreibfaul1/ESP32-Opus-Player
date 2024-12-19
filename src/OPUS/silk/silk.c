@@ -436,7 +436,7 @@ void silk_A2NLSF_trans_poly(int32_t* p, const int32_t dd) {
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Polynomial evaluation          */
-static int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd) {
+int32_t silk_A2NLSF_eval_poly(int32_t* p, const int32_t x, const int32_t dd) {
     int32_t n;
     int32_t x_Q16, y32;
 
@@ -556,7 +556,7 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
             }
 
             /* Interpolate */
-            if (silk_abs(ylo) < 65536) {
+            if(silk_abs(ylo) < 65536) {
                 /* Avoid dividing by zero */
                 den = ylo - yhi;
                 nom = silk_LSHIFT(ylo, 8 - BIN_DIV_STEPS_A2NLSF_FIX) + silk_RSHIFT(den, 1);
@@ -913,7 +913,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /* Decode gains */
     /****************/
     /* First subframe */
-    if (condCoding == CODE_CONDITIONALLY) {
+    if(condCoding == CODE_CONDITIONALLY) {
         /* Conditional coding */
         psDec->indices.GainsIndices[0] = (int8_t)ec_dec_icdf(psRangeDec, silk_delta_gain_iCDF, 8);
     } else {
@@ -952,13 +952,13 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         psDec->indices.NLSFInterpCoef_Q2 = 4;
     }
 
-    if (psDec->indices.signalType == TYPE_VOICED) {
+    if(psDec->indices.signalType == TYPE_VOICED) {
         /*********************/
         /* Decode pitch lags */
         /*********************/
         /* Get lag index */
         decode_absolute_lagIndex = 1;
-        if (condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
+        if(condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
             /* Decode Delta index */
             delta_lagIndex = (int16_t)ec_dec_icdf(psRangeDec, silk_pitch_delta_iCDF, 8);
             if (delta_lagIndex > 0) {
@@ -967,7 +967,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
                 decode_absolute_lagIndex = 0;
             }
         }
-        if (decode_absolute_lagIndex) {
+        if(decode_absolute_lagIndex) {
             /* Absolute decoding */
             psDec->indices.lagIndex =
                 (int16_t)ec_dec_icdf(psRangeDec, silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
@@ -1005,19 +1005,18 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /***************/
     psDec->indices.Seed = (int8_t)ec_dec_icdf(psRangeDec, silk_uniform4_iCDF, 8);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void silk_decode_parameters(silk_decoder_state *psDec,       /* I/O  State                                       */
-                            silk_decoder_control *psDecCtrl, /* I/O  Decoder control                             */
-                            int32_t condCoding               /* I    The type of conditional coding to use       */
+void silk_decode_parameters(silk_decoder_state*   psDec,     /* I/O  State                                       */
+                            silk_decoder_control* psDecCtrl, /* I/O  Decoder control                             */
+                            int32_t               condCoding /* I    The type of conditional coding to use       */
 ) {
-    int32_t i, k, Ix;
-    int16_t pNLSF_Q15[MAX_LPC_ORDER], pNLSF0_Q15[MAX_LPC_ORDER];
-    const int8_t *cbk_ptr_Q7;
+    int32_t       i, k, Ix;
+    int16_t       pNLSF_Q15[MAX_LPC_ORDER], pNLSF0_Q15[MAX_LPC_ORDER];
+    const int8_t* cbk_ptr_Q7;
 
     /* Dequant Gains */
-    silk_gains_dequant(psDecCtrl->Gains_Q16, psDec->indices.GainsIndices, &psDec->LastGainIndex,
-                       condCoding == CODE_CONDITIONALLY, psDec->nb_subfr);
+    silk_gains_dequant(psDecCtrl->Gains_Q16, psDec->indices.GainsIndices, &psDec->LastGainIndex, condCoding == CODE_CONDITIONALLY, psDec->nb_subfr);
 
     /****************/
     /* Decode NLSFs */
@@ -1029,22 +1028,16 @@ void silk_decode_parameters(silk_decoder_state *psDec,       /* I/O  State      
 
     /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
     /* improves the case of packet loss in the first frame after a switch           */
-    if (psDec->first_frame_after_reset == 1) {
-        psDec->indices.NLSFInterpCoef_Q2 = 4;
-    }
+    if(psDec->first_frame_after_reset == 1) { psDec->indices.NLSFInterpCoef_Q2 = 4; }
 
-    if (psDec->indices.NLSFInterpCoef_Q2 < 4) {
-        /* Calculation of the interpolated NLSF0 vector from the interpolation factor, */
-        /* the previous NLSF1, and the current NLSF1                                   */
-        for (i = 0; i < psDec->LPC_order; i++) {
-            pNLSF0_Q15[i] =
-                psDec->prevNLSF_Q15[i] +
-                silk_RSHIFT(silk_MUL(psDec->indices.NLSFInterpCoef_Q2, pNLSF_Q15[i] - psDec->prevNLSF_Q15[i]), 2);
-        }
+    if(psDec->indices.NLSFInterpCoef_Q2 < 4) {
+        /* Calculation of the interpolated NLSF0 vector from the interpolation factor, the previous NLSF1, and the current NLSF1 */
+        for(i = 0; i < psDec->LPC_order; i++) { pNLSF0_Q15[i] = psDec->prevNLSF_Q15[i] + silk_RSHIFT(silk_MUL(psDec->indices.NLSFInterpCoef_Q2, pNLSF_Q15[i] - psDec->prevNLSF_Q15[i]), 2); }
 
         /* Convert NLSF parameters to AR prediction filter coefficients */
         silk_NLSF2A(psDecCtrl->PredCoef_Q12[0], pNLSF0_Q15, psDec->LPC_order);
-    } else {
+    }
+    else {
         /* Copy LPC coefficients for first half from second half */
         memcpy(psDecCtrl->PredCoef_Q12[0], psDecCtrl->PredCoef_Q12[1], psDec->LPC_order * sizeof(int16_t));
     }
@@ -1107,7 +1100,7 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /* Calculate number of shell blocks */
     assert(1 << LOG2_SHELL_CODEC_FRAME_LENGTH == SHELL_CODEC_FRAME_LENGTH);
     iter = silk_RSHIFT(frame_length, LOG2_SHELL_CODEC_FRAME_LENGTH);
-    if (iter * SHELL_CODEC_FRAME_LENGTH < frame_length) {
+    if(iter * SHELL_CODEC_FRAME_LENGTH < frame_length) {
         assert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
         iter++;
     }
@@ -1116,12 +1109,12 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /* Sum-Weighted-Pulses Decoding                    */
     /***************************************************/
     cdf_ptr = silk_pulses_per_block_iCDF[RateLevelIndex];
-    for (i = 0; i < iter; i++) {
+    for(i = 0; i < iter; i++) {
         nLshifts[i] = 0;
         sum_pulses[i] = ec_dec_icdf(psRangeDec, cdf_ptr, 8);
 
         /* LSB indication */
-        while (sum_pulses[i] == SILK_MAX_PULSES + 1) {
+        while(sum_pulses[i] == SILK_MAX_PULSES + 1) {
             nLshifts[i]++;
             /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
             sum_pulses[i] =
@@ -1144,13 +1137,13 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /***************************************************/
     /* LSB Decoding                                    */
     /***************************************************/
-    for (i = 0; i < iter; i++) {
-        if (nLshifts[i] > 0) {
+    for(i = 0; i < iter; i++) {
+        if(nLshifts[i] > 0) {
             nLS = nLshifts[i];
             pulses_ptr = &pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)];
-            for (k = 0; k < SHELL_CODEC_FRAME_LENGTH; k++) {
+            for(k = 0; k < SHELL_CODEC_FRAME_LENGTH; k++) {
                 abs_q = pulses_ptr[k];
-                for (j = 0; j < nLS; j++) {
+                for(j = 0; j < nLS; j++) {
                     abs_q = silk_LSHIFT(abs_q, 1);
                     abs_q += ec_dec_icdf(psRangeDec, silk_lsb_iCDF, 8);
                 }
@@ -1344,12 +1337,13 @@ static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitu
     if (p > 0) {
         p_child1[0] = ec_dec_icdf(psRangeDec, &shell_table[silk_shell_code_table_offsets[p]], 8);
         p_child2[0] = p - p_child1[0];
-    } else {
+    }
+    else {
         p_child1[0] = 0;
         p_child2[0] = 0;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Shell decoder, operates on one shell code frame of 16 pulses */
 void silk_shell_decoder(int16_t *pulses0,     /* O    data: nonnegative pulse amplitudes          */
                         ec_dec *psRangeDec,   /* I/O  Compressor data structure                   */
@@ -1429,43 +1423,39 @@ static void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_
                         silk_SMLAWB(silk_Transition_LP_B_Q28[ind][nb],
                                     silk_Transition_LP_B_Q28[ind + 1][nb] - silk_Transition_LP_B_Q28[ind][nb], fac_Q16);
                 }
-                for (na = 0; na < TRANSITION_NA; na++) {
-                    A_Q28[na] =
-                        silk_SMLAWB(silk_Transition_LP_A_Q28[ind][na],
-                                    silk_Transition_LP_A_Q28[ind + 1][na] - silk_Transition_LP_A_Q28[ind][na], fac_Q16);
-                }
-            } else { /* ( fac_Q16 - ( 1 << 16 ) ) is in range of a 16-bit int */
-                assert(fac_Q16 - (1 << 16) == silk_SAT16(fac_Q16 - (1 << 16)));
-                /* Piece-wise linear interpolation of B and A */
-                for (nb = 0; nb < TRANSITION_NB; nb++) {
-                    B_Q28[nb] = silk_SMLAWB(silk_Transition_LP_B_Q28[ind + 1][nb],
-                                            silk_Transition_LP_B_Q28[ind + 1][nb] - silk_Transition_LP_B_Q28[ind][nb],
-                                            fac_Q16 - ((int32_t)1 << 16));
-                }
-                for (na = 0; na < TRANSITION_NA; na++) {
-                    A_Q28[na] = silk_SMLAWB(silk_Transition_LP_A_Q28[ind + 1][na],
-                                            silk_Transition_LP_A_Q28[ind + 1][na] - silk_Transition_LP_A_Q28[ind][na],
-                                            fac_Q16 - ((int32_t)1 << 16));
+                for(na = 0; na < TRANSITION_NA; na++) {
+                    A_Q28[na] = silk_SMLAWB(silk_Transition_LP_A_Q28[ind][na], silk_Transition_LP_A_Q28[ind + 1][na] - silk_Transition_LP_A_Q28[ind][na], fac_Q16);
                 }
             }
-        } else {
-            silk_memcpy(B_Q28, silk_Transition_LP_B_Q28[ind], TRANSITION_NB * sizeof(int32_t));
-            silk_memcpy(A_Q28, silk_Transition_LP_A_Q28[ind], TRANSITION_NA * sizeof(int32_t));
+            else { /* ( fac_Q16 - ( 1 << 16 ) ) is in range of a 16-bit int */ assert(fac_Q16 - (1 << 16) == silk_SAT16(fac_Q16 - (1 << 16)));
+                /* Piece-wise linear interpolation of B and A */
+                for(nb = 0; nb < TRANSITION_NB; nb++) {
+                    B_Q28[nb] = silk_SMLAWB(silk_Transition_LP_B_Q28[ind + 1][nb], silk_Transition_LP_B_Q28[ind + 1][nb] - silk_Transition_LP_B_Q28[ind][nb], fac_Q16 - ((int32_t)1 << 16));
+                }
+                for(na = 0; na < TRANSITION_NA; na++) {
+                    A_Q28[na] = silk_SMLAWB(silk_Transition_LP_A_Q28[ind + 1][na], silk_Transition_LP_A_Q28[ind + 1][na] - silk_Transition_LP_A_Q28[ind][na], fac_Q16 - ((int32_t)1 << 16));
+                }
+            }
         }
-    } else {
-        silk_memcpy(B_Q28, silk_Transition_LP_B_Q28[TRANSITION_INT_NUM - 1], TRANSITION_NB * sizeof(int32_t));
-        silk_memcpy(A_Q28, silk_Transition_LP_A_Q28[TRANSITION_INT_NUM - 1], TRANSITION_NA * sizeof(int32_t));
+        else {
+            memcpy(B_Q28, silk_Transition_LP_B_Q28[ind], TRANSITION_NB * sizeof(int32_t));
+            memcpy(A_Q28, silk_Transition_LP_A_Q28[ind], TRANSITION_NA * sizeof(int32_t));
+        }
+    }
+    else {
+        memcpy(B_Q28, silk_Transition_LP_B_Q28[TRANSITION_INT_NUM - 1], TRANSITION_NB * sizeof(int32_t));
+        memcpy(A_Q28, silk_Transition_LP_A_Q28[TRANSITION_INT_NUM - 1], TRANSITION_NA * sizeof(int32_t));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Low-pass filter with variable cutoff frequency based on  */
 /* piece-wise linear interpolation between elliptic filters */
 /* Start by setting psEncC->mode <> 0;                      */
 /* Deactivate by setting psEncC->mode = 0;                  */
-void silk_LP_variable_cutoff(silk_LP_state *psLP,       /* I/O  LP filter state                             */
-                             int16_t *frame,            /* I/O  Low-pass filtered output signal             */
-                             const int32_t frame_length /* I    Frame length                                */
+void silk_LP_variable_cutoff(silk_LP_state* psLP,        /* I/O  LP filter state                             */
+                             int16_t*       frame,       /* I/O  Low-pass filtered output signal             */
+                             const int32_t  frame_length /* I    Frame length                                */
 ) {
     int32_t B_Q28[TRANSITION_NB], A_Q28[TRANSITION_NA], fac_Q16 = 0;
     int32_t ind = 0;
@@ -1473,9 +1463,9 @@ void silk_LP_variable_cutoff(silk_LP_state *psLP,       /* I/O  LP filter state 
     assert(psLP->transition_frame_no >= 0 && psLP->transition_frame_no <= TRANSITION_FRAMES);
 
     /* Run filter if needed */
-    if (psLP->mode != 0) {
+    if(psLP->mode != 0) {
         /* Calculate index and interpolation factor for interpolation */
-#if (TRANSITION_INT_STEPS == 64)
+#if(TRANSITION_INT_STEPS == 64)
         fac_Q16 = silk_LSHIFT(TRANSITION_FRAMES - psLP->transition_frame_no, 16 - 6);
 #else
         fac_Q16 = silk_DIV32_16(silk_LSHIFT(TRANSITION_FRAMES - psLP->transition_frame_no, 16), TRANSITION_FRAMES);
@@ -1497,23 +1487,21 @@ void silk_LP_variable_cutoff(silk_LP_state *psLP,       /* I/O  LP filter state 
         silk_biquad_alt_stride1(frame, B_Q28, A_Q28, psLP->In_LP_State, frame, frame_length);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Generates excitation for CNG LPC synthesis */
-static void silk_CNG_exc(int32_t exc_Q14[],          /* O    CNG excitation signal Q10                   */
-                         int32_t exc_buf_Q14[],      /* I    Random samples buffer Q10                   */
-                         int32_t length,             /* I    Length                                      */
-                         int32_t *rand_seed          /* I/O  Seed to random index generator              */
+void silk_CNG_exc(int32_t  exc_Q14[],     /* O    CNG excitation signal Q10                   */
+                         int32_t  exc_buf_Q14[], /* I    Random samples buffer Q10                   */
+                         int32_t  length,        /* I    Length                                      */
+                         int32_t* rand_seed      /* I/O  Seed to random index generator              */
 ) {
     int32_t seed;
     int32_t i, idx, exc_mask;
 
     exc_mask = CNG_BUF_MASK_MAX;
-    while (exc_mask > length) {
-        exc_mask = silk_RSHIFT(exc_mask, 1);
-    }
+    while(exc_mask > length) { exc_mask = silk_RSHIFT(exc_mask, 1); }
 
     seed = *rand_seed;
-    for (i = 0; i < length; i++) {
+    for(i = 0; i < length; i++) {
         seed = silk_RAND(seed);
         idx = (int32_t)(silk_RSHIFT(seed, 24) & exc_mask);
         assert(idx >= 0);
@@ -1522,80 +1510,74 @@ static void silk_CNG_exc(int32_t exc_Q14[],          /* O    CNG excitation sign
     }
     *rand_seed = seed;
 }
-//----------------------------------------------------------------------------------------------------------------------
-void silk_CNG_Reset(silk_decoder_state *psDec /* I/O  Decoder state                               */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_CNG_Reset(silk_decoder_state* psDec /* I/O  Decoder state                               */
 ) {
     int32_t i, NLSF_step_Q15, NLSF_acc_Q15;
 
     NLSF_step_Q15 = silk_DIV32_16(silk_int16_MAX, psDec->LPC_order + 1);
     NLSF_acc_Q15 = 0;
-    for (i = 0; i < psDec->LPC_order; i++) {
+    for(i = 0; i < psDec->LPC_order; i++) {
         NLSF_acc_Q15 += NLSF_step_Q15;
         psDec->sCNG.CNG_smth_NLSF_Q15[i] = NLSF_acc_Q15;
     }
     psDec->sCNG.CNG_smth_Gain_Q16 = 0;
     psDec->sCNG.rand_seed = 3176576;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Updates CNG estimate, and applies the CNG when packet was lost   */
-void silk_CNG(silk_decoder_state *psDec,       /* I/O  Decoder state                               */
-              silk_decoder_control *psDecCtrl, /* I/O  Decoder control                             */
-              int16_t frame[],                 /* I/O  Signal                                      */
-              int32_t length                   /* I    Length of residual                          */
+void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state                               */
+              silk_decoder_control* psDecCtrl, /* I/O  Decoder control                             */
+              int16_t               frame[],   /* I/O  Signal                                      */
+              int32_t               length     /* I    Length of residual                          */
 ) {
-    int32_t i, subfr;
-    int32_t LPC_pred_Q10, max_Gain_Q16, gain_Q16, gain_Q10;
-    int16_t A_Q12[MAX_LPC_ORDER];
-    silk_CNG_struct *psCNG = &psDec->sCNG;
+    int32_t          i, subfr;
+    int32_t          LPC_pred_Q10, max_Gain_Q16, gain_Q16, gain_Q10;
+    int16_t          A_Q12[MAX_LPC_ORDER];
+    silk_CNG_struct* psCNG = &psDec->sCNG;
 
-    if (psDec->fs_kHz != psCNG->fs_kHz) {
+    if(psDec->fs_kHz != psCNG->fs_kHz) {
         /* Reset state */
         silk_CNG_Reset(psDec);
 
         psCNG->fs_kHz = psDec->fs_kHz;
     }
-    if (psDec->lossCnt == 0 && psDec->prevSignalType == TYPE_NO_VOICE_ACTIVITY) {
+    if(psDec->lossCnt == 0 && psDec->prevSignalType == TYPE_NO_VOICE_ACTIVITY) {
         /* Update CNG parameters */
 
         /* Smoothing of LSF's  */
-        for (i = 0; i < psDec->LPC_order; i++) {
-            psCNG->CNG_smth_NLSF_Q15[i] +=
-                silk_SMULWB((int32_t)psDec->prevNLSF_Q15[i] - (int32_t)psCNG->CNG_smth_NLSF_Q15[i], CNG_NLSF_SMTH_Q16);
-        }
+        for(i = 0; i < psDec->LPC_order; i++) { psCNG->CNG_smth_NLSF_Q15[i] += silk_SMULWB((int32_t)psDec->prevNLSF_Q15[i] - (int32_t)psCNG->CNG_smth_NLSF_Q15[i], CNG_NLSF_SMTH_Q16); }
         /* Find the subframe with the highest gain */
         max_Gain_Q16 = 0;
         subfr = 0;
-        for (i = 0; i < psDec->nb_subfr; i++) {
-            if (psDecCtrl->Gains_Q16[i] > max_Gain_Q16) {
+        for(i = 0; i < psDec->nb_subfr; i++) {
+            if(psDecCtrl->Gains_Q16[i] > max_Gain_Q16) {
                 max_Gain_Q16 = psDecCtrl->Gains_Q16[i];
                 subfr = i;
             }
         }
         /* Update CNG excitation buffer with excitation from this subframe */
-        silk_memmove(&psCNG->CNG_exc_buf_Q14[psDec->subfr_length], psCNG->CNG_exc_buf_Q14,
-                     (psDec->nb_subfr - 1) * psDec->subfr_length * sizeof(int32_t));
-        silk_memcpy(psCNG->CNG_exc_buf_Q14, &psDec->exc_Q14[subfr * psDec->subfr_length],
-                    psDec->subfr_length * sizeof(int32_t));
+        memmove(&psCNG->CNG_exc_buf_Q14[psDec->subfr_length], psCNG->CNG_exc_buf_Q14, (psDec->nb_subfr - 1) * psDec->subfr_length * sizeof(int32_t));
+        memcpy(psCNG->CNG_exc_buf_Q14, &psDec->exc_Q14[subfr * psDec->subfr_length], psDec->subfr_length * sizeof(int32_t));
 
         /* Smooth gains */
-        for (i = 0; i < psDec->nb_subfr; i++) {
-            psCNG->CNG_smth_Gain_Q16 +=
-                silk_SMULWB(psDecCtrl->Gains_Q16[i] - psCNG->CNG_smth_Gain_Q16, CNG_GAIN_SMTH_Q16);
-        }
+        for(i = 0; i < psDec->nb_subfr; i++) { psCNG->CNG_smth_Gain_Q16 += silk_SMULWB(psDecCtrl->Gains_Q16[i] - psCNG->CNG_smth_Gain_Q16, CNG_GAIN_SMTH_Q16); }
     }
     /* Add CNG when packet is lost or during DTX */
-    if (psDec->lossCnt) {
-        VARDECL(int32_t, CNG_sig_Q14);
-        ALLOC(CNG_sig_Q14, length + MAX_LPC_ORDER, int32_t);
+    if(psDec->lossCnt) {
+        int32_t CNG_sig_Q14[length + MAX_LPC_ORDER];
+        //VARDECL(int32_t, CNG_sig_Q14);
+        //ALLOC(CNG_sig_Q14, length + MAX_LPC_ORDER, int32_t);
 
         /* Generate CNG excitation */
         gain_Q16 = silk_SMULWW(psDec->sPLC.randScale_Q14, psDec->sPLC.prevGain_Q16[1]);
-        if (gain_Q16 >= (1 << 21) || psCNG->CNG_smth_Gain_Q16 > (1 << 23)) {
+        if(gain_Q16 >= (1 << 21) || psCNG->CNG_smth_Gain_Q16 > (1 << 23)) {
             gain_Q16 = silk_SMULTT(gain_Q16, gain_Q16);
             gain_Q16 = silk_SUB_LSHIFT32(silk_SMULTT(psCNG->CNG_smth_Gain_Q16, psCNG->CNG_smth_Gain_Q16), gain_Q16, 5);
             gain_Q16 = silk_LSHIFT32(silk_SQRT_APPROX(gain_Q16), 16);
-        } else {
+        }
+        else {
             gain_Q16 = silk_SMULWW(gain_Q16, gain_Q16);
             gain_Q16 = silk_SUB_LSHIFT32(silk_SMULWW(psCNG->CNG_smth_Gain_Q16, psCNG->CNG_smth_Gain_Q16), gain_Q16, 5);
             gain_Q16 = silk_LSHIFT32(silk_SQRT_APPROX(gain_Q16), 8);
@@ -1608,9 +1590,9 @@ void silk_CNG(silk_decoder_state *psDec,       /* I/O  Decoder state            
         silk_NLSF2A(A_Q12, psCNG->CNG_smth_NLSF_Q15, psDec->LPC_order);
 
         /* Generate CNG signal, by synthesis filtering */
-        silk_memcpy(CNG_sig_Q14, psCNG->CNG_synth_state, MAX_LPC_ORDER * sizeof(int32_t));
+        memcpy(CNG_sig_Q14, psCNG->CNG_synth_state, MAX_LPC_ORDER * sizeof(int32_t));
         assert(psDec->LPC_order == 10 || psDec->LPC_order == 16);
-        for (i = 0; i < length; i++) {
+        for(i = 0; i < length; i++) {
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
             LPC_pred_Q10 = silk_RSHIFT(psDec->LPC_order, 1);
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 1], A_Q12[0]);
@@ -1623,7 +1605,7 @@ void silk_CNG(silk_decoder_state *psDec,       /* I/O  Decoder state            
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 8], A_Q12[7]);
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 9], A_Q12[8]);
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 10], A_Q12[9]);
-            if (psDec->LPC_order == 16) {
+            if(psDec->LPC_order == 16) {
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 11], A_Q12[10]);
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 12], A_Q12[11]);
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, CNG_sig_Q14[MAX_LPC_ORDER + i - 13], A_Q12[12]);
@@ -1633,19 +1615,16 @@ void silk_CNG(silk_decoder_state *psDec,       /* I/O  Decoder state            
             }
 
             /* Update states */
-            CNG_sig_Q14[MAX_LPC_ORDER + i] =
-                silk_ADD_SAT32(CNG_sig_Q14[MAX_LPC_ORDER + i], silk_LSHIFT_SAT32(LPC_pred_Q10, 4));
+            CNG_sig_Q14[MAX_LPC_ORDER + i] = silk_ADD_SAT32(CNG_sig_Q14[MAX_LPC_ORDER + i], silk_LSHIFT_SAT32(LPC_pred_Q10, 4));
 
             /* Scale with Gain and add to input signal */
-            frame[i] = (int16_t)silk_ADD_SAT16(
-                frame[i], silk_SAT16(silk_RSHIFT_ROUND(silk_SMULWW(CNG_sig_Q14[MAX_LPC_ORDER + i], gain_Q10), 8)));
+            frame[i] = (int16_t)silk_ADD_SAT16(frame[i], silk_SAT16(silk_RSHIFT_ROUND(silk_SMULWW(CNG_sig_Q14[MAX_LPC_ORDER + i], gain_Q10), 8)));
         }
-        silk_memcpy(psCNG->CNG_synth_state, &CNG_sig_Q14[length], MAX_LPC_ORDER * sizeof(int32_t));
-    } else {
-        silk_memset(psCNG->CNG_synth_state, 0, psDec->LPC_order * sizeof(int32_t));
+        memcpy(psCNG->CNG_synth_state, &CNG_sig_Q14[length], MAX_LPC_ORDER * sizeof(int32_t));
     }
+    else { memset(psCNG->CNG_synth_state, 0, psDec->LPC_order * sizeof(int32_t)); }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Decodes signs of excitation */
 void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data structure                   */
@@ -1655,22 +1634,22 @@ void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data st
                        const int32_t quantOffsetType, /* I    Quantization offset type                    */
                        const int32_t sum_pulses[MAX_NB_SHELL_BLOCKS] /* I    Sum of absolute pulses per block */
 ) {
-    int32_t i, j, p;
-    uint8_t icdf[2];
-    int16_t *q_ptr;
-    const uint8_t *icdf_ptr;
+    int32_t        i, j, p;
+    uint8_t        icdf[2];
+    int16_t*       q_ptr;
+    const uint8_t* icdf_ptr;
 
     icdf[1] = 0;
     q_ptr = pulses;
     i = silk_SMULBB(7, silk_ADD_LSHIFT(quantOffsetType, signalType, 1));
     icdf_ptr = &silk_sign_iCDF[i];
     length = silk_RSHIFT(length + SHELL_CODEC_FRAME_LENGTH / 2, LOG2_SHELL_CODEC_FRAME_LENGTH);
-    for (i = 0; i < length; i++) {
+    for(i = 0; i < length; i++) {
         p = sum_pulses[i];
-        if (p > 0) {
+        if(p > 0) {
             icdf[0] = icdf_ptr[silk_min(p & 0x1F, 6)];
-            for (j = 0; j < SHELL_CODEC_FRAME_LENGTH; j++) {
-                if (q_ptr[j] > 0) {
+            for(j = 0; j < SHELL_CODEC_FRAME_LENGTH; j++) {
+                if(q_ptr[j] > 0) {
                     /* attach sign */
                     /* implementation with shift, subtraction, multiplication */
                     q_ptr[j] *= silk_dec_map(ec_dec_icdf(psRangeDec, icdf, 8));
@@ -1691,9 +1670,10 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                     int16_t *samplesOut,               /* O    Decoded output speech vector                    */
                     int32_t *nSamplesOut               /* O    Number of samples decoded                       */
 ) {
-    int32_t i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
-    int32_t nSamplesOutDec, LBRR_symbol;
-    int16_t *samplesOut1_tmp[2];
+
+    int32_t  i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
+    int32_t  nSamplesOutDec, LBRR_symbol;
+    int16_t* samplesOut1_tmp[2];
     VARDECL(int16_t, samplesOut1_tmp_storage1);
     VARDECL(int16_t, samplesOut1_tmp_storage2);
     VARDECL(int16_t, samplesOut2_tmp);
@@ -1984,18 +1964,16 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decoder functions */
-int32_t silk_Get_Decoder_Size(                      /* O    Returns error code                              */
-                              int32_t *decSizeBytes /* O    Number of bytes in SILK decoder state           */
-) {
+int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
     int32_t ret = SILK_NO_ERROR;
 
     *decSizeBytes = sizeof(silk_decoder);
 
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Reset decoder state */
 int32_t silk_InitDecoder(               /* O    Returns error code                              */
@@ -2013,7 +1991,7 @@ int32_t silk_InitDecoder(               /* O    Returns error code              
 
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Core decoder. Performs inverse NSQ operation LTP + LPC */
 void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder state                               */
@@ -2032,50 +2010,42 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 
     assert(psDec->prev_gain_Q16 != 0);
 
-    ALLOC(sLTP, psDec->ltp_mem_length, int16_t);
-    ALLOC(sLTP_Q15, psDec->ltp_mem_length + psDec->frame_length, int32_t);
-    ALLOC(res_Q14, psDec->subfr_length, int32_t);
-    ALLOC(sLPC_Q14, psDec->subfr_length + MAX_LPC_ORDER, int32_t);
+    int16_t sLTP[psDec->ltp_mem_length];
+    int32_t sLTP_Q15[psDec->ltp_mem_length + psDec->frame_length];
+    int32_t res_Q14[psDec->subfr_length];
+    int32_t sLPC_Q14[psDec->subfr_length + MAX_LPC_ORDER];
 
     offset_Q10 = silk_Quantization_Offsets_Q10[psDec->indices.signalType >> 1][psDec->indices.quantOffsetType];
 
-    if (psDec->indices.NLSFInterpCoef_Q2 < 1 << 2) {
-        NLSF_interpolation_flag = 1;
-    } else {
-        NLSF_interpolation_flag = 0;
-    }
+    if(psDec->indices.NLSFInterpCoef_Q2 < 1 << 2) { NLSF_interpolation_flag = 1; }
+    else { NLSF_interpolation_flag = 0; }
 
     /* Decode excitation */
     rand_seed = psDec->indices.Seed;
-    for (i = 0; i < psDec->frame_length; i++) {
+    for(i = 0; i < psDec->frame_length; i++) {
         rand_seed = silk_RAND(rand_seed);
         psDec->exc_Q14[i] = silk_LSHIFT((int32_t)pulses[i], 14);
-        if (psDec->exc_Q14[i] > 0) {
-            psDec->exc_Q14[i] -= QUANT_LEVEL_ADJUST_Q10 << 4;
-        } else if (psDec->exc_Q14[i] < 0) {
-            psDec->exc_Q14[i] += QUANT_LEVEL_ADJUST_Q10 << 4;
-        }
+        if(psDec->exc_Q14[i] > 0) { psDec->exc_Q14[i] -= QUANT_LEVEL_ADJUST_Q10 << 4; }
+        else if(psDec->exc_Q14[i] < 0) { psDec->exc_Q14[i] += QUANT_LEVEL_ADJUST_Q10 << 4; }
         psDec->exc_Q14[i] += offset_Q10 << 4;
-        if (rand_seed < 0) {
-            psDec->exc_Q14[i] = -psDec->exc_Q14[i];
-        }
+        if(rand_seed < 0) { psDec->exc_Q14[i] = -psDec->exc_Q14[i]; }
 
         rand_seed = silk_ADD32_ovflw(rand_seed, pulses[i]);
     }
 
     /* Copy LPC state */
-    silk_memcpy(sLPC_Q14, psDec->sLPC_Q14_buf, MAX_LPC_ORDER * sizeof(int32_t));
+    memcpy(sLPC_Q14, psDec->sLPC_Q14_buf, MAX_LPC_ORDER * sizeof(int32_t));
 
     pexc_Q14 = psDec->exc_Q14;
     pxq = xq;
     sLTP_buf_idx = psDec->ltp_mem_length;
     /* Loop over subframes */
-    for (k = 0; k < psDec->nb_subfr; k++) {
+    for(k = 0; k < psDec->nb_subfr; k++) {
         pres_Q14 = res_Q14;
         A_Q12 = psDecCtrl->PredCoef_Q12[k >> 1];
 
         /* Preload LPC coeficients to array on stack. Gives small performance gain */
-        silk_memcpy(A_Q12_tmp, A_Q12, psDec->LPC_order * sizeof(int16_t));
+        memcpy(A_Q12_tmp, A_Q12, psDec->LPC_order * sizeof(int16_t));
         B_Q14 = &psDecCtrl->LTPCoef_Q14[k * LTP_ORDER];
         signalType = psDec->indices.signalType;
 
@@ -2087,67 +2057,57 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
             gain_adj_Q16 = silk_DIV32_varQ(psDec->prev_gain_Q16, psDecCtrl->Gains_Q16[k], 16);
 
             /* Scale short term state */
-            for (i = 0; i < MAX_LPC_ORDER; i++) {
-                sLPC_Q14[i] = silk_SMULWW(gain_adj_Q16, sLPC_Q14[i]);
-            }
-        } else {
-            gain_adj_Q16 = (int32_t)1 << 16;
+            for(i = 0; i < MAX_LPC_ORDER; i++) { sLPC_Q14[i] = silk_SMULWW(gain_adj_Q16, sLPC_Q14[i]); }
         }
+        else { gain_adj_Q16 = (int32_t)1 << 16; }
 
         /* Save inv_gain */
         assert(inv_gain_Q31 != 0);
         psDec->prev_gain_Q16 = psDecCtrl->Gains_Q16[k];
 
         /* Avoid abrupt transition from voiced PLC to unvoiced normal decoding */
-        if (psDec->lossCnt && psDec->prevSignalType == TYPE_VOICED && psDec->indices.signalType != TYPE_VOICED &&
-            k < MAX_NB_SUBFR / 2) {
-            silk_memset(B_Q14, 0, LTP_ORDER * sizeof(int16_t));
+        if(psDec->lossCnt && psDec->prevSignalType == TYPE_VOICED && psDec->indices.signalType != TYPE_VOICED && k < MAX_NB_SUBFR / 2) {
+            memset(B_Q14, 0, LTP_ORDER * sizeof(int16_t));
             B_Q14[LTP_ORDER / 2] = SILK_FIX_CONST(0.25, 14);
 
             signalType = TYPE_VOICED;
             psDecCtrl->pitchL[k] = psDec->lagPrev;
         }
 
-        if (signalType == TYPE_VOICED) {
+        if(signalType == TYPE_VOICED) {
             /* Voiced */
             lag = psDecCtrl->pitchL[k];
 
             /* Re-whitening */
-            if (k == 0 || (k == 2 && NLSF_interpolation_flag)) {
+            if(k == 0 || (k == 2 && NLSF_interpolation_flag)) {
                 /* Rewhiten with new A coefs */
                 start_idx = psDec->ltp_mem_length - lag - psDec->LPC_order - LTP_ORDER / 2;
                 assert(start_idx > 0);
 
-                if (k == 2) {
-                    silk_memcpy(&psDec->outBuf[psDec->ltp_mem_length], xq, 2 * psDec->subfr_length * sizeof(int16_t));
-                }
+                if(k == 2) { memcpy(&psDec->outBuf[psDec->ltp_mem_length], xq, 2 * psDec->subfr_length * sizeof(int16_t)); }
 
-                silk_LPC_analysis_filter(&sLTP[start_idx], &psDec->outBuf[start_idx + k * psDec->subfr_length], A_Q12,
-                                         psDec->ltp_mem_length - start_idx, psDec->LPC_order);
+                silk_LPC_analysis_filter(&sLTP[start_idx], &psDec->outBuf[start_idx + k * psDec->subfr_length], A_Q12, psDec->ltp_mem_length - start_idx, psDec->LPC_order);
 
                 /* After rewhitening the LTP state is unscaled */
-                if (k == 0) {
+                if(k == 0) {
                     /* Do LTP downscaling to reduce inter-packet dependency */
                     inv_gain_Q31 = silk_LSHIFT(silk_SMULWB(inv_gain_Q31, psDecCtrl->LTP_scale_Q14), 2);
                 }
-                for (i = 0; i < lag + LTP_ORDER / 2; i++) {
-                    sLTP_Q15[sLTP_buf_idx - i - 1] = silk_SMULWB(inv_gain_Q31, sLTP[psDec->ltp_mem_length - i - 1]);
-                }
-            } else {
+                for(i = 0; i < lag + LTP_ORDER / 2; i++) { sLTP_Q15[sLTP_buf_idx - i - 1] = silk_SMULWB(inv_gain_Q31, sLTP[psDec->ltp_mem_length - i - 1]); }
+            }
+            else {
                 /* Update LTP state when Gain changes */
-                if (gain_adj_Q16 != (int32_t)1 << 16) {
-                    for (i = 0; i < lag + LTP_ORDER / 2; i++) {
-                        sLTP_Q15[sLTP_buf_idx - i - 1] = silk_SMULWW(gain_adj_Q16, sLTP_Q15[sLTP_buf_idx - i - 1]);
-                    }
+                if(gain_adj_Q16 != (int32_t)1 << 16) {
+                    for(i = 0; i < lag + LTP_ORDER / 2; i++) { sLTP_Q15[sLTP_buf_idx - i - 1] = silk_SMULWW(gain_adj_Q16, sLTP_Q15[sLTP_buf_idx - i - 1]); }
                 }
             }
         }
 
         /* Long-term prediction */
-        if (signalType == TYPE_VOICED) {
+        if(signalType == TYPE_VOICED) {
             /* Set up pointer */
             pred_lag_ptr = &sLTP_Q15[sLTP_buf_idx - lag + LTP_ORDER / 2];
-            for (i = 0; i < psDec->subfr_length; i++) {
+            for(i = 0; i < psDec->subfr_length; i++) {
                 /* Unrolled loop */
                 /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
                 LTP_pred_Q13 = 2;
@@ -2165,11 +2125,10 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
                 sLTP_Q15[sLTP_buf_idx] = silk_LSHIFT(pres_Q14[i], 1);
                 sLTP_buf_idx++;
             }
-        } else {
-            pres_Q14 = pexc_Q14;
         }
+        else { pres_Q14 = pexc_Q14; }
 
-        for (i = 0; i < psDec->subfr_length; i++) {
+        for(i = 0; i < psDec->subfr_length; i++) {
             /* Short-term prediction */
             assert(psDec->LPC_order == 10 || psDec->LPC_order == 16);
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
@@ -2184,7 +2143,7 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 8], A_Q12_tmp[7]);
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 9], A_Q12_tmp[8]);
             LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 10], A_Q12_tmp[9]);
-            if (psDec->LPC_order == 16) {
+            if(psDec->LPC_order == 16) {
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 11], A_Q12_tmp[10]);
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 12], A_Q12_tmp[11]);
                 LPC_pred_Q10 = silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[MAX_LPC_ORDER + i - 13], A_Q12_tmp[12]);
@@ -2207,9 +2166,9 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
     }
 
     /* Save LPC state */
-    silk_memcpy(psDec->sLPC_Q14_buf, sLPC_Q14, MAX_LPC_ORDER * sizeof(int32_t));
+    memcpy(psDec->sLPC_Q14_buf, sLPC_Q14, MAX_LPC_ORDER * sizeof(int32_t));
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
 int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk decoder state               */
                           ec_dec *psRangeDec,        /* I/O  Compressor data structure                   */
@@ -2222,16 +2181,14 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
     int32_t L, mv_len, ret = 0;
 
     L = psDec->frame_length;
-    ALLOC(psDecCtrl, 1, silk_decoder_control);
+    silk_decoder_control psDecCtrl[1];
     psDecCtrl->LTP_scale_Q14 = 0;
 
     /* Safety checks */
     assert(L > 0 && L <= MAX_FRAME_LENGTH);
 
-    if (lostFlag == FLAG_DECODE_NORMAL ||
-        (lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[psDec->nFramesDecoded] == 1)) {
-        VARDECL(int16_t, pulses);
-        ALLOC(pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) & ~(SHELL_CODEC_FRAME_LENGTH - 1), int16_t);
+    if(lostFlag == FLAG_DECODE_NORMAL || (lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[psDec->nFramesDecoded] == 1)) {
+        int16_t pulses[(L + SHELL_CODEC_FRAME_LENGTH - 1) & ~(SHELL_CODEC_FRAME_LENGTH - 1)];
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
@@ -2264,7 +2221,8 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
 
         /* A frame has been decoded without errors */
         psDec->first_frame_after_reset = 0;
-    } else {
+    }
+    else {
         /* Handle packet loss by extrapolation */
         psDec->indices.signalType = psDec->prevSignalType;
         silk_PLC(psDec, psDecCtrl, pOut, 1);
@@ -2275,8 +2233,8 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
     /*************************/
     assert(psDec->ltp_mem_length >= psDec->frame_length);
     mv_len = psDec->ltp_mem_length - psDec->frame_length;
-    silk_memmove(psDec->outBuf, &psDec->outBuf[psDec->frame_length], mv_len * sizeof(int16_t));
-    silk_memcpy(&psDec->outBuf[mv_len], pOut, psDec->frame_length * sizeof(int16_t));
+    memmove(psDec->outBuf, &psDec->outBuf[psDec->frame_length], mv_len * sizeof(int16_t));
+    memcpy(&psDec->outBuf[mv_len], pOut, psDec->frame_length * sizeof(int16_t));
 
     /************************************************/
     /* Comfort noise generation / estimation        */
@@ -2296,30 +2254,33 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
 
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
-void silk_decode_pitch(int16_t lagIndex,      /* I                                                                */
-                       int8_t contourIndex,   /* O                                                                */
-                       int32_t pitch_lags[],  /* O    4 pitch values                                              */
-                       const int32_t Fs_kHz,  /* I    sampling frequency (kHz)                                    */
-                       const int32_t nb_subfr /* I    number of sub frames                                        */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_decode_pitch(int16_t       lagIndex,     /* I                                                                */
+                       int8_t        contourIndex, /* O                                                                */
+                       int32_t       pitch_lags[], /* O    4 pitch values                                              */
+                       const int32_t Fs_kHz,       /* I    sampling frequency (kHz)                                    */
+                       const int32_t nb_subfr      /* I    number of sub frames                                        */
 ) {
-    int32_t lag, k, min_lag, max_lag, cbk_size;
-    const int8_t *Lag_CB_ptr;
+    int32_t       lag, k, min_lag, max_lag, cbk_size;
+    const int8_t* Lag_CB_ptr;
 
-    if (Fs_kHz == 8) {
-        if (nb_subfr == PE_MAX_NB_SUBFR) {
+    if(Fs_kHz == 8) {
+        if(nb_subfr == PE_MAX_NB_SUBFR) {
             Lag_CB_ptr = &silk_CB_lags_stage2[0][0];
             cbk_size = PE_NB_CBKS_STAGE2_EXT;
-        } else {
+        }
+        else {
             assert(nb_subfr == PE_MAX_NB_SUBFR >> 1);
             Lag_CB_ptr = &silk_CB_lags_stage2_10_ms[0][0];
             cbk_size = PE_NB_CBKS_STAGE2_10MS;
         }
-    } else {
-        if (nb_subfr == PE_MAX_NB_SUBFR) {
+    }
+    else {
+        if(nb_subfr == PE_MAX_NB_SUBFR) {
             Lag_CB_ptr = &silk_CB_lags_stage3[0][0];
             cbk_size = PE_NB_CBKS_STAGE3_MAX;
-        } else {
+        }
+        else {
             assert(nb_subfr == PE_MAX_NB_SUBFR >> 1);
             Lag_CB_ptr = &silk_CB_lags_stage3_10_ms[0][0];
             cbk_size = PE_NB_CBKS_STAGE3_10MS;
@@ -2330,121 +2291,110 @@ void silk_decode_pitch(int16_t lagIndex,      /* I                              
     max_lag = silk_SMULBB(PE_MAX_LAG_MS, Fs_kHz);
     lag = min_lag + lagIndex;
 
-    for (k = 0; k < nb_subfr; k++) {
+    for(k = 0; k < nb_subfr; k++) {
         pitch_lags[k] = lag + matrix_ptr(Lag_CB_ptr, k, contourIndex, cbk_size);
         pitch_lags[k] = silk_LIMIT(pitch_lags[k], min_lag, max_lag);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Gain scalar quantization with hysteresis, uniform on log scale */
-void silk_gains_quant(int8_t ind[MAX_NB_SUBFR],       /* O    gain indices                                */
-                      int32_t gain_Q16[MAX_NB_SUBFR], /* I/O  gains (quantized out)                       */
-                      int8_t *prev_ind,               /* I/O  last index in previous frame                */
-                      const int32_t conditional,      /* I    first gain is delta coded if 1              */
-                      const int32_t nb_subfr          /* I    number of subframes                         */
+void silk_gains_quant(int8_t        ind[MAX_NB_SUBFR],      /* O    gain indices                                */
+                      int32_t       gain_Q16[MAX_NB_SUBFR], /* I/O  gains (quantized out)                       */
+                      int8_t*       prev_ind,               /* I/O  last index in previous frame                */
+                      const int32_t conditional,            /* I    first gain is delta coded if 1              */
+                      const int32_t nb_subfr                /* I    number of subframes                         */
 ) {
     int32_t k, double_step_size_threshold;
 
-    for (k = 0; k < nb_subfr; k++) {
+    for(k = 0; k < nb_subfr; k++) {
         /* Convert to log scale, scale, floor() */
         ind[k] = silk_SMULWB(SCALE_Q16, silk_lin2log(gain_Q16[k]) - OFFSET);
 
         /* Round towards previous quantized gain (hysteresis) */
-        if (ind[k] < *prev_ind) {
-            ind[k]++;
-        }
+        if(ind[k] < *prev_ind) { ind[k]++; }
         ind[k] = silk_LIMIT_int(ind[k], 0, N_LEVELS_QGAIN - 1);
 
         /* Compute delta indices and limit */
-        if (k == 0 && conditional == 0) {
+        if(k == 0 && conditional == 0) {
             /* Full index */
             ind[k] = silk_LIMIT_int(ind[k], *prev_ind + MIN_DELTA_GAIN_QUANT, N_LEVELS_QGAIN - 1);
             *prev_ind = ind[k];
-        } else {
+        }
+        else {
             /* Delta index */
             ind[k] = ind[k] - *prev_ind;
 
             /* Double the quantization step size for large gain increases, so that the max gain level can be reached */
             double_step_size_threshold = 2 * MAX_DELTA_GAIN_QUANT - N_LEVELS_QGAIN + *prev_ind;
-            if (ind[k] > double_step_size_threshold) {
-                ind[k] = double_step_size_threshold + silk_RSHIFT(ind[k] - double_step_size_threshold + 1, 1);
-            }
+            if(ind[k] > double_step_size_threshold) { ind[k] = double_step_size_threshold + silk_RSHIFT(ind[k] - double_step_size_threshold + 1, 1); }
 
             ind[k] = silk_LIMIT_int(ind[k], MIN_DELTA_GAIN_QUANT, MAX_DELTA_GAIN_QUANT);
 
             /* Accumulate deltas */
-            if (ind[k] > double_step_size_threshold) {
+            if(ind[k] > double_step_size_threshold) {
                 *prev_ind += silk_LSHIFT(ind[k], 1) - double_step_size_threshold;
                 *prev_ind = silk_min_int(*prev_ind, N_LEVELS_QGAIN - 1);
-            } else {
-                *prev_ind += ind[k];
             }
+            else { *prev_ind += ind[k]; }
 
             /* Shift to make non-negative */
             ind[k] -= MIN_DELTA_GAIN_QUANT;
         }
 
         /* Scale and convert to linear scale */
-        gain_Q16[k] =
-            silk_log2lin(silk_min_32(silk_SMULWB(INV_SCALE_Q16, *prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
+        gain_Q16[k] = silk_log2lin(silk_min_32(silk_SMULWB(INV_SCALE_Q16, *prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Gains scalar dequantization, uniform on log scale */
-void silk_gains_dequant(int32_t gain_Q16[MAX_NB_SUBFR], /* O    quantized gains                             */
-                        const int8_t ind[MAX_NB_SUBFR], /* I    gain indices                                */
-                        int8_t *prev_ind,               /* I/O  last index in previous frame                */
-                        const int32_t conditional,      /* I    first gain is delta coded if 1              */
-                        const int32_t nb_subfr          /* I    number of subframes                          */
+void silk_gains_dequant(int32_t       gain_Q16[MAX_NB_SUBFR], /* O    quantized gains                             */
+                        const int8_t  ind[MAX_NB_SUBFR],      /* I    gain indices                                */
+                        int8_t*       prev_ind,               /* I/O  last index in previous frame                */
+                        const int32_t conditional,            /* I    first gain is delta coded if 1              */
+                        const int32_t nb_subfr                /* I    number of subframes                          */
 ) {
     int32_t k, ind_tmp, double_step_size_threshold;
 
-    for (k = 0; k < nb_subfr; k++) {
-        if (k == 0 && conditional == 0) {
+    for(k = 0; k < nb_subfr; k++) {
+        if(k == 0 && conditional == 0) {
             /* Gain index is not allowed to go down more than 16 steps (~21.8 dB) */
             *prev_ind = silk_max_int(ind[k], *prev_ind - 16);
-        } else {
+        }
+        else {
             /* Delta index */
             ind_tmp = ind[k] + MIN_DELTA_GAIN_QUANT;
 
             /* Accumulate deltas */
             double_step_size_threshold = 2 * MAX_DELTA_GAIN_QUANT - N_LEVELS_QGAIN + *prev_ind;
-            if (ind_tmp > double_step_size_threshold) {
-                *prev_ind += silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold;
-            } else {
-                *prev_ind += ind_tmp;
-            }
+            if(ind_tmp > double_step_size_threshold) { *prev_ind += silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold; }
+            else { *prev_ind += ind_tmp; }
         }
         *prev_ind = silk_LIMIT_int(*prev_ind, 0, N_LEVELS_QGAIN - 1);
 
         /* Scale and convert to linear scale */
-        gain_Q16[k] =
-            silk_log2lin(silk_min_32(silk_SMULWB(INV_SCALE_Q16, *prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
+        gain_Q16[k] = silk_log2lin(silk_min_32(silk_SMULWB(INV_SCALE_Q16, *prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Compute unique identifier of gain indices vector */
-int32_t silk_gains_ID(                                /* O    returns unique identifier of gains          */
-                      const int8_t ind[MAX_NB_SUBFR], /* I    gain indices                                */
-                      const int32_t nb_subfr          /* I    number of subframes                         */
+int32_t silk_gains_ID(                                 /* O    returns unique identifier of gains          */
+                      const int8_t  ind[MAX_NB_SUBFR], /* I    gain indices                                */
+                      const int32_t nb_subfr           /* I    number of subframes                         */
 ) {
     int32_t k;
     int32_t gainsID;
 
     gainsID = 0;
-    for (k = 0; k < nb_subfr; k++) {
-        gainsID = silk_ADD_LSHIFT32(ind[k], gainsID, 8);
-    }
+    for(k = 0; k < nb_subfr; k++) { gainsID = silk_ADD_LSHIFT32(ind[k], gainsID, 8); }
 
     return gainsID;
 }
-//----------------------------------------------------------------------------------------------------------------------
-int32_t silk_init_decoder(silk_decoder_state *psDec /* I/O  Decoder state pointer                       */
-) {
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+int32_t silk_init_decoder(silk_decoder_state* psDec) {
     /* Clear the entire encoder state, except anything copied */
-    silk_memset(psDec, 0, sizeof(silk_decoder_state));
+    memset(psDec, 0, sizeof(silk_decoder_state));
 
     /* Used to deactivate LSF interpolation */
     psDec->first_frame_after_reset = 1;
@@ -2458,22 +2408,20 @@ int32_t silk_init_decoder(silk_decoder_state *psDec /* I/O  Decoder state pointe
 
     return (0);
 }
-//----------------------------------------------------------------------------------------------------------------------
-int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, /*    I input vector 1 */
-                                      const int16_t *const inVec2, /*    I input vector 2 */
-                                      const int32_t scale,         /*    I number of bits to shift         */
-                                      const int32_t len            /*    I vector lengths            */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+int32_t silk_inner_prod_aligned_scale(const int16_t* const inVec1, /*    I input vector 1 */
+                                      const int16_t* const inVec2, /*    I input vector 2 */
+                                      const int32_t        scale,  /*    I number of bits to shift         */
+                                      const int32_t        len     /*    I vector lengths            */
 ) {
     int32_t i;
     int32_t sum = 0;
-    for (i = 0; i < len; i++) {
-        sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i], inVec2[i]), scale);
-    }
+    for(i = 0; i < len; i++) { sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i], inVec2[i]), scale); }
     return sum;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Interpolate two vectors */
-void silk_interpolate(int16_t xi[MAX_LPC_ORDER],       /* O    interpolated vector                         */
+void silk_interpolate(int16_t       xi[MAX_LPC_ORDER], /* O    interpolated vector                         */
                       const int16_t x0[MAX_LPC_ORDER], /* I    first vector                                */
                       const int16_t x1[MAX_LPC_ORDER], /* I    second vector                               */
                       const int32_t ifact_Q2,          /* I    interp. factor, weight on 2nd vector        */
@@ -2484,11 +2432,9 @@ void silk_interpolate(int16_t xi[MAX_LPC_ORDER],       /* O    interpolated vect
     assert(ifact_Q2 >= 0);
     assert(ifact_Q2 <= 4);
 
-    for (i = 0; i < d; i++) {
-        xi[i] = (int16_t)silk_ADD_RSHIFT(x0[i], silk_SMULBB(x1[i] - x0[i], ifact_Q2), 2);
-    }
+    for(i = 0; i < d; i++) { xi[i] = (int16_t)silk_ADD_RSHIFT(x0[i], silk_SMULBB(x1[i] - x0[i], ifact_Q2), 2); }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 int32_t silk_lin2log(const int32_t inLin /* I  input in linear scale                                         */
 ) {
@@ -2499,46 +2445,44 @@ int32_t silk_lin2log(const int32_t inLin /* I  input in linear scale            
     /* Piece-wise parabolic approximation */
     return silk_ADD_LSHIFT32(silk_SMLAWB(frac_Q7, silk_MUL(frac_Q7, 128 - frac_Q7), 179), 31 - lz, 7);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Approximation of 2^() (very close inverse of silk_lin2log()) Convert input to a linear scale    */
 int32_t silk_log2lin(const int32_t inLog_Q7) {
     int32_t out, frac_Q7;
 
-    if (inLog_Q7 < 0) {
-        return 0;
-    } else if (inLog_Q7 >= 3967) {
-        return silk_int32_MAX;
-    }
+    if(inLog_Q7 < 0) { return 0; }
+    else if(inLog_Q7 >= 3967) { return silk_int32_MAX; }
 
     out = silk_LSHIFT(1, silk_RSHIFT(inLog_Q7, 7));
     frac_Q7 = inLog_Q7 & 0x7F;
-    if (inLog_Q7 < 2048) {
+    if(inLog_Q7 < 2048) {
         /* Piece-wise parabolic approximation */
         out = silk_ADD_RSHIFT32(out, silk_MUL(out, silk_SMLAWB(frac_Q7, silk_SMULBB(frac_Q7, 128 - frac_Q7), -174)), 7);
-    } else {
+    }
+    else {
         /* Piece-wise parabolic approximation */
         out = silk_MLA(out, silk_RSHIFT(out, 7), silk_SMLAWB(frac_Q7, silk_SMULBB(frac_Q7, 128 - frac_Q7), -174));
     }
     return out;
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void silk_LPC_analysis_filter(int16_t *out,      /* O    Output signal                                               */
-                              const int16_t *in, /* I    Input signal                                                */
-                              const int16_t *B,  /* I    MA prediction coefficients, Q12 [order]                     */
-                              const int32_t len, /* I    Signal length                                               */
-                              const int32_t d    /* I    Filter order                                                */
+void silk_LPC_analysis_filter(int16_t*       out, /* O    Output signal                                               */
+                              const int16_t* in,  /* I    Input signal                                                */
+                              const int16_t* B,   /* I    MA prediction coefficients, Q12 [order]                     */
+                              const int32_t  len, /* I    Signal length                                               */
+                              const int32_t  d    /* I    Filter order                                                */
 ) {
-    int32_t j;
-    int ix;
-    int32_t out32_Q12, out32;
-    const int16_t *in_ptr;
+    int32_t        j;
+    int            ix;
+    int32_t        out32_Q12, out32;
+    const int16_t* in_ptr;
     assert(d >= 6);
     assert((d & 1) == 0);
     assert(d <= len);
 
-    for (ix = d; ix < len; ix++) {
+    for(ix = d; ix < len; ix++) {
         in_ptr = &in[ix - 1];
 
         out32_Q12 = silk_SMULBB(in_ptr[0], B[0]);
@@ -2549,7 +2493,7 @@ void silk_LPC_analysis_filter(int16_t *out,      /* O    Output signal          
         out32_Q12 = silk_SMLABB_ovflw(out32_Q12, in_ptr[-3], B[3]);
         out32_Q12 = silk_SMLABB_ovflw(out32_Q12, in_ptr[-4], B[4]);
         out32_Q12 = silk_SMLABB_ovflw(out32_Q12, in_ptr[-5], B[5]);
-        for (j = 6; j < d; j += 2) {
+        for(j = 6; j < d; j += 2) {
             out32_Q12 = silk_SMLABB_ovflw(out32_Q12, in_ptr[-j], B[j]);
             out32_Q12 = silk_SMLABB_ovflw(out32_Q12, in_ptr[-j - 1], B[j + 1]);
         }
@@ -2565,42 +2509,40 @@ void silk_LPC_analysis_filter(int16_t *out,      /* O    Output signal          
     }
 
     /* Set first d output samples to zero */
-    silk_memset(out, 0, d * sizeof(int16_t));
+    memset(out, 0, d * sizeof(int16_t));
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Convert int32 coefficients to int16 coefs and make sure there's no wrap-around */
-void silk_LPC_fit(int16_t *a_QOUT,    /* O    Output signal                                               */
-                  int32_t *a_QIN,     /* I/O  Input signal                                                */
-                  const int32_t QOUT, /* I    Input Q domain                                              */
-                  const int32_t QIN,  /* I    Input Q domain                                              */
-                  const int32_t d     /* I    Filter order                                                */
+void silk_LPC_fit(int16_t*      a_QOUT, /* O    Output signal                                               */
+                  int32_t*      a_QIN,  /* I/O  Input signal                                                */
+                  const int32_t QOUT,   /* I    Input Q domain                                              */
+                  const int32_t QIN,    /* I    Input Q domain                                              */
+                  const int32_t d       /* I    Filter order                                                */
 ) {
     int32_t i, k, idx = 0;
     int32_t maxabs, absval, chirp_Q16;
 
     /* Limit the maximum absolute value of the prediction coefficients, so that they'll fit in int16 */
-    for (i = 0; i < 10; i++) {
+    for(i = 0; i < 10; i++) {
         /* Find maximum absolute value and its index */
         maxabs = 0;
-        for (k = 0; k < d; k++) {
+        for(k = 0; k < d; k++) {
             absval = silk_abs(a_QIN[k]);
-            if (absval > maxabs) {
+            if(absval > maxabs) {
                 maxabs = absval;
                 idx = k;
             }
         }
         maxabs = silk_RSHIFT_ROUND(maxabs, QIN - QOUT);
 
-        if (maxabs > silk_int16_MAX) {
+        if(maxabs > silk_int16_MAX) {
             /* Reduce magnitude of prediction coefficients */
             maxabs = silk_min(maxabs, 163838); /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-            chirp_Q16 = SILK_FIX_CONST(0.999, 16) - silk_DIV32(silk_LSHIFT(maxabs - silk_int16_MAX, 14),
-                                                               silk_RSHIFT32(silk_MUL(maxabs, idx + 1), 2));
+            chirp_Q16 = SILK_FIX_CONST(0.999, 16) - silk_DIV32(silk_LSHIFT(maxabs - silk_int16_MAX, 14), silk_RSHIFT32(silk_MUL(maxabs, idx + 1), 2));
             silk_bwexpander_32(a_QIN, d, chirp_Q16);
-        } else {
-            break;
         }
+        else { break; }
     }
 
     if (i == 10) {
