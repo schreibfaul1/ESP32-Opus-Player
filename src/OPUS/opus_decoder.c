@@ -339,7 +339,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, &dec, pcm_ptr, &silk_frame_size, st->arch);
+            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, &dec, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
                 if (lost_flag) {
                     /* PLC failure should not be fatal */

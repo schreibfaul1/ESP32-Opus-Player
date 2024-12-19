@@ -505,33 +505,33 @@ static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32
 #endif
 
 #define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
-                        max_gain_Q7, L, arch)                                                                         \
-    ((void)(arch), silk_VQ_WMat_EC_c(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7,      \
+                        max_gain_Q7, L)                                                                         \
+    (silk_VQ_WMat_EC_c(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7,      \
                                      cl_Q5, subfr_len, max_gain_Q7, L))
 
 #define silk_NSQ(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, Tilt_Q14, \
-                 LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch)                                      \
-    ((void)(arch), silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13,                 \
+                 LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14)                                      \
+    (silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13,                 \
                               HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
 #define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, \
-                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch)                  \
-    ((void)(arch),                                                                                                  \
+                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14)                  \
+    (                                                                                                 \
      silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,  \
                         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
 
-#define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch) \
-    ((void)arch, silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
+#define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order) \
+    (silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
 #define silk_SMMUL(a32, b32) (int32_t) silk_RSHIFT64(silk_SMULL((a32), (b32)), 32)
-#define silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch) \
-    ((void)(arch), silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
-#define silk_inner_prod16_aligned_64(inVec1, inVec2, len, arch) \
-    ((void)(arch), silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
-#define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) \
-    ((void)(arch), silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, out, len))
-#define silk_LPC_inverse_pred_gain(A_Q12, order) ((void)(arch), silk_LPC_inverse_pred_gain_c(A_Q12, order))
+#define silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D) \
+    (silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D))
+#define silk_inner_prod16_aligned_64(inVec1, inVec2, len) \
+    (silk_inner_prod16_aligned_64_c(inVec1, inVec2, len))
+#define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len) \
+    (silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, out, len))
+#define silk_LPC_inverse_pred_gain(A_Q12, order) (silk_LPC_inverse_pred_gain_c(A_Q12, order))
 
 #define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))
 #define RAND_MULTIPLIER                     196314165
@@ -566,8 +566,8 @@ static inline int32_t silk_NSQ_noise_shape_feedback_loop_c(const int32_t *data0,
     return out;
 }
 
-#define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch) \
-    ((void)arch, silk_NSQ_noise_shape_feedback_loop_c(data0, data1, coef, order))
+#define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order) \
+    (silk_NSQ_noise_shape_feedback_loop_c(data0, data1, coef, order))
 
 
 static inline int32_t silk_noise_shape_quantizer_short_prediction_c(const int32_t *buf32, const int16_t *coef16,
@@ -778,7 +778,6 @@ typedef struct {
     int32_t LBRR_flags[MAX_FRAMES_PER_PACKET];
     SideInfoIndices indices;
     int8_t pulses[MAX_FRAME_LENGTH];
-    int arch;
     /* Input/output buffering */
     int16_t inputBuf[MAX_FRAME_LENGTH + 2]; /* Buffer containing input signal */
     int32_t inputBufIx;
@@ -886,7 +885,6 @@ typedef struct {
     /* Stuff used for PLC */
     int32_t lossCnt;
     int32_t prevSignalType;
-    int arch;
     silk_PLC_struct sPLC;
 } silk_decoder_state;
 
@@ -1192,7 +1190,7 @@ void silk_bwexpander(int16_t *ar, const int32_t d, int32_t chirp_Q16);
 void silk_stereo_decode_pred(ec_dec *psRangeDec, int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(ec_dec *psRangeDec, int32_t *decode_only_mid);
 void silk_PLC_Reset(silk_decoder_state *psDec);
-void silk_PLC(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost, int arch);
+void silk_PLC(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost);
 void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t length);
 static void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA],
                                             const int32_t ind, const int32_t fac_Q16);
@@ -1203,12 +1201,12 @@ void silk_NLSF_decode(int16_t *pNLSF_Q15, int8_t *NLSFIndices, const silk_NLSF_C
 int32_t silk_decoder_set_fs(silk_decoder_state *psDec, int32_t fs_kHz, int32_t fs_API_Hz);
 
 int32_t silk_decode_frame(silk_decoder_state *psDec, ec_dec *psRangeDec, int16_t pOut[], int32_t *pN, int32_t lostFlag,
-                          int32_t condCoding, int arch);
+                          int32_t condCoding);
 void silk_decode_indices(silk_decoder_state *psDec, ec_dec *psRangeDec, int32_t FrameIndex, int32_t decode_LBRR,
                          int32_t condCoding);
 void silk_decode_parameters(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int32_t condCoding);
 void silk_decode_core(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t xq[],
-                      const int16_t pulses[MAX_FRAME_LENGTH], int arch);
+                      const int16_t pulses[MAX_FRAME_LENGTH]);
 void silk_decode_pulses(ec_dec *psRangeDec, int16_t pulses[], const int32_t signalType, const int32_t quantOffsetType,
                         const int32_t frame_length);
 int32_t silk_init_decoder(silk_decoder_state *psDec);
@@ -1247,7 +1245,7 @@ void silk_quant_LTP_gains(int16_t B_Q14[MAX_NB_SUBFR * LTP_ORDER], int8_t cbk_in
                           int8_t *periodicity_index, int32_t *sum_gain_dB_Q7, int32_t *pred_gain_dB_Q7,
                           const int32_t XX_Q17[MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER],
                           const int32_t xX_Q17[MAX_NB_SUBFR * LTP_ORDER], const int32_t subfr_len,
-                          const int32_t nb_subfr, int arch);
+                          const int32_t nb_subfr);
 void silk_VQ_WMat_EC_c(int8_t *ind, int32_t *res_nrg_Q15, int32_t *rate_dist_Q8, int32_t *gain_Q7,
                        const int32_t *XX_Q17, const int32_t *xX_Q17, const int8_t *cb_Q7, const uint8_t *cb_gain_Q7,
                        const uint8_t *cl_Q5, const int32_t subfr_len, const int32_t max_gain_Q7, const int32_t L);
@@ -1273,17 +1271,17 @@ void silk_CNG_Reset(silk_decoder_state *psDec);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder(void *decState);
 int32_t silk_Decode(void* decState, silk_DecControlStruct* decControl, int32_t lostFlag, int32_t newPacketFlag,
-                    ec_dec *psRangeDec, int16_t *samplesOut, int32_t *nSamplesOut, int arch);
+                    ec_dec *psRangeDec, int16_t *samplesOut, int32_t *nSamplesOut);
 static void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
-void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d, int arch);
+void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d);
 static void silk_CNG_exc(int32_t exc_Q14[], int32_t exc_buf_Q14[], int32_t length, int32_t *rand_seed);
 void silk_decode_core(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t xq[],
-                      const int16_t pulses[MAX_FRAME_LENGTH], int arch);
+                      const int16_t pulses[MAX_FRAME_LENGTH]);
 int32_t silk_decode_frame(silk_decoder_state *psDec, ec_dec *psRangeDec, int16_t pOut[], int32_t *pN, int32_t lostFlag,
-                          int32_t condCoding, int arch);
+                          int32_t condCoding);
 void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz,
                        const int32_t nb_subfr);
-int32_t silk_init_encoder(silk_encoder_state_Fxx *psEnc, int arch);
+int32_t silk_init_encoder(silk_encoder_state_Fxx *psEnc);
 int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t *const inVec2, const int32_t scale,
                                       const int32_t len);
 int32_t silk_lin2log(const int32_t inLin);
@@ -1304,7 +1302,7 @@ static void silk_noise_shape_quantizer_del_dec(silk_nsq_state *NSQ, NSQ_del_dec_
                                                int32_t Lambda_Q10, int32_t offset_Q10, int32_t length, int32_t subfr,
                                                int32_t shapingLPCOrder, int32_t predictLPCOrder, int32_t warping_Q16,
                                                int32_t nStatesDelayedDecision, int32_t *smpl_buf_idx,
-                                               int32_t decisionDelay, int arch);
+                                               int32_t decisionDelay);
 
 static void silk_nsq_del_dec_scale_states(const silk_encoder_state *psEncC, silk_nsq_state *NSQ,
                                               NSQ_del_dec_struct psDelDec[], const int16_t x16[], int32_t x_sc_Q10[],
@@ -1317,7 +1315,7 @@ static void silk_noise_shape_quantizer(silk_nsq_state *NSQ, int32_t signalType, 
                                        const int16_t b_Q14[], const int16_t AR_shp_Q13[], int32_t lag,
                                        int32_t HarmShapeFIRPacked_Q14, int32_t Tilt_Q14, int32_t LF_shp_Q14,
                                        int32_t Gain_Q16, int32_t Lambda_Q10, int32_t offset_Q10, int32_t length,
-                                       int32_t shapingLPCOrder, int32_t predictLPCOrder, int arch);
+                                       int32_t shapingLPCOrder, int32_t predictLPCOrder);
 static void silk_nsq_scale_states(const silk_encoder_state *psEncC, silk_nsq_state *NSQ, const int16_t x16[],
                                   int32_t x_sc_Q10[], const int16_t sLTP[], int32_t sLTP_Q15[], int32_t subfr,
                                   const int32_t LTP_scale_Q14, const int32_t Gains_Q16[MAX_NB_SUBFR],
@@ -1325,7 +1323,7 @@ static void silk_nsq_scale_states(const silk_encoder_state *psEncC, silk_nsq_sta
 static void silk_PLC_update(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl);
 static void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
                             const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr);
-static void silk_PLC_conceal(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int arch);
+static void silk_PLC_conceal(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[]);
 void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t length);
 void silk_resampler_down2_3(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_down2(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
