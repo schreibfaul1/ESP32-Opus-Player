@@ -291,36 +291,6 @@ static const uint8_t silk_NLSF_PRED_WB_Q8[30] = {175, 148, 160, 176, 178, 173, 1
 
 static const int16_t silk_NLSF_DELTA_MIN_WB_Q15[17] = {100, 3, 40, 3, 3, 3, 5, 14, 14, 10, 11, 3, 8, 9, 7, 3, 347};
 
-/* These tables hold SNR values divided by 21 (so they fit in 8 bits) for different target bitrates spaced at 400 bps
-   interval. The first 10 values are omitted (0-4 kb/s) because they're all zeros. These tables were obtained by
-   running different SNRs through the encoder and measuring the active bitrate. */
-static const unsigned char silk_TargetRate_NB_21[117 - 10] = {
-    0,   15,  39,  52,  61,  68,  74,  79,  84,  88,  92,  95,  99,  102, 105, 108, 111, 114, 117, 119, 122, 124,
-    126, 129, 131, 133, 135, 137, 139, 142, 143, 145, 147, 149, 151, 153, 155, 157, 158, 160, 162, 163, 165, 167,
-    168, 170, 171, 173, 174, 176, 177, 179, 180, 182, 183, 185, 186, 187, 189, 190, 192, 193, 194, 196, 197, 199,
-    200, 201, 203, 204, 205, 207, 208, 209, 211, 212, 213, 215, 216, 217, 219, 220, 221, 223, 224, 225, 227, 228,
-    230, 231, 232, 234, 235, 236, 238, 239, 241, 242, 243, 245, 246, 248, 249, 250, 252, 253, 255};
-
-static const unsigned char silk_TargetRate_MB_21[165 - 10] = {
-    0,   0,   28,  43,  52,  59,  65,  70,  74,  78,  81,  85,  87,  90,  93,  95,  98,  100, 102, 105, 107, 109, 111,
-    113, 115, 116, 118, 120, 122, 123, 125, 127, 128, 130, 131, 133, 134, 136, 137, 138, 140, 141, 143, 144, 145, 147,
-    148, 149, 151, 152, 153, 154, 156, 157, 158, 159, 160, 162, 163, 164, 165, 166, 167, 168, 169, 171, 172, 173, 174,
-    175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 188, 189, 190, 191, 192, 193, 194, 195, 196,
-    197, 198, 199, 200, 201, 202, 203, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 214, 215, 216, 217,
-    218, 219, 220, 221, 222, 223, 224, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 236, 237, 238,
-    239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
-
-static const unsigned char silk_TargetRate_WB_21[201 - 10] = {
-    0,   0,   0,   8,   29,  41,  49,  56,  62,  66,  70,  74,  77,  80,  83,  86,  88,  91,  93,  95,  97,  99,
-    101, 103, 105, 107, 108, 110, 112, 113, 115, 116, 118, 119, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132,
-    134, 135, 136, 137, 138, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 156, 157,
-    158, 159, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 171, 172, 173, 174, 175, 176, 177,
-    177, 178, 179, 180, 181, 181, 182, 183, 184, 185, 185, 186, 187, 188, 189, 189, 190, 191, 192, 192, 193, 194,
-    195, 195, 196, 197, 198, 198, 199, 200, 200, 201, 202, 203, 203, 204, 205, 206, 206, 207, 208, 209, 209, 210,
-    211, 211, 212, 213, 214, 214, 215, 216, 216, 217, 218, 219, 219, 220, 221, 221, 222, 223, 224, 224, 225, 226,
-    226, 227, 228, 229, 229, 230, 231, 232, 232, 233, 234, 234, 235, 236, 237, 237, 238, 239, 240, 240, 241, 242,
-    243, 243, 244, 245, 246, 246, 247, 248, 249, 249, 250, 251, 252, 253, 255};
-
 const int8_t silk_CB_lags_stage2_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE2_10MS] = {{0, 1, 0}, {0, 0, 1}};
 
 const int8_t silk_CB_lags_stage3_10_ms[PE_MAX_NB_SUBFR >> 1][PE_NB_CBKS_STAGE3_10MS] = {{0, 0, 1, -1, 1, -1, 2, -2, 2, -2, 3, -3}, {0, 1, 0, 1, -1, 2, -1, 2, -2, 3, -2, 3}};
@@ -440,8 +410,6 @@ const uint8_t* const silk_LTP_vq_gain_ptrs_Q7[NB_LTP_CBKS] = {&silk_LTP_gain_vq_
 
 const int8_t silk_LTP_vq_sizes[NB_LTP_CBKS] = {8, 16, 32};
 
-
-
 const silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = {
     32,
     10,
@@ -457,19 +425,16 @@ const silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = {
     silk_NLSF_DELTA_MIN_NB_MB_Q15,
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Transforms polynomials from cos(n*f) to cos(f)^n  */
-static void silk_A2NLSF_trans_poly(int32_t *p, const int32_t dd) {
+void silk_A2NLSF_trans_poly(int32_t* p, const int32_t dd) {
     int32_t k, n;
-    for (k = 2; k <= dd; k++) {
-        for (n = dd; n > k; n--) {
-            p[n - 2] -= p[n];
-        }
+    for(k = 2; k <= dd; k++) {
+        for(n = dd; n > k; n--) { p[n - 2] -= p[n]; }
         p[k - 2] -= silk_LSHIFT(p[k], 1);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Polynomial evaluation          */
 static int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd) {
     int32_t n;
@@ -478,7 +443,7 @@ static int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t 
     y32 = p[dd]; /* Q16 */
     x_Q16 = silk_LSHIFT(x, 4);
 
-    if (opus_likely(8 == dd)) {
+    if(8 == dd) {
         y32 = silk_SMLAWW(p[7], y32, x_Q16);
         y32 = silk_SMLAWW(p[6], y32, x_Q16);
         y32 = silk_SMLAWW(p[5], y32, x_Q16);
@@ -487,22 +452,20 @@ static int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t 
         y32 = silk_SMLAWW(p[2], y32, x_Q16);
         y32 = silk_SMLAWW(p[1], y32, x_Q16);
         y32 = silk_SMLAWW(p[0], y32, x_Q16);
-    } else {
-        for (n = dd - 1; n >= 0; n--) {
-            y32 = silk_SMLAWW(p[n], y32, x_Q16); /* Q16 */
-        }
+    }
+    else {
+        for(n = dd - 1; n >= 0; n--) { y32 = silk_SMLAWW(p[n], y32, x_Q16); /* Q16 */ }
     }
     return y32;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-static void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const int32_t dd) {
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_A2NLSF_init(const int32_t* a_Q16, int32_t* P, int32_t* Q, const int32_t dd) {
     int32_t k;
 
     /* Convert filter coefs to even and odd polynomials */
     P[dd] = silk_LSHIFT(1, 16);
     Q[dd] = silk_LSHIFT(1, 16);
-    for (k = 0; k < dd; k++) {
+    for(k = 0; k < dd; k++) {
         P[k] = -a_Q16[dd - k - 1] - a_Q16[dd + k]; /* Q16 */
         Q[k] = -a_Q16[dd - k - 1] + a_Q16[dd + k]; /* Q16 */
     }
@@ -510,7 +473,7 @@ static void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const
     /* Divide out zeros as we have that for even filter orders, */
     /* z =  1 is always a root in Q, and                        */
     /* z = -1 is always a root in P                             */
-    for (k = dd; k > 0; k--) {
+    for(k = dd; k > 0; k--) {
         P[k - 1] -= P[k];
         Q[k - 1] += Q[k];
     }
@@ -519,22 +482,21 @@ static void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const
     silk_A2NLSF_trans_poly(P, dd);
     silk_A2NLSF_trans_poly(Q, dd);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Compute Normalized Line Spectral Frequencies (NLSFs) from whitening filter coefficients      */
 /* If not all roots are found, the a_Q16 coefficients are bandwidth expanded until convergence. */
-void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d] */
-                 int32_t *a_Q16, /* I/O  Monic whitening filter coefficients in Q16 [d]              */
-                 const int32_t d /* I    Filter order (must be even)                                 */
+void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d] */
+                 int32_t*      a_Q16, /* I/O  Monic whitening filter coefficients in Q16 [d]              */
+                 const int32_t d      /* I    Filter order (must be even)                                 */
 ) {
-    int32_t i, k, m, dd, root_ix, ffrac;
-    int32_t xlo, xhi, xmid;
-    int32_t ylo, yhi, ymid, thr;
-    int32_t nom, den;
-    int32_t P[SILK_MAX_ORDER_LPC / 2 + 1];
-    int32_t Q[SILK_MAX_ORDER_LPC / 2 + 1];
-    int32_t *PQ[2];
-    int32_t *p;
+    int32_t  i, k, m, dd, root_ix, ffrac;
+    int32_t  xlo, xhi, xmid;
+    int32_t  ylo, yhi, ymid, thr;
+    int32_t  nom, den;
+    int32_t  P[SILK_MAX_ORDER_LPC / 2 + 1];
+    int32_t  Q[SILK_MAX_ORDER_LPC / 2 + 1];
+    int32_t* PQ[2];
+    int32_t* p;
 
     /* Store pointers to array */
     PQ[0] = P;
@@ -550,45 +512,42 @@ void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in
     xlo = silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
     ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
 
-    if (ylo < 0) {
+    if(ylo < 0) {
         /* Set the first NLSF to zero and move on to the next */
         NLSF[0] = 0;
         p = Q; /* Pointer to polynomial */
         ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
         root_ix = 1; /* Index of current root */
-    } else {
-        root_ix = 0; /* Index of current root */
     }
+    else { root_ix = 0; /* Index of current root */ }
     k = 1; /* Loop counter */
     i = 0; /* Counter for bandwidth expansions applied */
     thr = 0;
-    while (1) {
+    while(1) {
         /* Evaluate polynomial */
         xhi = silk_LSFCosTab_FIX_Q12[k]; /* Q12 */
         yhi = silk_A2NLSF_eval_poly(p, xhi, dd);
 
         /* Detect zero crossing */
-        if ((ylo <= 0 && yhi >= thr) || (ylo >= 0 && yhi <= -thr)) {
-            if (yhi == 0) {
-                /* If the root lies exactly at the end of the current       */
-                /* interval, look for the next root in the next interval    */
+        if((ylo <= 0 && yhi >= thr) || (ylo >= 0 && yhi <= -thr)) {
+            if(yhi == 0) { /* If the root lies exactly at the end of the current interval, look for the next root in the next interval    */
                 thr = 1;
-            } else {
-                thr = 0;
             }
+            else { thr = 0; }
             /* Binary division */
             ffrac = -256;
-            for (m = 0; m < BIN_DIV_STEPS_A2NLSF_FIX; m++) {
+            for(m = 0; m < BIN_DIV_STEPS_A2NLSF_FIX; m++) {
                 /* Evaluate polynomial */
                 xmid = silk_RSHIFT_ROUND(xlo + xhi, 1);
                 ymid = silk_A2NLSF_eval_poly(p, xmid, dd);
 
                 /* Detect zero crossing */
-                if ((ylo <= 0 && ymid >= 0) || (ylo >= 0 && ymid <= 0)) {
+                if((ylo <= 0 && ymid >= 0) || (ylo >= 0 && ymid <= 0)) {
                     /* Reduce frequency */
                     xhi = xmid;
                     yhi = ymid;
-                } else {
+                }
+                else {
                     /* Increase frequency */
                     xlo = xmid;
                     ylo = ymid;
@@ -601,10 +560,9 @@ void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in
                 /* Avoid dividing by zero */
                 den = ylo - yhi;
                 nom = silk_LSHIFT(ylo, 8 - BIN_DIV_STEPS_A2NLSF_FIX) + silk_RSHIFT(den, 1);
-                if (den != 0) {
-                    ffrac += silk_DIV32(nom, den);
-                }
-            } else {
+                if(den != 0) { ffrac += silk_DIV32(nom, den); }
+            }
+            else {
                 /* No risk of dividing by zero because abs(ylo - yhi) >= abs(ylo) >= 65536 */
                 ffrac += silk_DIV32(ylo, silk_RSHIFT(ylo - yhi, 8 - BIN_DIV_STEPS_A2NLSF_FIX));
             }
@@ -613,7 +571,7 @@ void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in
             assert(NLSF[root_ix] >= 0);
 
             root_ix++; /* Next root */
-            if (root_ix >= d) {
+            if(root_ix >= d) {
                 /* Found all roots */
                 break;
             }
@@ -623,21 +581,20 @@ void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in
             /* Evaluate polynomial */
             xlo = silk_LSFCosTab_FIX_Q12[k - 1]; /* Q12*/
             ylo = silk_LSHIFT(1 - (root_ix & 2), 12);
-        } else {
+        }
+        else {
             /* Increment loop counter */
             k++;
             xlo = xhi;
             ylo = yhi;
             thr = 0;
 
-            if (k > LSF_COS_TAB_SZ_FIX) {
+            if(k > LSF_COS_TAB_SZ_FIX) {
                 i++;
-                if (i > MAX_ITERATIONS_A2NLSF_FIX) {
+                if(i > MAX_ITERATIONS_A2NLSF_FIX) {
                     /* Set NLSFs to white spectrum and exit */
                     NLSF[0] = (int16_t)silk_DIV32_16(1 << 15, d + 1);
-                    for (k = 1; k < d; k++) {
-                        NLSF[k] = (int16_t)silk_ADD16(NLSF[k - 1], NLSF[0]);
-                    }
+                    for(k = 1; k < d; k++) { NLSF[k] = (int16_t)(NLSF[k - 1] + NLSF[0]); }
                     return;
                 }
 
@@ -648,173 +605,165 @@ void silk_A2NLSF(int16_t *NLSF,  /* O    Normalized Line Spectral Frequencies in
                 p = P;                           /* Pointer to polynomial */
                 xlo = silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
                 ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
-                if (ylo < 0) {
+                if(ylo < 0) {
                     /* Set the first NLSF to zero and move on to the next */
                     NLSF[0] = 0;
                     p = Q; /* Pointer to polynomial */
                     ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                     root_ix = 1; /* Index of current root */
-                } else {
-                    root_ix = 0; /* Index of current root */
                 }
+                else { root_ix = 0; /* Index of current root */ }
                 k = 1; /* Reset loop counter */
             }
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Split signal into two decimated bands using first-order allpass filters */
-void silk_ana_filt_bank_1(const int16_t *in,     /* I    Input signal [N]        */
-                          int32_t       *S,      /* I/O  State vector [2]        */
-                          int16_t       *outL,   /* O    Low band [N/2]          */
-                          int16_t       *outH,   /* O    High band [N/2]         */
-                          const int32_t N        /* I    Number of input samples */
-)
-{
-    int32_t      k, N2 = silk_RSHIFT( N, 1 );
-    int32_t    in32, X, Y, out_1, out_2;
+void silk_ana_filt_bank_1(const int16_t* in,   /* I    Input signal [N]        */
+                          int32_t*       S,    /* I/O  State vector [2]        */
+                          int16_t*       outL, /* O    Low band [N/2]          */
+                          int16_t*       outH, /* O    High band [N/2]         */
+                          const int32_t  N     /* I    Number of input samples */
+) {
+    int32_t k, N2 = silk_RSHIFT(N, 1);
+    int32_t in32, X, Y, out_1, out_2;
 
     /* Internal variables and state are in Q10 format */
-    for( k = 0; k < N2; k++ ) {
+    for(k = 0; k < N2; k++) {
         /* Convert to Q10 */
-        in32 = silk_LSHIFT( (int32_t)in[ 2 * k ], 10 );
+        in32 = silk_LSHIFT((int32_t)in[2 * k], 10);
 
         /* All-pass section for even input sample */
-        Y      = silk_SUB32( in32, S[ 0 ] );
-        X      = silk_SMLAWB( Y, Y, A_fb1_21 );
-        out_1  = silk_ADD32( S[ 0 ], X );
-        S[ 0 ] = silk_ADD32( in32, X );
+        Y = silk_SUB32(in32, S[0]);
+        X = silk_SMLAWB(Y, Y, A_fb1_21);
+        out_1 = silk_ADD32(S[0], X);
+        S[0] = silk_ADD32(in32, X);
 
         /* Convert to Q10 */
-        in32 = silk_LSHIFT( (int32_t)in[ 2 * k + 1 ], 10 );
+        in32 = silk_LSHIFT((int32_t)in[2 * k + 1], 10);
 
         /* All-pass section for odd input sample, and add to output of previous section */
-        Y      = silk_SUB32( in32, S[ 1 ] );
-        X      = silk_SMULWB( Y, A_fb1_20 );
-        out_2  = silk_ADD32( S[ 1 ], X );
-        S[ 1 ] = silk_ADD32( in32, X );
+        Y = silk_SUB32(in32, S[1]);
+        X = silk_SMULWB(Y, A_fb1_20);
+        out_2 = silk_ADD32(S[1], X);
+        S[1] = silk_ADD32(in32, X);
 
         /* Add/subtract, convert back to int16 and store to output */
-        outL[ k ] = (int16_t)silk_SAT16( silk_RSHIFT_ROUND( silk_ADD32( out_2, out_1 ), 11 ) );
-        outH[ k ] = (int16_t)silk_SAT16( silk_RSHIFT_ROUND( silk_SUB32( out_2, out_1 ), 11 ) );
+        outL[k] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(silk_ADD32(out_2, out_1), 11));
+        outH[k] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(silk_SUB32(out_2, out_1), 11));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Second order ARMA filter, alternative implementation */
-void silk_biquad_alt_stride1(const int16_t *in,     /* I     input signal                 */
-                             const int32_t *B_Q28,  /* I     MA coefficients [3]          */
-                             const int32_t *A_Q28,  /* I     AR coefficients [2]          */
-                             int32_t       *S,      /* I/O   State vector [2]             */
-                             int16_t       *out,    /* O     output signal                */
-                             const int32_t len      /* I     signal length (must be even) */
-)
-{
+void silk_biquad_alt_stride1(const int16_t* in,    /* I     input signal                 */
+                             const int32_t* B_Q28, /* I     MA coefficients [3]          */
+                             const int32_t* A_Q28, /* I     AR coefficients [2]          */
+                             int32_t*       S,     /* I/O   State vector [2]             */
+                             int16_t*       out,   /* O     output signal                */
+                             const int32_t  len    /* I     signal length (must be even) */
+) {
     /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-    int32_t   k;
+    int32_t k;
     int32_t inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
 
     /* Negate A_Q28 values and split in two parts */
-    A0_L_Q28 = ( -A_Q28[ 0 ] ) & 0x00003FFF;        /* lower part */
-    A0_U_Q28 = silk_RSHIFT( -A_Q28[ 0 ], 14 );      /* upper part */
-    A1_L_Q28 = ( -A_Q28[ 1 ] ) & 0x00003FFF;        /* lower part */
-    A1_U_Q28 = silk_RSHIFT( -A_Q28[ 1 ], 14 );      /* upper part */
+    A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;   /* lower part */
+    A0_U_Q28 = silk_RSHIFT(-A_Q28[0], 14); /* upper part */
+    A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;   /* lower part */
+    A1_U_Q28 = silk_RSHIFT(-A_Q28[1], 14); /* upper part */
 
-    for( k = 0; k < len; k++ ) {
+    for(k = 0; k < len; k++) {
         /* S[ 0 ], S[ 1 ]: Q12 */
-        inval = in[ k ];
-        out32_Q14 = silk_LSHIFT( silk_SMLAWB( S[ 0 ], B_Q28[ 0 ], inval ), 2 );
+        inval = in[k];
+        out32_Q14 = silk_LSHIFT(silk_SMLAWB(S[0], B_Q28[0], inval), 2);
 
-        S[ 0 ] = S[1] + silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14, A0_L_Q28 ), 14 );
-        S[ 0 ] = silk_SMLAWB( S[ 0 ], out32_Q14, A0_U_Q28 );
-        S[ 0 ] = silk_SMLAWB( S[ 0 ], B_Q28[ 1 ], inval);
+        S[0] = S[1] + silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14, A0_L_Q28), 14);
+        S[0] = silk_SMLAWB(S[0], out32_Q14, A0_U_Q28);
+        S[0] = silk_SMLAWB(S[0], B_Q28[1], inval);
 
-        S[ 1 ] = silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14, A1_L_Q28 ), 14 );
-        S[ 1 ] = silk_SMLAWB( S[ 1 ], out32_Q14, A1_U_Q28 );
-        S[ 1 ] = silk_SMLAWB( S[ 1 ], B_Q28[ 2 ], inval );
+        S[1] = silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14, A1_L_Q28), 14);
+        S[1] = silk_SMLAWB(S[1], out32_Q14, A1_U_Q28);
+        S[1] = silk_SMLAWB(S[1], B_Q28[2], inval);
 
         /* Scale back to Q0 and saturate */
-        out[ k ] = (int16_t)silk_SAT16( silk_RSHIFT( out32_Q14 + (1<<14) - 1, 14 ) );
+        out[k] = (int16_t)silk_SAT16(silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-void silk_biquad_alt_stride2_c(const int16_t *in,     /* I     input signal                 */
-                               const int32_t *B_Q28,  /* I     MA coefficients [3]          */
-                               const int32_t *A_Q28,  /* I     AR coefficients [2]          */
-                               int32_t       *S,      /* I/O   State vector [4]             */
-                               int16_t       *out,    /* O     output signal                */
-                               const int32_t len      /* I     signal length (must be even) */
-)
-{
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_biquad_alt_stride2_c(const int16_t* in,    /* I     input signal                 */
+                               const int32_t* B_Q28, /* I     MA coefficients [3]          */
+                               const int32_t* A_Q28, /* I     AR coefficients [2]          */
+                               int32_t*       S,     /* I/O   State vector [4]             */
+                               int16_t*       out,   /* O     output signal                */
+                               const int32_t  len    /* I     signal length (must be even) */
+) {
     /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-    int32_t   k;
-    int32_t A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14[ 2 ];
+    int32_t k;
+    int32_t A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14[2];
 
     /* Negate A_Q28 values and split in two parts */
-    A0_L_Q28 = ( -A_Q28[ 0 ] ) & 0x00003FFF;        /* lower part */
-    A0_U_Q28 = silk_RSHIFT( -A_Q28[ 0 ], 14 );      /* upper part */
-    A1_L_Q28 = ( -A_Q28[ 1 ] ) & 0x00003FFF;        /* lower part */
-    A1_U_Q28 = silk_RSHIFT( -A_Q28[ 1 ], 14 );      /* upper part */
+    A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;   /* lower part */
+    A0_U_Q28 = silk_RSHIFT(-A_Q28[0], 14); /* upper part */
+    A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;   /* lower part */
+    A1_U_Q28 = silk_RSHIFT(-A_Q28[1], 14); /* upper part */
 
-    for( k = 0; k < len; k++ ) {
+    for(k = 0; k < len; k++) {
         /* S[ 0 ], S[ 1 ], S[ 2 ], S[ 3 ]: Q12 */
-        out32_Q14[ 0 ] = silk_LSHIFT( silk_SMLAWB( S[ 0 ], B_Q28[ 0 ], in[ 2 * k + 0 ] ), 2 );
-        out32_Q14[ 1 ] = silk_LSHIFT( silk_SMLAWB( S[ 2 ], B_Q28[ 0 ], in[ 2 * k + 1 ] ), 2 );
+        out32_Q14[0] = silk_LSHIFT(silk_SMLAWB(S[0], B_Q28[0], in[2 * k + 0]), 2);
+        out32_Q14[1] = silk_LSHIFT(silk_SMLAWB(S[2], B_Q28[0], in[2 * k + 1]), 2);
 
-        S[ 0 ] = S[ 1 ] + silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14[ 0 ], A0_L_Q28 ), 14 );
-        S[ 2 ] = S[ 3 ] + silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14[ 1 ], A0_L_Q28 ), 14 );
-        S[ 0 ] = silk_SMLAWB( S[ 0 ], out32_Q14[ 0 ], A0_U_Q28 );
-        S[ 2 ] = silk_SMLAWB( S[ 2 ], out32_Q14[ 1 ], A0_U_Q28 );
-        S[ 0 ] = silk_SMLAWB( S[ 0 ], B_Q28[ 1 ], in[ 2 * k + 0 ] );
-        S[ 2 ] = silk_SMLAWB( S[ 2 ], B_Q28[ 1 ], in[ 2 * k + 1 ] );
+        S[0] = S[1] + silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14[0], A0_L_Q28), 14);
+        S[2] = S[3] + silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14[1], A0_L_Q28), 14);
+        S[0] = silk_SMLAWB(S[0], out32_Q14[0], A0_U_Q28);
+        S[2] = silk_SMLAWB(S[2], out32_Q14[1], A0_U_Q28);
+        S[0] = silk_SMLAWB(S[0], B_Q28[1], in[2 * k + 0]);
+        S[2] = silk_SMLAWB(S[2], B_Q28[1], in[2 * k + 1]);
 
-        S[ 1 ] = silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14[ 0 ], A1_L_Q28 ), 14 );
-        S[ 3 ] = silk_RSHIFT_ROUND( silk_SMULWB( out32_Q14[ 1 ], A1_L_Q28 ), 14 );
-        S[ 1 ] = silk_SMLAWB( S[ 1 ], out32_Q14[ 0 ], A1_U_Q28 );
-        S[ 3 ] = silk_SMLAWB( S[ 3 ], out32_Q14[ 1 ], A1_U_Q28 );
-        S[ 1 ] = silk_SMLAWB( S[ 1 ], B_Q28[ 2 ], in[ 2 * k + 0 ] );
-        S[ 3 ] = silk_SMLAWB( S[ 3 ], B_Q28[ 2 ], in[ 2 * k + 1 ] );
+        S[1] = silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14[0], A1_L_Q28), 14);
+        S[3] = silk_RSHIFT_ROUND(silk_SMULWB(out32_Q14[1], A1_L_Q28), 14);
+        S[1] = silk_SMLAWB(S[1], out32_Q14[0], A1_U_Q28);
+        S[3] = silk_SMLAWB(S[3], out32_Q14[1], A1_U_Q28);
+        S[1] = silk_SMLAWB(S[1], B_Q28[2], in[2 * k + 0]);
+        S[3] = silk_SMLAWB(S[3], B_Q28[2], in[2 * k + 1]);
 
         /* Scale back to Q0 and saturate */
-        out[ 2 * k + 0 ] = (int16_t)silk_SAT16( silk_RSHIFT( out32_Q14[ 0 ] + (1<<14) - 1, 14 ) );
-        out[ 2 * k + 1 ] = (int16_t)silk_SAT16( silk_RSHIFT( out32_Q14[ 1 ] + (1<<14) - 1, 14 ) );
+        out[2 * k + 0] = (int16_t)silk_SAT16(silk_RSHIFT(out32_Q14[0] + (1 << 14) - 1, 14));
+        out[2 * k + 1] = (int16_t)silk_SAT16(silk_RSHIFT(out32_Q14[1] + (1 << 14) - 1, 14));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander_32(int32_t *ar,      /* I/O  AR filter to be expanded (without leading 1)                */
-                        const int32_t d,  /* I    Length of ar                                                */
-                        int32_t chirp_Q16 /* I    Chirp factor in Q16                                         */
+void silk_bwexpander_32(int32_t*      ar,       /* I/O  AR filter to be expanded (without leading 1)                */
+                        const int32_t d,        /* I    Length of ar                                                */
+                        int32_t       chirp_Q16 /* I    Chirp factor in Q16                                         */
 ) {
     int32_t i;
     int32_t chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
-    for (i = 0; i < d - 1; i++) {
+    for(i = 0; i < d - 1; i++) {
         ar[i] = silk_SMULWW(chirp_Q16, ar[i]);
         chirp_Q16 += silk_RSHIFT_ROUND(silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
     }
     ar[d - 1] = silk_SMULWW(chirp_Q16, ar[d - 1]);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander(int16_t *ar,      /* I/O  AR filter to be expanded (without leading 1)                */
-                     const int32_t d,  /* I    Length of ar                                                */
-                     int32_t chirp_Q16 /* I    Chirp factor (typically in the range 0 to 1)                */
+void silk_bwexpander(int16_t*      ar,       /* I/O  AR filter to be expanded (without leading 1)                */
+                     const int32_t d,        /* I    Length of ar                                                */
+                     int32_t       chirp_Q16 /* I    Chirp factor (typically in the range 0 to 1)                */
 ) {
     int32_t i;
     int32_t chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
-    /* NB: Dont use silk_SMULWB, instead of silk_RSHIFT_ROUND( silk_MUL(), 16 ), below.  */
-    /* Bias in silk_SMULWB can lead to unstable filters                                */
-    for (i = 0; i < d - 1; i++) {
+    /* NB: Dont use silk_SMULWB, instead of silk_RSHIFT_ROUND( silk_MUL(), 16 ), below. Bias in silk_SMULWB can lead to unstable filters                                */
+    for(i = 0; i < d - 1; i++) {
         ar[i] = (int16_t)silk_RSHIFT_ROUND(silk_MUL(chirp_Q16, ar[i]), 16);
         chirp_Q16 += silk_RSHIFT_ROUND(silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
     }
     ar[d - 1] = (int16_t)silk_RSHIFT_ROUND(silk_MUL(chirp_Q16, ar[d - 1]), 16);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode mid/side predictors */
 void silk_stereo_decode_pred(ec_dec *psRangeDec, /* I/O  Compressor data structure                   */
                              int32_t pred_Q13[]  /* O    Predictors                                  */
@@ -1772,38 +1721,6 @@ void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data st
         }
         q_ptr += SHELL_CODEC_FRAME_LENGTH;
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* Control SNR of redidual quantizer */
-int32_t silk_control_SNR(silk_encoder_state *psEncC, /* I/O  Pointer to Silk encoder state               */
-                         int32_t TargetRate_bps      /* I    Target max bitrate (bps)                    */
-) {
-    int id;
-    int bound;
-    const unsigned char *snr_table;
-
-    psEncC->TargetRate_bps = TargetRate_bps;
-    if (psEncC->nb_subfr == 2) {
-        TargetRate_bps -= 2000 + psEncC->fs_kHz / 16;
-    }
-    if (psEncC->fs_kHz == 8) {
-        bound = sizeof(silk_TargetRate_NB_21);
-        snr_table = silk_TargetRate_NB_21;
-    } else if (psEncC->fs_kHz == 12) {
-        bound = sizeof(silk_TargetRate_MB_21);
-        snr_table = silk_TargetRate_MB_21;
-    } else {
-        bound = sizeof(silk_TargetRate_WB_21);
-        snr_table = silk_TargetRate_WB_21;
-    }
-    id = (TargetRate_bps + 200) / 400;
-    id = silk_min(id - 10, bound - 1);
-    if (id <= 0) {
-        psEncC->SNR_dB_Q7 = 0;
-    } else {
-        psEncC->SNR_dB_Q7 = snr_table[id] * 21;
-    }
-    return SILK_NO_ERROR;
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode a frame */
