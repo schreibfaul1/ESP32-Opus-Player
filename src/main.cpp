@@ -39,8 +39,7 @@ uint8_t             m_channels=2;
 int16_t             m_outBuff[2048*2];              // Interleaved L/R
 int16_t             m_validSamples = 0;
 int16_t             m_curSample = 0;
-bool                m_f_forceMono = false;
-bool                m_f_isPlaying = false;
+boolean             m_f_forceMono = false;
 
 typedef enum { LEFTCHANNEL=0, RIGHTCHANNEL=1 } SampleIndex;
 
@@ -117,7 +116,7 @@ uint8_t getChannels(){
 //---------------------------------------------------------------------------------------------------------------------
 int32_t Gain(int16_t s[2]) {
     int32_t v[2];
-//    float step = (float)m_vol /64;
+    float step = (float)m_vol /64;
     uint8_t l = 0, r = 0;
 
     v[LEFTCHANNEL] = (s[LEFTCHANNEL]  * (m_vol - l)) >> 6;
@@ -211,6 +210,10 @@ bool playChunk() {
 //---------------------------------------------------------------------------------------------------------------------
 bool playSample(int16_t sample[2]) {
 
+    int16_t sample1[2]; int16_t* s1;
+    int16_t sample2[2]; int16_t* s2 = sample2;
+    int16_t sample3[2]; int16_t* s3 = sample3;
+
     if (getBitsPerSample() == 8) { // Upsample from unsigned 8 bits to signed 16 bits
         sample[LEFTCHANNEL]  = ((sample[LEFTCHANNEL]  & 0xff) -128) << 8;
         sample[RIGHTCHANNEL] = ((sample[RIGHTCHANNEL] & 0xff) -128) << 8;
@@ -242,7 +245,7 @@ int SD_read(unsigned char* buff, int nbytes){
     if (nbytes == 0) return -1;
     return nbytes;
 }
-void opusTask() {
+void opusTask(void *parameter) {
     int ret;
     do {
         ret = op_read_stereo(m_outBuff, 2048);
@@ -253,8 +256,7 @@ void opusTask() {
         vTaskDelay(5);
         // log_e("%u", uxTaskGetStackHighWaterMark(NULL));
     } while(ret > 0);
-    m_f_isPlaying = false;
-    log_i("stop");
+    vTaskDelete(opus_task);
 }
 //---------------------------------------------------------------------------------------------------------------------
 void setup() {
@@ -275,18 +277,25 @@ void setup() {
         while(true){;}
     }
 
-//    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
-//    file = SD_MMC.open("/opus/testfile.opus");
-    file = SD_MMC.open("/opus/links_rechts.opus");
-//    file = SD_MMC.open("/opus/Helikopter117.opus");
-
+ //   file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+    file = SD_MMC.open("/opus/hybrid.opus");
+ //   file = SD_MMC.open("/opus/celt_8000Hz.opus");
+ //   file = SD_MMC.open("/opus/silk_8000Hz.opus");
     log_i("free heap before %d", ESP.getFreeHeap());
     opus_init_decoder();
     log_i("free heap after %d", ESP.getFreeHeap());
-    m_f_isPlaying = true;
+    xTaskCreatePinnedToCore(
+            opusTask, /* Function to implement the task */
+            "OPUS", /* Name of the task */
+            4096 * 6,  /* Stack size in words */
+            NULL,  /* Task input parameter */
+            2,  /* Priority of the task */
+            &opus_task,  /* Task handle. */
+            1 /* Core where the task should run */
+    );
 }
 
 void loop() {
-    if(m_f_isPlaying) opusTask();
+    ;
 }
 //---------------------------------------------------------------------------------------------------------------------

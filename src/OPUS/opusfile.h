@@ -15,79 +15,91 @@
 #include "Arduino.h"
 #include "ogg.h"
 #include "opus_decoder.h"
-#include "celt.h"
 
-extern __attribute__((weak)) int32_t SD_read(uint8_t *buff, int32_t nbytes);
+extern __attribute__((weak)) int SD_read(unsigned char* buff, int nbytes);
 
-#define OP_NCHANNELS_MAX       2
-#define OPUS_CHANNEL_COUNT_MAX 2
+/*Advance a file offset by the given amount, clamping against INT64_MAX.
+  It assumes that both _offset and _amount are non-negative.*/
+#define OP_ADV_OFFSET(_offset,_amount) \
+ (_min(_offset,INT64_MAX-(_amount))+(_amount))
 
-# define  OP_PARTOPEN          1 /*We've found the first Opus stream in the first link.*/
-# define  OP_OPENED            2
-# define  OP_STREAMSET         3 /*We've found the first Opus stream in the current link.*/
-# define  OP_INITSET           4 /*We've initialized the decoder for the chosen Opus stream in the current link.*/
+#define OP_NCHANNELS_MAX (2)
+#define OPUS_CHANNEL_COUNT_MAX (2)
 
-typedef struct OpusHead {
-    int32_t  version;
-    int32_t  channel_count;
-    uint32_t pre_skip;
-    uint32_t input_sample_rate;
-    int32_t  output_gain;
-    int32_t  mapping_family;
-    int32_t  stream_count;
-    int32_t  coupled_count;
-    uint8_t  mapping[OPUS_CHANNEL_COUNT_MAX];
+/*Initial state.*/
+# define  OP_NOTOPEN   (0)
+/*We've found the first Opus stream in the first link.*/
+# define  OP_PARTOPEN  (1)
+# define  OP_OPENED    (2)
+/*We've found the first Opus stream in the current link.*/
+# define  OP_STREAMSET (3)
+/*We've initialized the decoder for the chosen Opus stream in the current
+   link.*/
+# define  OP_INITSET   (4)
+
+typedef int (*op_read_func)(unsigned char *_ptr,int _nbytes);
+
+typedef struct OpusHead{
+  int           version;
+  int           channel_count;
+  unsigned      pre_skip;
+  uint32_t      input_sample_rate;
+  int           output_gain;
+  int           mapping_family;
+  int           stream_count;
+  int           coupled_count;
+  unsigned char mapping[OPUS_CHANNEL_COUNT_MAX];
 } OpusHead_t;
 
-typedef struct OpusTags {
-    char   **user_comments;
-    int32_t *comment_lengths;
-    int32_t  comments;
-    char    *vendor;
+typedef struct OpusTags{
+  char        **user_comments;
+  int          *comment_lengths;
+  int           comments;
+  char         *vendor;
 } OpusTags_t;
 
-typedef struct OggOpusLink {
-    int64_t    offset;
-    int64_t    data_offset;
-    int64_t    end_offset;
-    int64_t    pcm_file_offset;
-    int64_t    pcm_end;
-    int64_t    pcm_start;
-    uint32_t   serialno;
-    OpusHead_t head;
-    OpusTags_t tags;
+typedef struct OggOpusLink{
+  int64_t           offset;
+  int64_t           data_offset;
+  int64_t           end_offset;
+  int64_t           pcm_file_offset;
+  int64_t           pcm_end;
+  int64_t           pcm_start;
+  uint32_t          serialno;
+  OpusHead_t        head;
+  OpusTags_t        tags;
 } OggOpusLink_t;
 
 typedef struct OggOpusFile{
-    int32_t           seekable;
-    int32_t           nlinks;
-    int32_t           nserialnos;
-    int32_t           cserialnos;
-    uint32_t         *serialnos;
-    int64_t           offset;
-    int64_t           end;
-    ogg_sync_state    oy;
-    int32_t           ready_state;
-    int32_t           cur_link;
-    int32_t           cur_discard_count;
-    int64_t           prev_packet_gp;
-    int64_t           prev_page_offset;
-    int64_t           bytes_tracked;
-    int64_t           samples_tracked;
-    ogg_stream_state  os;
-    ogg_packet        op[255];
-    int32_t           op_pos;
-    int32_t           op_count;
-    void             *decode_cb_ctx;
-    int32_t           od_stream_count;
-    int32_t           od_coupled_count;
-    int32_t           od_channel_count;
-    uint8_t           od_mapping[OP_NCHANNELS_MAX];
-    int16_t          *od_buffer;
-    int32_t           od_buffer_pos;
-    int32_t           od_buffer_size;
-    int32_t           gain_type;
-    int32_t           gain_offset_q8;
+  int               seekable;
+  int               nlinks;
+  int               nserialnos;
+  int               cserialnos;
+  uint32_t         *serialnos;
+  int64_t           offset;
+  int64_t           end;
+  ogg_sync_state    oy;
+  int               ready_state;
+  int               cur_link;
+  int32_t           cur_discard_count;
+  int64_t           prev_packet_gp;
+  int64_t           prev_page_offset;
+  int64_t           bytes_tracked;
+  int64_t           samples_tracked;
+  ogg_stream_state  os;
+  ogg_packet        op[255];
+  int               op_pos;
+  int               op_count;
+  void             *decode_cb_ctx;
+  int               od_stream_count;
+  int               od_coupled_count;
+  int               od_channel_count;
+  unsigned char     od_mapping[OP_NCHANNELS_MAX];
+  int16_t          *od_buffer;
+  int               od_buffer_pos;
+  int               od_buffer_size;
+  int               gain_type;
+  int32_t           gain_offset_q8;
 } OggOpusFile_t;
 
 #define OP_FALSE         (-1)
@@ -115,8 +127,32 @@ typedef struct OggOpusFile{
 /**The first or last granule position of a link failed basic validity checks.*/
 #define OP_EBADTIMESTAMP (-139)
 
-int32_t        opus_head_parse(OpusHead_t *_head, const uint8_t *_data, size_t _len);
+
+
+
+
+
+#define OP_PIC_FORMAT_UNKNOWN (-1)
+#define OP_PIC_FORMAT_URL     (0)
+#define OP_PIC_FORMAT_JPEG    (1)
+#define OP_PIC_FORMAT_PNG     (2)
+#define OP_PIC_FORMAT_GIF     (3)
+
+int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
+
+//OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *opus_init_decoder();
-int32_t        op_read_stereo(int16_t *_pcm, int32_t _buf_size);
+
+#define OP_DEC_FORMAT_SHORT (7008)
+#define OP_DEC_FORMAT_FLOAT (7040)
+#define OP_DEC_USE_DEFAULT  (6720)
+
+
+#define OP_HEADER_GAIN   (0)
+#define OP_ALBUM_GAIN    (3007)
+#define OP_TRACK_GAIN    (3008)
+#define OP_ABSOLUTE_GAIN (3009)
+
+int op_read_stereo(int16_t *_pcm,int _buf_size);
 
 

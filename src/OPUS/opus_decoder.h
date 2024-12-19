@@ -41,35 +41,10 @@
 extern "C" {
 #endif
 
-enum : int8_t  {OPUS_PARSE_OGG_DONE = 100,
-                ERR_OPUS_NONE = 0,
-                ERR_OPUS_CHANNELS_OUT_OF_RANGE = -1,
-                ERR_OPUS_INVALID_SAMPLERATE = -2,
-                ERR_OPUS_EXTRA_CHANNELS_UNSUPPORTED = -3,
-                ERR_OPUS_DECODER_ASYNC = -4,
-                ERR_OPUS_SILK_MODE_UNSUPPORTED = -5,
-                ERR_OPUS_HYBRID_MODE_UNSUPPORTED = -6,
-                ERR_OPUS_OGG_SYNC_NOT_FOUND = - 7,
-                ERR_OPUS_CELT_BAD_ARG = -18,
-                ERR_OPUS_CELT_INTERNAL_ERROR = -19,
-                ERR_OPUS_CELT_UNIMPLEMENTED = -20,
-                ERR_OPUS_CELT_ALLOC_FAIL = -21,
-                ERR_OPUS_CELT_UNKNOWN_REQUEST = -22,
-                ERR_OPUS_CELT_GET_MODE_REQUEST = - 23,
-                ERR_OPUS_CELT_CLEAR_REQUEST = -24,
-                ERR_OPUS_CELT_SET_CHANNELS = -25,
-                ERR_OPUS_CELT_END_BAND = -26,
-                ERR_CELT_OPUS_INTERNAL_ERROR = -27};
-
-
-
-
-
-
-
-
+#define VARDECL(type, var)
+#define ALLOC(var, size, type) type var[size]
 #define OPUS_OK                0
-#define OPUS_BAD_ARG_         -1
+#define OPUS_BAD_ARG          -1
 #define OPUS_BUFFER_TOO_SMALL -2
 #define OPUS_INTERNAL_ERROR   -3
 #define OPUS_INVALID_PACKET   -4
@@ -77,53 +52,174 @@ enum : int8_t  {OPUS_PARSE_OGG_DONE = 100,
 #define OPUS_INVALID_STATE    -6
 #define OPUS_ALLOC_FAIL       -7
 
+#define OPUS_MULTISTREAM_GET_DECODER_STATE_REQUEST 5122
+
+#define OPUS_GNUC_PREREQ(_maj,_min) \
+ ((__GNUC__<<16)+__GNUC_MINOR__>=((_maj)<<16)+(_min))
+
+#define OPUS_SET_APPLICATION_REQUEST 4000
+#define OPUS_GET_APPLICATION_REQUEST 4001
+#define OPUS_SET_BITRATE_REQUEST 4002
+#define OPUS_GET_BITRATE_REQUEST 4003
+#define OPUS_SET_MAX_BANDWIDTH_REQUEST 4004
+#define OPUS_GET_MAX_BANDWIDTH_REQUEST 4005
+#define OPUS_SET_VBR_REQUEST 4006
+#define OPUS_GET_VBR_REQUEST 4007
+#define OPUS_SET_BANDWIDTH_REQUEST 4008
+#define OPUS_GET_BANDWIDTH_REQUEST 4009
+#define OPUS_SET_COMPLEXITY_REQUEST 4010
+#define OPUS_GET_COMPLEXITY_REQUEST 4011
+#define OPUS_SET_INBAND_FEC_REQUEST 4012
+#define OPUS_GET_INBAND_FEC_REQUEST 4013
+#define OPUS_SET_PACKET_LOSS_PERC_REQUEST 4014
+#define OPUS_GET_PACKET_LOSS_PERC_REQUEST 4015
+#define OPUS_SET_DTX_REQUEST 4016
+#define OPUS_GET_DTX_REQUEST 4017
+#define OPUS_SET_VBR_CONSTRAINT_REQUEST 4020
+#define OPUS_GET_VBR_CONSTRAINT_REQUEST 4021
+#define OPUS_SET_FORCE_CHANNELS_REQUEST 4022
+#define OPUS_GET_FORCE_CHANNELS_REQUEST 4023
+#define OPUS_SET_SIGNAL_REQUEST 4024
+#define OPUS_GET_SIGNAL_REQUEST 4025
+#define OPUS_GET_LOOKAHEAD_REQUEST 4027
 #define OPUS_GET_SAMPLE_RATE_REQUEST 4029
+#define OPUS_GET_FINAL_RANGE_REQUEST 4031
+#define OPUS_GET_PITCH_REQUEST 4033
+#define OPUS_SET_GAIN_REQUEST 4034
+#define OPUS_GET_GAIN_REQUEST 4045 /* Should have been 4035 */
+#define OPUS_SET_LSB_DEPTH_REQUEST 4036
+#define OPUS_GET_LSB_DEPTH_REQUEST 4037
+#define OPUS_GET_LAST_PACKET_DURATION_REQUEST 4039
+#define OPUS_SET_EXPERT_FRAME_DURATION_REQUEST 4040
+#define OPUS_GET_EXPERT_FRAME_DURATION_REQUEST 4041
+#define OPUS_SET_PREDICTION_DISABLED_REQUEST 4042
+#define OPUS_GET_PREDICTION_DISABLED_REQUEST 4043
+#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
+#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
+#define OPUS_GET_IN_DTX_REQUEST 4049
+#define OPUS_AUTO -1000     /**<Auto/default setting @hideinitializer*/
+#define OPUS_BITRATE_MAX -1 /**<Maximum bitrate @hideinitializer*/
+#define OPUS_APPLICATION_VOIP 2048
+#define OPUS_APPLICATION_AUDIO 2049
+#define OPUS_APPLICATION_RESTRICTED_LOWDELAY 2051
+#define OPUS_SIGNAL_VOICE 3001            /**< Signal being encoded is voice */
+#define OPUS_SIGNAL_MUSIC 3002            /**< Signal being encoded is music */
 #define OPUS_BANDWIDTH_NARROWBAND 1101    /**< 4 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_MEDIUMBAND 1102    /**< 6 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_WIDEBAND 1103      /**< 8 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_SUPERWIDEBAND 1104 /**<12 kHz bandpass @hideinitializer*/
 #define OPUS_BANDWIDTH_FULLBAND 1105      /**<20 kHz bandpass @hideinitializer*/
 #define OPUS_RESET_STATE 4028
+#define MODE_SILK_ONLY 1000
+#define MODE_HYBRID 1001
 #define MODE_CELT_ONLY 1002
+#define OPUS_SET_VOICE_RATIO_REQUEST 11018
+#define OPUS_GET_VOICE_RATIO_REQUEST 11019
+#define OPUS_SET_FORCE_MODE_REQUEST 11002
+#define OPUS_SET_FORCE_MODE(x) OPUS_SET_FORCE_MODE_REQUEST, (int32_t)(x)
+
 
 typedef struct OpusDecoder OpusDecoder;
 typedef struct CELTDecoder CELTDecoder;
 typedef struct CELTMode CELTMode;
 typedef enum { MAPPING_TYPE_NONE, MAPPING_TYPE_SURROUND, MAPPING_TYPE_AMBISONICS } MappingType;
-typedef void (*downmix_func)(const void *, int32_t *, int32_t, int32_t, int32_t, int32_t, int32_t);
-typedef void (*opus_copy_channel_in_func)(int16_t *dst, int32_t dst_stride, const void *src, int32_t src_stride,
-                                          int32_t src_channel, int32_t frame_size, void *user_data);
-typedef void (*opus_copy_channel_out_func)(void *dst, int32_t dst_stride, int32_t dst_channel, const int16_t *src,
-                                           int32_t src_stride, int32_t frame_size, void *user_data);
+typedef void (*downmix_func)(const void *, int32_t *, int, int, int, int, int);
+typedef void (*opus_copy_channel_in_func)(int16_t *dst, int dst_stride, const void *src, int src_stride,
+                                          int src_channel, int frame_size, void *user_data);
+typedef void (*opus_copy_channel_out_func)(void *dst, int dst_stride, int dst_channel, const int16_t *src,
+                                           int src_stride, int frame_size, void *user_data);
 
 typedef struct OpusMSDecoder {
+    int nb_channels;
+    int nb_streams;
+    int nb_coupled_streams;
+    unsigned char mapping[256];
 }OpusMSDecoder_t;
 
-int32_t opus_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_decoder_ctl(int32_t request, int32_t* ap);
-int32_t opus_packet_parse(const uint8_t *data, int32_t len, uint8_t *out_toc, const uint8_t *frames[48],
-                      int16_t size[48], int32_t *payload_offset);
-int32_t opus_packet_get_bandwidth(const uint8_t *data);
-int32_t opus_packet_get_samples_per_frame(const uint8_t *data, int32_t Fs);
-int32_t opus_packet_get_nb_channels(const uint8_t *data);
-int32_t opus_packet_get_nb_frames(const uint8_t packet[], int32_t len);
-int32_t opus_packet_get_nb_samples(const uint8_t packet[], int32_t len, int32_t Fs);
-int32_t opus_decode_native(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size,
-                       int32_t self_delimited, int32_t *packet_offset);
 
-int32_t opus_packet_parse_impl(const uint8_t *data, int32_t len, int32_t self_delimited, uint8_t *out_toc,
-                           const uint8_t *frames[48], int16_t size[48], int32_t *payload_offset,
+
+int opus_decoder_get_size(int channels);
+OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error);
+int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels);
+int opus_decode(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size);
+int opus_decode_float(OpusDecoder *st, const unsigned char *data, int32_t len, float *pcm, int frame_size,
+                      int decode_fec);
+int opus_decoder_ctl(OpusDecoder *st, int request, ...);
+int opus_packet_parse(const unsigned char *data, int32_t len, unsigned char *out_toc, const unsigned char *frames[48],
+                      int16_t size[48], int *payload_offset);
+int opus_packet_get_bandwidth(const unsigned char *data);
+int opus_packet_get_samples_per_frame(const unsigned char *data, int32_t Fs);
+int opus_packet_get_nb_channels(const unsigned char *data);
+int opus_packet_get_nb_frames(const unsigned char packet[], int32_t len);
+int opus_packet_get_nb_samples(const unsigned char packet[], int32_t len, int32_t Fs);
+int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char packet[], int32_t len);
+
+
+CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
+void opus_custom_mode_destroy(CELTMode *mode);
+CELTDecoder *opus_custom_decoder_create(const CELTMode *mode, int channels, int *error);
+void opus_custom_decoder_destroy(CELTDecoder *st);
+int opus_custom_decode_float(CELTDecoder *st, const unsigned char *data, int len, float *pcm, int frame_size);
+int opus_custom_decode(CELTDecoder *st, const unsigned char *data, int len, int16_t *pcm, int frame_size);
+int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
+
+void downmix_float(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+void downmix_int(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
+int is_digital_silence(const int16_t *pcm, int frame_size, int channels, int lsb_depth);
+int encode_size(int size, unsigned char *data);
+int32_t frame_size_select(int32_t frame_size, int variable_duration, int32_t Fs);
+int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
+                       int self_delimited, int32_t *packet_offset);
+
+/* Make sure everything is properly aligned. */
+static inline int align(int i) {
+    struct foo {
+        char c;
+        union {
+            void *p;
+            int32_t i;
+            int32_t v;
+        } u;
+    };
+    unsigned int alignment = offsetof(struct foo, u);
+
+    /* Optimizing compilers should optimize div and multiply into and
+       for all sensible alignment values. */
+    return ((i + alignment - 1) / alignment) * alignment;
+}
+
+int opus_packet_parse_impl(const unsigned char *data, int32_t len, int self_delimited, unsigned char *out_toc,
+                           const unsigned char *frames[48], int16_t size[48], int *payload_offset,
                            int32_t *packet_offset);
-int32_t opus_get_left_channel(int32_t stream_id, int32_t prev);
-int32_t opus_get_right_channel(int32_t stream_id, int32_t prev);
-int32_t opus_get_mono_channel(int32_t stream_id, int32_t prev);
-bool opus_decoder_create(int32_t Fs, int32_t channels, const uint8_t *mapping, int32_t *error);
-int32_t opus_multistream_decode(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
-int32_t opus_multistream_packet_validate(const uint8_t *data, int32_t len, int32_t Fs);
-int32_t opus_decode_frame(const uint8_t *data, int32_t len, int16_t *pcm, int32_t frame_size);
+int pad_frame(unsigned char *data, int32_t len, int32_t new_len);
+int opus_multistream_decode_native(OpusMSDecoder_t *st, const unsigned char *data, int32_t len, void *pcm,
+                                   opus_copy_channel_out_func copy_channel_out, int frame_size);
+int opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int request, va_list ap);
+int validate_layout(OpusMSDecoder_t *layout);
+int get_left_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
+int get_right_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
+int get_mono_channel(OpusMSDecoder_t *layout, int stream_id, int prev);
+int32_t opus_multistream_decoder_get_size(int streams, int coupled_streams);
+OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int channels, int streams, int coupled_streams,
+                                               const unsigned char *mapping, int *error);
+int opus_multistream_decoder_init(OpusMSDecoder_t *st, int32_t Fs, int channels, int streams, int coupled_streams,
+                                  const unsigned char *mapping);
+int opus_multistream_decode(OpusMSDecoder_t *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size);
+int opus_multistream_decoder_ctl(OpusMSDecoder_t *st, int request, ...);
+void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
 
-void opus_copy_channel_out_short(int16_t *dst, int32_t dst_channel, const int16_t *src, int32_t src_stride,
-                                        int32_t frame_size);
+
+
+
+
+
+
+
+
+
+
+
+
 
 #ifdef __cplusplus
 }
