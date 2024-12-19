@@ -109,7 +109,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    st->DecControl.nChannelsAPI      = st->channels;
 
    /* Reset decoder */
-   ret = silk_InitDecoder( silk_dec );
+   ret = silk_InitDecoder();
    if(ret)return OPUS_INTERNAL_ERROR;
 
    /* Initialize CELT decoder */
@@ -339,7 +339,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, lost_flag, first_frame, pcm_ptr, &silk_frame_size);
+            silk_ret = silk_Decode(lost_flag, first_frame, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
                 if (lost_flag) {
                     /* PLC failure should not be fatal */
@@ -626,7 +626,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
                        sizeof(OpusDecoder) - ((char *)&st->OPUS_DECODER_RESET_START - (char *)st));
 
             celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
-            silk_InitDecoder(silk_dec);
+            silk_InitDecoder();
             st->stream_channels = st->channels;
             st->frame_size = st->Fs / 400;
         } break;

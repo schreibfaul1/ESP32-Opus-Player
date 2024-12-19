@@ -1241,9 +1241,9 @@ void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t
                          int32_t condCoding);
 void silk_CNG_Reset(silk_decoder_state *psDec);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
-int32_t silk_InitDecoder(void *decState);
+int32_t silk_InitDecoder();
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
-int32_t silk_Decode(void* decState, int32_t lostFlag, int32_t newPacketFlag,
+int32_t silk_Decode(int32_t lostFlag, int32_t newPacketFlag,
                     int16_t *samplesOut, int32_t *nSamplesOut);
 static void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
 void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d);
