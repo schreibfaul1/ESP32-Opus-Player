@@ -3452,336 +3452,6 @@ static void silk_noise_shape_quantizer_del_dec(
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
-
-static void silk_nsq_del_dec_scale_states(const silk_encoder_state *psEncC, /* I    Encoder State */
-                                                 silk_nsq_state *NSQ, /* I/O  NSQ state                           */
-                                                 NSQ_del_dec_struct psDelDec[], /* I/O  Delayed decision states */
-                                                 const int16_t x16[],  /* I    Input                               */
-                                                 int32_t x_sc_Q10[],   /* O    Input scaled with 1/Gain in Q10     */
-                                                 const int16_t sLTP[], /* I    Re-whitened LTP state in Q0         */
-                                                 int32_t sLTP_Q15[],   /* O    LTP state matching scaled input     */
-                                                 int32_t subfr,        /* I    Subframe number                     */
-                                                 int32_t nStatesDelayedDecision, /* I    Number of del dec states */
-                                                 const int32_t LTP_scale_Q14,    /* I    LTP state scaling    */
-                                                 const int32_t Gains_Q16[MAX_NB_SUBFR], /* I */
-                                                 const int32_t pitchL[MAX_NB_SUBFR],    /* I    Pitch lag    */
-                                                 const int32_t signal_type,             /* I    Signal type             */
-                                                 const int32_t decisionDelay            /* I    Decision delay            */
-) {
-    int32_t i, k, lag;
-    int32_t gain_adj_Q16, inv_gain_Q31, inv_gain_Q26;
-    NSQ_del_dec_struct *psDD;
-
-    lag = pitchL[subfr];
-    inv_gain_Q31 = silk_INVERSE32_varQ(silk_max(Gains_Q16[subfr], 1), 47);
-    assert(inv_gain_Q31 != 0);
-
-    /* Scale input */
-    inv_gain_Q26 = silk_RSHIFT_ROUND(inv_gain_Q31, 5);
-    for (i = 0; i < psEncC->subfr_length; i++) {
-        x_sc_Q10[i] = silk_SMULWW(x16[i], inv_gain_Q26);
-    }
-
-    /* After rewhitening the LTP state is un-scaled, so scale with inv_gain_Q16 */
-    if (NSQ->rewhite_flag) {
-        if (subfr == 0) {
-            /* Do LTP downscaling */
-            inv_gain_Q31 = silk_LSHIFT(silk_SMULWB(inv_gain_Q31, LTP_scale_Q14), 2);
-        }
-        for (i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx; i++) {
-            assert(i < MAX_FRAME_LENGTH);
-            sLTP_Q15[i] = silk_SMULWB(inv_gain_Q31, sLTP[i]);
-        }
-    }
-
-    /* Adjust for changing gain */
-    if (Gains_Q16[subfr] != NSQ->prev_gain_Q16) {
-        gain_adj_Q16 = silk_DIV32_varQ(NSQ->prev_gain_Q16, Gains_Q16[subfr], 16);
-
-        /* Scale long-term shaping state */
-        for (i = NSQ->sLTP_shp_buf_idx - psEncC->ltp_mem_length; i < NSQ->sLTP_shp_buf_idx; i++) {
-            NSQ->sLTP_shp_Q14[i] = silk_SMULWW(gain_adj_Q16, NSQ->sLTP_shp_Q14[i]);
-        }
-
-        /* Scale long-term prediction state */
-        if (signal_type == TYPE_VOICED && NSQ->rewhite_flag == 0) {
-            for (i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx - decisionDelay; i++) {
-                sLTP_Q15[i] = silk_SMULWW(gain_adj_Q16, sLTP_Q15[i]);
-            }
-        }
-
-        for (k = 0; k < nStatesDelayedDecision; k++) {
-            psDD = &psDelDec[k];
-
-            /* Scale scalar states */
-            psDD->LF_AR_Q14 = silk_SMULWW(gain_adj_Q16, psDD->LF_AR_Q14);
-            psDD->Diff_Q14 = silk_SMULWW(gain_adj_Q16, psDD->Diff_Q14);
-
-            /* Scale short-term prediction and shaping states */
-            for (i = 0; i < NSQ_LPC_BUF_LENGTH; i++) {
-                psDD->sLPC_Q14[i] = silk_SMULWW(gain_adj_Q16, psDD->sLPC_Q14[i]);
-            }
-            for (i = 0; i < MAX_SHAPE_LPC_ORDER; i++) {
-                psDD->sAR2_Q14[i] = silk_SMULWW(gain_adj_Q16, psDD->sAR2_Q14[i]);
-            }
-            for (i = 0; i < DECISION_DELAY; i++) {
-                psDD->Pred_Q15[i] = silk_SMULWW(gain_adj_Q16, psDD->Pred_Q15[i]);
-                psDD->Shape_Q14[i] = silk_SMULWW(gain_adj_Q16, psDD->Shape_Q14[i]);
-            }
-        }
-
-        /* Save inverse gain */
-        NSQ->prev_gain_Q16 = Gains_Q16[subfr];
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-/* silk_noise_shape_quantizer  */
-static void silk_noise_shape_quantizer(silk_nsq_state *NSQ,            /* I/O  NSQ state                       */
-                                       int32_t signalType,             /* I    Signal type                     */
-                                       const int32_t x_sc_Q10[],       /* I                                    */
-                                       int8_t pulses[],                /* O                                    */
-                                       int16_t xq[],                   /* O                                    */
-                                       int32_t sLTP_Q15[],             /* I/O  LTP state                       */
-                                       const int16_t a_Q12[],          /* I    Short term prediction coefs     */
-                                       const int16_t b_Q14[],          /* I    Long term prediction coefs      */
-                                       const int16_t AR_shp_Q13[],     /* I    Noise shaping AR coefs          */
-                                       int32_t lag,                    /* I    Pitch lag                       */
-                                       int32_t HarmShapeFIRPacked_Q14, /* I                                    */
-                                       int32_t Tilt_Q14,               /* I    Spectral tilt                   */
-                                       int32_t LF_shp_Q14,             /* I                                    */
-                                       int32_t Gain_Q16,               /* I                                    */
-                                       int32_t Lambda_Q10,             /* I                                    */
-                                       int32_t offset_Q10,             /* I                                    */
-                                       int32_t length,                 /* I    Input length                    */
-                                       int32_t shapingLPCOrder,        /* I    Noise shaping AR filter order   */
-                                       int32_t predictLPCOrder         /* I    Prediction filter order         */
-) {
-    int32_t i;
-    int32_t LTP_pred_Q13, LPC_pred_Q10, n_AR_Q12, n_LTP_Q13;
-    int32_t n_LF_Q12, r_Q10, rr_Q10, q1_Q0, q1_Q10, q2_Q10, rd1_Q20, rd2_Q20;
-    int32_t exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
-    int32_t tmp1, tmp2, sLF_AR_shp_Q14;
-    int32_t *psLPC_Q14, *shp_lag_ptr, *pred_lag_ptr;
-
-    shp_lag_ptr = &NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2];
-    pred_lag_ptr = &sLTP_Q15[NSQ->sLTP_buf_idx - lag + LTP_ORDER / 2];
-    Gain_Q10 = silk_RSHIFT(Gain_Q16, 6);
-
-    /* Set up short term AR state */
-    psLPC_Q14 = &NSQ->sLPC_Q14[NSQ_LPC_BUF_LENGTH - 1];
-
-    for (i = 0; i < length; i++) {
-        /* Generate dither */
-        NSQ->rand_seed = silk_RAND(NSQ->rand_seed);
-
-        /* Short-term prediction */
-     //   LPC_pred_Q10 = silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
-
-        /* Long-term prediction */
-        if (signalType == TYPE_VOICED) {
-            /* Unrolled loop */
-            /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
-            LTP_pred_Q13 = 2;
-            LTP_pred_Q13 = silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[0], b_Q14[0]);
-            LTP_pred_Q13 = silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-1], b_Q14[1]);
-            LTP_pred_Q13 = silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-2], b_Q14[2]);
-            LTP_pred_Q13 = silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-3], b_Q14[3]);
-            LTP_pred_Q13 = silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-4], b_Q14[4]);
-            pred_lag_ptr++;
-        } else {
-            LTP_pred_Q13 = 0;
-        }
-
-        /* Noise shape feedback */
-        assert((shapingLPCOrder & 1) == 0); /* check that order is even */
-        n_AR_Q12 =
-            silk_NSQ_noise_shape_feedback_loop(&NSQ->sDiff_shp_Q14, NSQ->sAR2_Q14, AR_shp_Q13, shapingLPCOrder);
-
-        n_AR_Q12 = silk_SMLAWB(n_AR_Q12, NSQ->sLF_AR_shp_Q14, Tilt_Q14);
-
-        n_LF_Q12 = silk_SMULWB(NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - 1], LF_shp_Q14);
-        n_LF_Q12 = silk_SMLAWT(n_LF_Q12, NSQ->sLF_AR_shp_Q14, LF_shp_Q14);
-
-        assert(lag > 0 || signalType != TYPE_VOICED);
-
-        /* Combine prediction and noise shaping signals */
-        tmp1 = silk_SUB32(silk_LSHIFT32(LPC_pred_Q10, 2), n_AR_Q12); /* Q12 */
-        tmp1 = silk_SUB32(tmp1, n_LF_Q12);                           /* Q12 */
-        if (lag > 0) {
-            /* Symmetric, packed FIR coefficients */
-            n_LTP_Q13 = silk_SMULWB(silk_ADD32(shp_lag_ptr[0], shp_lag_ptr[-2]), HarmShapeFIRPacked_Q14);
-            n_LTP_Q13 = silk_SMLAWT(n_LTP_Q13, shp_lag_ptr[-1], HarmShapeFIRPacked_Q14);
-            n_LTP_Q13 = silk_LSHIFT(n_LTP_Q13, 1);
-            shp_lag_ptr++;
-
-            tmp2 = silk_SUB32(LTP_pred_Q13, n_LTP_Q13); /* Q13 */
-            tmp1 = silk_ADD_LSHIFT32(tmp2, tmp1, 1);    /* Q13 */
-            tmp1 = silk_RSHIFT_ROUND(tmp1, 3);          /* Q10 */
-        } else {
-            tmp1 = silk_RSHIFT_ROUND(tmp1, 2); /* Q10 */
-        }
-
-        r_Q10 = silk_SUB32(x_sc_Q10[i], tmp1); /* residual error Q10 */
-
-        /* Flip sign depending on dither */
-        if (NSQ->rand_seed < 0) {
-            r_Q10 = -r_Q10;
-        }
-        r_Q10 = silk_LIMIT_32(r_Q10, -(31 << 10), 30 << 10);
-
-        /* Find two quantization level candidates and measure their rate-distortion */
-        q1_Q10 = silk_SUB32(r_Q10, offset_Q10);
-        q1_Q0 = silk_RSHIFT(q1_Q10, 10);
-        if (Lambda_Q10 > 2048) {
-            /* For aggressive RDO, the bias becomes more than one pulse. */
-            int rdo_offset = Lambda_Q10 / 2 - 512;
-            if (q1_Q10 > rdo_offset) {
-                q1_Q0 = silk_RSHIFT(q1_Q10 - rdo_offset, 10);
-            } else if (q1_Q10 < -rdo_offset) {
-                q1_Q0 = silk_RSHIFT(q1_Q10 + rdo_offset, 10);
-            } else if (q1_Q10 < 0) {
-                q1_Q0 = -1;
-            } else {
-                q1_Q0 = 0;
-            }
-        }
-        if (q1_Q0 > 0) {
-            q1_Q10 = silk_SUB32(silk_LSHIFT(q1_Q0, 10), QUANT_LEVEL_ADJUST_Q10);
-            q1_Q10 = silk_ADD32(q1_Q10, offset_Q10);
-            q2_Q10 = silk_ADD32(q1_Q10, 1024);
-            rd1_Q20 = silk_SMULBB(q1_Q10, Lambda_Q10);
-            rd2_Q20 = silk_SMULBB(q2_Q10, Lambda_Q10);
-        } else if (q1_Q0 == 0) {
-            q1_Q10 = offset_Q10;
-            q2_Q10 = silk_ADD32(q1_Q10, 1024 - QUANT_LEVEL_ADJUST_Q10);
-            rd1_Q20 = silk_SMULBB(q1_Q10, Lambda_Q10);
-            rd2_Q20 = silk_SMULBB(q2_Q10, Lambda_Q10);
-        } else if (q1_Q0 == -1) {
-            q2_Q10 = offset_Q10;
-            q1_Q10 = silk_SUB32(q2_Q10, 1024 - QUANT_LEVEL_ADJUST_Q10);
-            rd1_Q20 = silk_SMULBB(-q1_Q10, Lambda_Q10);
-            rd2_Q20 = silk_SMULBB(q2_Q10, Lambda_Q10);
-        } else { /* Q1_Q0 < -1 */
-            q1_Q10 = silk_ADD32(silk_LSHIFT(q1_Q0, 10), QUANT_LEVEL_ADJUST_Q10);
-            q1_Q10 = silk_ADD32(q1_Q10, offset_Q10);
-            q2_Q10 = silk_ADD32(q1_Q10, 1024);
-            rd1_Q20 = silk_SMULBB(-q1_Q10, Lambda_Q10);
-            rd2_Q20 = silk_SMULBB(-q2_Q10, Lambda_Q10);
-        }
-        rr_Q10 = silk_SUB32(r_Q10, q1_Q10);
-        rd1_Q20 = silk_SMLABB(rd1_Q20, rr_Q10, rr_Q10);
-        rr_Q10 = silk_SUB32(r_Q10, q2_Q10);
-        rd2_Q20 = silk_SMLABB(rd2_Q20, rr_Q10, rr_Q10);
-
-        if (rd2_Q20 < rd1_Q20) {
-            q1_Q10 = q2_Q10;
-        }
-
-        pulses[i] = (int8_t)silk_RSHIFT_ROUND(q1_Q10, 10);
-
-        /* Excitation */
-        exc_Q14 = silk_LSHIFT(q1_Q10, 4);
-        if (NSQ->rand_seed < 0) {
-            exc_Q14 = -exc_Q14;
-        }
-
-        /* Add predictions */
-        LPC_exc_Q14 = silk_ADD_LSHIFT32(exc_Q14, LTP_pred_Q13, 1);
-        xq_Q14 = silk_ADD_LSHIFT32(LPC_exc_Q14, LPC_pred_Q10, 4);
-
-        /* Scale XQ back to normal level before saving */
-        xq[i] = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(silk_SMULWW(xq_Q14, Gain_Q10), 8));
-
-        /* Update states */
-        psLPC_Q14++;
-        *psLPC_Q14 = xq_Q14;
-        NSQ->sDiff_shp_Q14 = silk_SUB_LSHIFT32(xq_Q14, x_sc_Q10[i], 4);
-        sLF_AR_shp_Q14 = silk_SUB_LSHIFT32(NSQ->sDiff_shp_Q14, n_AR_Q12, 2);
-        NSQ->sLF_AR_shp_Q14 = sLF_AR_shp_Q14;
-
-        NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx] = silk_SUB_LSHIFT32(sLF_AR_shp_Q14, n_LF_Q12, 2);
-        sLTP_Q15[NSQ->sLTP_buf_idx] = silk_LSHIFT(LPC_exc_Q14, 1);
-        NSQ->sLTP_shp_buf_idx++;
-        NSQ->sLTP_buf_idx++;
-
-        /* Make dither dependent on quantized signal */
-        NSQ->rand_seed = silk_ADD32_ovflw(NSQ->rand_seed, pulses[i]);
-    }
-
-    /* Update LPC synth buffer */
-    silk_memcpy(NSQ->sLPC_Q14, &NSQ->sLPC_Q14[length], NSQ_LPC_BUF_LENGTH * sizeof(int32_t));
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static void silk_nsq_scale_states(const silk_encoder_state *psEncC,      /* I    Encoder State                   */
-                                  silk_nsq_state *NSQ,                   /* I/O  NSQ state                       */
-                                  const int16_t x16[],                   /* I    input                           */
-                                  int32_t x_sc_Q10[],                    /* O    input scaled with 1/Gain        */
-                                  const int16_t sLTP[],                  /* I    re-whitened LTP state in Q0     */
-                                  int32_t sLTP_Q15[],                    /* O    LTP state matching scaled input */
-                                  int32_t subfr,                         /* I    subframe number                 */
-                                  const int32_t LTP_scale_Q14,           /* I                                    */
-                                  const int32_t Gains_Q16[MAX_NB_SUBFR], /* I                                 */
-                                  const int32_t pitchL[MAX_NB_SUBFR],    /* I    Pitch lag                       */
-                                  const int32_t signal_type              /* I    Signal type                     */
-) {
-    int32_t i, lag;
-    int32_t gain_adj_Q16, inv_gain_Q31, inv_gain_Q26;
-
-    lag = pitchL[subfr];
-    inv_gain_Q31 = silk_INVERSE32_varQ(silk_max(Gains_Q16[subfr], 1), 47);
-    assert(inv_gain_Q31 != 0);
-
-    /* Scale input */
-    inv_gain_Q26 = silk_RSHIFT_ROUND(inv_gain_Q31, 5);
-    for (i = 0; i < psEncC->subfr_length; i++) {
-        x_sc_Q10[i] = silk_SMULWW(x16[i], inv_gain_Q26);
-    }
-
-    /* After rewhitening the LTP state is un-scaled, so scale with inv_gain_Q16 */
-    if (NSQ->rewhite_flag) {
-        if (subfr == 0) {
-            /* Do LTP downscaling */
-            inv_gain_Q31 = silk_LSHIFT(silk_SMULWB(inv_gain_Q31, LTP_scale_Q14), 2);
-        }
-        for (i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx; i++) {
-            assert(i < MAX_FRAME_LENGTH);
-            sLTP_Q15[i] = silk_SMULWB(inv_gain_Q31, sLTP[i]);
-        }
-    }
-
-    /* Adjust for changing gain */
-    if (Gains_Q16[subfr] != NSQ->prev_gain_Q16) {
-        gain_adj_Q16 = silk_DIV32_varQ(NSQ->prev_gain_Q16, Gains_Q16[subfr], 16);
-
-        /* Scale long-term shaping state */
-        for (i = NSQ->sLTP_shp_buf_idx - psEncC->ltp_mem_length; i < NSQ->sLTP_shp_buf_idx; i++) {
-            NSQ->sLTP_shp_Q14[i] = silk_SMULWW(gain_adj_Q16, NSQ->sLTP_shp_Q14[i]);
-        }
-
-        /* Scale long-term prediction state */
-        if (signal_type == TYPE_VOICED && NSQ->rewhite_flag == 0) {
-            for (i = NSQ->sLTP_buf_idx - lag - LTP_ORDER / 2; i < NSQ->sLTP_buf_idx; i++) {
-                sLTP_Q15[i] = silk_SMULWW(gain_adj_Q16, sLTP_Q15[i]);
-            }
-        }
-
-        NSQ->sLF_AR_shp_Q14 = silk_SMULWW(gain_adj_Q16, NSQ->sLF_AR_shp_Q14);
-        NSQ->sDiff_shp_Q14 = silk_SMULWW(gain_adj_Q16, NSQ->sDiff_shp_Q14);
-
-        /* Scale short-term prediction and shaping states */
-        for (i = 0; i < NSQ_LPC_BUF_LENGTH; i++) {
-            NSQ->sLPC_Q14[i] = silk_SMULWW(gain_adj_Q16, NSQ->sLPC_Q14[i]);
-        }
-        for (i = 0; i < MAX_SHAPE_LPC_ORDER; i++) {
-            NSQ->sAR2_Q14[i] = silk_SMULWW(gain_adj_Q16, NSQ->sAR2_Q14[i]);
-        }
-
-        /* Save inverse gain */
-        NSQ->prev_gain_Q16 = Gains_Q16[subfr];
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
 void silk_PLC_Reset(silk_decoder_state *psDec) { /* I/O Decoder state        */
 
     psDec->sPLC.pitchL_Q8 = silk_LSHIFT(psDec->frame_length, 8 - 1);
@@ -3791,79 +3461,72 @@ void silk_PLC_Reset(silk_decoder_state *psDec) { /* I/O Decoder state        */
     psDec->sPLC.nb_subfr = 2;
 }
 
-void silk_PLC(silk_decoder_state *psDec,       /* I/O Decoder state        */
-              silk_decoder_control *psDecCtrl, /* I/O Decoder control      */
-              int16_t frame[],                 /* I/O  signal              */
-              int32_t lost                     /* I Loss flag              */
+void silk_PLC(silk_decoder_state*   psDec,     /* I/O Decoder state        */
+              silk_decoder_control* psDecCtrl, /* I/O Decoder control      */
+              int16_t               frame[],   /* I/O  signal              */
+              int32_t               lost       /* I Loss flag              */
 ) {
     /* PLC control function */
-    if (psDec->fs_kHz != psDec->sPLC.fs_kHz) {
+    if(psDec->fs_kHz != psDec->sPLC.fs_kHz) {
         silk_PLC_Reset(psDec);
         psDec->sPLC.fs_kHz = psDec->fs_kHz;
     }
 
-    if (lost) {
+    if(lost) {
         /****************************/
         /* Generate Signal          */
         /****************************/
         silk_PLC_conceal(psDec, psDecCtrl, frame);
 
         psDec->lossCnt++;
-    } else {
+    }
+    else {
         /****************************/
         /* Update state             */
         /****************************/
         silk_PLC_update(psDec, psDecCtrl);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Update state of PLC                            */
-static void silk_PLC_update(silk_decoder_state *psDec,      /* I/O Decoder state        */
-                                   silk_decoder_control *psDecCtrl /* I/O Decoder control      */
+void silk_PLC_update(silk_decoder_state*   psDec,    /* I/O Decoder state        */
+                     silk_decoder_control* psDecCtrl /* I/O Decoder control      */
 ) {
-    int32_t LTP_Gain_Q14, temp_LTP_Gain_Q14;
-    int32_t i, j;
-    silk_PLC_struct *psPLC;
+    int32_t          LTP_Gain_Q14, temp_LTP_Gain_Q14;
+    int32_t          i, j;
+    silk_PLC_struct* psPLC;
 
     psPLC = &psDec->sPLC;
 
     /* Update parameters used in case of packet loss */
     psDec->prevSignalType = psDec->indices.signalType;
     LTP_Gain_Q14 = 0;
-    if (psDec->indices.signalType == TYPE_VOICED) {
+    if(psDec->indices.signalType == TYPE_VOICED) {
         /* Find the parameters for the last subframe which contains a pitch pulse */
-        for (j = 0; j * psDec->subfr_length < psDecCtrl->pitchL[psDec->nb_subfr - 1]; j++) {
-            if (j == psDec->nb_subfr) {
-                break;
-            }
+        for(j = 0; j * psDec->subfr_length < psDecCtrl->pitchL[psDec->nb_subfr - 1]; j++) {
+            if(j == psDec->nb_subfr) { break; }
             temp_LTP_Gain_Q14 = 0;
-            for (i = 0; i < LTP_ORDER; i++) {
-                temp_LTP_Gain_Q14 += psDecCtrl->LTPCoef_Q14[(psDec->nb_subfr - 1 - j) * LTP_ORDER + i];
-            }
-            if (temp_LTP_Gain_Q14 > LTP_Gain_Q14) {
+            for(i = 0; i < LTP_ORDER; i++) { temp_LTP_Gain_Q14 += psDecCtrl->LTPCoef_Q14[(psDec->nb_subfr - 1 - j) * LTP_ORDER + i]; }
+            if(temp_LTP_Gain_Q14 > LTP_Gain_Q14) {
                 LTP_Gain_Q14 = temp_LTP_Gain_Q14;
-                silk_memcpy(psPLC->LTPCoef_Q14,
-                            &psDecCtrl->LTPCoef_Q14[silk_SMULBB(psDec->nb_subfr - 1 - j, LTP_ORDER)],
-                            LTP_ORDER * sizeof(int16_t));
-
+                memcpy(psPLC->LTPCoef_Q14, &psDecCtrl->LTPCoef_Q14[silk_SMULBB(psDec->nb_subfr - 1 - j, LTP_ORDER)], LTP_ORDER * sizeof(int16_t));
                 psPLC->pitchL_Q8 = silk_LSHIFT(psDecCtrl->pitchL[psDec->nb_subfr - 1 - j], 8);
             }
         }
 
-        silk_memset(psPLC->LTPCoef_Q14, 0, LTP_ORDER * sizeof(int16_t));
+        memset(psPLC->LTPCoef_Q14, 0, LTP_ORDER * sizeof(int16_t));
         psPLC->LTPCoef_Q14[LTP_ORDER / 2] = LTP_Gain_Q14;
 
         /* Limit LT coefs */
-        if (LTP_Gain_Q14 < V_PITCH_GAIN_START_MIN_Q14) {
+        if(LTP_Gain_Q14 < V_PITCH_GAIN_START_MIN_Q14) {
             int32_t scale_Q10;
             int32_t tmp;
 
             tmp = silk_LSHIFT(V_PITCH_GAIN_START_MIN_Q14, 10);
             scale_Q10 = silk_DIV32(tmp, silk_max(LTP_Gain_Q14, 1));
-            for (i = 0; i < LTP_ORDER; i++) {
-                psPLC->LTPCoef_Q14[i] = silk_RSHIFT(silk_SMULBB(psPLC->LTPCoef_Q14[i], scale_Q10), 10);
-            }
-        } else if (LTP_Gain_Q14 > V_PITCH_GAIN_START_MAX_Q14) {
+            for(i = 0; i < LTP_ORDER; i++) { psPLC->LTPCoef_Q14[i] = silk_RSHIFT(silk_SMULBB(psPLC->LTPCoef_Q14[i], scale_Q10), 10); }
+        }
+        else if(LTP_Gain_Q14 > V_PITCH_GAIN_START_MAX_Q14) {
             int32_t scale_Q14;
             int32_t tmp;
 
@@ -3908,9 +3571,9 @@ void silk_PLC_energy(int32_t* energy1, int32_t* shift1, int32_t* energy2, int32_
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void silk_PLC_conceal(silk_decoder_state *psDec,       /* I/O Decoder state        */
-                                    silk_decoder_control *psDecCtrl, /* I/O Decoder control      */
-                                    int16_t frame[]                  /* O LPC residual signal    */
+void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state        */
+                      silk_decoder_control* psDecCtrl, /* I/O Decoder control      */
+                      int16_t               frame[]    /* O LPC residual signal    */
 ) {
     int32_t  i, j, k;
     int32_t  lag, idx, sLTP_buf_idx, shift1, shift2;
@@ -4255,13 +3918,11 @@ void silk_resampler_private_AR2(int32_t       S[],      /* I/O  State vector [ 2
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static int16_t *silk_resampler_private_down_FIR_INTERPOL(int16_t *out, int32_t *buf, const int16_t *FIR_Coefs,
-                                                         int32_t FIR_Order, int32_t FIR_Fracs, int32_t max_index_Q16,
-                                                         int32_t index_increment_Q16) {
-    int32_t index_Q16, res_Q6;
-    int32_t *buf_ptr;
-    int32_t interpol_ind;
-    const int16_t *interpol_ptr;
+int16_t* silk_resampler_private_down_FIR_INTERPOL(int16_t* out, int32_t* buf, const int16_t* FIR_Coefs, int32_t FIR_Order, int32_t FIR_Fracs, int32_t max_index_Q16, int32_t index_increment_Q16) {
+    int32_t        index_Q16, res_Q6;
+    int32_t*       buf_ptr;
+    int32_t        interpol_ind;
+    const int16_t* interpol_ptr;
 
     switch(FIR_Order) {
         case RESAMPLER_DOWN_ORDER_FIR0:
@@ -4299,23 +3960,23 @@ static int16_t *silk_resampler_private_down_FIR_INTERPOL(int16_t *out, int32_t *
             }
             break;
         case RESAMPLER_DOWN_ORDER_FIR1:
-            for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
+            for(index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
                 /* Integer part gives pointer to buffered input */
                 buf_ptr = buf + silk_RSHIFT(index_Q16, 16);
 
                 /* Inner product */
-                res_Q6 = silk_SMULWB(silk_ADD32(buf_ptr[0], buf_ptr[23]), FIR_Coefs[0]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[1], buf_ptr[22]), FIR_Coefs[1]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[2], buf_ptr[21]), FIR_Coefs[2]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[3], buf_ptr[20]), FIR_Coefs[3]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[4], buf_ptr[19]), FIR_Coefs[4]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[5], buf_ptr[18]), FIR_Coefs[5]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[6], buf_ptr[17]), FIR_Coefs[6]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[7], buf_ptr[16]), FIR_Coefs[7]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[8], buf_ptr[15]), FIR_Coefs[8]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[9], buf_ptr[14]), FIR_Coefs[9]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[10], buf_ptr[13]), FIR_Coefs[10]);
-                res_Q6 = silk_SMLAWB(res_Q6, silk_ADD32(buf_ptr[11], buf_ptr[12]), FIR_Coefs[11]);
+                res_Q6 = silk_SMULWB(buf_ptr[0] + buf_ptr[23], FIR_Coefs[0]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[1] + buf_ptr[22], FIR_Coefs[1]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[2] + buf_ptr[21], FIR_Coefs[2]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[3] + buf_ptr[20], FIR_Coefs[3]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[4] + buf_ptr[19], FIR_Coefs[4]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[5] + buf_ptr[18], FIR_Coefs[5]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[6] + buf_ptr[17], FIR_Coefs[6]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[7] + buf_ptr[16], FIR_Coefs[7]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[8] + buf_ptr[15], FIR_Coefs[8]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[9] + buf_ptr[14], FIR_Coefs[9]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[10] + buf_ptr[13], FIR_Coefs[10]);
+                res_Q6 = silk_SMLAWB(res_Q6, buf_ptr[11] + buf_ptr[12], FIR_Coefs[11]);
 
                 /* Scale down, saturate and store in output array */
                 *out++ = (int16_t)silk_SAT16(silk_RSHIFT_ROUND(res_Q6, 6));
@@ -4378,7 +4039,7 @@ void silk_resampler_private_down_FIR(void*         SS,    /* I/O  Resampler stat
 
     /* Iterate over blocks of frameSizeIn input samples */
     index_increment_Q16 = S->invRatio_Q16;
-    while (1) {
+    while(1) {
         nSamplesIn = silk_min(inLen, S->batchSize);
 
         /* Second-order AR filter (output in Q8) */
@@ -4404,11 +4065,10 @@ void silk_resampler_private_down_FIR(void*         SS,    /* I/O  Resampler stat
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static int16_t *silk_resampler_private_IIR_FIR_INTERPOL(int16_t *out, int16_t *buf, int32_t max_index_Q16,
-                                                        int32_t index_increment_Q16) {
-    int32_t index_Q16, res_Q15;
-    int16_t *buf_ptr;
-    int32_t table_index;
+int16_t* silk_resampler_private_IIR_FIR_INTERPOL(int16_t* out, int16_t* buf, int32_t max_index_Q16, int32_t index_increment_Q16) {
+    int32_t  index_Q16, res_Q15;
+    int16_t* buf_ptr;
+    int32_t  table_index;
 
     /* Interpolate upsampled signal and store in output array */
     for(index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
@@ -4786,11 +4446,9 @@ void silk_insertion_sort_increasing_all_values_int16(int16_t*      a, /* I/O   U
     assert(L > 0);
 
     /* Sort vector elements by value, increasing order */
-    for (i = 1; i < L; i++) {
+    for(i = 1; i < L; i++) {
         value = a[i];
-        for (j = i - 1; (j >= 0) && (value < a[j]); j--) {
-            a[j + 1] = a[j]; /* Shift value */
-        }
+        for(j = i - 1; (j >= 0) && (value < a[j]); j--) { a[j + 1] = a[j]; /* Shift value */ }
         a[j + 1] = value; /* Write value */
     }
 }
@@ -4830,7 +4488,7 @@ void silk_sum_sqr_shift(int32_t*       energy, /* O   Energy of x, after shiftin
         nrg_tmp = silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
         nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);
     }
-    if (i < len) {
+    if(i < len) {
         /* One sample left to process */
         nrg_tmp = silk_SMULBB(x[i], x[i]);
         nrg = (int32_t)silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft);

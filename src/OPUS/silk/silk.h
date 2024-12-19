@@ -1277,23 +1277,6 @@ static void silk_noise_shape_quantizer_del_dec(silk_nsq_state *NSQ, NSQ_del_dec_
                                                int32_t shapingLPCOrder, int32_t predictLPCOrder, int32_t warping_Q16,
                                                int32_t nStatesDelayedDecision, int32_t *smpl_buf_idx,
                                                int32_t decisionDelay);
-
-static void silk_nsq_del_dec_scale_states(const silk_encoder_state *psEncC, silk_nsq_state *NSQ,
-                                              NSQ_del_dec_struct psDelDec[], const int16_t x16[], int32_t x_sc_Q10[],
-                                              const int16_t sLTP[], int32_t sLTP_Q15[], int32_t subfr,
-                                              int32_t nStatesDelayedDecision, const int32_t LTP_scale_Q14,
-                                              const int32_t Gains_Q16[MAX_NB_SUBFR], const int32_t pitchL[MAX_NB_SUBFR],
-                                              const int32_t signal_type, const int32_t decisionDelay);
-static void silk_noise_shape_quantizer(silk_nsq_state *NSQ, int32_t signalType, const int32_t x_sc_Q10[],
-                                       int8_t pulses[], int16_t xq[], int32_t sLTP_Q15[], const int16_t a_Q12[],
-                                       const int16_t b_Q14[], const int16_t AR_shp_Q13[], int32_t lag,
-                                       int32_t HarmShapeFIRPacked_Q14, int32_t Tilt_Q14, int32_t LF_shp_Q14,
-                                       int32_t Gain_Q16, int32_t Lambda_Q10, int32_t offset_Q10, int32_t length,
-                                       int32_t shapingLPCOrder, int32_t predictLPCOrder);
-static void silk_nsq_scale_states(const silk_encoder_state *psEncC, silk_nsq_state *NSQ, const int16_t x16[],
-                                  int32_t x_sc_Q10[], const int16_t sLTP[], int32_t sLTP_Q15[], int32_t subfr,
-                                  const int32_t LTP_scale_Q14, const int32_t Gains_Q16[MAX_NB_SUBFR],
-                                  const int32_t pitchL[MAX_NB_SUBFR], const int32_t signal_type);
 static void silk_PLC_update(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl);
 static void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
                             const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr);
