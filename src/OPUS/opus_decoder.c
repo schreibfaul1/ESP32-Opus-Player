@@ -333,13 +333,13 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
                 st->DecControl.internalSampleRate = 16000;
             }
         }
-
+        silk_setRawParams(st->channels, 2, st->DecControl.payloadSize_ms, st->DecControl.internalSampleRate, 48000);
         lost_flag = data == NULL ? 1 : 2 * decode_fec;
         decoded_samples = 0;
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, pcm_ptr, &silk_frame_size);
+            silk_ret = silk_Decode(silk_dec, lost_flag, first_frame, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
                 if (lost_flag) {
                     /* PLC failure should not be fatal */

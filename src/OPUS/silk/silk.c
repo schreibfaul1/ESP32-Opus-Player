@@ -765,8 +765,7 @@ void silk_bwexpander(int16_t*      ar,       /* I/O  AR filter to be expanded (w
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode mid/side predictors */
-void silk_stereo_decode_pred(int32_t pred_Q13[]  /* O    Predictors                                  */
-) {
+void silk_stereo_decode_pred(int32_t pred_Q13[]) {
     int32_t n, ix[2][3];
     int32_t low_Q13, step_Q13;
 
@@ -774,7 +773,7 @@ void silk_stereo_decode_pred(int32_t pred_Q13[]  /* O    Predictors             
     n = ec_dec_icdf(silk_stereo_pred_joint_iCDF, 8);
     ix[0][2] = silk_DIV32_16(n, 5);
     ix[1][2] = n - 5 * ix[0][2];
-    for (n = 0; n < 2; n++) {
+    for(n = 0; n < 2; n++) {
         ix[n][0] = ec_dec_icdf(silk_uniform3_iCDF, 8);
         ix[n][1] = ec_dec_icdf(silk_uniform5_iCDF, 8);
     }
@@ -792,7 +791,7 @@ void silk_stereo_decode_pred(int32_t pred_Q13[]  /* O    Predictors             
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode mid-only flag */
-void silk_stereo_decode_mid_only(int32_t *decode_only_mid /* O    Flag that only mid channel has been coded   */
+void silk_stereo_decode_mid_only(int32_t* decode_only_mid /* O    Flag that only mid channel has been coded   */
 ) {
     /* Decode flag that only mid channel is coded */
     *decode_only_mid = ec_dec_icdf(silk_stereo_only_code_mid_iCDF, 8);
@@ -883,13 +882,9 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
     free(Q);
     free(a32_QA1);
 }
-//----------------------------------------------------------------------------------------------------------------------
-/* Decode side-information parameters from payload */
-void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State                                       */
-                         int32_t FrameIndex,        /* I    Frame number                                */
-                         int32_t decode_LBRR,       /* I    Flag indicating LBRR data is being decoded  */
-                         int32_t condCoding         /* I    The type of conditional coding to use       */
-) {
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* Decode side-information parameters from payload (State, Compressor data structure, Frame number, Flag indicating LBRR data is being decoded, The type of conditional coding to use) */
+void silk_decode_indices(silk_decoder_state* psDec, int32_t FrameIndex, int32_t decode_LBRR, int32_t condCoding) {
     int32_t i, k, Ix;
     int32_t decode_absolute_lagIndex, delta_lagIndex;
     int16_t ec_ix[MAX_LPC_ORDER];
@@ -898,11 +893,8 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     /*******************************************/
     /* Decode signal type and quantizer offset */
     /*******************************************/
-    if (decode_LBRR || psDec->VAD_flags[FrameIndex]) {
-        Ix = ec_dec_icdf(silk_type_offset_VAD_iCDF, 8) + 2;
-    } else {
-        Ix = ec_dec_icdf(silk_type_offset_no_VAD_iCDF, 8);
-    }
+    if(decode_LBRR || psDec->VAD_flags[FrameIndex]) { Ix = ec_dec_icdf(silk_type_offset_VAD_iCDF, 8) + 2; }
+    else { Ix = ec_dec_icdf(silk_type_offset_no_VAD_iCDF, 8); }
     psDec->indices.signalType = (int8_t)silk_RSHIFT(Ix, 1);
     psDec->indices.quantOffsetType = (int8_t)(Ix & 1);
 
@@ -913,41 +905,32 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
     if(condCoding == CODE_CONDITIONALLY) {
         /* Conditional coding */
         psDec->indices.GainsIndices[0] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
-    } else {
+    }
+    else {
         /* Independent coding, in two stages: MSB bits followed by 3 LSBs */
-        psDec->indices.GainsIndices[0] =
-            (int8_t)silk_LSHIFT(ec_dec_icdf(silk_gain_iCDF[psDec->indices.signalType], 8), 3);
+        psDec->indices.GainsIndices[0] = (int8_t)silk_LSHIFT(ec_dec_icdf(silk_gain_iCDF[psDec->indices.signalType], 8), 3);
         psDec->indices.GainsIndices[0] += (int8_t)ec_dec_icdf(silk_uniform8_iCDF, 8);
     }
 
     /* Remaining subframes */
-    for (i = 1; i < psDec->nb_subfr; i++) {
-        psDec->indices.GainsIndices[i] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
-    }
+    for(i = 1; i < psDec->nb_subfr; i++) { psDec->indices.GainsIndices[i] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8); }
 
     /**********************/
     /* Decode LSF Indices */
     /**********************/
-    psDec->indices.NLSFIndices[0] = (int8_t)ec_dec_icdf(
-        &psDec->psNLSF_CB->CB1_iCDF[(psDec->indices.signalType >> 1) * psDec->psNLSF_CB->nVectors], 8);
+    psDec->indices.NLSFIndices[0] = (int8_t)ec_dec_icdf(&psDec->psNLSF_CB->CB1_iCDF[(psDec->indices.signalType >> 1) * psDec->psNLSF_CB->nVectors], 8);
     silk_NLSF_unpack(ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[0]);
     assert(psDec->psNLSF_CB->order == psDec->LPC_order);
-    for (i = 0; i < psDec->psNLSF_CB->order; i++) {
+    for(i = 0; i < psDec->psNLSF_CB->order; i++) {
         Ix = ec_dec_icdf(&psDec->psNLSF_CB->ec_iCDF[ec_ix[i]], 8);
-        if (Ix == 0) {
-            Ix -= ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
-        } else if (Ix == 2 * NLSF_QUANT_MAX_AMPLITUDE) {
-            Ix += ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
-        }
+        if(Ix == 0) { Ix -= ec_dec_icdf(silk_NLSF_EXT_iCDF, 8); }
+        else if(Ix == 2 * NLSF_QUANT_MAX_AMPLITUDE) { Ix += ec_dec_icdf(silk_NLSF_EXT_iCDF, 8); }
         psDec->indices.NLSFIndices[i + 1] = (int8_t)(Ix - NLSF_QUANT_MAX_AMPLITUDE);
     }
 
     /* Decode LSF interpolation factor */
-    if (psDec->nb_subfr == MAX_NB_SUBFR) {
-        psDec->indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(silk_NLSF_interpolation_factor_iCDF, 8);
-    } else {
-        psDec->indices.NLSFInterpCoef_Q2 = 4;
-    }
+    if(psDec->nb_subfr == MAX_NB_SUBFR) { psDec->indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(silk_NLSF_interpolation_factor_iCDF, 8); }
+    else { psDec->indices.NLSFInterpCoef_Q2 = 4; }
 
     if(psDec->indices.signalType == TYPE_VOICED) {
         /*********************/
@@ -957,8 +940,8 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         decode_absolute_lagIndex = 1;
         if(condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
             /* Decode Delta index */
-            delta_lagIndex = (int16_t)ec_dec_icdf(silk_pitch_delta_iCDF, 8);
-            if (delta_lagIndex > 0) {
+            delta_lagIndex = (int16_t)ec_dec_icdf( silk_pitch_delta_iCDF, 8);
+            if(delta_lagIndex > 0) {
                 delta_lagIndex = delta_lagIndex - 9;
                 psDec->indices.lagIndex = (int16_t)(psDec->ec_prevLagIndex + delta_lagIndex);
                 decode_absolute_lagIndex = 0;
@@ -966,8 +949,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         }
         if(decode_absolute_lagIndex) {
             /* Absolute decoding */
-            psDec->indices.lagIndex =
-                (int16_t)ec_dec_icdf(silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
+            psDec->indices.lagIndex = (int16_t)ec_dec_icdf(silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
             psDec->indices.lagIndex += (int16_t)ec_dec_icdf(psDec->pitch_lag_low_bits_iCDF, 8);
         }
         psDec->ec_prevLagIndex = psDec->indices.lagIndex;
@@ -981,19 +963,13 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
         /* Decode PERIndex value */
         psDec->indices.PERIndex = (int8_t)ec_dec_icdf(silk_LTP_per_index_iCDF, 8);
 
-        for (k = 0; k < psDec->nb_subfr; k++) {
-            psDec->indices.LTPIndex[k] =
-                (int8_t)ec_dec_icdf(silk_LTP_gain_iCDF_ptrs[psDec->indices.PERIndex], 8);
-        }
+        for(k = 0; k < psDec->nb_subfr; k++) { psDec->indices.LTPIndex[k] = (int8_t)ec_dec_icdf(silk_LTP_gain_iCDF_ptrs[psDec->indices.PERIndex], 8); }
 
         /**********************/
         /* Decode LTP scaling */
         /**********************/
-        if (condCoding == CODE_INDEPENDENTLY) {
-            psDec->indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(silk_LTPscale_iCDF, 8);
-        } else {
-            psDec->indices.LTP_scaleIndex = 0;
-        }
+        if(condCoding == CODE_INDEPENDENTLY) { psDec->indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(silk_LTPscale_iCDF, 8); }
+        else { psDec->indices.LTP_scaleIndex = 0; }
     }
     psDec->ec_prevSignalType = psDec->indices.signalType;
 
@@ -1075,18 +1051,13 @@ void silk_decode_parameters(silk_decoder_state*   psDec,     /* I/O  State      
         psDecCtrl->LTP_scale_Q14 = 0;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-/* Decode quantization indices of excitation */
-
-void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal                           */
-                        const int32_t signalType,      /* I    Sigtype                                     */
-                        const int32_t quantOffsetType, /* I    quantOffsetType                             */
-                        const int32_t frame_length     /* I    Frame length                                */
-) {
-    int32_t i, j, k, iter, abs_q, nLS, RateLevelIndex;
-    int32_t sum_pulses[MAX_NB_SHELL_BLOCKS], nLshifts[MAX_NB_SHELL_BLOCKS];
-    int16_t *pulses_ptr;
-    const uint8_t *cdf_ptr;
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* Decode quantization indices of excitation (Compressor data structure, Excitation signal, Sigtype, quantOffsetType, Frame length)*/
+void silk_decode_pulses(int16_t pulses[], const int32_t signalType, const int32_t quantOffsetType, const int32_t frame_length) {
+    int32_t        i, j, k, iter, abs_q, nLS, RateLevelIndex;
+    int32_t        sum_pulses[MAX_NB_SHELL_BLOCKS], nLshifts[MAX_NB_SHELL_BLOCKS];
+    int16_t*       pulses_ptr;
+    const uint8_t* cdf_ptr;
 
     /*********************/
     /* Decode rate level */
@@ -1113,21 +1084,16 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
         while(sum_pulses[i] == SILK_MAX_PULSES + 1) {
             nLshifts[i]++;
             /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
-            sum_pulses[i] =
-                ec_dec_icdf(silk_pulses_per_block_iCDF[N_RATE_LEVELS - 1] + (nLshifts[i] == 10), 8);
+            sum_pulses[i] = ec_dec_icdf(silk_pulses_per_block_iCDF[N_RATE_LEVELS - 1] + (nLshifts[i] == 10), 8);
         }
     }
 
     /***************************************************/
     /* Shell decoding                                  */
     /***************************************************/
-    for (i = 0; i < iter; i++) {
-        if (sum_pulses[i] > 0) {
-            silk_shell_decoder(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], sum_pulses[i]);
-        } else {
-            silk_memset(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], 0,
-                        SHELL_CODEC_FRAME_LENGTH * sizeof(pulses[0]));
-        }
+    for(i = 0; i < iter; i++) {
+        if(sum_pulses[i] > 0) { silk_shell_decoder(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], sum_pulses[i]); }
+        else { memset(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], 0, SHELL_CODEC_FRAME_LENGTH * sizeof(pulses[0])); }
     }
 
     /***************************************************/
@@ -1323,13 +1289,13 @@ void silk_quant_LTP_gains(int16_t       B_Q14[MAX_NB_SUBFR * LTP_ORDER],        
     *sum_log_gain_Q7 = best_sum_log_gain_Q7;
     *pred_gain_dB_Q7 = (int32_t)silk_SMULBB(-3, silk_lin2log(res_nrg_Q15) - (15 << 7));
 }
-//----------------------------------------------------------------------------------------------------------------------
-static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitude of first child subframe     */
-                                     int16_t *p_child2,         /* O    pulse amplitude of second child subframe    */
-                                     const int32_t p,           /* I    pulse amplitude of current subframe         */
-                                     const uint8_t *shell_table /* I    table of shell cdfs                         */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+static inline void decode_split(int16_t*       p_child1,   /* O    pulse amplitude of first child subframe     */
+                                int16_t*       p_child2,   /* O    pulse amplitude of second child subframe    */
+                                const int32_t  p,          /* I    pulse amplitude of current subframe         */
+                                const uint8_t* shell_table /* I    table of shell cdfs                         */
 ) {
-    if (p > 0) {
+    if(p > 0) {
         p_child1[0] = ec_dec_icdf(&shell_table[silk_shell_code_table_offsets[p]], 8);
         p_child2[0] = p - p_child1[0];
     }
@@ -1340,54 +1306,54 @@ static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitu
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Shell decoder, operates on one shell code frame of 16 pulses */
-void silk_shell_decoder(int16_t *pulses0,     /* O    data: nonnegative pulse amplitudes          */
-                        const int32_t pulses4 /* I    number of pulses per pulse-subframe         */
+void silk_shell_decoder(int16_t*      pulses0,    /* O    data: nonnegative pulse amplitudes          */
+                        const int32_t pulses4     /* I    number of pulses per pulse-subframe         */
 ) {
     int16_t pulses3[2], pulses2[4], pulses1[8];
 
     /* this function operates on one shell code frame of 16 pulses */
     assert(SHELL_CODEC_FRAME_LENGTH == 16);
-    decode_split(&pulses3[0],  &pulses3[1],  pulses4, silk_shell_code_table3);
-    decode_split(&pulses2[0],  &pulses2[1],  pulses3[0], silk_shell_code_table2);
-    decode_split(&pulses1[0],  &pulses1[1],  pulses2[0], silk_shell_code_table1);
-    decode_split(&pulses0[0],  &pulses0[1],  pulses1[0], silk_shell_code_table0);
-    decode_split(&pulses0[2],  &pulses0[3],  pulses1[1], silk_shell_code_table0);
-    decode_split(&pulses1[2],  &pulses1[3],  pulses2[1], silk_shell_code_table1);
-    decode_split(&pulses0[4],  &pulses0[5],  pulses1[2], silk_shell_code_table0);
-    decode_split(&pulses0[6],  &pulses0[7],  pulses1[3], silk_shell_code_table0);
-    decode_split(&pulses2[2],  &pulses2[3],  pulses3[1], silk_shell_code_table2);
-    decode_split(&pulses1[4],  &pulses1[5],  pulses2[2], silk_shell_code_table1);
-    decode_split(&pulses0[8],  &pulses0[9],  pulses1[4], silk_shell_code_table0);
+    decode_split(&pulses3[0], &pulses3[1],   pulses4, silk_shell_code_table3);
+    decode_split(&pulses2[0], &pulses2[1],   pulses3[0], silk_shell_code_table2);
+    decode_split(&pulses1[0], &pulses1[1],   pulses2[0], silk_shell_code_table1);
+    decode_split(&pulses0[0], &pulses0[1],   pulses1[0], silk_shell_code_table0);
+    decode_split(&pulses0[2], &pulses0[3],   pulses1[1], silk_shell_code_table0);
+    decode_split(&pulses1[2], &pulses1[3],   pulses2[1], silk_shell_code_table1);
+    decode_split(&pulses0[4], &pulses0[5],   pulses1[2], silk_shell_code_table0);
+    decode_split(&pulses0[6], &pulses0[7],   pulses1[3], silk_shell_code_table0);
+    decode_split(&pulses2[2], &pulses2[3],   pulses3[1], silk_shell_code_table2);
+    decode_split(&pulses1[4], &pulses1[5],   pulses2[2], silk_shell_code_table1);
+    decode_split(&pulses0[8], &pulses0[9],   pulses1[4], silk_shell_code_table0);
     decode_split(&pulses0[10], &pulses0[11], pulses1[5], silk_shell_code_table0);
-    decode_split(&pulses1[6],  &pulses1[7],  pulses2[3], silk_shell_code_table1);
+    decode_split(&pulses1[6], &pulses1[7],   pulses2[3], silk_shell_code_table1);
     decode_split(&pulses0[12], &pulses0[13], pulses1[6], silk_shell_code_table0);
     decode_split(&pulses0[14], &pulses0[15], pulses1[7], silk_shell_code_table0);
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Quantize mid/side predictors */
 void silk_stereo_quant_pred(int32_t pred_Q13[], /* I/O  Predictors (out: quantized)                 */
-                            int8_t ix[2][3]     /* O    Quantization indices                        */
+                            int8_t  ix[2][3]    /* O    Quantization indices                        */
 ) {
     int32_t i, j, n;
     int32_t low_Q13, step_Q13, lvl_Q13, err_min_Q13, err_Q13, quant_pred_Q13 = 0;
 
     /* Quantize */
-    for (n = 0; n < 2; n++) {
+    for(n = 0; n < 2; n++) {
         /* Brute-force search over quantization levels */
         err_min_Q13 = silk_int32_MAX;
-        for (i = 0; i < STEREO_QUANT_TAB_SIZE - 1; i++) {
+        for(i = 0; i < STEREO_QUANT_TAB_SIZE - 1; i++) {
             low_Q13 = silk_stereo_pred_quant_Q13[i];
-            step_Q13 = silk_SMULWB(silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
-                                   SILK_FIX_CONST(0.5 / STEREO_QUANT_SUB_STEPS, 16));
-            for (j = 0; j < STEREO_QUANT_SUB_STEPS; j++) {
+            step_Q13 = silk_SMULWB(silk_stereo_pred_quant_Q13[i + 1] - low_Q13, SILK_FIX_CONST(0.5 / STEREO_QUANT_SUB_STEPS, 16));
+            for(j = 0; j < STEREO_QUANT_SUB_STEPS; j++) {
                 lvl_Q13 = silk_SMLABB(low_Q13, step_Q13, 2 * j + 1);
                 err_Q13 = silk_abs(pred_Q13[n] - lvl_Q13);
-                if (err_Q13 < err_min_Q13) {
+                if(err_Q13 < err_min_Q13) {
                     err_min_Q13 = err_Q13;
                     quant_pred_Q13 = lvl_Q13;
                     ix[n][0] = i;
                     ix[n][1] = j;
-                } else {
+                }
+                else {
                     /* Error increasing, so we're past the optimum */
                     goto done;
                 }
@@ -1402,20 +1368,17 @@ void silk_stereo_quant_pred(int32_t pred_Q13[], /* I/O  Predictors (out: quantiz
     /* Subtract second from first predictor (helps when actually applying these) */
     pred_Q13[0] -= pred_Q13[1];
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Helper function, interpolates the filter taps */
-static void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA],
-                                            const int32_t ind, const int32_t fac_Q16) {
+void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA], const int32_t ind, const int32_t fac_Q16) {
     int32_t nb, na;
 
-    if (ind < TRANSITION_INT_NUM - 1) {
-        if (fac_Q16 > 0) {
-            if (fac_Q16 < 32768) { /* fac_Q16 is in range of a 16-bit int */
+    if(ind < TRANSITION_INT_NUM - 1) {
+        if(fac_Q16 > 0) {
+            if(fac_Q16 < 32768) { /* fac_Q16 is in range of a 16-bit int */
                 /* Piece-wise linear interpolation of B and A */
-                for (nb = 0; nb < TRANSITION_NB; nb++) {
-                    B_Q28[nb] =
-                        silk_SMLAWB(silk_Transition_LP_B_Q28[ind][nb],
-                                    silk_Transition_LP_B_Q28[ind + 1][nb] - silk_Transition_LP_B_Q28[ind][nb], fac_Q16);
+                for(nb = 0; nb < TRANSITION_NB; nb++) {
+                    B_Q28[nb] = silk_SMLAWB(silk_Transition_LP_B_Q28[ind][nb], silk_Transition_LP_B_Q28[ind + 1][nb] - silk_Transition_LP_B_Q28[ind][nb], fac_Q16);
                 }
                 for(na = 0; na < TRANSITION_NA; na++) {
                     A_Q28[na] = silk_SMLAWB(silk_Transition_LP_A_Q28[ind][na], silk_Transition_LP_A_Q28[ind + 1][na] - silk_Transition_LP_A_Q28[ind][na], fac_Q16);
@@ -1621,10 +1584,10 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Decodes signs of excitation */
-void silk_decode_signs(int16_t pulses[],              /* I/O  pulse signal                                */
-                       int32_t length,                /* I    length of input                             */
-                       const int32_t signalType,      /* I    Signal type                                 */
-                       const int32_t quantOffsetType, /* I    Quantization offset type                    */
+void silk_decode_signs(int16_t       pulses[],                       /* I/O  pulse signal                                */
+                       int32_t       length,                         /* I    length of input                             */
+                       const int32_t signalType,                     /* I    Signal type                                 */
+                       const int32_t quantOffsetType,                /* I    Quantization offset type                    */
                        const int32_t sum_pulses[MAX_NB_SHELL_BLOCKS] /* I    Sum of absolute pulses per block */
 ) {
     int32_t        i, j, p;
@@ -1652,11 +1615,22 @@ void silk_decode_signs(int16_t pulses[],              /* I/O  pulse signal      
         q_ptr += SHELL_CODEC_FRAME_LENGTH;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate){
+    s_channelsInternal = channels;
+    s_API_channels = API_channels;
+    s_payloadSize_ms = payloadSize_ms;
+    s_silk_internalSampleRate = internalSampleRate;
+    s_API_sampleRate = API_samleRate;
+}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+uint32_t silk_getPrevPitchLag(){
+    return s_prevPitchLag;
+}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode a frame */
 int32_t silk_Decode(                                   /* O    Returns error code                              */
                     void *decState,                    /* I/O  State                                           */
-                    silk_DecControlStruct *decControl, /* I/O  Control Structure                               */
                     int32_t lostFlag,                  /* I    0: no loss, 1 loss, 2 decode fec                */
                     int32_t newPacketFlag,             /* I    Indicates first decoder call for this packet    */
                     int16_t *samplesOut,               /* O    Decoded output speech vector                    */
@@ -1677,66 +1651,66 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t stereo_to_mono;
     int delay_stack_alloc;
 
-    assert(decControl->nChannelsInternal == 1 || decControl->nChannelsInternal == 2);
+    assert(s_channelsInternal == 1 || s_channelsInternal == 2);
 
     /**********************************/
     /* Test if first frame in payload */
     /**********************************/
     if (newPacketFlag) {
-        for (n = 0; n < decControl->nChannelsInternal; n++) {
+        for (n = 0; n < s_channelsInternal; n++) {
             channel_state[n].nFramesDecoded = 0; /* Used to count frames in packet */
         }
     }
 
     /* If Mono -> Stereo transition in bitstream: init state of second channel */
-    if (decControl->nChannelsInternal > psDec->nChannelsInternal) {
+    if (s_channelsInternal > psDec->nChannelsInternal) {
         ret += silk_init_decoder(&channel_state[1]);
     }
 
-    stereo_to_mono = decControl->nChannelsInternal == 1 && psDec->nChannelsInternal == 2 &&
-                     (decControl->internalSampleRate == 1000 * channel_state[0].fs_kHz);
+    stereo_to_mono = s_channelsInternal == 1 && psDec->nChannelsInternal == 2 &&
+                     (s_silk_internalSampleRate == 1000 * channel_state[0].fs_kHz);
 
     if (channel_state[0].nFramesDecoded == 0) {
-        for (n = 0; n < decControl->nChannelsInternal; n++) {
+        for (n = 0; n < s_channelsInternal; n++) {
             int32_t fs_kHz_dec;
-            if (decControl->payloadSize_ms == 0) {
+            if (s_payloadSize_ms == 0) {
                 /* Assuming packet loss, use 10 ms */
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 2;
-            } else if (decControl->payloadSize_ms == 10) {
+            } else if (s_payloadSize_ms == 10) {
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 2;
-            } else if (decControl->payloadSize_ms == 20) {
+            } else if (s_payloadSize_ms == 20) {
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 4;
-            } else if (decControl->payloadSize_ms == 40) {
+            } else if (s_payloadSize_ms == 40) {
                 channel_state[n].nFramesPerPacket = 2;
                 channel_state[n].nb_subfr = 4;
-            } else if (decControl->payloadSize_ms == 60) {
+            } else if (s_payloadSize_ms == 60) {
                 channel_state[n].nFramesPerPacket = 3;
                 channel_state[n].nb_subfr = 4;
             } else {
                 return SILK_DEC_INVALID_FRAME_SIZE;
             }
-            fs_kHz_dec = (decControl->internalSampleRate >> 10) + 1;
+            fs_kHz_dec = (s_silk_internalSampleRate >> 10) + 1;
             if (fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16) {
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
-            ret += silk_decoder_set_fs(&channel_state[n], fs_kHz_dec, decControl->API_sampleRate);
+            ret += silk_decoder_set_fs(&channel_state[n], fs_kHz_dec, s_API_sampleRate);
         }
     }
 
-    if (decControl->nChannelsAPI == 2 && decControl->nChannelsInternal == 2 &&
+    if (s_API_channels == 2 && s_channelsInternal == 2 &&
         (psDec->nChannelsAPI == 1 || psDec->nChannelsInternal == 1)) {
         silk_memset(psDec->sStereo.pred_prev_Q13, 0, sizeof(psDec->sStereo.pred_prev_Q13));
         silk_memset(psDec->sStereo.sSide, 0, sizeof(psDec->sStereo.sSide));
         silk_memcpy(&channel_state[1].resampler_state, &channel_state[0].resampler_state,
                     sizeof(silk_resampler_state_struct));
     }
-    psDec->nChannelsAPI = decControl->nChannelsAPI;
-    psDec->nChannelsInternal = decControl->nChannelsInternal;
+    psDec->nChannelsAPI = s_API_channels;
+    psDec->nChannelsInternal = s_channelsInternal;
 
-    if (decControl->API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || decControl->API_sampleRate < 8000) {
+    if (s_API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || s_API_sampleRate < 8000) {
         ret = SILK_DEC_INVALID_SAMPLING_FREQUENCY;
 
         return (ret);
@@ -1745,14 +1719,14 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (lostFlag != FLAG_PACKET_LOST && channel_state[0].nFramesDecoded == 0) {
         /* First decoder call for this payload */
         /* Decode VAD flags and LBRR flag */
-        for (n = 0; n < decControl->nChannelsInternal; n++) {
+        for (n = 0; n < s_channelsInternal; n++) {
             for (i = 0; i < channel_state[n].nFramesPerPacket; i++) {
                 channel_state[n].VAD_flags[i] = ec_dec_bit_logp(1);
             }
             channel_state[n].LBRR_flag = ec_dec_bit_logp(1);
         }
         /* Decode LBRR flags */
-        for (n = 0; n < decControl->nChannelsInternal; n++) {
+        for (n = 0; n < s_channelsInternal; n++) {
             silk_memset(channel_state[n].LBRR_flags, 0, sizeof(channel_state[n].LBRR_flags));
             if (channel_state[n].LBRR_flag) {
                 if (channel_state[n].nFramesPerPacket == 1) {
@@ -1770,12 +1744,12 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         if (lostFlag == FLAG_DECODE_NORMAL) {
             /* Regular decoding: skip all LBRR data */
             for (i = 0; i < channel_state[0].nFramesPerPacket; i++) {
-                for (n = 0; n < decControl->nChannelsInternal; n++) {
+                for (n = 0; n < s_channelsInternal; n++) {
                     if (channel_state[n].LBRR_flags[i]) {
                         int16_t pulses[MAX_FRAME_LENGTH];
                         int32_t condCoding;
 
-                        if (decControl->nChannelsInternal == 2 && n == 0) {
+                        if (s_channelsInternal == 2 && n == 0) {
                             silk_stereo_decode_pred(MS_pred_Q13);
                             if (channel_state[1].LBRR_flags[i] == 0) {
                                 silk_stereo_decode_mid_only(&decode_only_middle);
@@ -1797,7 +1771,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Get MS predictor index */
-    if (decControl->nChannelsInternal == 2) {
+    if (s_channelsInternal == 2) {
         if (lostFlag == FLAG_DECODE_NORMAL ||
             (lostFlag == FLAG_DECODE_LBRR && channel_state[0].LBRR_flags[channel_state[0].nFramesDecoded] == 1)) {
             silk_stereo_decode_pred(MS_pred_Q13);
@@ -1816,7 +1790,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Reset side channel decoder prediction memory for first frame with side coding */
-    if (decControl->nChannelsInternal == 2 && decode_only_middle == 0 && psDec->prev_decode_only_middle == 1) {
+    if (s_channelsInternal == 2 && decode_only_middle == 0 && psDec->prev_decode_only_middle == 1) {
         silk_memset(psDec->channel_state[1].outBuf, 0, sizeof(psDec->channel_state[1].outBuf));
         silk_memset(psDec->channel_state[1].sLPC_Q14_buf, 0, sizeof(psDec->channel_state[1].sLPC_Q14_buf));
         psDec->channel_state[1].lagPrev = 100;
@@ -1828,10 +1802,10 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     /* Check if the temp buffer fits into the output PCM buffer. If it fits,
        we can delay allocating the temp buffer until after the SILK peak stack
        usage. We need to use a < and not a <= because of the two extra samples. */
-    delay_stack_alloc = decControl->internalSampleRate * decControl->nChannelsInternal <
-                        decControl->API_sampleRate * decControl->nChannelsAPI;
+    delay_stack_alloc = s_silk_internalSampleRate * s_channelsInternal <
+                        s_API_sampleRate * s_API_channels;
     ALLOC(samplesOut1_tmp_storage1,
-          delay_stack_alloc ? ALLOC_NONE : decControl->nChannelsInternal * (channel_state[0].frame_length + 2),
+          delay_stack_alloc ? ALLOC_NONE : s_channelsInternal * (channel_state[0].frame_length + 2),
           int16_t);
     if (delay_stack_alloc) {
         samplesOut1_tmp[0] = samplesOut;
@@ -1845,11 +1819,11 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         has_side = !decode_only_middle;
     } else {
         has_side =
-            !psDec->prev_decode_only_middle || (decControl->nChannelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
+            !psDec->prev_decode_only_middle || (s_channelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
                                                 channel_state[1].LBRR_flags[channel_state[1].nFramesDecoded] == 1);
     }
     /* Call decoder for one frame */
-    for (n = 0; n < decControl->nChannelsInternal; n++) {
+    for (n = 0; n < s_channelsInternal; n++) {
         if (n == 0 || has_side) {
             int32_t FrameIndex;
             int32_t condCoding;
@@ -1875,7 +1849,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         channel_state[n].nFramesDecoded++;
     }
 
-    if (decControl->nChannelsAPI == 2 && decControl->nChannelsInternal == 2) {
+    if (s_API_channels == 2 && s_channelsInternal == 2) {
         /* Convert Mid/Side to Left/Right */
         silk_stereo_MS_to_LR(&psDec->sStereo, samplesOut1_tmp[0], samplesOut1_tmp[1], MS_pred_Q13,
                              channel_state[0].fs_kHz, nSamplesOutDec);
@@ -1886,43 +1860,43 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Number of output samples */
-    *nSamplesOut = silk_DIV32(nSamplesOutDec * decControl->API_sampleRate, silk_SMULBB(channel_state[0].fs_kHz, 1000));
+    *nSamplesOut = silk_DIV32(nSamplesOutDec * s_API_sampleRate, silk_SMULBB(channel_state[0].fs_kHz, 1000));
 
     /* Set up pointers to temp buffers */
-    ALLOC(samplesOut2_tmp, decControl->nChannelsAPI == 2 ? *nSamplesOut : ALLOC_NONE, int16_t);
-    if (decControl->nChannelsAPI == 2) {
+    ALLOC(samplesOut2_tmp, s_API_channels == 2 ? *nSamplesOut : ALLOC_NONE, int16_t);
+    if (s_API_channels == 2) {
         resample_out_ptr = samplesOut2_tmp;
     } else {
         resample_out_ptr = samplesOut;
     }
 
     ALLOC(samplesOut1_tmp_storage2,
-          delay_stack_alloc ? decControl->nChannelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE,
+          delay_stack_alloc ? s_channelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE,
           int16_t);
 
     if (delay_stack_alloc) {
-        size_t val1 = decControl->nChannelsInternal * (channel_state[0].frame_length + 2);
+        size_t val1 = s_channelsInternal * (channel_state[0].frame_length + 2);
         size_t val2 = sizeof(samplesOut1_tmp_storage2);
         size_t n = val1 * val2;
         memcpy(samplesOut1_tmp_storage2, samplesOut, val2);
         samplesOut1_tmp[0] = samplesOut1_tmp_storage2;
         samplesOut1_tmp[1] = samplesOut1_tmp_storage2 + channel_state[0].frame_length + 2;
     }
-    for (n = 0; n < silk_min(decControl->nChannelsAPI, decControl->nChannelsInternal); n++) {
+    for (n = 0; n < silk_min(s_API_channels, s_channelsInternal); n++) {
 
         /* Resample decoded signal to API_sampleRate */
         ret +=
             silk_resampler(&channel_state[n].resampler_state, resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
 
         /* Interleave if stereo output and stereo stream */
-        if (decControl->nChannelsAPI == 2) {
+        if (s_API_channels == 2) {
             for (i = 0; i < *nSamplesOut; i++) {
                 samplesOut[n + 2 * i] = resample_out_ptr[i];
             }
         }
     }
     /* Create two channel output from mono stream */
-    if (decControl->nChannelsAPI == 2 && decControl->nChannelsInternal == 1) {
+    if (s_API_channels == 2 && s_channelsInternal == 1) {
         if (stereo_to_mono) {
             /* Resample right channel for newly collapsed stereo just in case
                we weren't doing collapsing when switching to mono */
@@ -1941,9 +1915,9 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     /* Export pitch lag, measured at 48 kHz sampling rate */
     if (channel_state[0].prevSignalType == TYPE_VOICED) {
         int mult_tab[3] = {6, 4, 3};
-        decControl->prevPitchLag = channel_state[0].lagPrev * mult_tab[(channel_state[0].fs_kHz - 8) >> 2];
+        s_prevPitchLag = channel_state[0].lagPrev * mult_tab[(channel_state[0].fs_kHz - 8) >> 2];
     } else {
-        decControl->prevPitchLag = 0;
+        s_prevPitchLag = 0;
     }
 
     if (lostFlag == FLAG_PACKET_LOST) {
