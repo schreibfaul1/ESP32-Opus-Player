@@ -1933,7 +1933,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t 
             if (encode)
                 ec_enc_bit_logp(ec, inv, 2);
             else
-                inv = ec_dec_bit_logp(ec, 2);
+                inv = ec_dec_bit_logp(2);
         }
         else
             inv = 0;
@@ -2937,7 +2937,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
     tf_changed = curr = 0;
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
-            curr ^= ec_dec_bit_logp(dec, logp);
+            curr ^= ec_dec_bit_logp(logp);
             tell = ec_tell(dec);
             tf_changed |= curr;
         }
@@ -2948,7 +2948,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
     if (tf_select_rsv &&
         tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
             tf_select_table[LM][4 * isTransient + 2 + tf_changed]) {
-        tf_select = ec_dec_bit_logp(dec, 1);
+        tf_select = ec_dec_bit_logp(1);
     }
     for (i = start; i < end; i++) {
         tf_res[i] = tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
@@ -3377,7 +3377,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     if (tell >= total_bits)
         silence = 1;
     else if (tell == 1)
-        silence = ec_dec_bit_logp(dec, 15);
+        silence = ec_dec_bit_logp(15);
     else
         silence = 0;
     if (silence)  {
@@ -3390,7 +3390,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     postfilter_pitch = 0;
     postfilter_tapset = 0;
     if (start == 0 && tell + 16 <= total_bits) {
-        if (ec_dec_bit_logp(dec, 1))
+        if (ec_dec_bit_logp(1))
         {
             int qg, octave;
             octave = ec_dec_uint(dec, 6);
@@ -3404,7 +3404,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     }
 
     if (LM > 0 && tell + 3 <= total_bits) {
-        isTransient = ec_dec_bit_logp(dec, 3);
+        isTransient = ec_dec_bit_logp( 3);
         tell = ec_tell(dec);
     }
     else
@@ -3416,7 +3416,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         shortBlocks = 0;
 
     /* Decode the global flags (first symbols in the stream) */
-    intra_ener = tell + 3 <= total_bits ? ec_dec_bit_logp(dec, 3) : 0;
+    intra_ener = tell + 3 <= total_bits ? ec_dec_bit_logp(3) : 0;
     /* Get band energies */
     unquant_coarse_energy(mode, start, end, oldBandE,
                           intra_ener, dec, C, LM);
@@ -3451,7 +3451,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         while (tell + (dynalloc_loop_logp << BITRES) < total_bits && boost < cap[i])
         {
             int flag;
-            flag = ec_dec_bit_logp(dec, dynalloc_loop_logp);
+            flag = ec_dec_bit_logp(dynalloc_loop_logp);
             tell = ec_tell_frac(dec);
             if (!flag)
                 break;
@@ -4287,18 +4287,18 @@ void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
 //----------------------------------------------------------------------------------------------------------------------
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
-int ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
+int ec_dec_bit_logp( unsigned _logp) {
     uint32_t r;
     uint32_t d;
     uint32_t s;
     int ret;
-    r = _this->rng;
-    d = _this->val;
+    r = s_ec_dec->rng;
+    d = s_ec_dec->val;
     s = r >> _logp;
     ret = d < s;
-    if (!ret) _this->val = d - s;
-    _this->rng = ret ? s : r - s;
-    ec_dec_normalize(_this);
+    if (!ret) s_ec_dec->val = d - s;
+    s_ec_dec->rng = ret ? s : r - s;
+    ec_dec_normalize(s_ec_dec);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5737,7 +5737,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
                     break;
                 }
                 ec_enc_bit_logp(ec, 0, 1);
-            } else if (ec_dec_bit_logp(ec, 1)) {
+            } else if (ec_dec_bit_logp(1)) {
                 break;
             }
             /*We used a bit to skip this band.*/
@@ -5776,7 +5776,7 @@ static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_st
         if (encode)
             ec_enc_bit_logp(ec, *dual_stereo, 1);
         else
-            *dual_stereo = ec_dec_bit_logp(ec, 1);
+            *dual_stereo = ec_dec_bit_logp(1);
     } else
         *dual_stereo = 0;
 
@@ -6036,7 +6036,7 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEB
                 qi = ec_dec_icdf(small_energy_icdf, 2);
                 qi = (qi >> 1) ^ -(qi & 1);
             } else if (budget - tell >= 1) {
-                qi = -ec_dec_bit_logp(dec, 1);
+                qi = -ec_dec_bit_logp(1);
             } else
                 qi = -1;
             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);

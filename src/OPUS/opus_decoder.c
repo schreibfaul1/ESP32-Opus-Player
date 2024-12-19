@@ -339,7 +339,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, &dec, pcm_ptr, &silk_frame_size);
+            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
                 if (lost_flag) {
                     /* PLC failure should not be fatal */
@@ -359,11 +359,11 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         ec_tell(&dec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * len) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID)
-            redundancy = ec_dec_bit_logp(&dec, 12);
+            redundancy = ec_dec_bit_logp(12);
         else
             redundancy = 1;
         if (redundancy) {
-            celt_to_silk = ec_dec_bit_logp(&dec, 1);
+            celt_to_silk = ec_dec_bit_logp(1);
             /* redundancy_bytes will be at least two, in the non-hybrid
                case due to the ec_tell() check above */
             redundancy_bytes =

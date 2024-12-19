@@ -765,8 +765,7 @@ void silk_bwexpander(int16_t*      ar,       /* I/O  AR filter to be expanded (w
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode mid/side predictors */
-void silk_stereo_decode_pred(ec_dec *psRangeDec, /* I/O  Compressor data structure                   */
-                             int32_t pred_Q13[]  /* O    Predictors                                  */
+void silk_stereo_decode_pred(int32_t pred_Q13[]  /* O    Predictors                                  */
 ) {
     int32_t n, ix[2][3];
     int32_t low_Q13, step_Q13;
@@ -793,8 +792,7 @@ void silk_stereo_decode_pred(ec_dec *psRangeDec, /* I/O  Compressor data structu
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode mid-only flag */
-void silk_stereo_decode_mid_only(ec_dec *psRangeDec,      /* I/O  Compressor data structure                   */
-                                 int32_t *decode_only_mid /* O    Flag that only mid channel has been coded   */
+void silk_stereo_decode_mid_only(int32_t *decode_only_mid /* O    Flag that only mid channel has been coded   */
 ) {
     /* Decode flag that only mid channel is coded */
     *decode_only_mid = ec_dec_icdf(silk_stereo_only_code_mid_iCDF, 8);
@@ -888,7 +886,6 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode side-information parameters from payload */
 void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State                                       */
-                         ec_dec *psRangeDec,        /* I/O  Compressor data structure                   */
                          int32_t FrameIndex,        /* I    Frame number                                */
                          int32_t decode_LBRR,       /* I    Flag indicating LBRR data is being decoded  */
                          int32_t condCoding         /* I    The type of conditional coding to use       */
@@ -1081,8 +1078,7 @@ void silk_decode_parameters(silk_decoder_state*   psDec,     /* I/O  State      
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode quantization indices of excitation */
 
-void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data structure                   */
-                        int16_t pulses[],              /* O    Excitation signal                           */
+void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal                           */
                         const int32_t signalType,      /* I    Sigtype                                     */
                         const int32_t quantOffsetType, /* I    quantOffsetType                             */
                         const int32_t frame_length     /* I    Frame length                                */
@@ -1127,7 +1123,7 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /***************************************************/
     for (i = 0; i < iter; i++) {
         if (sum_pulses[i] > 0) {
-            silk_shell_decoder(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], psRangeDec, sum_pulses[i]);
+            silk_shell_decoder(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], sum_pulses[i]);
         } else {
             silk_memset(&pulses[silk_SMULBB(i, SHELL_CODEC_FRAME_LENGTH)], 0,
                         SHELL_CODEC_FRAME_LENGTH * sizeof(pulses[0]));
@@ -1157,7 +1153,7 @@ void silk_decode_pulses(ec_dec *psRangeDec,            /* I/O  Compressor data s
     /****************************************/
     /* Decode and add signs to pulse signal */
     /****************************************/
-    silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+    silk_decode_signs(pulses, frame_length, signalType, quantOffsetType, sum_pulses);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Set decoder sampling rate (Decoder state pointer , Sampling frequency (kHz) , API Sampling frequency (Hz))*/
@@ -1330,7 +1326,6 @@ void silk_quant_LTP_gains(int16_t       B_Q14[MAX_NB_SUBFR * LTP_ORDER],        
 //----------------------------------------------------------------------------------------------------------------------
 static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitude of first child subframe     */
                                      int16_t *p_child2,         /* O    pulse amplitude of second child subframe    */
-                                     ec_dec *psRangeDec,        /* I/O  Compressor data structure                   */
                                      const int32_t p,           /* I    pulse amplitude of current subframe         */
                                      const uint8_t *shell_table /* I    table of shell cdfs                         */
 ) {
@@ -1346,28 +1341,27 @@ static inline void decode_split(int16_t *p_child1,         /* O    pulse amplitu
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Shell decoder, operates on one shell code frame of 16 pulses */
 void silk_shell_decoder(int16_t *pulses0,     /* O    data: nonnegative pulse amplitudes          */
-                        ec_dec *psRangeDec,   /* I/O  Compressor data structure                   */
                         const int32_t pulses4 /* I    number of pulses per pulse-subframe         */
 ) {
     int16_t pulses3[2], pulses2[4], pulses1[8];
 
     /* this function operates on one shell code frame of 16 pulses */
     assert(SHELL_CODEC_FRAME_LENGTH == 16);
-    decode_split(&pulses3[0],  &pulses3[1],  psRangeDec, pulses4, silk_shell_code_table3);
-    decode_split(&pulses2[0],  &pulses2[1],  psRangeDec, pulses3[0], silk_shell_code_table2);
-    decode_split(&pulses1[0],  &pulses1[1],  psRangeDec, pulses2[0], silk_shell_code_table1);
-    decode_split(&pulses0[0],  &pulses0[1],  psRangeDec, pulses1[0], silk_shell_code_table0);
-    decode_split(&pulses0[2],  &pulses0[3],  psRangeDec, pulses1[1], silk_shell_code_table0);
-    decode_split(&pulses1[2],  &pulses1[3],  psRangeDec, pulses2[1], silk_shell_code_table1);
-    decode_split(&pulses0[4],  &pulses0[5],  psRangeDec, pulses1[2], silk_shell_code_table0);
-    decode_split(&pulses0[6],  &pulses0[7],  psRangeDec, pulses1[3], silk_shell_code_table0);
-    decode_split(&pulses2[2],  &pulses2[3],  psRangeDec, pulses3[1], silk_shell_code_table2);
-    decode_split(&pulses1[4],  &pulses1[5],  psRangeDec, pulses2[2], silk_shell_code_table1);
-    decode_split(&pulses0[8],  &pulses0[9],  psRangeDec, pulses1[4], silk_shell_code_table0);
-    decode_split(&pulses0[10], &pulses0[11], psRangeDec, pulses1[5], silk_shell_code_table0);
-    decode_split(&pulses1[6],  &pulses1[7],  psRangeDec, pulses2[3], silk_shell_code_table1);
-    decode_split(&pulses0[12], &pulses0[13], psRangeDec, pulses1[6], silk_shell_code_table0);
-    decode_split(&pulses0[14], &pulses0[15], psRangeDec, pulses1[7], silk_shell_code_table0);
+    decode_split(&pulses3[0],  &pulses3[1],  pulses4, silk_shell_code_table3);
+    decode_split(&pulses2[0],  &pulses2[1],  pulses3[0], silk_shell_code_table2);
+    decode_split(&pulses1[0],  &pulses1[1],  pulses2[0], silk_shell_code_table1);
+    decode_split(&pulses0[0],  &pulses0[1],  pulses1[0], silk_shell_code_table0);
+    decode_split(&pulses0[2],  &pulses0[3],  pulses1[1], silk_shell_code_table0);
+    decode_split(&pulses1[2],  &pulses1[3],  pulses2[1], silk_shell_code_table1);
+    decode_split(&pulses0[4],  &pulses0[5],  pulses1[2], silk_shell_code_table0);
+    decode_split(&pulses0[6],  &pulses0[7],  pulses1[3], silk_shell_code_table0);
+    decode_split(&pulses2[2],  &pulses2[3],  pulses3[1], silk_shell_code_table2);
+    decode_split(&pulses1[4],  &pulses1[5],  pulses2[2], silk_shell_code_table1);
+    decode_split(&pulses0[8],  &pulses0[9],  pulses1[4], silk_shell_code_table0);
+    decode_split(&pulses0[10], &pulses0[11], pulses1[5], silk_shell_code_table0);
+    decode_split(&pulses1[6],  &pulses1[7],  pulses2[3], silk_shell_code_table1);
+    decode_split(&pulses0[12], &pulses0[13], pulses1[6], silk_shell_code_table0);
+    decode_split(&pulses0[14], &pulses0[15], pulses1[7], silk_shell_code_table0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Quantize mid/side predictors */
@@ -1627,8 +1621,7 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Decodes signs of excitation */
-void silk_decode_signs(ec_dec *psRangeDec,            /* I/O  Compressor data structure                   */
-                       int16_t pulses[],              /* I/O  pulse signal                                */
+void silk_decode_signs(int16_t pulses[],              /* I/O  pulse signal                                */
                        int32_t length,                /* I    length of input                             */
                        const int32_t signalType,      /* I    Signal type                                 */
                        const int32_t quantOffsetType, /* I    Quantization offset type                    */
@@ -1666,7 +1659,6 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                     silk_DecControlStruct *decControl, /* I/O  Control Structure                               */
                     int32_t lostFlag,                  /* I    0: no loss, 1 loss, 2 decode fec                */
                     int32_t newPacketFlag,             /* I    Indicates first decoder call for this packet    */
-                    ec_dec *psRangeDec,                /* I/O  Compressor data structure                       */
                     int16_t *samplesOut,               /* O    Decoded output speech vector                    */
                     int32_t *nSamplesOut               /* O    Number of samples decoded                       */
 ) {
@@ -1755,9 +1747,9 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         /* Decode VAD flags and LBRR flag */
         for (n = 0; n < decControl->nChannelsInternal; n++) {
             for (i = 0; i < channel_state[n].nFramesPerPacket; i++) {
-                channel_state[n].VAD_flags[i] = ec_dec_bit_logp(psRangeDec, 1);
+                channel_state[n].VAD_flags[i] = ec_dec_bit_logp(1);
             }
-            channel_state[n].LBRR_flag = ec_dec_bit_logp(psRangeDec, 1);
+            channel_state[n].LBRR_flag = ec_dec_bit_logp(1);
         }
         /* Decode LBRR flags */
         for (n = 0; n < decControl->nChannelsInternal; n++) {
@@ -1784,9 +1776,9 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                         int32_t condCoding;
 
                         if (decControl->nChannelsInternal == 2 && n == 0) {
-                            silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
+                            silk_stereo_decode_pred(MS_pred_Q13);
                             if (channel_state[1].LBRR_flags[i] == 0) {
-                                silk_stereo_decode_mid_only(psRangeDec, &decode_only_middle);
+                                silk_stereo_decode_mid_only(&decode_only_middle);
                             }
                         }
                         /* Use conditional coding if previous frame available */
@@ -1795,8 +1787,8 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                         } else {
                             condCoding = CODE_INDEPENDENTLY;
                         }
-                        silk_decode_indices(&channel_state[n], psRangeDec, i, 1, condCoding);
-                        silk_decode_pulses(psRangeDec, pulses, channel_state[n].indices.signalType,
+                        silk_decode_indices(&channel_state[n], i, 1, condCoding);
+                        silk_decode_pulses(pulses, channel_state[n].indices.signalType,
                                            channel_state[n].indices.quantOffsetType, channel_state[n].frame_length);
                     }
                 }
@@ -1808,11 +1800,11 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (decControl->nChannelsInternal == 2) {
         if (lostFlag == FLAG_DECODE_NORMAL ||
             (lostFlag == FLAG_DECODE_LBRR && channel_state[0].LBRR_flags[channel_state[0].nFramesDecoded] == 1)) {
-            silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
+            silk_stereo_decode_pred(MS_pred_Q13);
             /* For LBRR data, decode mid-only flag only if side-channel's LBRR flag is false */
             if ((lostFlag == FLAG_DECODE_NORMAL && channel_state[1].VAD_flags[channel_state[0].nFramesDecoded] == 0) ||
                 (lostFlag == FLAG_DECODE_LBRR && channel_state[1].LBRR_flags[channel_state[0].nFramesDecoded] == 0)) {
-                silk_stereo_decode_mid_only(psRangeDec, &decode_only_middle);
+                silk_stereo_decode_mid_only(&decode_only_middle);
             } else {
                 decode_only_middle = 0;
             }
@@ -1875,7 +1867,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
             } else {
                 condCoding = CODE_CONDITIONALLY;
             }
-            ret += silk_decode_frame(&channel_state[n], psRangeDec, &samplesOut1_tmp[n][2], &nSamplesOutDec, lostFlag,
+            ret += silk_decode_frame(&channel_state[n], &samplesOut1_tmp[n][2], &nSamplesOutDec, lostFlag,
                                      condCoding);
         } else {
             silk_memset(&samplesOut1_tmp[n][2], 0, nSamplesOutDec * sizeof(int16_t));
@@ -2169,7 +2161,6 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
 int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk decoder state               */
-                          ec_dec *psRangeDec,        /* I/O  Compressor data structure                   */
                           int16_t pOut[],            /* O    Pointer to output speech frame              */
                           int32_t *pN,               /* O    Pointer to size of output frame             */
                           int32_t lostFlag,          /* I    0: no loss, 1 loss, 2 decode fec            */
@@ -2190,12 +2181,12 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
-        silk_decode_indices(psDec, psRangeDec, psDec->nFramesDecoded, lostFlag, condCoding);
+        silk_decode_indices(psDec, psDec->nFramesDecoded, lostFlag, condCoding);
 
         /*********************************************/
         /* Decode quantization indices of excitation */
         /*********************************************/
-        silk_decode_pulses(psRangeDec, pulses, psDec->indices.signalType, psDec->indices.quantOffsetType,
+        silk_decode_pulses(pulses, psDec->indices.signalType, psDec->indices.quantOffsetType,
                            psDec->frame_length);
 
         /********************************************/
