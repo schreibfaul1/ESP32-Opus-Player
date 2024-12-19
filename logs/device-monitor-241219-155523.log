@@ -1,0 +1,2 @@
+[0;32m[  6167][I][opus_decoder.c:176] opus_packet_get_mode(): opus mode is MODE_CELT_ONLY[0m
+[0;32m[  7739][I][opus_decoder.c:178] opus_packet_get_mode(): opus mode is MODE_HYBRID   [0m
