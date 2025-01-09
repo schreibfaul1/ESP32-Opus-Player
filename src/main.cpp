@@ -1,301 +1,228 @@
-// OPUS player demo
-// plays Opus files from SD via I2S
+#include <lvgl.h>
+#include <DHT20.h>
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+
+#include <LovyanGFX.hpp>
+#include <lgfx/v1/platforms/esp32s3/Panel_RGB.hpp>
+#include <lgfx/v1/platforms/esp32s3/Bus_RGB.hpp>
+#include "ui.h"
+
+#define TFT_BL 2
 
 
-#include <Arduino.h>
-#include "SD_MMC.h"
-#include "FS.h"
-#include "driver/i2s.h"
-#include "OPUS/opusfile.h"
+class LGFX : public lgfx::LGFX_Device
+{
+public:
+
+  lgfx::Bus_RGB     _bus_instance;
+  lgfx::Panel_RGB   _panel_instance;
+
+  LGFX(void)
+  {
 
 
-// Digital I/O used
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-    #define SD_MMC_D0     11
-    #define SD_MMC_CLK    13
-    #define SD_MMC_CMD    14
-    #define I2S_DOUT       9
-    #define I2S_BCLK       3
-    #define I2S_LRC        1
+    {
+      auto cfg = _bus_instance.config();
+      cfg.panel = &_panel_instance;
+
+      cfg.pin_d0  = GPIO_NUM_8; // B0
+      cfg.pin_d1  = GPIO_NUM_3;  // B1
+      cfg.pin_d2  = GPIO_NUM_46;  // B2
+      cfg.pin_d3  = GPIO_NUM_9;  // B3
+      cfg.pin_d4  = GPIO_NUM_1;  // B4
+
+      cfg.pin_d5  = GPIO_NUM_5;  // G0
+      cfg.pin_d6  = GPIO_NUM_6; // G1
+      cfg.pin_d7  = GPIO_NUM_7;  // G2
+      cfg.pin_d8  = GPIO_NUM_15;  // G3
+      cfg.pin_d9  = GPIO_NUM_16; // G4
+      cfg.pin_d10 = GPIO_NUM_4;  // G5
+
+      cfg.pin_d11 = GPIO_NUM_45; // R0
+      cfg.pin_d12 = GPIO_NUM_48; // R1
+      cfg.pin_d13 = GPIO_NUM_47; // R2
+      cfg.pin_d14 = GPIO_NUM_21; // R3
+      cfg.pin_d15 = GPIO_NUM_14; // R4
+
+      cfg.pin_henable = GPIO_NUM_40;
+      cfg.pin_vsync   = GPIO_NUM_41;
+      cfg.pin_hsync   = GPIO_NUM_39;
+      cfg.pin_pclk    = GPIO_NUM_0;
+      cfg.freq_write  = 15000000;
+
+      cfg.hsync_polarity    = 0;
+      cfg.hsync_front_porch = 8;
+      cfg.hsync_pulse_width = 4;
+      cfg.hsync_back_porch  = 43;
+
+      cfg.vsync_polarity    = 0;
+      cfg.vsync_front_porch = 8;
+      cfg.vsync_pulse_width = 4;
+      cfg.vsync_back_porch  = 12;
+
+      cfg.pclk_active_neg   = 1;
+      cfg.de_idle_high      = 0;
+      cfg.pclk_idle_high    = 0;
+
+      _bus_instance.config(cfg);
+    }
+            {
+      auto cfg = _panel_instance.config();
+      cfg.memory_width  = 800;
+      cfg.memory_height = 480;
+      cfg.panel_width  = 800;
+      cfg.panel_height = 480;
+      cfg.offset_x = 0;
+      cfg.offset_y = 0;
+      _panel_instance.config(cfg);
+    }
+    _panel_instance.setBus(&_bus_instance);
+    setPanel(&_panel_instance);
+
+  }
+};
+
+
+LGFX lcd;
+
+//UI
+
+int led;
+DHT20 dht20;
+SPIClass& spi = SPI;
+
+
+/*******************************************************************************
+   Please config the touch panel in touch.h
+ ******************************************************************************/
+#include "touch.h"
+
+
+/* Change to your screen resolution */
+static uint32_t screenWidth;
+static uint32_t screenHeight;
+static lv_disp_draw_buf_t draw_buf;
+static lv_color_t disp_draw_buf[800 * 480 / 10];
+//static lv_color_t disp_draw_buf;
+static lv_disp_drv_t disp_drv;
+
+/* Display flushing */
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+
+  uint32_t w = (area->x2 - area->x1 + 1);
+  uint32_t h = (area->y2 - area->y1 + 1);
+
+
+  //lcd.fillScreen(TFT_WHITE);
+#if (LV_COLOR_16_SWAP != 0)
+ lcd.pushImageDMA(area->x1, area->y1, w, h,(lgfx::rgb565_t*)&color_p->full);
+#else
+  lcd.pushImageDMA(area->x1, area->y1, w, h,(lgfx::rgb565_t*)&color_p->full);//
 #endif
 
-#ifdef CONFIG_IDF_TARGET_ESP32
-    #define SD_MMC_D0      2
-    #define SD_MMC_CLK    14
-    #define SD_MMC_CMD    15
-    #define I2S_DOUT      25
-    #define I2S_BCLK      27
-    #define I2S_LRC       26
+  lv_disp_flush_ready(disp);
+
+}
+
+void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
+{
+  if (touch_has_signal())
+  {
+    if (touch_touched())
+    {
+      data->state = LV_INDEV_STATE_PR;
+
+      /*Set the coordinates*/
+      data->point.x = touch_last_x;
+      data->point.y = touch_last_y;
+      Serial.print( "Data x :" );
+      Serial.println( touch_last_x );
+
+      Serial.print( "Data y :" );
+      Serial.println( touch_last_y );
+    }
+    else if (touch_released())
+    {
+      data->state = LV_INDEV_STATE_REL;
+    }
+  }
+  else
+  {
+    data->state = LV_INDEV_STATE_REL;
+  }
+  delay(15);
+}
+
+void setup()
+{
+
+  Serial.begin(9600);
+  // Serial.println("LVGL Widgets Demo");
+  Wire.begin(19, 20);
+  dht20.begin();
+  //IO Pin
+  pinMode(38, OUTPUT);
+  digitalWrite(38, LOW);
+
+  // Init Display
+  lcd.begin();
+  lcd.fillScreen(TFT_BLACK);
+  // lcd.setTextSize(2);
+  delay(200);
+
+  lv_init();
+
+  delay(100);
+  touch_init();
+
+  screenWidth = lcd.width();
+  screenHeight = lcd.height();
+
+  lv_disp_draw_buf_init(&draw_buf, disp_draw_buf, NULL, screenWidth * screenHeight / 10);
+  //  lv_disp_draw_buf_init(&draw_buf, disp_draw_buf, NULL, 480 * 272 / 10);
+  /* Initialize the display */
+  lv_disp_drv_init(&disp_drv);
+  /* Change the following line to your display resolution */
+  disp_drv.hor_res = screenWidth;
+  disp_drv.ver_res = screenHeight;
+  disp_drv.flush_cb = my_disp_flush;
+  disp_drv.draw_buf = &draw_buf;
+  lv_disp_drv_register(&disp_drv);
+
+  /* Initialize the (dummy) input device driver */
+  static lv_indev_drv_t indev_drv;
+  lv_indev_drv_init(&indev_drv);
+  indev_drv.type = LV_INDEV_TYPE_POINTER;
+  indev_drv.read_cb = my_touchpad_read;
+  lv_indev_drv_register(&indev_drv);
+#ifdef TFT_BL
+  pinMode(TFT_BL, OUTPUT);
+  digitalWrite(TFT_BL, HIGH);
 #endif
+  ui_init();//开机UI界面
 
-uint8_t             m_i2s_num = I2S_NUM_0;          // I2S_NUM_0 or I2S_NUM_1
-i2s_config_t        m_i2s_config;                   // stores values for I2S driver
-i2s_pin_config_t    m_pin_config;
-uint32_t            m_sampleRate=16000;
-uint8_t             m_bitsPerSample = 16;           // bitsPerSample
-uint8_t             m_vol=64;                       // volume
-size_t              m_i2s_bytesWritten = 0;         // set in i2s_write() but not used
-uint8_t             m_channels=2;
-int16_t             m_outBuff[2048*2];              // Interleaved L/R
-int16_t             m_validSamples = 0;
-int16_t             m_curSample = 0;
-boolean             m_f_forceMono = false;
+  lv_timer_handler();
 
-typedef enum { LEFTCHANNEL=0, RIGHTCHANNEL=1 } SampleIndex;
+  Serial.println( "Setup done" );
 
-const uint8_t volumetable[22]={   0,  1,  2,  3,  4 , 6 , 8, 10, 12, 14, 17,
-                                 20, 23, 27, 30 ,34, 38, 43 ,48, 52, 58, 64}; //22 elements
-
-TaskHandle_t opus_task;
-File file;
-
-// prototypes
-bool playSample(int16_t sample[2]);
-
-//---------------------------------------------------------------------------------------------------------------------
-//        I 2 S   S t u f f
-//---------------------------------------------------------------------------------------------------------------------
-void setupI2S(){
-    m_i2s_num = I2S_NUM_0; // i2s port number
-    m_i2s_config.mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
-    m_i2s_config.sample_rate          = 16000;
-    m_i2s_config.bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT;
-    m_i2s_config.channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
-    m_i2s_config.intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1; // high interrupt priority
-    m_i2s_config.dma_buf_count        = 8;      // max buffers
-    m_i2s_config.dma_buf_len          = 1024;   // max value
-    m_i2s_config.tx_desc_auto_clear   = true;   // new in V1.0.1
-    m_i2s_config.fixed_mclk           = I2S_PIN_NO_CHANGE;
-    i2s_driver_install((i2s_port_t)m_i2s_num, &m_i2s_config, 0, NULL);
-}
-//---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstart(uint8_t i2s_num) {
-    // It is not necessary to call this function after i2s_driver_install() (it is started automatically),
-    // however it is necessary to call it after i2s_stop()
-    return i2s_start((i2s_port_t) i2s_num);
-}
-//---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstop(uint8_t i2s_num) {
-    return i2s_stop((i2s_port_t) i2s_num);
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t DIN) {
-
-    m_pin_config.bck_io_num   = BCLK;
-    m_pin_config.ws_io_num    = LRC; //  wclk
-    m_pin_config.data_out_num = DOUT;
-    m_pin_config.data_in_num  = DIN;
-    const esp_err_t result = i2s_set_pin((i2s_port_t) m_i2s_num, &m_pin_config);
-    return (result == ESP_OK);
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool setSampleRate(uint32_t sampRate) {
-    i2s_set_sample_rates((i2s_port_t)m_i2s_num, sampRate);
-    m_sampleRate = sampRate;
-    return true;
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool setBitsPerSample(int bits) {
-    if((bits != 16) && (bits != 8)) return false;
-    m_bitsPerSample = bits;
-    return true;
-}
-uint8_t getBitsPerSample(){
-    return m_bitsPerSample;
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool setChannels(int ch) {
-    if((ch < 1) || (ch > 2)) return false;
-    m_channels = ch;
-    return true;
-}
-uint8_t getChannels(){
-    return m_channels;
-}
-//---------------------------------------------------------------------------------------------------------------------
-int32_t Gain(int16_t s[2]) {
-    int32_t v[2];
-    float step = (float)m_vol /64;
-    uint8_t l = 0, r = 0;
-
-    v[LEFTCHANNEL] = (s[LEFTCHANNEL]  * (m_vol - l)) >> 6;
-    v[RIGHTCHANNEL]= (s[RIGHTCHANNEL] * (m_vol - r)) >> 6;
-
-    return (v[RIGHTCHANNEL] << 16) | (v[LEFTCHANNEL] & 0xffff);
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool playChunk() {
-    // If we've got data, try and pump it out..
-    int16_t sample[2];
-    if(getBitsPerSample() == 8) {
-        if(m_channels == 1) {
-            while(m_validSamples) {
-                uint8_t x =  m_outBuff[m_curSample] & 0x00FF;
-                uint8_t y = (m_outBuff[m_curSample] & 0xFF00) >> 8;
-                sample[LEFTCHANNEL]  = x;
-                sample[RIGHTCHANNEL] = x;
-                while(1) {
-                    if(playSample(sample)) break;
-                } // Can't send?
-                sample[LEFTCHANNEL]  = y;
-                sample[RIGHTCHANNEL] = y;
-                while(1) {
-                    if(playSample(sample)) break;
-                } // Can't send?
-                m_validSamples--;
-                m_curSample++;
-            }
-        }
-        if(m_channels == 2) {
-            while(m_validSamples) {
-                uint8_t x =  m_outBuff[m_curSample] & 0x00FF;
-                uint8_t y = (m_outBuff[m_curSample] & 0xFF00) >> 8;
-                if(!m_f_forceMono) { // stereo mode
-                    sample[LEFTCHANNEL]  = x;
-                    sample[RIGHTCHANNEL] = y;
-                }
-                else { // force mono
-                    uint8_t xy = (x + y) / 2;
-                    sample[LEFTCHANNEL]  = xy;
-                    sample[RIGHTCHANNEL] = xy;
-                }
-
-                while(1) {
-                    if(playSample(sample)) break;
-                } // Can't send?
-                m_validSamples--;
-                m_curSample++;
-            }
-        }
-        m_curSample = 0;
-        return true;
-    }
-    if(getBitsPerSample() == 16) {
-        if(m_channels == 1) {
-            while(m_validSamples) {
-                sample[LEFTCHANNEL]  = m_outBuff[m_curSample];
-                sample[RIGHTCHANNEL] = m_outBuff[m_curSample];
-                if(!playSample(sample)) {
-                    return false;
-                } // Can't send
-                m_validSamples--;
-                m_curSample++;
-            }
-        }
-        if(m_channels == 2) {
-            while(m_validSamples) {
-                if(!m_f_forceMono) { // stereo mode
-                    sample[LEFTCHANNEL]  = m_outBuff[m_curSample * 2];
-                    sample[RIGHTCHANNEL] = m_outBuff[m_curSample * 2 + 1];
-                }
-                else { // mono mode, #100
-                    int16_t xy = (m_outBuff[m_curSample * 2] + m_outBuff[m_curSample * 2 + 1]) / 2;
-                    sample[LEFTCHANNEL] = xy;
-                    sample[RIGHTCHANNEL] = xy;
-                }
-                if(!playSample(sample)) {
-                    return false;
-                } // Can't send
-                m_validSamples--;
-                m_curSample++;
-            }
-        }
-        m_curSample = 0;
-        return true;
-    }
-    log_e("BitsPer Sample must be 8 or 16!");
-    return false;
-}
-//---------------------------------------------------------------------------------------------------------------------
-bool playSample(int16_t sample[2]) {
-
-    int16_t sample1[2]; int16_t* s1;
-    int16_t sample2[2]; int16_t* s2 = sample2;
-    int16_t sample3[2]; int16_t* s3 = sample3;
-
-    if (getBitsPerSample() == 8) { // Upsample from unsigned 8 bits to signed 16 bits
-        sample[LEFTCHANNEL]  = ((sample[LEFTCHANNEL]  & 0xff) -128) << 8;
-        sample[RIGHTCHANNEL] = ((sample[RIGHTCHANNEL] & 0xff) -128) << 8;
-    }
-
-    sample[LEFTCHANNEL]  = sample[LEFTCHANNEL]  >> 1; // half Vin so we can boost up to 6dB in filters
-    sample[RIGHTCHANNEL] = sample[RIGHTCHANNEL] >> 1;
-
-    uint32_t s32 = Gain(sample); // vosample2lume;
-
-    esp_err_t err = i2s_write((i2s_port_t) m_i2s_num, (const char*) &s32, sizeof(uint32_t), &m_i2s_bytesWritten, 1000);
-    if(err != ESP_OK) {
-        log_e("ESP32 Errorcode %i", err);
-        return false;
-    }
-    if(m_i2s_bytesWritten < 4) {
-        log_e("Can't stuff any more in I2S..."); // increase waitingtime or outputbuffer
-        return false;
-    }
-    return true;
 }
 
-//---------------------------------------------------------------------------------------------------------------------
-//   O P U S   S t u f f
-//---------------------------------------------------------------------------------------------------------------------
-int SD_read(unsigned char* buff, int nbytes){
-    if (nbytes == 0) return 0;
-    nbytes = file.read(buff, nbytes);
-    if (nbytes == 0) return -1;
-    return nbytes;
-}
-void opusTask(void *parameter) {
-    int ret;
-    do {
-        ret = op_read_stereo(m_outBuff, 2048);
-        if(ret > 0){
-            m_validSamples = ret;
-            playChunk();
-        }
-        vTaskDelay(5);
-        // log_e("%u", uxTaskGetStackHighWaterMark(NULL));
-    } while(ret > 0);
-    vTaskDelete(opus_task);
-}
-//---------------------------------------------------------------------------------------------------------------------
-void setup() {
-    setupI2S();
-    setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT, -1);
-    setBitsPerSample(16);
-    setChannels(2);
-    setSampleRate(48000);
-    I2Sstart(m_i2s_num);
-    Serial.begin(115200);
-    delay(1000);
-    pinMode(SD_MMC_D0, INPUT_PULLUP);
-    #ifdef CONFIG_IDF_TARGET_ESP32S3
-        SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
-    #endif
-    if(!SD_MMC.begin("/sdcard", true)){
-        log_i("SD card not found,");
-        while(true){;}
-    }
+void loop()
+{
+  char DHT_buffer[6];
+  int a = (int)dht20.getTemperature();
+  int b = (int)dht20.getHumidity();
+  snprintf(DHT_buffer, sizeof(DHT_buffer), "%d", a);
+  lv_label_set_text(ui_Label1, DHT_buffer);
+  snprintf(DHT_buffer, sizeof(DHT_buffer), "%d", b);
+  lv_label_set_text(ui_Label2, DHT_buffer);
 
- //   file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
- //   file = SD_MMC.open("/opus/hybrid.opus");
- //   file = SD_MMC.open("/opus/celt_8000Hz.opus");
-    file = SD_MMC.open("/opus/silk_8000Hz.opus");
-    log_i("free heap before %d", ESP.getFreeHeap());
-    opus_init_decoder();
-    log_i("free heap after %d", ESP.getFreeHeap());
-    xTaskCreatePinnedToCore(
-            opusTask, /* Function to implement the task */
-            "OPUS", /* Name of the task */
-            4096 * 6,  /* Stack size in words */
-            NULL,  /* Task input parameter */
-            2,  /* Priority of the task */
-            &opus_task,  /* Task handle. */
-            1 /* Core where the task should run */
-    );
+  if(led == 1)
+  digitalWrite(38, HIGH);
+  if(led == 0)
+  digitalWrite(38, LOW);
+  lv_timer_handler(); /* let the GUI do its work */
+  delay( 10 );
 }
-
-void loop() {
-    ;
-}
-//---------------------------------------------------------------------------------------------------------------------
