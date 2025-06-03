@@ -190,10 +190,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int32_t silk_frame_size;
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
-    int pcm_transition_silk_size;
-    VARDECL(int16_t, pcm_transition_silk);
-    int pcm_transition_celt_size;
-    VARDECL(int16_t, pcm_transition_celt);
     int16_t *pcm_transition = NULL;
     int redundant_audio_size;
     VARDECL(int16_t, redundant_audio);
@@ -202,14 +198,11 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int mode;
     int bandwidth;
     int start_band;
-    int redundancy_bytes = 0;
     int celt_to_silk = 0;
     int c;
     int F2_5, F5, F10, F20;
     const int16_t *window;
-    uint32_t redundant_rng = 0;
     int celt_accum;
-//    ALLOC_STACK;
 
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
@@ -234,11 +227,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
        SILK PCM buffer. This saves some stack space. */
 
     celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10);
-
-    pcm_transition_silk_size = ALLOC_NONE;
-    pcm_transition_celt_size = ALLOC_NONE;
-
-    ALLOC(pcm_transition_celt, pcm_transition_celt_size, int16_t);
 
     if (audiosize > frame_size) {
         /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
@@ -312,9 +300,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     }
     if (mode != MODE_CELT_ONLY) start_band = 17;
 
-    ALLOC(pcm_transition_silk, pcm_transition_silk_size, int16_t);
-
-
     if (bandwidth) {
         int endband = 21;
 
@@ -341,8 +326,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->stream_channels));
     }
 
-    //int pcm_transition_silk[pcm_transition_silk_size];
-
      /* Only allocation memory for redundancy if/when needed */
     redundant_audio_size = 0 ? F5 * st->channels : ALLOC_NONE;
     ALLOC(redundant_audio, redundant_audio_size, int16_t);
@@ -353,7 +336,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     if (mode != MODE_SILK_ONLY) {
         int celt_frame_size = min(F20, frame_size);
         /* Make sure to discard any previous CELT state */
-        if (mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy)
+        if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
         /* Decode CELT */
         celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, celt_accum);
@@ -394,10 +377,9 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     if (len <= 1)
         st->rangeFinal = 0;
     else
-        st->rangeFinal = dec.rng ^ redundant_rng;
+        st->rangeFinal = dec.rng;
 
     st->prev_mode = mode;
-    st->prev_redundancy = 0 && !celt_to_silk;
 
     if (celt_ret>=0)
     {
