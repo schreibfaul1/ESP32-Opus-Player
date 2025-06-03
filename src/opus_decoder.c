@@ -190,9 +190,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int32_t silk_frame_size;
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
-    int16_t *pcm_transition = NULL;
-    int redundant_audio_size;
-    VARDECL(int16_t, redundant_audio);
 
     int audiosize;
     int mode;
@@ -316,10 +313,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST,(endband));
         celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->stream_channels));
     }
-
-     /* Only allocation memory for redundancy if/when needed */
-    redundant_audio_size = 0 ? F5 * st->channels : ALLOC_NONE;
-    ALLOC(redundant_audio, redundant_audio_size, int16_t);
 
     /* MUST be after PLC */
     celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST,(start_band));
