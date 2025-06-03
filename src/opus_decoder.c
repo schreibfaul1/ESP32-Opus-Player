@@ -209,7 +209,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     F5 = F10 >> 1;
     F2_5 = F5 >> 1;
 
-    frame_size = min(frame_size, /* st->Fs */ 48000 / 25 * 3);     /*    Limit frame_size to avoid excessive stack allocations. */
     audiosize = /* st->Fs */ 960;
     mode = st->mode; // MODE_CELT_ONLY or MODE_HYBRID or MODE_SILK_ONLY
 
@@ -218,16 +217,10 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     ec_dec_init(&dec, (unsigned char *)data, len);
 
 
-    if (audiosize > frame_size) {
-        /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
 
-        return OPUS_BAD_ARG;
-    } else {
-        frame_size = audiosize;
-    }
 
     /* Don't allocate any memory when in CELT-only mode */
-    pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, frame_size) * st->channels : ALLOC_NONE;
+    pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * st->channels : ALLOC_NONE;
     ALLOC(pcm_silk, pcm_silk_size, int16_t);
 
     /* SILK processing */
@@ -268,15 +261,15 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
             if (silk_ret) {
                 if (lost_flag) {
                     /* PLC failure should not be fatal */
-                    silk_frame_size = frame_size;
-                    for (i = 0; i < frame_size * st->channels; i++) pcm_ptr[i] = 0;
+                    silk_frame_size = audiosize;
+                    for (i = 0; i < audiosize * st->channels; i++) pcm_ptr[i] = 0;
                 } else {
                     return OPUS_INTERNAL_ERROR;
                 }
             }
             pcm_ptr += silk_frame_size * st->channels;
             decoded_samples += silk_frame_size;
-        } while (decoded_samples < frame_size);
+        } while (decoded_samples < audiosize);
     }
 
     start_band = 0;
@@ -317,7 +310,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST,(start_band));
 
     if (mode != MODE_SILK_ONLY) {
-        int celt_frame_size = min(F20, frame_size);
+        int celt_frame_size = min(F20, audiosize);
         /* Make sure to discard any previous CELT state */
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
@@ -325,7 +318,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
-        for (i = 0; i < frame_size * st->channels; i++) pcm[i] = 0;
+        for (i = 0; i < audiosize * st->channels; i++) pcm[i] = 0;
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
@@ -335,7 +328,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     }
 
     if (mode != MODE_CELT_ONLY) {
-        for (i = 0; i < frame_size * st->channels; i++) pcm[i] = SAT16(ADD32(pcm[i], pcm_silk[i]));
+        for (i = 0; i < audiosize * st->channels; i++) pcm[i] = SAT16(ADD32(pcm[i], pcm_silk[i]));
     }
 
     {
@@ -351,11 +344,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     st->prev_mode = mode;
 
-    if (celt_ret>=0)
-    {
-    //   if (OPUS_CHECK_ARRAY(pcm, audiosize*st->channels))
-    //      OPUS_PRINT_INT(audiosize);
-    }
     return celt_ret < 0 ? celt_ret : audiosize;
 }
 //----------------------------------------------------------------------------------------------------------------------
