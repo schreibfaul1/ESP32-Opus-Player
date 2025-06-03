@@ -202,7 +202,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int c;
     int F2_5, F5, F10, F20;
     const int16_t *window;
-    int celt_accum;
 
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
@@ -223,11 +222,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     ec_dec_init(&dec, (unsigned char *)data, len);
 
 
-    /* In fixed-point, we can tell CELT to do the accumulation on top of the
-       SILK PCM buffer. This saves some stack space. */
-
-    celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10);
-
     if (audiosize > frame_size) {
         /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
 
@@ -237,17 +231,14 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     }
 
     /* Don't allocate any memory when in CELT-only mode */
-    pcm_silk_size = (mode != MODE_CELT_ONLY && !celt_accum) ? max(F10, frame_size) * st->channels : ALLOC_NONE;
+    pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, frame_size) * st->channels : ALLOC_NONE;
     ALLOC(pcm_silk, pcm_silk_size, int16_t);
 
     /* SILK processing */
     if (mode != MODE_CELT_ONLY) {
         int lost_flag, decoded_samples;
         int16_t *pcm_ptr;
-        if (celt_accum)
-            pcm_ptr = pcm;
-        else
-            pcm_ptr = pcm_silk;
+        pcm_ptr = pcm_silk;
 
         if (st->prev_mode == MODE_CELT_ONLY) silk_InitDecoder(silk_dec);
 
@@ -339,21 +330,19 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
         /* Decode CELT */
-        celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, celt_accum);
+        celt_ret = celt_decode_with_ec(celt_dec, decode_fec ? NULL : data, len, pcm, celt_frame_size, &dec, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
-        if (!celt_accum) {
-            for (i = 0; i < frame_size * st->channels; i++) pcm[i] = 0;
-        }
+        for (i = 0; i < frame_size * st->channels; i++) pcm[i] = 0;
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
             celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST, 0);
-            celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, celt_accum);
+            celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, 0);
         }
     }
 
-    if (mode != MODE_CELT_ONLY && !celt_accum) {
+    if (mode != MODE_CELT_ONLY) {
         for (i = 0; i < frame_size * st->channels; i++) pcm[i] = SAT16(ADD32(pcm[i], pcm_silk[i]));
     }
 
