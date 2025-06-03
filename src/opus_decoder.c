@@ -215,63 +215,22 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
 
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
-    F20 = st->Fs / 50;
+
+
+//____________________________________________________________________________________________________________________________--
+    F20 = 48000 / 50;  // F20 = st->Fs / 50
     F10 = F20 >> 1;
     F5 = F10 >> 1;
     F2_5 = F5 >> 1;
-    if (frame_size < F2_5) {
-        return OPUS_BUFFER_TOO_SMALL;
-    }
-    /* Limit frame_size to avoid excessive stack allocations. */
-    frame_size = min(frame_size, st->Fs / 25 * 3);
-    /* Payloads of 1 (2 including ToC) or 0 trigger the PLC/DTX */
-    if (len <= 1) {
-        data = NULL;
-        /* In that case, don't conceal more than what the ToC says */
-        frame_size = min(frame_size, st->frame_size);
-    }
-    if (data != NULL) {
-        audiosize = st->frame_size;
-        mode = st->mode;
-        bandwidth = st->bandwidth;
-        ec_dec_init(&dec, (unsigned char *)data, len);
-    } else {
-        audiosize = frame_size;
-        mode = st->prev_mode;
-        bandwidth = 0;
 
-        if (mode == 0) {
-            /* If we haven't got any packet yet, all we can do is return zeros */
-            for (i = 0; i < audiosize * st->channels; i++) pcm[i] = 0;
+    frame_size = min(frame_size, /* st->Fs */ 48000 / 25 * 3);     /*    Limit frame_size to avoid excessive stack allocations. */
+    audiosize = /* st->Fs */ 960;
+    mode = st->mode; // MODE_CELT_ONLY or MODE_HYBRID or MODE_SILK_ONLY
+    bandwidth = st->bandwidth;
 
-            return audiosize;
-        }
+    ec_dec_init(&dec, (unsigned char *)data, len);
 
-        /* Avoids trying to run the PLC on sizes other than 2.5 (CELT), 5 (CELT),
-           10, or 20 (e.g. 12.5 or 30 ms). */
-        if (audiosize > F20) {
-            do {
-                int ret = opus_decode_frame(st, NULL, 0, pcm, min(audiosize, F20), 0);
-                if (ret < 0) {
-                    return ret;
-                }
-                pcm += ret * st->channels;
-                audiosize -= ret;
-            } while (audiosize > 0);
-
-            return frame_size;
-        } else if (audiosize < F20) {
-            if (audiosize > F10)
-                audiosize = F10;
-            else if (mode != MODE_SILK_ONLY && audiosize > F5 && audiosize < F10)
-                audiosize = F5;
-        }
-    }
-
-    /* In fixed-point, we can tell CELT to do the accumulation on top of the
-       SILK PCM buffer. This saves some stack space. */
-
-    celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10);
+    celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10); /* In fixed-point, we can tell CELT to do the accumulation on top of the SILK PCM buffer. This saves some stack space. */
 
     pcm_transition_silk_size = ALLOC_NONE;
     pcm_transition_celt_size = ALLOC_NONE;
@@ -288,6 +247,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     ALLOC(pcm_transition_celt, pcm_transition_celt_size, int16_t);
     if (transition && mode == MODE_CELT_ONLY) {
         pcm_transition = pcm_transition_celt;
+log_i("transition");
         opus_decode_frame(st, NULL, 0, pcm_transition, min(F5, audiosize), 0);
     }
     if (audiosize > frame_size) {
