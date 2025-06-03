@@ -156,18 +156,9 @@ int opus_decoder_get_nb_samples(const OpusDecoder *dec, const unsigned char pack
 
 
 CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
-void opus_custom_mode_destroy(CELTMode *mode);
-CELTDecoder *opus_custom_decoder_create(const CELTMode *mode, int channels, int *error);
-void opus_custom_decoder_destroy(CELTDecoder *st);
-int opus_custom_decode_float(CELTDecoder *st, const unsigned char *data, int len, float *pcm, int frame_size);
-int opus_custom_decode(CELTDecoder *st, const unsigned char *data, int len, int16_t *pcm, int frame_size);
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 
-void downmix_float(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
-void downmix_int(const void *_x, int32_t *sub, int subframe, int offset, int c1, int c2, int C);
-int is_digital_silence(const int16_t *pcm, int frame_size, int channels, int lsb_depth);
 int encode_size(int size, unsigned char *data);
-int32_t frame_size_select(int32_t frame_size, int variable_duration, int32_t Fs);
 int opus_decode_native(OpusDecoder *st, const unsigned char *data, int32_t len, int16_t *pcm, int frame_size,
                        int self_delimited, int32_t *packet_offset);
 
@@ -191,7 +182,6 @@ static inline int align(int i) {
 int opus_packet_parse_impl(const unsigned char *data, int32_t len, int self_delimited, unsigned char *out_toc,
                            const unsigned char *frames[48], int16_t size[48], int *payload_offset,
                            int32_t *packet_offset);
-int pad_frame(unsigned char *data, int32_t len, int32_t new_len);
 int opus_multistream_decode_native(OpusMSDecoder_t *st, const unsigned char *data, int32_t len, void *pcm,
                                    opus_copy_channel_out_func copy_channel_out, int frame_size);
 int opus_multistream_decoder_ctl_va_list(OpusMSDecoder_t *st, int request, va_list ap);
