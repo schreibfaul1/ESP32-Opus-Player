@@ -344,16 +344,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
     }
 
-    if (st->decode_gain) {
-        int32_t gain;
-        gain = celt_exp2(MULT16_16_P15(QCONST16(6.48814081e-4f, 25), st->decode_gain));
-        for (i = 0; i < frame_size * st->channels; i++) {
-            int32_t x;
-            x = MULT16_32_P16(pcm[i], gain);
-            pcm[i] = SATURATE(x, 32767);
-        }
-    }
-
     if (len <= 1)
         st->rangeFinal = 0;
     else
