@@ -198,7 +198,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int celt_to_silk = 0;
     int c;
     int F2_5, F5, F10, F20;
-    const int16_t *window;
 
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
@@ -343,7 +342,6 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
         const CELTMode *celt_mode;
         silk_setRawParams(st->channels, 2, st->DecControl.payloadSize_ms, st->DecControl.internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
-        window = celt_mode->window;
     }
 
     if (st->decode_gain) {
