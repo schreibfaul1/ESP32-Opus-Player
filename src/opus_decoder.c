@@ -201,9 +201,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     int audiosize;
     int mode;
     int bandwidth;
-    int transition = 0;
     int start_band;
-    int redundancy = 0;
     int redundancy_bytes = 0;
     int celt_to_silk = 0;
     int c;
@@ -226,30 +224,22 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data, int32_t
     frame_size = min(frame_size, /* st->Fs */ 48000 / 25 * 3);     /*    Limit frame_size to avoid excessive stack allocations. */
     audiosize = /* st->Fs */ 960;
     mode = st->mode; // MODE_CELT_ONLY or MODE_HYBRID or MODE_SILK_ONLY
+
     bandwidth = st->bandwidth;
 
     ec_dec_init(&dec, (unsigned char *)data, len);
 
-    celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10); /* In fixed-point, we can tell CELT to do the accumulation on top of the SILK PCM buffer. This saves some stack space. */
+
+    /* In fixed-point, we can tell CELT to do the accumulation on top of the
+       SILK PCM buffer. This saves some stack space. */
+
+    celt_accum = (mode != MODE_CELT_ONLY) && (frame_size >= F10);
 
     pcm_transition_silk_size = ALLOC_NONE;
     pcm_transition_celt_size = ALLOC_NONE;
-    if (data != NULL && st->prev_mode > 0 &&
-        ((mode == MODE_CELT_ONLY && st->prev_mode != MODE_CELT_ONLY && !st->prev_redundancy) ||
-         (mode != MODE_CELT_ONLY && st->prev_mode == MODE_CELT_ONLY))) {
-        transition = 1;
-        /* Decide where to allocate the stack memory for pcm_transition */
-        if (mode == MODE_CELT_ONLY)
-            pcm_transition_celt_size = F5 * st->channels;
-        else
-            pcm_transition_silk_size = F5 * st->channels;
-    }
+
     ALLOC(pcm_transition_celt, pcm_transition_celt_size, int16_t);
-    if (transition && mode == MODE_CELT_ONLY) {
-        pcm_transition = pcm_transition_celt;
-log_i("transition");
-        opus_decode_frame(st, NULL, 0, pcm_transition, min(F5, audiosize), 0);
-    }
+
     if (audiosize > frame_size) {
         /*fprintf(stderr, "PCM buffer too small: %d vs %d (mode = %d)\n", audiosize, frame_size, mode);*/
 
@@ -318,41 +308,12 @@ log_i("transition");
     if (!decode_fec && mode != MODE_CELT_ONLY && data != NULL &&
         ec_tell(&dec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * len) {
         /* Check if we have a redundant 0-8 kHz band */
-        if (mode == MODE_HYBRID)
-            redundancy = ec_dec_bit_logp(12);
-        else
-            redundancy = 1;
-        if (redundancy) {
-            celt_to_silk = ec_dec_bit_logp(1);
-            /* redundancy_bytes will be at least two, in the non-hybrid
-               case due to the ec_tell() check above */
-            redundancy_bytes =
-                mode == MODE_HYBRID ? (int32_t)ec_dec_uint(&dec, 256) + 2 : len - ((ec_tell(&dec) + 7) >> 3);
-            len -= redundancy_bytes;
-            /* This is a sanity check. It should never happen for a valid
-               packet, so the exact behaviour is not normative. */
-            if (len * 8 < ec_tell(&dec)) {
-                len = 0;
-                redundancy_bytes = 0;
-                redundancy = 0;
-            }
-            /* Shrink decoder because of raw bits */
-            dec.storage -= redundancy_bytes;
-        }
+        if (mode == MODE_HYBRID) ec_dec_bit_logp(12);
     }
     if (mode != MODE_CELT_ONLY) start_band = 17;
 
-    if (redundancy) {
-        transition = 0;
-        pcm_transition_silk_size = ALLOC_NONE;
-    }
-
     ALLOC(pcm_transition_silk, pcm_transition_silk_size, int16_t);
 
-    if (transition && mode != MODE_CELT_ONLY) {
-        pcm_transition = pcm_transition_silk;
-        opus_decode_frame(st, NULL, 0, pcm_transition, min(F5, audiosize), 0);
-    }
 
     if (bandwidth) {
         int endband = 21;
@@ -380,30 +341,11 @@ log_i("transition");
         celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->stream_channels));
     }
 
-    if (redundancy)
-    {
-        transition = 0;
-   //     pcm_transition_silk_size=ALLOC_NONE;
-    }
     //int pcm_transition_silk[pcm_transition_silk_size];
 
-    if (transition && mode != MODE_CELT_ONLY)
-    {
-        pcm_transition = pcm_transition_silk;
-        opus_decode_frame(st, NULL, 0, pcm_transition, min(F5, audiosize), 0);
-    }
-
-    /* Only allocation memory for redundancy if/when needed */
-    redundant_audio_size = redundancy ? F5 * st->channels : ALLOC_NONE;
+     /* Only allocation memory for redundancy if/when needed */
+    redundant_audio_size = 0 ? F5 * st->channels : ALLOC_NONE;
     ALLOC(redundant_audio, redundant_audio_size, int16_t);
-
-    /* 5 ms redundant frame for CELT->SILK*/
-    if (redundancy && celt_to_silk) {
-        celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST,(0));
-        celt_decode_with_ec(celt_dec, data+len, redundancy_bytes,
-                          redundant_audio, F5, NULL, 0);
-        celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE_REQUEST,(&redundant_rng));
-    }
 
     /* MUST be after PLC */
     celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST,(start_band));
@@ -422,7 +364,7 @@ log_i("transition");
         }
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
-        if (st->prev_mode == MODE_HYBRID && !(redundancy && celt_to_silk && st->prev_redundancy)) {
+        if (st->prev_mode == MODE_HYBRID) {
             celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST, 0);
             celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, celt_accum);
         }
@@ -437,38 +379,6 @@ log_i("transition");
         silk_setRawParams(st->channels, 2, st->DecControl.payloadSize_ms, st->DecControl.internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
         window = celt_mode->window;
-    }
-
-    /* 5 ms redundant frame for SILK->CELT */
-    if (redundancy && !celt_to_silk) {
-        celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
-        celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST, 0);
-
-        celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
-        celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE_REQUEST, &redundant_rng);
-        smooth_fade(pcm + st->channels * (frame_size - F2_5), redundant_audio + st->channels * F2_5,
-                    pcm + st->channels * (frame_size - F2_5), F2_5, st->channels, window, st->Fs);
-    }
-    if (redundancy && celt_to_silk) {
-        for (c = 0; c < st->channels; c++) {
-            for (i = 0; i < F2_5; i++) pcm[st->channels * i + c] = redundant_audio[st->channels * i + c];
-        }
-        smooth_fade(redundant_audio + st->channels * F2_5, pcm + st->channels * F2_5, pcm + st->channels * F2_5, F2_5,
-                    st->channels, window, st->Fs);
-    }
-    if (transition) {
-        if (audiosize >= F5) {
-            for (i = 0; i < st->channels * F2_5; i++) pcm[i] = pcm_transition[i];
-            smooth_fade(pcm_transition + st->channels * F2_5, pcm + st->channels * F2_5, pcm + st->channels * F2_5,
-                        F2_5, st->channels, window, st->Fs);
-        } else {
-            /* Not enough time to do a clean transition, but we do it anyway
-               This will not preserve amplitude perfectly and may introduce
-               a bit of temporal aliasing, but it shouldn't be too bad and
-               that's pretty much the best we can do. In any case, generating this
-               transition it pretty silly in the first place */
-            smooth_fade(pcm_transition, pcm, pcm, F2_5, st->channels, window, st->Fs);
-        }
     }
 
     if (st->decode_gain) {
@@ -487,7 +397,7 @@ log_i("transition");
         st->rangeFinal = dec.rng ^ redundant_rng;
 
     st->prev_mode = mode;
-    st->prev_redundancy = redundancy && !celt_to_silk;
+    st->prev_redundancy = 0 && !celt_to_silk;
 
     if (celt_ret>=0)
     {
