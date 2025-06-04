@@ -48,7 +48,7 @@ typedef struct OpusHead{
   int           mapping_family;
   int           stream_count;
   int           coupled_count;
-  unsigned char mapping[OPUS_CHANNEL_COUNT_MAX];
+  uint8_t       mapping[OPUS_CHANNEL_COUNT_MAX];
 } OpusHead_t;
 
 typedef struct OpusTags{
@@ -138,7 +138,7 @@ typedef struct OggOpusFile{
 #define OP_PIC_FORMAT_PNG     (2)
 #define OP_PIC_FORMAT_GIF     (3)
 
-int opus_head_parse(OpusHead_t *_head, const unsigned char *_data,size_t _len);
+int opus_head_parse(OpusHead_t *_head, uint8_t *_data,size_t _len);
 
 //OggOpusFile_t *op_open_file(const char *_path,int *_error);
 OggOpusFile_t *opus_init_decoder();

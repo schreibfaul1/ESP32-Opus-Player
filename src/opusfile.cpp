@@ -399,7 +399,7 @@ static int op_granpos_cmp(int64_t _gp_a, int64_t _gp_b) {
 //----------------------------------------------------------------------------------------------------------------------
 /*Returns the duration of the packet (in samples at 48 kHz), or a negative
    value on error.*/
-static int op_get_packet_duration(const unsigned char *_data, int _len) {
+static int op_get_packet_duration(uint8_t *_data, int _len) {
     int nframes;
     int frame_size;
     int nsamples;
@@ -1324,7 +1324,7 @@ int op_read_stereo(int16_t *_pcm, int _buf_size) {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-int opus_head_parse(OpusHead_t *_head, const unsigned char *_data, size_t _len) {
+int opus_head_parse(OpusHead_t *_head, uint8_t *_data, size_t _len) {
     OpusHead_t head;
     if(_len < 8) return OP_ENOTFORMAT;
     if(memcmp(_data, "OpusHead", 8) != 0) return OP_ENOTFORMAT;
