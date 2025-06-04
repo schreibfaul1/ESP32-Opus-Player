@@ -190,34 +190,26 @@ if(!inbuf)log_e("Inbuf is null");
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
 
-    int audiosize;
+    uint16_t audiosize = 960;
     uint8_t payloadSize_ms = 0;
-    int mode;
-    int bandwidth;
-    int start_band;
-    int celt_to_silk = 0;
-    int c;
-    int F2_5, F5, F10, F20;
+    uint16_t mode = st->mode; // MODE_CELT_ONLY or MODE_HYBRID or MODE_SILK_ONLY
+    int bandwidth = st->bandwidth;
+    uint8_t start_band;
+    uint16_t internalSampleRate = 0;
+
+    uint16_t F20 = 48000 / 50;  // 960
+    uint16_t F10 = F20 >> 1;    // 480
+    uint16_t F5 = F10 >> 1;     // 240
+    uint16_t F2_5 = F5 >> 1;    // 120
 
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
 
 
 //____________________________________________________________________________________________________________________________--
-    F20 = 48000 / 50;  // F20 = st->Fs / 50
-    F10 = F20 >> 1;
-    F5 = F10 >> 1;
-    F2_5 = F5 >> 1;
 
-    audiosize = /* st->Fs */ 960;
-    mode = st->mode; // MODE_CELT_ONLY or MODE_HYBRID or MODE_SILK_ONLY
-
-    bandwidth = st->bandwidth;
 
     ec_dec_init(&dec, inbuf, packetLen);
-
-
-
 
     /* Don't allocate any memory when in CELT-only mode */
     pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * st->channels : ALLOC_NONE;
@@ -237,20 +229,20 @@ if(!inbuf)log_e("Inbuf is null");
             st->DecControl.nChannelsInternal = st->stream_channels;
             if (mode == MODE_SILK_ONLY) {
                 if (bandwidth == OPUS_BANDWIDTH_NARROWBAND) {
-                    st->DecControl.internalSampleRate = 8000;
+                    internalSampleRate = 8000;
                 } else if (bandwidth == OPUS_BANDWIDTH_MEDIUMBAND) {
-                    st->DecControl.internalSampleRate = 12000;
+                    internalSampleRate = 12000;
                 } else if (bandwidth == OPUS_BANDWIDTH_WIDEBAND) {
-                    st->DecControl.internalSampleRate = 16000;
+                    internalSampleRate = 16000;
                 } else {
-                    st->DecControl.internalSampleRate = 16000;
+                    internalSampleRate = 16000;
                 }
             } else { /* Hybrid mode */
-                st->DecControl.internalSampleRate = 16000;
+                internalSampleRate = 16000;
             }
 
-
         decoded_samples = 0;
+        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
@@ -291,13 +283,13 @@ if(!inbuf)log_e("Inbuf is null");
                 break;
         }
         const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
-        silk_setRawParams(st->channels, 2, payloadSize_ms, st->DecControl.internalSampleRate, 48000);
+        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST,(endband));
-        celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->stream_channels));
+        celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->channels));
     }
 
     /* MUST be after PLC */
-    celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST,(start_band));
+    celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST, start_band);
 
     if (mode != MODE_SILK_ONLY) {
         int celt_frame_size = min(F20, audiosize);
@@ -323,7 +315,7 @@ if(!inbuf)log_e("Inbuf is null");
 
     {
         const CELTMode *celt_mode;
-        silk_setRawParams(st->channels, 2, payloadSize_ms, st->DecControl.internalSampleRate, 48000);
+        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
     }
 

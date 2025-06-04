@@ -15,6 +15,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 #include "silk.h"
 #include <stdint.h>
+#include "Arduino.h"
 
 silk_decoder_state s_channel_state[2];
 silk_decoder       s_decState;
@@ -1706,7 +1707,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     stereo_to_mono = decControl->nChannelsInternal == 1 && psDec->nChannelsInternal == 2 &&
-                     (decControl->internalSampleRate == 1000 * channel_state[0].fs_kHz);
+                     (s_silk_internalSampleRate == 1000 * channel_state[0].fs_kHz);
 
     if (channel_state[0].nFramesDecoded == 0) {
         for (n = 0; n < decControl->nChannelsInternal; n++) {
@@ -1730,7 +1731,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
             } else {
                 return SILK_DEC_INVALID_FRAME_SIZE;
             }
-            fs_kHz_dec = (decControl->internalSampleRate >> 10) + 1;
+            fs_kHz_dec = (s_silk_internalSampleRate >> 10) + 1;
             if (fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16) {
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
