@@ -58,14 +58,24 @@ bool playSample(int16_t sample[2]);
 //---------------------------------------------------------------------------------------------------------------------
 //        I 2 S   S t u f f
 //---------------------------------------------------------------------------------------------------------------------
+
+esp_err_t I2Sstart() {
+    return i2s_channel_enable(m_i2s_tx_handle);
+}
+//---------------------------------------------------------------------------------------------------------------------
+esp_err_t I2Sstop() {
+    return i2s_channel_disable(m_i2s_tx_handle);
+}
+//---------------------------------------------------------------------------------------------------------------------
+
 void setupI2S(){
     m_i2s_num = 0;  // i2s port number
 
     // -------- I2S configuration -------------------------------------------------------------------------------------------
     m_i2s_chan_cfg.id            = (i2s_port_t)m_i2s_num;  // I2S_NUM_AUTO, I2S_NUM_0, I2S_NUM_1
     m_i2s_chan_cfg.role          = I2S_ROLE_MASTER;        // I2S controller master role, bclk and lrc signal will be set to output
-    m_i2s_chan_cfg.dma_desc_num  = 8;                      // number of DMA buffer
-    m_i2s_chan_cfg.dma_frame_num = 1024;                   // I2S frame number in one DMA buffer.
+    m_i2s_chan_cfg.dma_desc_num  = 16;                     // number of DMA buffer
+    m_i2s_chan_cfg.dma_frame_num = 512;                    // I2S frame number in one DMA buffer.
     m_i2s_chan_cfg.auto_clear    = true;                   // i2s will always send zero automatically if no data to send
     i2s_new_channel(&m_i2s_chan_cfg, &m_i2s_tx_handle, NULL);
 
@@ -82,15 +92,9 @@ void setupI2S(){
     m_i2s_std_cfg.clk_cfg.clk_src        = I2S_CLK_SRC_DEFAULT;        // Select PLL_F160M as the default source clock
     m_i2s_std_cfg.clk_cfg.mclk_multiple  = I2S_MCLK_MULTIPLE_128;      // mclk = sample_rate * 256
     i2s_channel_init_std_mode(m_i2s_tx_handle, &m_i2s_std_cfg);
+    I2Sstart();
 }
-//---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstart() {
-    return i2s_channel_enable(m_i2s_tx_handle);
-}
-//---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstop() {
-    return i2s_channel_disable(m_i2s_tx_handle);
-}
+
 //---------------------------------------------------------------------------------------------------------------------
 bool setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t DIN) {
     esp_err_t result = ESP_OK;
