@@ -196,6 +196,7 @@ if(!inbuf)log_e("Inbuf is null");
     int bandwidth = st->bandwidth;
     uint8_t start_band;
     uint16_t internalSampleRate = 0;
+    uint8_t channels = st->stream_channels;
 
     uint16_t F20 = 48000 / 50;  // 960
     uint16_t F10 = F20 >> 1;    // 480
@@ -212,7 +213,7 @@ if(!inbuf)log_e("Inbuf is null");
     ec_dec_init(&dec, inbuf, packetLen);
 
     /* Don't allocate any memory when in CELT-only mode */
-    pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * st->channels : ALLOC_NONE;
+    pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * channels : ALLOC_NONE;
     ALLOC(pcm_silk, pcm_silk_size, int16_t);
 
     /* SILK processing */
@@ -226,7 +227,7 @@ if(!inbuf)log_e("Inbuf is null");
         /* The SILK PLC cannot produce frames of less than 10 ms */
         payloadSize_ms = max(10, 1000 * audiosize / 48000);
 
-            st->DecControl.nChannelsInternal = st->stream_channels;
+            st->DecControl.nChannelsInternal = channels;
             if (mode == MODE_SILK_ONLY) {
                 if (bandwidth == OPUS_BANDWIDTH_NARROWBAND) {
                     internalSampleRate = 8000;
@@ -242,7 +243,7 @@ if(!inbuf)log_e("Inbuf is null");
             }
 
         decoded_samples = 0;
-        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
+        silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
@@ -250,7 +251,7 @@ if(!inbuf)log_e("Inbuf is null");
             if (silk_ret) {
                     return OPUS_INTERNAL_ERROR;
             }
-            pcm_ptr += silk_frame_size * st->channels;
+            pcm_ptr += silk_frame_size * channels;
             decoded_samples += silk_frame_size;
         } while (decoded_samples < audiosize);
     }
@@ -283,9 +284,9 @@ if(!inbuf)log_e("Inbuf is null");
                 break;
         }
         const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
-        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
+        silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST,(endband));
-        celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->channels));
+        celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(channels));
     }
 
     /* MUST be after PLC */
@@ -300,7 +301,7 @@ if(!inbuf)log_e("Inbuf is null");
         celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, &dec, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
-        for (i = 0; i < audiosize * st->channels; i++) outbuf[i] = 0;
+        for (i = 0; i < audiosize * channels; i++) outbuf[i] = 0;
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
@@ -310,12 +311,12 @@ if(!inbuf)log_e("Inbuf is null");
     }
 
     if (mode != MODE_CELT_ONLY) {
-        for (i = 0; i < audiosize * st->channels; i++) outbuf[i] = SAT16(ADD32(outbuf[i], pcm_silk[i]));
+        for (i = 0; i < audiosize * channels; i++) outbuf[i] = SAT16(ADD32(outbuf[i], pcm_silk[i]));
     }
 
     {
         const CELTMode *celt_mode;
-        silk_setRawParams(st->channels, 2, payloadSize_ms, internalSampleRate, 48000);
+        silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
     }
 
