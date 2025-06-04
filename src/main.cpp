@@ -5,8 +5,9 @@
 #include <Arduino.h>
 #include "SD_MMC.h"
 #include "FS.h"
-#include "driver/i2s.h"
+#include <driver/i2s_std.h>
 #include "opusfile.h"
+#include "esp_task_wdt.h"
 
 
 // Digital I/O used
@@ -28,9 +29,11 @@
     #define I2S_LRC       26
 #endif
 
+i2s_chan_handle_t     m_i2s_tx_handle = {};
+i2s_chan_config_t     m_i2s_chan_cfg = {}; // stores I2S channel values
+i2s_std_config_t      m_i2s_std_cfg = {};  // stores I2S driver values
+
 uint8_t             m_i2s_num = I2S_NUM_0;          // I2S_NUM_0 or I2S_NUM_1
-i2s_config_t        m_i2s_config;                   // stores values for I2S driver
-i2s_pin_config_t    m_pin_config;
 uint32_t            m_sampleRate=16000;
 uint8_t             m_bitsPerSample = 16;           // bitsPerSample
 uint8_t             m_vol=64;                       // volume
@@ -56,42 +59,55 @@ bool playSample(int16_t sample[2]);
 //        I 2 S   S t u f f
 //---------------------------------------------------------------------------------------------------------------------
 void setupI2S(){
-    m_i2s_num = I2S_NUM_0; // i2s port number
-    m_i2s_config.mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
-    m_i2s_config.sample_rate          = 16000;
-    m_i2s_config.bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT;
-    m_i2s_config.channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    m_i2s_config.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
-    m_i2s_config.intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1; // high interrupt priority
-    m_i2s_config.dma_buf_count        = 8;      // max buffers
-    m_i2s_config.dma_buf_len          = 1024;   // max value
-    m_i2s_config.tx_desc_auto_clear   = true;   // new in V1.0.1
-    m_i2s_config.fixed_mclk           = I2S_PIN_NO_CHANGE;
-    i2s_driver_install((i2s_port_t)m_i2s_num, &m_i2s_config, 0, NULL);
+    m_i2s_num = 0;  // i2s port number
+
+    // -------- I2S configuration -------------------------------------------------------------------------------------------
+    m_i2s_chan_cfg.id            = (i2s_port_t)m_i2s_num;  // I2S_NUM_AUTO, I2S_NUM_0, I2S_NUM_1
+    m_i2s_chan_cfg.role          = I2S_ROLE_MASTER;        // I2S controller master role, bclk and lrc signal will be set to output
+    m_i2s_chan_cfg.dma_desc_num  = 8;                      // number of DMA buffer
+    m_i2s_chan_cfg.dma_frame_num = 1024;                   // I2S frame number in one DMA buffer.
+    m_i2s_chan_cfg.auto_clear    = true;                   // i2s will always send zero automatically if no data to send
+    i2s_new_channel(&m_i2s_chan_cfg, &m_i2s_tx_handle, NULL);
+
+    m_i2s_std_cfg.slot_cfg                = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO); // Set to enable bit shift in Philips mode
+    m_i2s_std_cfg.gpio_cfg.bclk           = I2S_GPIO_UNUSED;           // BCLK, Assignment in setPinout()
+    m_i2s_std_cfg.gpio_cfg.din            = I2S_GPIO_UNUSED;           // not used
+    m_i2s_std_cfg.gpio_cfg.dout           = I2S_GPIO_UNUSED;           // DOUT, Assignment in setPinout()
+    m_i2s_std_cfg.gpio_cfg.mclk           = I2S_GPIO_UNUSED;           // MCLK, Assignment in setPinout()
+    m_i2s_std_cfg.gpio_cfg.ws             = I2S_GPIO_UNUSED;           // LRC,  Assignment in setPinout()
+    m_i2s_std_cfg.gpio_cfg.invert_flags.mclk_inv = false;
+    m_i2s_std_cfg.gpio_cfg.invert_flags.bclk_inv = false;
+    m_i2s_std_cfg.gpio_cfg.invert_flags.ws_inv   = false;
+    m_i2s_std_cfg.clk_cfg.sample_rate_hz = 48000;
+    m_i2s_std_cfg.clk_cfg.clk_src        = I2S_CLK_SRC_DEFAULT;        // Select PLL_F160M as the default source clock
+    m_i2s_std_cfg.clk_cfg.mclk_multiple  = I2S_MCLK_MULTIPLE_128;      // mclk = sample_rate * 256
+    i2s_channel_init_std_mode(m_i2s_tx_handle, &m_i2s_std_cfg);
 }
 //---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstart(uint8_t i2s_num) {
-    // It is not necessary to call this function after i2s_driver_install() (it is started automatically),
-    // however it is necessary to call it after i2s_stop()
-    return i2s_start((i2s_port_t) i2s_num);
+esp_err_t I2Sstart() {
+    return i2s_channel_enable(m_i2s_tx_handle);
 }
 //---------------------------------------------------------------------------------------------------------------------
-esp_err_t I2Sstop(uint8_t i2s_num) {
-    return i2s_stop((i2s_port_t) i2s_num);
+esp_err_t I2Sstop() {
+    return i2s_channel_disable(m_i2s_tx_handle);
 }
 //---------------------------------------------------------------------------------------------------------------------
 bool setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t DIN) {
-
-    m_pin_config.bck_io_num   = BCLK;
-    m_pin_config.ws_io_num    = LRC; //  wclk
-    m_pin_config.data_out_num = DOUT;
-    m_pin_config.data_in_num  = DIN;
-    const esp_err_t result = i2s_set_pin((i2s_port_t) m_i2s_num, &m_pin_config);
+    esp_err_t result = ESP_OK;
+    i2s_std_gpio_config_t gpio_cfg = {};
+    gpio_cfg.bclk = (gpio_num_t)BCLK;
+    gpio_cfg.din = (gpio_num_t)I2S_GPIO_UNUSED;
+    gpio_cfg.dout = (gpio_num_t)DOUT;
+    // gpio_cfg.mclk = (gpio_num_t)MCLK;
+    gpio_cfg.ws = (gpio_num_t)LRC;
+    I2Sstop();
+    result = i2s_channel_reconfig_std_gpio(m_i2s_tx_handle, &gpio_cfg);
+    I2Sstart();
     return (result == ESP_OK);
 }
 //---------------------------------------------------------------------------------------------------------------------
 bool setSampleRate(uint32_t sampRate) {
-    i2s_set_sample_rates((i2s_port_t)m_i2s_num, sampRate);
+    m_i2s_std_cfg.clk_cfg.sample_rate_hz = sampRate;
     m_sampleRate = sampRate;
     return true;
 }
@@ -224,7 +240,9 @@ bool playSample(int16_t sample[2]) {
 
     uint32_t s32 = Gain(sample); // vosample2lume;
 
-    esp_err_t err = i2s_write((i2s_port_t) m_i2s_num, (const char*) &s32, sizeof(uint32_t), &m_i2s_bytesWritten, 1000);
+    //esp_err_t err = i2s_write((i2s_port_t) m_i2s_num, (const char*) &s32, sizeof(uint32_t), &m_i2s_bytesWritten, 1000);
+    esp_err_t err = i2s_channel_write(m_i2s_tx_handle,  (const char*) &s32, sizeof(uint32_t), &m_i2s_bytesWritten, 1000);
+
     if(err != ESP_OK) {
         log_e("ESP32 Errorcode %i", err);
         return false;
@@ -265,7 +283,7 @@ void setup() {
     setBitsPerSample(16);
     setChannels(2);
     setSampleRate(48000);
-    I2Sstart(m_i2s_num);
+    I2Sstart();
     Serial.begin(115200);
     delay(1000);
     pinMode(SD_MMC_D0, INPUT_PULLUP);
@@ -297,6 +315,6 @@ void setup() {
 }
 
 void loop() {
-    ;
+    vTaskDelay(1);
 }
 //---------------------------------------------------------------------------------------------------------------------

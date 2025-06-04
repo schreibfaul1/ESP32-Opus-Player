@@ -1,0 +1,912 @@
+[0;31mE (12909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (12909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (12909) task_wdt: Tasks currently running:[0m
+[0;31mE (12909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (12909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (12909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (17909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (17909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (17909) task_wdt: Tasks currently running:[0m
+[0;31mE (17909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (17909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (17909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (22909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (22909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (22909) task_wdt: Tasks currently running:[0m
+[0;31mE (22909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (22909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (22909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC061:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC061 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:86
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (27909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (27909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (27909) task_wdt: Tasks currently running:[0m
+[0;31mE (27909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (27909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (27909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC061:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC061 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:86
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (32909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (32909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (32909) task_wdt: Tasks currently running:[0m
+[0;31mE (32909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (32909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (32909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC061:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC061 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:86
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (37909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (37909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (37909) task_wdt: Tasks currently running:[0m
+[0;31mE (37909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (37909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (37909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC064:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC064 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:90
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (42909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (42909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (42909) task_wdt: Tasks currently running:[0m
+[0;31mE (42909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (42909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (42909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (47909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (47909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (47909) task_wdt: Tasks currently running:[0m
+[0;31mE (47909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (47909) task_wdt: CPU 1: OPUS[0m
+[0;31mE (47909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (52909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (52909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (52909) task_wdt: Tasks currently running:[0m
+[0;31mE (52909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (52909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (52909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E9:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E9 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:72
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (57909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (57909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (57909) task_wdt: Tasks currently running:[0m
+[0;31mE (57909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (57909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (57909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6DE:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6DE in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:64
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (62909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (62909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (62909) task_wdt: Tasks currently running:[0m
+[0;31mE (62909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (62909) task_wdt: CPU 1: OPUS[0m
+[0;31mE (62909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC061:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC061 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:86
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (67909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (67909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (67909) task_wdt: Tasks currently running:[0m
+[0;31mE (67909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (67909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (67909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EF:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EF in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:75
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (72909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (72909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (72909) task_wdt: Tasks currently running:[0m
+[0;31mE (72909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (72909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (72909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6DE:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6DE in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:64
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (77909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (77909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (77909) task_wdt: Tasks currently running:[0m
+[0;31mE (77909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (77909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (77909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E9:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E9 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:72
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (82909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (82909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (82909) task_wdt: Tasks currently running:[0m
+[0;31mE (82909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (82909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (82909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC064:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC064 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:90
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (87909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (87909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (87909) task_wdt: Tasks currently running:[0m
+[0;31mE (87909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (87909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (87909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (92909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (92909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (92909) task_wdt: Tasks currently running:[0m
+[0;31mE (92909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (92909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (92909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC064:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC064 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:90
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (97909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (97909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (97909) task_wdt: Tasks currently running:[0m
+[0;31mE (97909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (97909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (97909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EF:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EF in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:75
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (102909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (102909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (102909) task_wdt: Tasks currently running:[0m
+[0;31mE (102909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (102909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (102909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (107909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (107909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (107909) task_wdt: Tasks currently running:[0m
+[0;31mE (107909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (107909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (107909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (112909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (112909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (112909) task_wdt: Tasks currently running:[0m
+[0;31mE (112909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (112909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (112909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (117909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (117909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (117909) task_wdt: Tasks currently running:[0m
+[0;31mE (117909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (117909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (117909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (122909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (122909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (122909) task_wdt: Tasks currently running:[0m
+[0;31mE (122909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (122909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (122909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (127909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (127909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (127909) task_wdt: Tasks currently running:[0m
+[0;31mE (127909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (127909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (127909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (132909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (132909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (132909) task_wdt: Tasks currently running:[0m
+[0;31mE (132909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (132909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (132909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (137909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (137909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (137909) task_wdt: Tasks currently running:[0m
+[0;31mE (137909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (137909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (137909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (142909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (142909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (142909) task_wdt: Tasks currently running:[0m
+[0;31mE (142909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (142909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (142909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (147909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (147909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (147909) task_wdt: Tasks currently running:[0m
+[0;31mE (147909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (147909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (147909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (152909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (152909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (152909) task_wdt: Tasks currently running:[0m
+[0;31mE (152909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (152909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (152909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (157909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (157909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (157909) task_wdt: Tasks currently running:[0m
+[0;31mE (157909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (157909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (157909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC031:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC031 in HardwareSerial::write(unsigned char const*, unsigned int) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:568
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (162909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (162909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (162909) task_wdt: Tasks currently running:[0m
+[0;31mE (162909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (162909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (162909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (167909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (167909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (167909) task_wdt: Tasks currently running:[0m
+[0;31mE (167909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (167909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (167909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (172909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (172909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (172909) task_wdt: Tasks currently running:[0m
+[0;31mE (172909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (172909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (172909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (177909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (177909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (177909) task_wdt: Tasks currently running:[0m
+[0;31mE (177909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (177909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (177909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (182909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (182909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (182909) task_wdt: Tasks currently running:[0m
+[0;31mE (182909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (182909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (182909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (187909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (187909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (187909) task_wdt: Tasks currently running:[0m
+[0;31mE (187909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (187909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (187909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E9:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E9 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:72
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (192909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (192909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (192909) task_wdt: Tasks currently running:[0m
+[0;31mE (192909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (192909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (192909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (197909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (197909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (197909) task_wdt: Tasks currently running:[0m
+[0;31mE (197909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (197909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (197909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E4:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E4 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:71
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (202909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (202909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (202909) task_wdt: Tasks currently running:[0m
+[0;31mE (202909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (202909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (202909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (207909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (207909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (207909) task_wdt: Tasks currently running:[0m
+[0;31mE (207909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (207909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (207909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (212909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (212909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (212909) task_wdt: Tasks currently running:[0m
+[0;31mE (212909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (212909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (212909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC031:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC031 in HardwareSerial::write(unsigned char const*, unsigned int) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:568
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (217909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (217909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (217909) task_wdt: Tasks currently running:[0m
+[0;31mE (217909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (217909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (217909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (222909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (222909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (222909) task_wdt: Tasks currently running:[0m
+[0;31mE (222909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (222909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (222909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (227909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (227909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (227909) task_wdt: Tasks currently running:[0m
+[0;31mE (227909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (227909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (227909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC037:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC037 in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:81
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (232909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (232909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (232909) task_wdt: Tasks currently running:[0m
+[0;31mE (232909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (232909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (232909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (237909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (237909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (237909) task_wdt: Tasks currently running:[0m
+[0;31mE (237909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (237909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (237909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC031:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC031 in HardwareSerial::write(unsigned char const*, unsigned int) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:568
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (242909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (242909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (242909) task_wdt: Tasks currently running:[0m
+[0;31mE (242909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (242909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (242909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (247909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (247909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (247909) task_wdt: Tasks currently running:[0m
+[0;31mE (247909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (247909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (247909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E1:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E1 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:71
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (252909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (252909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (252909) task_wdt: Tasks currently running:[0m
+[0;31mE (252909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (252909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (252909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04A:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04A in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:82
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (257909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (257909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (257909) task_wdt: Tasks currently running:[0m
+[0;31mE (257909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (257909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (257909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6E4:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6E4 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:71
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (262909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (262909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (262909) task_wdt: Tasks currently running:[0m
+[0;31mE (262909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (262909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (262909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC04D:0x3FFC4E10 0x400EC6F5:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC04D in serialEventRun() at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp:85
+  #5  0x400EC6F5 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:76
+  #6  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+[0;31mE (267909) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:[0m
+[0;31mE (267909) task_wdt:  - IDLE1 (CPU 1)[0m
+[0;31mE (267909) task_wdt: Tasks currently running:[0m
+[0;31mE (267909) task_wdt: CPU 0: IDLE0[0m
+[0;31mE (267909) task_wdt: CPU 1: loopTask[0m
+[0;31mE (267909) task_wdt: Print CPU 1 backtrace[0m
+
+
+Backtrace: 0x4008406A:0x3FFB1940 0x400870AD:0x3FFB1960 0x400EC6EC:0x3FFC4E30 0x4008D3F1:0x3FFC4E50
+  #0  0x4008406A in esp_crosscore_isr at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/crosscore_int.c:73
+  #1  0x3FFB1940 in _xt_exception_table at ??:?
+  #2  0x400870AD in _xt_lowint1 at /home/wolle/.platformio/packages/framework-espidf/components/xtensa/xtensa_vectors.S:1240
+  #3  0x3FFB1960 in _xt_exception_table at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:67
+  #4  0x400EC6EC in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:74
+  #5  0x4008D3F1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
