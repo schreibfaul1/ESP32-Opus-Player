@@ -1711,20 +1711,20 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (channel_state[0].nFramesDecoded == 0) {
         for (n = 0; n < decControl->nChannelsInternal; n++) {
             int32_t fs_kHz_dec;
-            if (decControl->payloadSize_ms == 0) {
+            if (s_payloadSize_ms == 0) {
                 /* Assuming packet loss, use 10 ms */
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 2;
-            } else if (decControl->payloadSize_ms == 10) {
+            } else if (s_payloadSize_ms == 10) {
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 2;
-            } else if (decControl->payloadSize_ms == 20) {
+            } else if (s_payloadSize_ms == 20) {
                 channel_state[n].nFramesPerPacket = 1;
                 channel_state[n].nb_subfr = 4;
-            } else if (decControl->payloadSize_ms == 40) {
+            } else if (s_payloadSize_ms == 40) {
                 channel_state[n].nFramesPerPacket = 2;
                 channel_state[n].nb_subfr = 4;
-            } else if (decControl->payloadSize_ms == 60) {
+            } else if (s_payloadSize_ms== 60) {
                 channel_state[n].nFramesPerPacket = 3;
                 channel_state[n].nb_subfr = 4;
             } else {

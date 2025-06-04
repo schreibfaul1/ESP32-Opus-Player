@@ -181,7 +181,7 @@ static int opus_packet_get_mode(uint8_t *data) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen, int16_t *outbuf, int16_t samplesPerFrame) {
-
+if(!inbuf)log_e("Inbuf is null");
     void *silk_dec;
     CELTDecoder *celt_dec;
     int i, silk_ret = 0, celt_ret = 0;
@@ -191,6 +191,7 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
     VARDECL(int16_t, pcm_silk);
 
     int audiosize;
+    uint8_t payloadSize_ms = 0;
     int mode;
     int bandwidth;
     int start_band;
@@ -213,7 +214,7 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
 
     bandwidth = st->bandwidth;
 
-    ec_dec_init(&dec, (unsigned char *)inbuf, packetLen);
+    ec_dec_init(&dec, inbuf, packetLen);
 
 
 
@@ -231,9 +232,8 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
         if (st->prev_mode == MODE_CELT_ONLY) silk_InitDecoder(silk_dec);
 
         /* The SILK PLC cannot produce frames of less than 10 ms */
-        st->DecControl.payloadSize_ms = max(10, 1000 * audiosize / st->Fs);
+        payloadSize_ms = max(10, 1000 * audiosize / 48000);
 
-        if (inbuf != NULL) {
             st->DecControl.nChannelsInternal = st->stream_channels;
             if (mode == MODE_SILK_ONLY) {
                 if (bandwidth == OPUS_BANDWIDTH_NARROWBAND) {
@@ -245,26 +245,18 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
                 } else {
                     st->DecControl.internalSampleRate = 16000;
                 }
-            } else {
-                /* Hybrid mode */
+            } else { /* Hybrid mode */
                 st->DecControl.internalSampleRate = 16000;
             }
-        }
 
-        lost_flag = inbuf == NULL ? 1 : 2 * 0;
+
         decoded_samples = 0;
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, &st->DecControl, lost_flag, first_frame, pcm_ptr, &silk_frame_size);
+            silk_ret = silk_Decode(silk_dec, &st->DecControl, 0, first_frame, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
-                if (lost_flag) {
-                    /* PLC failure should not be fatal */
-                    silk_frame_size = audiosize;
-                    for (i = 0; i < audiosize * st->channels; i++) pcm_ptr[i] = 0;
-                } else {
                     return OPUS_INTERNAL_ERROR;
-                }
             }
             pcm_ptr += silk_frame_size * st->channels;
             decoded_samples += silk_frame_size;
@@ -272,8 +264,7 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
     }
 
     start_band = 0;
-    if (mode != MODE_CELT_ONLY && inbuf != NULL &&
-        ec_tell(&dec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
+    if (mode != MODE_CELT_ONLY && ec_tell(&dec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID) ec_dec_bit_logp(12);
     }
@@ -300,7 +291,7 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
                 break;
         }
         const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
-        silk_setRawParams(st->channels, 2, st->DecControl.payloadSize_ms, st->DecControl.internalSampleRate, 48000);
+        silk_setRawParams(st->channels, 2, payloadSize_ms, st->DecControl.internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST,(endband));
         celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(st->stream_channels));
     }
@@ -332,14 +323,14 @@ static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen,
 
     {
         const CELTMode *celt_mode;
-        silk_setRawParams(st->channels, 2, st->DecControl.payloadSize_ms, st->DecControl.internalSampleRate, 48000);
+        silk_setRawParams(st->channels, 2, payloadSize_ms, st->DecControl.internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
     }
 
-    if (packetLen <= 1)
-        st->rangeFinal = 0;
-    else
-        st->rangeFinal = dec.rng;
+    // if (packetLen <= 1)
+    //     st->rangeFinal = 0;
+    // else
+    //     st->rangeFinal = dec.rng;
 
     st->prev_mode = mode;
 
