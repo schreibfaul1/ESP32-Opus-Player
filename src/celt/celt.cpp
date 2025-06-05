@@ -3720,9 +3720,9 @@ void _celt_lpc(int16_t *_lpc,     /* out: [0...p-1] LPC coefficients      */
 
 void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord, int arch) {
     int i, j;
-    VARDECL(int16_t, rnum);
     assert(x != y);
-    ALLOC(rnum, ord, int16_t);
+
+    int16_t *rnum = (int16_t *)celt_malloc(ord, sizeof(int16_t));
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
     for (i = 0; i < N - 3; i += 4) {
         int32_t sum[4];
@@ -3741,17 +3741,17 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int N, int ord
         for (j = 0; j < ord; j++) sum = MAC16_16(sum, rnum[j], x[i + j - ord]);
         y[i] = ROUND16(sum, 12);
     }
+    celt_free(rnum);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord, int16_t *mem, int arch) {
     int i, j;
-    VARDECL(int16_t, rden);
-    VARDECL(int16_t, y);
-
     assert((ord & 3) == 0);
-    ALLOC(rden, ord, int16_t);
-    ALLOC(y, N + ord, int16_t);
+
+    int16_t *rden = (int16_t *)celt_malloc(ord, sizeof(int16_t));
+    int16_t *y = (int16_t *)celt_malloc(N + ord, sizeof(int16_t));
+
     for (i = 0; i < ord; i++) rden[i] = den[ord - i - 1];
     for (i = 0; i < ord; i++) y[i] = -mem[ord - i - 1];
     for (; i < N + ord; i++) y[i] = 0;
@@ -3788,6 +3788,8 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int N, int ord
         _y[i] = sum;
     }
     for (i = 0; i < ord; i++) mem[i] = _y[N - i - 1];
+    celt_free(rden);
+    celt_free(y);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3799,9 +3801,8 @@ int _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
     int fastN = n - lag;
     int shift;
     const int16_t *xptr;
-    VARDECL(int16_t, xx);
-     ALLOC(xx, n, int16_t);
-    assert(n > 0);
+    int16_t *xx = (int16_t *)celt_malloc(n, sizeof(int16_t));
+     assert(n > 0);
     assert(overlap >= 0);
     if (overlap == 0) {
         xptr = x;
@@ -3848,7 +3849,7 @@ int _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
         for (i = 0; i <= lag; i++) ac[i] = SHR32(ac[i], shift2);
         shift += shift2;
     }
-
+    celt_free(xx);
     return shift;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4819,8 +4820,6 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
                         const int16_t *window, int overlap, int shift, int stride, int arch) {
     int i;
     int N, N2, N4;
-    VARDECL(int32_t, f);
-    VARDECL(kiss_fft_cpx, f2);
     const kiss_fft_state *st = l->kfft[shift];
     const int16_t *trig;
     int16_t scale;
@@ -4839,8 +4838,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     N2 = N >> 1;
     N4 = N >> 2;
 
-    ALLOC(f, N2, int32_t);
-    ALLOC(f2, N4, kiss_fft_cpx);
+    int32_t *f = (int32_t *)celt_malloc(N2, sizeof(int32_t));
+    kiss_fft_cpx *f2 = (kiss_fft_cpx *)celt_malloc(N4, sizeof(kiss_fft_cpx));
 
     /* Consider the input to be composed of four blocks: [a, b, c, d] */
     /* Window, shuffle, fold */
@@ -4923,6 +4922,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
             yp2 -= 2 * stride;
         }
     }
+    celt_free(f);
+    celt_free(f2);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
