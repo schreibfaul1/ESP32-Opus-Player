@@ -3268,15 +3268,6 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     int32_t bits;
     ec_dec _dec;
 
-    VARDECL(int16_t, X);
-
-    VARDECL(int, fine_quant);
-    VARDECL(int, pulses);
-    VARDECL(int, cap);
-    VARDECL(int, offsets);
-    VARDECL(int, fine_priority);
-    VARDECL(int, tf_res);
-    VARDECL(unsigned char, collapse_masks);
     int32_t *decode_mem[2];
     int32_t *out_syn[2];
     int16_t *lpc;
@@ -3421,7 +3412,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     unquant_coarse_energy(mode, start, end, oldBandE,
                           intra_ener, dec, C, LM);
 
-    ALLOC(tf_res, nbEBands, int);
+    int *tf_res = (int *)celt_malloc(nbEBands, sizeof(int));
     tf_decode(start, end, isTransient, tf_res, LM, dec);
 
     tell = ec_tell(dec);
@@ -3429,11 +3420,11 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     if (tell + 4 <= total_bits)
         spread_decision = ec_dec_icdf(spread_icdf, 5);
 
-    ALLOC(cap, nbEBands, int);
+    int *cap = (int *)celt_malloc(nbEBands, sizeof(int));
 
     init_caps(mode, cap, LM, C);
 
-    ALLOC(offsets, nbEBands, int);
+    int *offsets = (int *)celt_malloc(nbEBands, sizeof(int));
 
     dynalloc_logp = 6;
     total_bits <<= BITRES;
@@ -3465,15 +3456,16 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
             dynalloc_logp = max(2, dynalloc_logp - 1);
     }
 
-    ALLOC(fine_quant, nbEBands, int);
+    int *fine_quant = (int *)celt_malloc(nbEBands, sizeof(int));
+
     alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
     bits = (((int32_t)len * 8) << BITRES) - ec_tell_frac(dec) - 1;
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
     bits -= anti_collapse_rsv;
 
-    ALLOC(pulses, nbEBands, int);
-    ALLOC(fine_priority, nbEBands, int);
+    int *pulses = (int *)celt_malloc(nbEBands, sizeof(int));
+    int *fine_priority = (int *)celt_malloc(nbEBands, sizeof(int));
 
     codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
                                         alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
@@ -3487,9 +3479,9 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
     } while (++c < CC);
 
     /* Decode fixed codebook */
-    ALLOC(collapse_masks, C * nbEBands, unsigned char);
+    unsigned char *collapse_masks = (unsigned char *)celt_malloc(C * nbEBands, sizeof(unsigned char));
 
-    ALLOC(X, C * N, int16_t); /**< Interleaved normalised MDCTs */
+    int16_t *X = (int16_t *) celt_malloc(C * N, sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
     quant_all_bands(0, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
                     NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
@@ -3579,6 +3571,15 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
 
     deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
     st->loss_count = 0;
+
+    celt_free(tf_res);
+    celt_free(cap);
+    celt_free(offsets);
+    celt_free(fine_quant);
+    celt_free(pulses);
+    celt_free(fine_priority);
+    celt_free(collapse_masks);
+    celt_free(X);
 
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;

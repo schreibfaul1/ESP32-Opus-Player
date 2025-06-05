@@ -34,6 +34,7 @@
 
 #pragma once
 
+#include "Arduino.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>
@@ -654,6 +655,21 @@ static inline int pulses2bits(const CELTMode *m, int band, int LM, int pulses){
    LM++;
    cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
    return pulses == 0 ? 0 : cache[pulses]+1;
+}
+
+static inline  void* celt_malloc(size_t count, size_t size) {
+    void *ptr = ps_malloc(count * size);
+    if (ptr == NULL) {
+        log_e("Memory allocation failed %i bytes\n", (int)(count * size));
+    }
+    return ptr;
+}
+
+static inline void celt_free(void *ptr) {
+    if (ptr != NULL) {
+        free(ptr);
+        ptr = NULL;
+    }
 }
 
 static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
