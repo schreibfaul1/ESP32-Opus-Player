@@ -1160,7 +1160,20 @@ static inline void combine_pulses(int32_t *out,      /* O    combined pulses vec
     }
 }
 
+static inline  void* silk_malloc(size_t count, size_t size) {
+    void *ptr = ps_malloc(count * size);
+    if (ptr == NULL) {
+        log_e("Memory allocation failed %i bytes\n", (int)(count * size));
+    }
+    return ptr;
+}
 
+static inline void silk_free(void *ptr) {
+    if (ptr != NULL) {
+        free(ptr);
+        ptr = NULL;
+    }
+}
 
 
 

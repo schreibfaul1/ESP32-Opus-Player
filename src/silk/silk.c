@@ -1561,9 +1561,7 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
     }
     /* Add CNG when packet is lost or during DTX */
     if(psDec->lossCnt) {
-        int32_t CNG_sig_Q14[length + MAX_LPC_ORDER];
-        //VARDECL(int32_t, CNG_sig_Q14);
-        //ALLOC(CNG_sig_Q14, length + MAX_LPC_ORDER, int32_t);
+        int32_t *CNG_sig_Q14 = (int32_t *)silk_malloc(length + MAX_LPC_ORDER, sizeof(int32_t));
 
         /* Generate CNG excitation */
         gain_Q16 = silk_SMULWW(psDec->sPLC.randScale_Q14, psDec->sPLC.prevGain_Q16[1]);
@@ -1616,6 +1614,7 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
             frame[i] = (int16_t)silk_ADD_SAT16(frame[i], silk_SAT16(silk_RSHIFT_ROUND(silk_SMULWW(CNG_sig_Q14[MAX_LPC_ORDER + i], gain_Q10), 8)));
         }
         memcpy(psCNG->CNG_synth_state, &CNG_sig_Q14[length], MAX_LPC_ORDER * sizeof(int32_t));
+        silk_free(CNG_sig_Q14);
     }
     else { memset(psCNG->CNG_synth_state, 0, psDec->LPC_order * sizeof(int32_t)); }
 }
@@ -1843,9 +1842,10 @@ int32_t silk_Decode(                                   /* O    Returns error cod
        usage. We need to use a < and not a <= because of the two extra samples. */
     delay_stack_alloc = decControl->internalSampleRate * decControl->nChannelsInternal <
                         decControl->API_sampleRate * decControl->nChannelsAPI;
-    ALLOC(samplesOut1_tmp_storage1,
-          delay_stack_alloc ? ALLOC_NONE : decControl->nChannelsInternal * (channel_state[0].frame_length + 2),
-          int16_t);
+
+    size_t samplesOut1_tmp_storage1_len = delay_stack_alloc ? ALLOC_NONE : decControl->nChannelsInternal * (channel_state[0].frame_length + 2);
+    int16_t *samplesOut1_tmp_storage1 = (int16_t *) silk_malloc(samplesOut1_tmp_storage1_len, sizeof(int16_t));
+
     if (delay_stack_alloc) {
         samplesOut1_tmp[0] = samplesOut;
         samplesOut1_tmp[1] = samplesOut + channel_state[0].frame_length + 2;
@@ -1966,6 +1966,8 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     } else {
         psDec->prev_decode_only_middle = decode_only_middle;
     }
+
+    silk_free(samplesOut1_tmp_storage1);
 
     return ret;
 }
