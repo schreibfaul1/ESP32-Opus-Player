@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #pragma once
-
+#include "Arduino.h"
 #include <stdint.h>
 
 #include "../celt/celt.h"
