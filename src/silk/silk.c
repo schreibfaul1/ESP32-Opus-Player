@@ -494,8 +494,8 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
     int32_t  xlo, xhi, xmid;
     int32_t  ylo, yhi, ymid, thr;
     int32_t  nom, den;
-    int32_t  P[SILK_MAX_ORDER_LPC / 2 + 1];
-    int32_t  Q[SILK_MAX_ORDER_LPC / 2 + 1];
+    int32_t  *P = silk_malloc(SILK_MAX_ORDER_LPC / 2 + 1, sizeof(int32_t));
+    int32_t  *Q = silk_malloc(SILK_MAX_ORDER_LPC / 2 + 1, sizeof(int32_t));
     int32_t* PQ[2];
     int32_t* p;
 
@@ -596,6 +596,8 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
                     /* Set NLSFs to white spectrum and exit */
                     NLSF[0] = (int16_t)silk_DIV32_16(1 << 15, d + 1);
                     for(k = 1; k < d; k++) { NLSF[k] = (int16_t)(NLSF[k - 1] + NLSF[0]); }
+                    silk_free(P);
+                    silk_free(Q);
                     return;
                 }
 
@@ -618,6 +620,8 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
             }
         }
     }
+    silk_free(P);
+    silk_free(Q);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Split signal into two decimated bands using first-order allpass filters */
@@ -1085,7 +1089,8 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
                         const int32_t frame_length     /* I    Frame length                                */
 ) {
     int32_t i, j, k, iter, abs_q, nLS, RateLevelIndex;
-    int32_t sum_pulses[MAX_NB_SHELL_BLOCKS], nLshifts[MAX_NB_SHELL_BLOCKS];
+    int32_t *sum_pulses = (int32_t *)silk_malloc(MAX_NB_SHELL_BLOCKS, sizeof(int32_t));
+    int32_t *nLshifts   = (int32_t *)silk_malloc(MAX_NB_SHELL_BLOCKS, sizeof(int32_t));
     int16_t *pulses_ptr;
     const uint8_t *cdf_ptr;
 
@@ -1155,6 +1160,9 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
     /* Decode and add signs to pulse signal */
     /****************************************/
     silk_decode_signs(pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+
+    silk_free(sum_pulses);
+    silk_free(nLshifts);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Set decoder sampling rate (Decoder state pointer , Sampling frequency (kHz) , API Sampling frequency (Hz))*/
@@ -2009,15 +2017,13 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
     int16_t *A_Q12, *B_Q14, *pxq, A_Q12_tmp[MAX_LPC_ORDER];
     int32_t  LTP_pred_Q13, LPC_pred_Q10, Gain_Q10, inv_gain_Q31, gain_adj_Q16, rand_seed, offset_Q10;
     int32_t *pred_lag_ptr, *pexc_Q14, *pres_Q14;
-    VARDECL(int32_t, res_Q14);
-    VARDECL(int32_t, sLPC_Q14);
 
     assert(psDec->prev_gain_Q16 != 0);
 
-    int16_t sLTP[psDec->ltp_mem_length];
-    int32_t sLTP_Q15[psDec->ltp_mem_length + psDec->frame_length];
-    int32_t res_Q14[psDec->subfr_length];
-    int32_t sLPC_Q14[psDec->subfr_length + MAX_LPC_ORDER];
+    int16_t *sLTP     = (int16_t *)silk_malloc(psDec->ltp_mem_length, sizeof(int16_t));
+    int32_t *sLTP_Q15 = (int32_t *)silk_malloc(psDec->ltp_mem_length + psDec->frame_length, sizeof(int32_t));
+    int32_t *res_Q14  = (int32_t *)silk_malloc(psDec->subfr_length, sizeof(int32_t));
+    int32_t *sLPC_Q14 = (int32_t *)silk_malloc(psDec->subfr_length + MAX_LPC_ORDER, sizeof(int32_t));
 
     offset_Q10 = silk_Quantization_Offsets_Q10[psDec->indices.signalType >> 1][psDec->indices.quantOffsetType];
 
@@ -2171,6 +2177,12 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 
     /* Save LPC state */
     memcpy(psDec->sLPC_Q14_buf, sLPC_Q14, MAX_LPC_ORDER * sizeof(int32_t));
+
+    silk_free(sLTP);
+    silk_free(sLTP_Q15);
+    silk_free(res_Q14);
+    silk_free(sLPC_Q14);
+
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
