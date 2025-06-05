@@ -5315,7 +5315,6 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
     int32_t best_xy, best_yy;
     int offset;
     int minperiod0;
-    VARDECL(int32_t, yy_lookup);
 
     minperiod0 = minperiod;
     maxperiod /= 2;
@@ -5327,7 +5326,8 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
     if (*T0_ >= maxperiod) *T0_ = maxperiod - 1;
 
     T = T0 = *T0_;
-    ALLOC(yy_lookup, maxperiod + 1, int32_t);
+    int32_t *yy_lookup = (int32_t *)celt_malloc(maxperiod + 1, sizeof(int32_t));
+
     dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
     yy_lookup[0] = xx;
     yy = xx;
@@ -5398,6 +5398,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
 
     if (*T0_ < minperiod0) *T0_ = minperiod0;
 
+    celt_free(yy_lookup);
     return pg;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5667,10 +5668,6 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
     int skip_rsv;
     int intensity_rsv;
     int dual_stereo_rsv;
-    VARDECL(int, bits1);
-    VARDECL(int, bits2);
-    VARDECL(int, thresh);
-    VARDECL(int, trim_offset);
 
     total = max(total, 0);
     len = m->nbEBands;
@@ -5690,10 +5687,10 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
             total -= dual_stereo_rsv;
         }
     }
-    ALLOC(bits1, len, int);
-    ALLOC(bits2, len, int);
-    ALLOC(thresh, len, int);
-    ALLOC(trim_offset, len, int);
+    int *bits1 = (int *) celt_malloc(len, sizeof(int));
+    int *bits2 = (int *) celt_malloc(len, sizeof(int));
+    int *thresh = (int *) celt_malloc(len, sizeof(int));
+    int *trim_offset = (int *) celt_malloc(len, sizeof(int));
 
     for (j = start; j < end; j++) {
         /* Below this threshold, we're sure not to allocate any PVQ bits */
@@ -5751,6 +5748,10 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
                                     intensity, intensity_rsv, dual_stereo, dual_stereo_rsv, pulses, ebits,
                                     fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 
+    celt_free(trim_offset);
+    celt_free(thresh);
+    celt_free(bits2);
+    celt_free(bits1);
     return codedBands;
 }
 //----------------------------------------------------------------------------------------------------------------------
