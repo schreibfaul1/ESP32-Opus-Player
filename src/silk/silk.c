@@ -3168,10 +3168,8 @@ void silk_PLC_update(silk_decoder_state*   psDec,    /* I/O Decoder state       
 
 void silk_PLC_energy(int32_t* energy1, int32_t* shift1, int32_t* energy2, int32_t* shift2, const int32_t* exc_Q14, const int32_t* prevGain_Q10, int subfr_length, int nb_subfr) {
     int i, k;
-    VARDECL(int16_t, exc_buf);
     int16_t* exc_buf_ptr;
-
-    ALLOC(exc_buf, 2 * subfr_length, int16_t);
+    int16_t *exc_buf = (int16_t *)silk_malloc(2 * subfr_length, sizeof(int16_t));
     /* Find random noise component */
     /* Scale previous excitation signal */
     exc_buf_ptr = exc_buf;
@@ -3182,6 +3180,7 @@ void silk_PLC_energy(int32_t* energy1, int32_t* shift1, int32_t* energy2, int32_
     /* Find the subframe with lowest energy of the last two and use that as random noise generator */
     silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
     silk_sum_sqr_shift(energy2, shift2, &exc_buf[subfr_length], subfr_length);
+    silk_free(exc_buf);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3198,17 +3197,11 @@ void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state     
     int16_t* B_Q14;
     int32_t* sLPC_Q14_ptr;
     int16_t  A_Q12[MAX_LPC_ORDER];
-
-    VARDECL(int16_t, sLTP);
-
-    VARDECL(int32_t, sLTP_Q14);
     silk_PLC_struct* psPLC = &psDec->sPLC;
     int32_t          prevGain_Q10[2];
 
-
-    ALLOC(sLTP_Q14, psDec->ltp_mem_length + psDec->frame_length, int32_t);
-
-    ALLOC(sLTP, psDec->ltp_mem_length, int16_t);
+    int32_t *sLTP_Q14 = (int32_t *)silk_malloc(psDec->ltp_mem_length + psDec->frame_length, sizeof(int32_t));
+    int16_t *sLTP = (int16_t *)silk_malloc(psDec->ltp_mem_length, sizeof(int16_t));
 
     prevGain_Q10[0] = silk_RSHIFT(psPLC->prevGain_Q16[0], 6);
     prevGain_Q10[1] = silk_RSHIFT(psPLC->prevGain_Q16[1], 6);
@@ -3356,6 +3349,9 @@ void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state     
     psPLC->rand_seed = rand_seed;
     psPLC->randScale_Q14 = rand_scale_Q14;
     for(i = 0; i < MAX_NB_SUBFR; i++) { psDecCtrl->pitchL[i] = lag; }
+
+    silk_free(sLTP_Q14);
+    silk_free(sLTP);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Glues concealed frames with new good received frames */
