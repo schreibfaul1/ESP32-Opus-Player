@@ -852,8 +852,7 @@ static unsigned extract_collapse_mask(int *iy, int N, int B) {
 //----------------------------------------------------------------------------------------------------------------------
 
 int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
-    VARDECL(int16_t, y);
-    VARDECL(int, signx);
+
     int i, j;
     int pulsesLeft;
     int32_t sum;
@@ -861,8 +860,8 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
     int16_t yy;
 
     (void)arch;
-    ALLOC(y, N, int16_t);
-    ALLOC(signx, N, int);
+    int16_t *y = (int16_t *)celt_malloc(N, sizeof(int16_t));
+    int *signx = (int *)celt_malloc(N, sizeof(int));
 
     /* Get rid of the sign */
     sum = 0;
@@ -986,12 +985,15 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
         iy[j] = (iy[j] ^ -signx[j]) + signx[j];
     } while (++j < N);
 
+    celt_free(y);
+    celt_free(signx);
+
     return yy;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int16_t gain, int resynth, int arch) {
-    VARDECL(int, iy);
+
     int16_t yy;
     unsigned collapse_mask;
 
@@ -999,7 +1001,7 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
     assert2(N > 1, "alg_quant() needs at least two dimensions");
 
     /* Covers vectorization by up to 4. */
-    ALLOC(iy, N + 3, int);
+    int *iy = (int *)celt_malloc(N + 3, sizeof(int));
 
     exp_rotation(X, N, 1, B, K, spread);
 
@@ -1013,7 +1015,7 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
     }
 
     collapse_mask = extract_collapse_mask(iy, N, B);
-
+    celt_free(iy);
     return collapse_mask;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1023,16 +1025,16 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
 unsigned alg_unquant(int16_t *X, int N, int K, int spread, int B, ec_dec *dec, int16_t gain) {
     int32_t Ryy;
     unsigned collapse_mask;
-    VARDECL(int, iy);
 
     assert2(K > 0, "alg_unquant() needs at least one pulse");
     assert2(N > 1, "alg_unquant() needs at least two dimensions");
-    ALLOC(iy, N, int);
+    int *iy = (int *)celt_malloc(N + 3, sizeof(int));
+
     Ryy = decode_pulses(iy, N, K, dec);
     normalise_residual(iy, X, N, Ryy, gain);
     exp_rotation(X, N, -1, B, K, spread);
     collapse_mask = extract_collapse_mask(iy, N, B);
-
+    celt_free(iy);
     return collapse_mask;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1696,10 +1698,9 @@ static const int ordery_table[] = {
 
 static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
-    VARDECL(int16_t, tmp);
     int N;
     N = N0 * stride;
-    ALLOC(tmp, N, int16_t);
+    int16_t *tmp = (int16_t *)celt_malloc(N, sizeof(*tmp));
     assert(stride > 0);
     if (hadamard) {
         const int *ordery = ordery_table + stride - 2;
@@ -1714,15 +1715,15 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
                 tmp[i * N0 + j] = X[j * stride + i];
     }
     memcpy(X, tmp, N * sizeof(*X));
+    celt_free(tmp);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
-    VARDECL(int16_t, tmp);
     int N;
     N = N0 * stride;
-    ALLOC(tmp, N, int16_t);
+    int16_t *tmp = (int16_t *)celt_malloc(N, sizeof(*tmp));
     if (hadamard) {
         const int *ordery = ordery_table + stride - 2;
         for (i = 0; i < stride; i++)
@@ -1735,6 +1736,7 @@ static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
                 tmp[j * stride + i] = X[i * N0 + j];
     }
     memcpy(X, tmp, N * sizeof(*X));
+    celt_free(tmp);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2438,13 +2440,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
     int32_t remaining_bits;
     const int16_t *__restrict__ eBands = m->eBands;
     int16_t *__restrict__ norm, *__restrict__ norm2;
-    VARDECL(int16_t, _norm);
-    VARDECL(int16_t, _lowband_scratch);
-    VARDECL(int16_t, X_save);
-    VARDECL(int16_t, Y_save);
-    VARDECL(int16_t, X_save2);
-    VARDECL(int16_t, Y_save2);
-    VARDECL(int16_t, norm_save2);
+
     int resynth_alloc;
     int16_t *lowband_scratch;
     int B;
@@ -2464,7 +2460,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
     norm_offset = M * eBands[start];
     /* No need to allocate norm for the last band because we don't need an
        output in that band. */
-    ALLOC(_norm, C * (M * eBands[m->nbEBands - 1] - norm_offset), int16_t);
+    int16_t *_norm = (int16_t *)celt_malloc(C * (M * eBands[m->nbEBands - 1] - norm_offset), sizeof(int16_t));
     norm = _norm;
     norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
 
@@ -2475,16 +2471,17 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         resynth_alloc = M * (eBands[m->nbEBands] - eBands[m->nbEBands - 1]);
     else
         resynth_alloc = ALLOC_NONE;
-    ALLOC(_lowband_scratch, resynth_alloc, int16_t);
+
+    int16_t *_lowband_scratch = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
     if (encode && resynth)
         lowband_scratch = _lowband_scratch;
     else
         lowband_scratch = X_ + M * eBands[m->nbEBands - 1];
-    ALLOC(X_save, resynth_alloc, int16_t);
-    ALLOC(Y_save, resynth_alloc, int16_t);
-    ALLOC(X_save2, resynth_alloc, int16_t);
-    ALLOC(Y_save2, resynth_alloc, int16_t);
-    ALLOC(norm_save2, resynth_alloc, int16_t);
+    int16_t *X_save = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    int16_t *Y_save = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    int16_t *X_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    int16_t *Y_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    int16_t *norm_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
 
     lowband_offset = 0;
     ctx.bandE = bandE;
@@ -2691,6 +2688,14 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         ctx.avoid_split_noise = 0;
     }
     *seed = ctx.seed;
+
+    celt_free(_norm);
+    celt_free(_lowband_scratch);
+    celt_free(X_save);
+    celt_free(Y_save);
+    celt_free(X_save2);
+    celt_free(Y_save2);
+    celt_free(norm_save2);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3677,241 +3682,6 @@ bad_request:
     va_end(ap);
     return OPUS_UNIMPLEMENTED;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-static int transient_analysis(const int32_t *__restrict__ in, int len, int C, int16_t *tf_estimate, int *tf_chan,
-                              int allow_weak_transients, int *weak_transient) {
-    int i;
-    VARDECL(int16_t, tmp);
-    int32_t mem0, mem1;
-    int is_transient = 0;
-    int32_t mask_metric = 0;
-    int c;
-    int16_t tf_max;
-    int len2;
-    /* Forward masking: 6.7 dB/ms. */
-
-    int forward_shift = 4;
-
-    /* Table of 6*64/x, trained on real data to minimize the average error */
-    static const unsigned char inv_table[128] = {
-        255, 255, 156, 110, 86, 70, 59, 51, 45, 40, 37, 33, 31, 28, 26, 25, 23, 22, 21, 20, 19, 18, 17, 16, 16, 15,
-        15,  14,  13,  13,  12, 12, 12, 12, 11, 11, 11, 10, 10, 10, 9,  9,  9,  9,  9,  9,  8,  8,  8,  8,  8,  7,
-        7,   7,   7,   7,   7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  5,  5,  5,  5,  5,
-        5,   5,   5,   5,   5,  5,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
-        4,   4,   4,   4,   4,  4,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  2,
-    };
-    ALLOC(tmp, len, int16_t);
-
-    *weak_transient = 0;
-    /* For lower bitrates, let's be more conservative and have a forward masking
-       decay of 3.3 dB/ms. This avoids having to code transients at very low
-       bitrate (mostly for hybrid), which can result in unstable energy and/or
-       partial collapse. */
-    if (allow_weak_transients) {
-        forward_shift = 5;
-    }
-    len2 = len / 2;
-    for (c = 0; c < C; c++) {
-        int32_t mean;
-        int32_t unmask = 0;
-        int32_t norm;
-        int16_t maxE;
-        mem0 = 0;
-        mem1 = 0;
-        /* High-pass filter: (1 - 2*z^-1 + z^-2) / (1 - z^-1 + .5*z^-2) */
-        for (i = 0; i < len; i++) {
-            int32_t x, y;
-            x = SHR32(in[i + c * len], 12);
-            y = ADD32(mem0, x);
-
-            mem0 = mem1 + y - SHL32(x, 1);
-            mem1 = x - SHR32(y, 1);
-
-            tmp[i] = SROUND16(y, 2);
-            /*printf("%f ", tmp[i]);*/
-        }
-        /*printf("\n");*/
-        /* First few samples are bad because we don't propagate the memory */
-        OPUS_CLEAR(tmp, 12);
-
-        /* Normalize tmp to max range */
-        {
-            int shift = 0;
-            shift = 14 - celt_ilog2(max(1, celt_maxabs16(tmp, len)));
-            if (shift != 0) {
-                for (i = 0; i < len; i++) tmp[i] = SHL16(tmp[i], shift);
-            }
-        }
-
-        mean = 0;
-        mem0 = 0;
-        /* Grouping by two to reduce complexity */
-        /* Forward pass to compute the post-echo threshold*/
-        for (i = 0; i < len2; i++) {
-            int16_t x2 = PSHR32(MULT16_16(tmp[2 * i], tmp[2 * i]) + MULT16_16(tmp[2 * i + 1], tmp[2 * i + 1]), 16);
-            mean += x2;
-
-            /* FIXME: Use PSHR16() instead */
-            tmp[i] = mem0 + PSHR32(x2 - mem0, forward_shift);
-
-            mem0 = tmp[i];
-        }
-
-        mem0 = 0;
-        maxE = 0;
-        /* Backward pass to compute the pre-echo threshold */
-        for (i = len2 - 1; i >= 0; i--) {
-            /* Backward masking: 13.9 dB/ms. */
-
-            /* FIXME: Use PSHR16() instead */
-            tmp[i] = mem0 + PSHR32(tmp[i] - mem0, 3);
-
-            mem0 = tmp[i];
-            maxE = max(maxE, mem0);
-        }
-        /*for (i=0;i<len2;i++)printf("%f ", tmp[i]/mean);printf("\n");*/
-
-        /* Compute the ratio of the "frame energy" over the harmonic mean of the energy.
-           This essentially corresponds to a bitrate-normalized temporal noise-to-mask
-           ratio */
-
-        /* As a compromise with the old transient detector, frame energy is the
-           geometric mean of the energy and half the max */
-
-        /* Costs two sqrt() to avoid overflows */
-        mean = MULT16_16(celt_sqrt(mean), celt_sqrt(MULT16_16(maxE, len2 >> 1)));
-
-        /* Inverse of the mean energy in Q15+6 */
-        norm = SHL32(EXTEND32(len2), 6 + 14) / ADD32(EPSILON, SHR32(mean, 1));
-        /* Compute harmonic mean discarding the unreliable boundaries
-           The data is smooth, so we only take 1/4th of the samples */
-        unmask = 0;
-        /* We should never see NaNs here. If we find any, then something really bad happened and we better abort
-           before it does any damage later on. If these asserts are disabled (no hardening), then the table
-           lookup a few lines below (id = ...) is likely to crash dur to an out-of-bounds read. DO NOT FIX
-           that crash on NaN since it could result in a worse issue later on. */
-        assert(tmp[0] != 0);
-        assert(norm != 0);
-        for (i = 12; i < len2 - 5; i += 4) {
-            int id;
-
-            id = max(0, min(127, MULT16_32_Q15(tmp[i] + EPSILON, norm))); /* Do not round to nearest */
-
-            unmask += inv_table[id];
-        }
-        /*printf("%d\n", unmask);*/
-        /* Normalize, compensate for the 1/4th of the sample and the factor of 6 in the inverse table */
-        unmask = 64 * unmask * 4 / (6 * (len2 - 17));
-        if (unmask > mask_metric) {
-            *tf_chan = c;
-            mask_metric = unmask;
-        }
-    }
-    is_transient = mask_metric > 200;
-    /* For low bitrates, define "weak transients" that need to be
-       handled differently to avoid partial collapse. */
-    if (allow_weak_transients && is_transient && mask_metric < 600) {
-        is_transient = 0;
-        *weak_transient = 1;
-    }
-    /* Arbitrary metric for VBR boost */
-    tf_max = max(0, celt_sqrt(27 * mask_metric) - 42);
-    /* *tf_estimate = 1 + min(1, sqrt(max(0, tf_max-30))/20); */
-    *tf_estimate =
-        celt_sqrt(max(0, SHL32(MULT16_16(QCONST16(0.0069, 14), min(163, tf_max)), 14) - QCONST32(0.139, 28)));
-    /*printf("%d %f\n", tf_max, mask_metric);*/
-
-    /*printf("%d %f %d\n", is_transient, (float)*tf_estimate, tf_max);*/
-    return is_transient;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, int32_t base_target, int LM, int32_t bitrate,
-                       int lastCodedBands, int C, int intensity, int constrained_vbr, int16_t stereo_saving,
-                       int tot_boost, int16_t tf_estimate, int pitch_change, int16_t maxDepth, int lfe,
-                       int has_surround_mask, int16_t surround_masking, int16_t temporal_vbr) {
-    /* The target rate in 8th bits per frame */
-    int32_t target;
-    int coded_bins;
-    int coded_bands;
-    int16_t tf_calibration;
-    int nbEBands;
-    const int16_t *eBands;
-
-    nbEBands = mode->nbEBands;
-    eBands = mode->eBands;
-
-    coded_bands = lastCodedBands ? lastCodedBands : nbEBands;
-    coded_bins = eBands[coded_bands] << LM;
-    if (C == 2) coded_bins += eBands[min(intensity, coded_bands)] << LM;
-
-    target = base_target;
-
-    /*printf("%f %f %f %f %d %d ", st->analysis.activity, st->analysis.tonality, tf_estimate, st->stereo_saving,
-     * tot_boost, coded_bands);*/
-
-    /* Stereo savings */
-    if (C == 2) {
-        int coded_stereo_bands;
-        int coded_stereo_dof;
-        int16_t max_frac;
-        coded_stereo_bands = min(intensity, coded_bands);
-        coded_stereo_dof = (eBands[coded_stereo_bands] << LM) - coded_stereo_bands;
-        /* Maximum fraction of the bits we can save if the signal is mono. */
-        max_frac = DIV32_16(MULT16_16(QCONST16(0.8f, 15), coded_stereo_dof), coded_bins);
-        stereo_saving = min(stereo_saving, QCONST16(1.f, 8));
-        /*printf("%d %d %d ", coded_stereo_dof, coded_bins, tot_boost);*/
-        target -= (int32_t)min(MULT16_32_Q15(max_frac, target),
-                                 SHR32(MULT16_16(stereo_saving - QCONST16(0.1f, 8), (coded_stereo_dof << BITRES)), 8));
-    }
-    /* Boost the rate according to dynalloc (minus the dynalloc average for calibration). */
-    target += tot_boost - (19 << LM);
-    /* Apply transient boost, compensating for average boost. */
-    tf_calibration = QCONST16(0.044f, 14);
-    target += (int32_t)SHL32(MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
-
-    (void)analysis;
-    (void)pitch_change;
-
-    if (has_surround_mask && !lfe) {
-        int32_t surround_target = target + (int32_t)SHR32(MULT16_16(surround_masking, coded_bins << BITRES), DB_SHIFT);
-        /*printf("%f %d %d %d %d %d %d ", surround_masking, coded_bins, st->end, st->intensity, surround_target, target,
-         * st->bitrate);*/
-        target = max(target / 4, surround_target);
-    }
-
-    {
-        int32_t floor_depth;
-        int bins;
-        bins = eBands[nbEBands - 2] << LM;
-        /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),celt_log2(SHL32(max(1,sample_max),13))), DB_SHIFT);*/
-        floor_depth = (int32_t)SHR32(MULT16_16((C * bins << BITRES), maxDepth), DB_SHIFT);
-        floor_depth = max(floor_depth, target >> 2);
-        target = min(target, floor_depth);
-        /*printf("%f %d\n", maxDepth, floor_depth);*/
-    }
-
-    /* Make VBR less aggressive for constrained VBR because we can't keep a higher bitrate
-       for long. Needs tuning. */
-    if ((!has_surround_mask || lfe) && constrained_vbr) {
-        target = base_target + (int32_t)MULT16_32_Q15(QCONST16(0.67f, 15), target - base_target);
-    }
-
-    if (!has_surround_mask && tf_estimate < QCONST16(.2f, 14)) {
-        int16_t amount;
-        int16_t tvbr_factor;
-        amount = MULT16_16_Q15(QCONST16(.0000031f, 30), max(0, min(32000, 96000 - bitrate)));
-        tvbr_factor = SHR32(MULT16_16(temporal_vbr, amount), DB_SHIFT);
-        target += (int32_t)MULT16_32_Q15(tvbr_factor, target);
-    }
-
-    /* Don't allow more than doubling the rate */
-    target = min(2 * base_target, target);
-
-    return target;
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 
 void _celt_lpc(int16_t *_lpc,     /* out: [0...p-1] LPC coefficients      */
@@ -5980,20 +5750,6 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
                                     fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 
     return codedBands;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-static int32_t loss_distortion(const int16_t *eBands, int16_t *oldEBands, int start, int end, int len, int C) {
-    int c, i;
-    int32_t dist = 0;
-    c = 0;
-    do {
-        for (i = start; i < end; i++) {
-            int16_t d = SUB16(SHR16(eBands[i + c * len], 3), SHR16(oldEBands[i + c * len], 3));
-            dist = MAC16_16(dist, d, d);
-        }
-    } while (++c < C);
-    return min(200, SHR32(dist, 2 * DB_SHIFT - 6));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
