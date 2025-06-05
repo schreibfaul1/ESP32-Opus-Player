@@ -2785,7 +2785,6 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
     int Nd;
     int apply_downsampling = 0;
     int16_t coef0;
-    VARDECL(int32_t, scratch);
 
     /* Short version for common case. */
     if (downsample == 1 && C == 2 && !accum) {
@@ -2793,7 +2792,7 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
         return;
     }
 
-    ALLOC(scratch, N, int32_t);
+    int32_t *scratch = (int32_t *)celt_malloc(N, sizeof(*scratch));
     coef0 = coef[0];
     Nd = N / downsample;
     c = 0;
@@ -2847,6 +2846,8 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
             }
         }
     } while (++c < C);
+
+    celt_free(scratch);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2860,12 +2861,11 @@ static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[],
     int shift;
     int nbEBands;
     int overlap;
-    VARDECL(int32_t, freq);
 
     overlap = mode->overlap;
     nbEBands = mode->nbEBands;
     N = mode->shortMdctSize << LM;
-    ALLOC(freq, N, int32_t); /**< Interleaved signal MDCTs */
+    int32_t *freq = (int32_t *)celt_malloc(N, sizeof(*freq)); /**< Interleaved signal MDCTs */
     M = 1 << LM;
 
     if (isTransient) {
@@ -2923,6 +2923,8 @@ static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[],
         for (i = 0; i < N; i++)
             out_syn[c][i] = SATURATE(out_syn[c][i], SIG_SAT);
     } while (++c < CC);
+
+    celt_free(freq);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2963,9 +2965,8 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
 
 static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
     int pitch_index;
-    VARDECL(int16_t, lp_pitch_buf);
-    int16_t *lp_pitch_buf = (int16_t *)malloc((DECODE_BUFFER_SIZE >> 1) * sizeof(int16_t));
-                                                        // ALLOC( lp_pitch_buf, DECODE_BUFFER_SIZE>>1, int16_t );
+    int16_t *lp_pitch_buf = (int16_t *)celt_malloc((DECODE_BUFFER_SIZE >> 1), sizeof(int16_t));
+
     pitch_downsample(decode_mem, lp_pitch_buf,
                      DECODE_BUFFER_SIZE, C, arch);
     pitch_search(lp_pitch_buf + (PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
@@ -2973,7 +2974,7 @@ static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
                  PLC_PITCH_LAG_MAX - PLC_PITCH_LAG_MIN, &pitch_index, arch);
     pitch_index = PLC_PITCH_LAG_MAX - pitch_index;
 
-    free(lp_pitch_buf);
+    celt_free(lp_pitch_buf);
     return pitch_index;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3015,9 +3016,6 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
     noise_based = loss_count >= 5 || start != 0 || st->skip_plc;
     if (noise_based){
         /* Noise-based PLC/CNG */
-
-        VARDECL(int16_t, X);
-
         uint32_t seed;
         int end;
         int effEnd;
@@ -3025,7 +3023,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         end = st->end;
         effEnd = max(start, min(end, mode->effEBands));
 
-        ALLOC(X, C * N, int16_t); /**< Interleaved normalised MDCTs */
+        int16_t *X = (int16_t *) celt_malloc(C * N, sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
         /* Energy decay */
         decay = loss_count == 0 ? QCONST16(1.5f, DB_SHIFT) : QCONST16(.5f, DB_SHIFT);
@@ -3060,6 +3058,7 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         } while (++c < C);
 
         celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
+        celt_free(X);
     }
     else{
         int exc_length;
@@ -3068,9 +3067,6 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         int16_t *exc;
         int16_t fade = 32767;
         int pitch_index;
-        VARDECL(int32_t, etmp);
-        VARDECL(int16_t, _exc);
-        VARDECL(int16_t, fir_tmp);
 
         if (loss_count == 0) {
             st->last_pitch_index = pitch_index = celt_plc_pitch_search(decode_mem, C, st->arch);
@@ -3084,9 +3080,10 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
            decaying signal, but we can't get more than MAX_PERIOD. */
         exc_length = min(2 * pitch_index, MAX_PERIOD);
 
-        ALLOC(etmp, overlap, int32_t);
-        ALLOC(_exc, MAX_PERIOD + LPC_ORDER, int16_t);
-        ALLOC(fir_tmp, exc_length, int16_t);
+        int32_t *etmp = (int32_t *)celt_malloc(overlap, sizeof(int32_t));
+        int16_t *_exc = (int16_t *)celt_malloc((MAX_PERIOD + LPC_ORDER), sizeof(int16_t));
+        int16_t *fir_tmp = (int16_t *)celt_malloc(exc_length, sizeof(int16_t));
+
         exc = _exc + LPC_ORDER;
         window = mode->window;
         c = 0;
@@ -3261,6 +3258,9 @@ static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
                     MULT16_32_Q15(window[i], etmp[overlap - 1 - i]) + MULT16_32_Q15(window[overlap - i - 1], etmp[i]);
             }
         } while (++c < C);
+        celt_free(etmp);
+        celt_free(_exc);
+        celt_free(fir_tmp);
     }
     st->loss_count = loss_count + 1;
 }
