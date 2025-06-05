@@ -1678,9 +1678,6 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t  i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
     int32_t  nSamplesOutDec, LBRR_symbol;
     int16_t* samplesOut1_tmp[2];
-    VARDECL(int16_t, samplesOut1_tmp_storage1);
-    VARDECL(int16_t, samplesOut1_tmp_storage2);
-    VARDECL(int16_t, samplesOut2_tmp);
     int32_t MS_pred_Q13[2] = {0};
     int16_t *resample_out_ptr;
     silk_decoder *psDec = (silk_decoder *)decState;
@@ -1911,13 +1908,12 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         resample_out_ptr = samplesOut;
     }
 
-    ALLOC(samplesOut1_tmp_storage2,
-          delay_stack_alloc ? decControl->nChannelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE,
-          int16_t);
+    size_t samplesOut1_tmp_storage2_len = delay_stack_alloc ? decControl->nChannelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE;
+    int16_t *samplesOut1_tmp_storage2 = (int16_t *)silk_malloc(samplesOut1_tmp_storage2_len, sizeof(int16_t));
 
     if (delay_stack_alloc) {
         size_t val1 = decControl->nChannelsInternal * (channel_state[0].frame_length + 2);
-        size_t val2 = sizeof(samplesOut1_tmp_storage2);
+        size_t val2 = samplesOut1_tmp_storage2_len *sizeof(int16_t);
         size_t n = val1 * val2;
         memcpy(samplesOut1_tmp_storage2, samplesOut, val2);
         samplesOut1_tmp[0] = samplesOut1_tmp_storage2;
@@ -1971,6 +1967,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     silk_free(samplesOut1_tmp_storage1);
     silk_free(samplesOut2_tmp);
+    silk_free(samplesOut1_tmp_storage2);
     return ret;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2183,9 +2180,7 @@ int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk dec
                           int32_t lostFlag,          /* I    0: no loss, 1 loss, 2 decode fec            */
                           int32_t condCoding         /* I    The type of conditional coding to use       */
 ) {
-    VARDECL(silk_decoder_control, psDecCtrl);
     int32_t L, mv_len, ret = 0;
-
     L = psDec->frame_length;
     silk_decoder_control psDecCtrl[1];
     psDecCtrl->LTP_scale_Q14 = 0;
