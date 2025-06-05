@@ -5205,9 +5205,6 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     int i, j;
     int lag;
     int best_pitch[2] = {0, 0};
-    VARDECL(int16_t, x_lp4);
-    VARDECL(int16_t, y_lp4);
-    VARDECL(int32_t, xcorr);
     int32_t maxcorr;
     int32_t xmax, ymax;
     int shift = 0;
@@ -5217,9 +5214,9 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     assert(max_pitch > 0);
     lag = len + max_pitch;
 
-    ALLOC(x_lp4, len >> 2, int16_t);
-    ALLOC(y_lp4, lag >> 2, int16_t);
-    ALLOC(xcorr, max_pitch >> 1, int32_t);
+    int16_t *x_lp4 = (int16_t *)celt_malloc(lag >> 2, sizeof(int16_t));
+    int16_t *y_lp4 = (int16_t *)celt_malloc(lag >> 2, sizeof(int16_t));
+    int32_t *xcorr = (int32_t *)celt_malloc(max_pitch >> 1, sizeof(int32_t));
 
     /* Downsample by 2 again */
     for (j = 0; j < len >> 2; j++) x_lp4[j] = x_lp[2 * j];
@@ -5275,6 +5272,10 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
         offset = 0;
     }
     *pitch = 2 * best_pitch[0] - offset;
+
+    celt_free(xcorr);
+    celt_free(y_lp4);
+    celt_free(x_lp4);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
