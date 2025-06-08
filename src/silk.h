@@ -1172,33 +1172,14 @@ using ps_ptr = std::unique_ptr<T[], PsramDeleter>;
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
-    std::unique_ptr<T[], PsramDeleter> audio_malloc(std::size_t count) {
+    std::unique_ptr<T[], PsramDeleter> silk_malloc(std::size_t count) {
         T* raw = static_cast<T*>(ps_malloc(sizeof(T) * count));
         if (!raw) {
-            log_e("audio_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
+            log_e("silk_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
         }
         return std::unique_ptr<T[], PsramDeleter>(raw);
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-
-
-static inline  void* silk_malloc(size_t count, size_t size) {
-    void *ptr = ps_malloc(count * size);
-    if (ptr == NULL) {
-        log_e("Memory allocation failed %i bytes\n", (int)(count * size));
-    }
-    return ptr;
-}
-
-static inline void silk_free(void *ptr) {
-    if (ptr != NULL) {
-        free(ptr);
-        ptr = NULL;
-    }
-}
-
-
 
 void silk_A2NLSF_trans_poly(int32_t *p, const int32_t dd);
 int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd);
