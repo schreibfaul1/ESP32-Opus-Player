@@ -1407,7 +1407,7 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
         depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i])) >> LM;
 
         thresh32 = SHR32(celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
-        thresh = MULT16_32_Q15(QCONST16(0.5f, 15), min(32767, thresh32)); {
+        thresh = MULT16_32_Q15(QCONST16(0.5f, 15), min((int32_t)32767, thresh32)); {
             int32_t t;
             t = N0 << LM;
             shift = celt_ilog2(t) >> 1;
@@ -1430,17 +1430,17 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
                 prev2 = max(prev2, prev2logE[m->nbEBands + i]);
             }
             Ediff = EXTEND32(logE[c * m->nbEBands + i]) - EXTEND32(min(prev1, prev2));
-            Ediff = max(0, Ediff);
+            Ediff = max((int32_t)0, Ediff);
 
             if (Ediff < 16384) {
                 int32_t r32 = SHR32(celt_exp2(-EXTRACT16(Ediff)), 1);
-                r = 2 * min(16383, r32);
+                r = 2 * min((int32_t)16383, r32);
             }
             else {
                 r = 0;
             }
             if (LM == 3)
-                r = MULT16_16_Q14(23170, min(23169, r));
+                r = MULT16_16_Q14(23170, min((int16_t)23169, r));
             r = SHR16(min(thresh, r), 1);
             r = SHR32(MULT16_16_Q15(sqrt_1, r), shift);
 
@@ -1835,7 +1835,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
                 int down;
                 /* Bias quantization towards itheta=0 and itheta=16384. */
                 int bias = itheta > 8192 ? 32767 / qn : -32767 / qn;
-                down = min(qn - 1, max(0, (itheta * (int32_t)qn + bias) >> 14));
+                down = min(qn - (int32_t)1, max((int32_t)0, (itheta * (int32_t)qn + bias) >> 14));
                 if (ctx->theta_round < 0)
                     itheta = down;
                 else
@@ -2524,7 +2524,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
         ctx.remaining_bits = remaining_bits;
         if (i <= codedBands - 1){
             curr_balance = celt_sudiv(balance, min(3, codedBands - i));
-            b = max(0, min(16383, min(remaining_bits + 1, pulses[i] + curr_balance)));
+            b = max((int32_t)0, min((int32_t)16383, min(remaining_bits + (int32_t)1, (int32_t)pulses[i] + curr_balance)));
         }
         else {
             b = 0;
@@ -3026,7 +3026,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
         c = 0;
         do {
             for (i = start; i < end; i++)
-                oldBandE[c * nbEBands + i] = max(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
+                oldBandE[c * nbEBands + i] = max((int16_t)(backgroundLogE[c * nbEBands + i]), (int16_t)(oldBandE[c * nbEBands + i] - decay));
         } while (++c < C);
         seed = st->rng;
         for (c = 0; c < C; c++) {
@@ -3549,7 +3549,7 @@ int celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data,
         else
             max_background_increase = QCONST16(1.f, DB_SHIFT);
         for (i = 0; i < 2 * nbEBands; i++)
-            backgroundLogE[i] = min(backgroundLogE[i] + max_background_increase, oldBandE[i]);
+            backgroundLogE[i] = min((int16_t)(backgroundLogE[i] + max_background_increase), (int16_t)(oldBandE[i]));
     }
     else {
         for (i = 0; i < 2 * nbEBands; i++)
@@ -4614,7 +4614,7 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
             ndi_max = (ndi_max - s) >> 1;
             di = min(val - i, ndi_max - 1);
             fl += (2 * di + 1 + s) * LAPLACE_MINP;
-            fs = min(LAPLACE_MINP, 32768 - fl);
+            fs = min((int32_t)LAPLACE_MINP, (int32_t)(32768 - fl));
             *value = (i + di + s) ^ s;
         } else {
             fs += LAPLACE_MINP;
@@ -4660,8 +4660,8 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
     assert(fl < 32768);
     assert(fs > 0);
     assert(fl <= fm);
-    assert(fm < min(fl + fs, 32768));
-    ec_dec_update(dec, fl, min(fl + fs, 32768), 32768);
+    assert(fm < min((uint32_t)(fl + fs), (uint32_t)32768));
+    ec_dec_update(dec, fl, min((uint32_t)(fl + fs), (uint32_t)32768), (uint32_t)32768);
     return val;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4762,8 +4762,7 @@ inline int16_t _celt_cos_pi_2(int16_t x) {
     x2 = MULT16_16_P15(x, x);
     return ADD16(
         1,
-        min(32766, ADD32(SUB16(32767, x2),
-                           MULT16_16_P15(x2, ADD32(-7651, MULT16_16_P15(x2, ADD32(8277, MULT16_16_P15(-626, x2))))))));
+        min((int32_t)32766, (int32_t)(ADD32(SUB16(32767, x2), MULT16_16_P15(x2, ADD32(-7651, MULT16_16_P15(x2, ADD32(8277, MULT16_16_P15(-626, x2)))))))));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5077,7 +5076,7 @@ void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *be
             }
         }
         Syy += SHR32(MULT16_16(y[i + len], y[i + len]), yshift) - SHR32(MULT16_16(y[i], y[i]), yshift);
-        Syy = max(1, Syy);
+        Syy = max((int32_t)1, Syy);
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5220,7 +5219,7 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 
     xmax = celt_maxabs16(x_lp4, len >> 2);
     ymax = celt_maxabs16(y_lp4, lag >> 2);
-    shift = celt_ilog2(max(1, max(xmax, ymax))) - 11;
+    shift = celt_ilog2(max((int32_t)1, max(xmax, ymax))) - 11;
     if (shift > 0) {
         for (j = 0; j < len >> 2; j++) x_lp4[j] = SHR16(x_lp4[j], shift);
         for (j = 0; j < lag >> 2; j++) y_lp4[j] = SHR16(y_lp4[j], shift);
@@ -5246,7 +5245,7 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
         sum = 0;
         for (j = 0; j < len >> 1; j++) sum += SHR32(MULT16_16(x_lp[j], y[i + j]), shift);
 
-        xcorr[i] = max(-1, sum);
+        xcorr[i] = max((int32_t)-1, sum);
 
         maxcorr = max(maxcorr, sum);
     }
@@ -5297,7 +5296,7 @@ int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy) {
     den = celt_rsqrt_norm(x2y2);
     g = MULT16_32_Q15(den, xy);
     g = VSHR32(g, (shift >> 1) - 1);
-    return EXTRACT16(min(g, 32767));
+    return EXTRACT16(min(g, (int32_t)32767));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5329,7 +5328,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
     yy = xx;
     for (i = 1; i <= maxperiod; i++) {
         yy = yy + MULT16_16(x[-i], x[-i]) - MULT16_16(x[N - i], x[N - i]);
-        yy_lookup[i] = max(0, yy);
+        yy_lookup[i] = max((int32_t)0, yy);
     }
     yy = yy_lookup[T0];
     best_xy = xy;
@@ -5362,13 +5361,13 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
             cont = HALF16(prev_gain);
         else
             cont = 0;
-        thresh = max(QCONST16(.3f, 15), MULT16_16_Q15(QCONST16(.7f, 15), g0) - cont);
+        thresh = max((int32_t)QCONST16(.3f, 15), (int32_t)MULT16_16_Q15(QCONST16(.7f, 15), g0) - cont);
         /* Bias against very high pitch (very short period) to avoid false-positives
            due to short-term correlation */
         if (T1 < 3 * minperiod)
-            thresh = max(QCONST16(.4f, 15), MULT16_16_Q15(QCONST16(.85f, 15), g0) - cont);
+            thresh = max((int32_t)QCONST16(.4f, 15), (int32_t)MULT16_16_Q15(QCONST16(.85f, 15), g0) - cont);
         else if (T1 < 2 * minperiod)
-            thresh = max(QCONST16(.5f, 15), MULT16_16_Q15(QCONST16(.9f, 15), g0) - cont);
+            thresh = max((int32_t)QCONST16(.5f, 15), (int32_t)MULT16_16_Q15(QCONST16(.9f, 15), g0) - cont);
         if (g1 > thresh) {
             best_xy = xy;
             best_yy = yy;
@@ -5376,7 +5375,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
             g = g1;
         }
     }
-    best_xy = max(0, best_xy);
+    best_xy = max((int32_t)0, best_xy);
     if (best_yy <= best_xy)
         pg = 32767;
     else
@@ -5480,7 +5479,7 @@ int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, co
         left = total - psum;
         percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
         left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
-        rem = max(left - (m->eBands[j] - m->eBands[start]), 0);
+        rem = max(left - (m->eBands[j] - m->eBands[start]), (int32_t)0);
         band_width = m->eBands[codedBands] - m->eBands[j];
         band_bits = (int)(bits[j] + percoeff * band_width + rem);
         /*Only code a skip decision if we're above the threshold for this band.
@@ -5556,7 +5555,7 @@ int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, co
     left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
     for (j = start; j < codedBands; j++) bits[j] += ((int)percoeff * (m->eBands[j + 1] - m->eBands[j]));
     for (j = start; j < codedBands; j++) {
-        int tmp = (int)min(left, m->eBands[j + 1] - m->eBands[j]);
+        int tmp = (int)min(left, (int32_t)(m->eBands[j + 1] - m->eBands[j]));
         bits[j] += tmp;
         left -= tmp;
     }
@@ -5575,7 +5574,7 @@ int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, co
         bit = (int32_t)bits[j] + balance;
 
         if (N > 1) {
-            excess = max(bit - cap[j], 0);
+            excess = max(bit - cap[j], (int32_t)0);
             bits[j] = bit - excess;
 
             /* Compensate for the extra DoF in stereo */
@@ -5616,7 +5615,7 @@ int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, co
 
         } else {
             /* For N=1, all bits go to fine energy except for a single sign bit */
-            excess = max(0, bit - (C << BITRES));
+            excess = max((int32_t)0, bit - (C << BITRES));
             bits[j] = bit - excess;
             ebits[j] = 0;
             fine_priority[j] = 1;
@@ -5628,7 +5627,7 @@ int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, co
         if (excess > 0) {
             int extra_fine;
             int extra_bits;
-            extra_fine = min(excess >> (stereo + BITRES), MAX_FINE_BITS - ebits[j]);
+            extra_fine = min(excess >> (stereo + BITRES), (int32_t)(MAX_FINE_BITS - ebits[j]));
             ebits[j] += extra_fine;
             extra_bits = extra_fine * C << BITRES;
             fine_priority[j] = extra_bits >= excess - balance;
@@ -5665,7 +5664,7 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
     int intensity_rsv;
     int dual_stereo_rsv;
 
-    total = max(total, 0);
+    total = max(total, (int32_t)0);
     len = m->nbEBands;
     skip_start = start;
     /* Reserve a bit to signal the end of manually skipped bands. */
@@ -5797,7 +5796,7 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, int16_t *oldEB
                 qi = -1;
             q = (int32_t)SHL32(EXTEND32(qi), DB_SHIFT);
 
-            oldEBands[i + c * m->nbEBands] = max(-QCONST16(9.f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
+            oldEBands[i + c * m->nbEBands] = max((int32_t)(-QCONST16(9.f, DB_SHIFT)), (int32_t)(oldEBands[i + c * m->nbEBands]));
             tmp = PSHR32(MULT16_16(coef, oldEBands[i + c * m->nbEBands]), 8) + prev[c] + SHL32(q, 7);
             tmp = max(-QCONST32(28.f, DB_SHIFT + 7), tmp);
             oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);

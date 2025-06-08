@@ -250,8 +250,8 @@ struct CELTDecoder {
 #define SPREAD_NORMAL     (2)
 #define SPREAD_AGGRESSIVE (3)
 
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
+//#define min(a,b) ((a)<(b)?(a):(b))
+//#define max(a,b) ((a)>(b)?(a):(b))
 
 #define opus_likely(x)       (__builtin_expect(!!(x), 1))
 #define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
@@ -518,8 +518,8 @@ static inline int32_t celt_sudiv(int32_t n, int32_t d) {
 
 static inline int16_t sig2word16(int32_t x){
    x = PSHR32(x, 12);
-   x = max(x, -32768);
-   x = min(x, 32767);
+   x = max(x, (int32_t)-32768);
+   x = min(x, (int32_t)32767);
    return EXTRACT16(x);
 }
 

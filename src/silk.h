@@ -26,8 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #pragma once
-#include "Arduino.h"
-#include "../celt/celt.h"
+#include <Arduino.h>
+
+#include "celt.h"
+#include <memory>
+
+
 
 
 #define SILK_MAX_FRAMES_PER_PACKET 3
@@ -424,7 +428,7 @@ POSSIBILITY OF SUCH DAMAGE.
     ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) \
                          : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))))
 
-#define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))                         
+#define silk_sign(a)                        ((a) > 0 ? 1 : ( (a) < 0 ? -1 : 0 ))
 
 #define silk_LIMIT_int                      silk_LIMIT
 #define silk_LIMIT_16                       silk_LIMIT
@@ -1153,6 +1157,29 @@ static inline void combine_pulses(int32_t *out,      /* O    combined pulses vec
     }
 }
 
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// ------- UNIQUE_PTR for PSRAM memory management ----------------
+struct PsramDeleter { // PSRAM deleter for Unique_PTR
+    void operator()(void* ptr) const {
+        if (ptr){
+            free(ptr);  // ps_malloc kann mit free freigegeben werden
+        }
+    }
+};
+template<typename T>
+using ps_ptr = std::unique_ptr<T[], PsramDeleter>;
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+    // Request memory for an array of T
+    template <typename T>
+    std::unique_ptr<T[], PsramDeleter> audio_malloc(std::size_t count) {
+        T* raw = static_cast<T*>(ps_malloc(sizeof(T) * count));
+        if (!raw) {
+            log_e("audio_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
+        }
+        return std::unique_ptr<T[], PsramDeleter>(raw);
+    }
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
 

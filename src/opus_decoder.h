@@ -34,8 +34,8 @@
 #define OPUS_H
 
 #include <stdint.h>
-#include "celt/celt.h"
-#include "silk/silk.h"
+#include "celt.h"
+#include "silk.h"
 
 
 

@@ -894,7 +894,7 @@ int opus_multistream_decode_native(OpusMSDecoder_t *st, uint8_t *data, int32_t l
     }
     /* Limit frame_size to avoid excessive stack allocations. */
     opus_multistream_decoder_ctl(st, OPUS_GET_SAMPLE_RATE_REQUEST, &Fs);
-    frame_size = min(frame_size, Fs / 25 * 3);
+    frame_size = min((int32_t)frame_size, Fs / 25 * 3);
     ALLOC(buf, 2 * frame_size, int16_t);
     ptr = (char *)st + align(sizeof(OpusMSDecoder_t));
     coupled_size = opus_decoder_get_size(2);
