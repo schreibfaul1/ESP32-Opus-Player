@@ -487,9 +487,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define EC_CLZ0    ((int)sizeof(unsigned)*CHAR_BIT)
 #define EC_CLZ(_x) (__builtin_clz(_x))
-#define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
-inline int32_t silk_CLZ16(int16_t in16) { return 32 - EC_ILOG(in16 << 16 | 0x8000); }
-inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32) : 32; }
+#define EC_ILOGs(_x) (EC_CLZ0-EC_CLZ(_x))
+inline int32_t silk_CLZ16(int16_t in16) { return 32 - EC_ILOGs(in16 << 16 | 0x8000); }
+inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOGs(in32) : 32; }
 
 /* Row based */
 #define matrix_ptr(Matrix_base_adr, row, column, N) (*((Matrix_base_adr) + ((row) * (N) + (column))))

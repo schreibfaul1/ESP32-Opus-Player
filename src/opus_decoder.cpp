@@ -405,7 +405,7 @@ int opus_decode(OpusDecoder *st, uint8_t *data, int32_t len, int16_t *pcm, int f
     if (frame_size <= 0) return OPUS_BAD_ARG;
     int ret = opus_decode_native(st, data, len, pcm, frame_size, 0, 0);
     log_i("bytes_decoded = %i", ret);
-    ESP_LOGE("opus decode", "len=%i, frame_size=%i, decode_fec=%i", len, frame_size);
+    log_e("opus decode len=%i, frame_size=%i, decode_fec=%i", len, frame_size);
 
     return ret;
 }

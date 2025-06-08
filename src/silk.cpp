@@ -1910,7 +1910,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (delay_stack_alloc) {
         size_t val1 = s_silk_DecControlStruct.nChannelsInternal * (channel_state[0].frame_length + 2);
         size_t val2 = samplesOut1_tmp_storage2_len *sizeof(int16_t);
-        size_t n = val1 * val2;
+        //size_t n = val1 * val2;
         memcpy(samplesOut1_tmp_storage2.get(), samplesOut, val2);
         samplesOut1_tmp[0] = samplesOut1_tmp_storage2.get();
         samplesOut1_tmp[1] = samplesOut1_tmp_storage2.get() + channel_state[0].frame_length + 2;

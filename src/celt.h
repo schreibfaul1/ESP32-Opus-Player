@@ -327,9 +327,9 @@ extern CELTDecoder_t CELTDecoder;
 # define EC_UINT_BITS   (8)
 # define BITRES 3
 #define EC_MINI(_a,_b)      ((_a)+(((_b)-(_a))&-((_b)<(_a))))
-#define EC_CLZ0    ((int32_t)sizeof(unsigned)*CHAR_BIT)
+#define EC_CLZ0s    ((int32_t)sizeof(unsigned)*CHAR_BIT)
 #define EC_CLZ(_x) (__builtin_clz(_x))
-#define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
+#define EC_ILOG(_x) (EC_CLZ0s-EC_CLZ(_x))
 
 /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
 #define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(uint16_t)(b))

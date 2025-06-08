@@ -113,7 +113,7 @@ int op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int *_nserialnos
     nserialnos = *_nserialnos;
     cserialnos = *_cserialnos;
     if(nserialnos >= cserialnos) {
-        if(cserialnos > INT_MAX / (int) sizeof(*serialnos) - 1 >> 1) {
+        if((cserialnos > INT_MAX / (int) sizeof(*serialnos) - 1) >> 1) {
             return OP_EFAULT;
         }
         cserialnos = 2 * cserialnos + 1;
@@ -730,7 +730,7 @@ void op_clear() {
 int op_open1() {
     ogg_page og;
     ogg_page *pog;
-    int seekable;
+    int seekable = 0;
     int ret;
     memset(m_OggOpusFile, 0, sizeof(*m_OggOpusFile));
     m_OggOpusFile->end = -1;
@@ -817,7 +817,7 @@ int op_get_link_from_serialno(int _cur_link, int64_t _page_offset,
             li_lo = _cur_link;
         else
             li_hi = _cur_link;
-        _cur_link = li_lo + (li_hi - li_lo >> 1);
+        _cur_link = ((li_lo + (li_hi - li_lo)) >> 1);
     } while(li_hi - li_lo > 1);
     /*We've identified the link that should contain this page.
      Make sure it's a page we care about.*/
