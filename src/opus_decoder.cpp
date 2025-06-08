@@ -115,7 +115,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    ret = celt_decoder_init(celt_dec, Fs, channels);
    if(ret!=OPUS_OK)return OPUS_INTERNAL_ERROR;
 
-   celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING_REQUEST, 0);
+   celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_SIGNALLING_REQUEST, 0);
 
    st->prev_mode = 0;
    st->frame_size = Fs/400;
@@ -284,18 +284,18 @@ if(!inbuf)log_e("Inbuf is null");
         }
         const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
         silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
-        celt_decoder_ctl(celt_dec, CELT_SET_END_BAND_REQUEST,(endband));
-        celt_decoder_ctl(celt_dec, CELT_SET_CHANNELS_REQUEST,(channels));
+        celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_END_BAND_REQUEST,(endband));
+        celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_CHANNELS_REQUEST,(channels));
     }
 
     /* MUST be after PLC */
-    celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST, start_band);
+    celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_START_BAND_REQUEST, start_band);
 
     if (mode != MODE_SILK_ONLY) {
         int celt_frame_size = min(F20, audiosize);
         /* Make sure to discard any previous CELT state */
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
-            celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+            celt_decoder_ctl(celt_dec, (int32_t)OPUS_RESET_STATE);
         /* Decode CELT */
         celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, &dec, 0);
     } else {
@@ -304,7 +304,7 @@ if(!inbuf)log_e("Inbuf is null");
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
-            celt_decoder_ctl(celt_dec, CELT_SET_START_BAND_REQUEST, 0);
+            celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_START_BAND_REQUEST, 0);
             celt_decode_with_ec(celt_dec, silence, 2, outbuf, F2_5, NULL, 0);
         }
     }
@@ -316,7 +316,7 @@ if(!inbuf)log_e("Inbuf is null");
     {
         const CELTMode *celt_mode;
         silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
-        celt_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST,(&celt_mode));
+        celt_decoder_ctl(celt_dec, (int32_t)CELT_GET_MODE_REQUEST,(&celt_mode));
     }
 
     // if (packetLen <= 1)
@@ -440,7 +440,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
             OPUS_CLEAR((char *)&st->OPUS_DECODER_RESET_START,
                        sizeof(OpusDecoder) - ((char *)&st->OPUS_DECODER_RESET_START - (char *)st));
 
-            celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+            celt_decoder_ctl(celt_dec, (int32_t)OPUS_RESET_STATE);
             silk_InitDecoder(silk_dec);
             st->stream_channels = st->channels;
             st->frame_size = st->Fs / 400;
@@ -458,7 +458,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
                 goto bad_arg;
             }
             if (st->prev_mode == MODE_CELT_ONLY)
-                ret = celt_decoder_ctl(celt_dec, (int)value);
+                ret = celt_decoder_ctl(celt_dec, (int32_t)value);
             else
                 *value = st->DecControl.prevPitchLag;
         } break;
