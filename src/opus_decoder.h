@@ -137,14 +137,10 @@ typedef struct OpusMSDecoder {
 
 
 int opus_decoder_get_size(int channels);
-OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error);
 int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels);
 int opus_decode(OpusDecoder *st, uint8_t *data, int32_t len, int16_t *pcm, int frame_size);
-int opus_decode_float(OpusDecoder *st, uint8_t *data, int32_t len, float *pcm, int frame_size,
-                      int decode_fec);
 int opus_decoder_ctl(OpusDecoder *st, int request, ...);
-int opus_packet_parse(uint8_t *data, int32_t len, unsigned char *out_toc, uint8_t *frames[48],
-                      int16_t size[48], int *payload_offset);
+int opus_packet_parse(uint8_t *data, int32_t len, unsigned char *out_toc, uint8_t *frames[48], int16_t size[48], int *payload_offset);
 int opus_packet_get_bandwidth(uint8_t *data);
 int opus_packet_get_samples_per_frame(uint8_t *data, int32_t Fs);
 int opus_packet_get_nb_channels(uint8_t *data);

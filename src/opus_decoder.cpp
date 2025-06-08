@@ -41,7 +41,7 @@ struct OpusDecoder {
    int          celt_dec_offset;
    int          silk_dec_offset;
    int          channels;
-   int32_t   Fs;          /** Sampling rate (at the API level) */
+   int32_t      Fs;          /** Sampling rate (at the API level) */
 //   silk_DecControlStruct DecControl;
    int          decode_gain;
    int          arch;
@@ -55,9 +55,7 @@ struct OpusDecoder {
    int          frame_size;
    int          prev_redundancy;
    int          last_packet_duration;
-
-
-   uint32_t  rangeFinal;
+   uint32_t     rangeFinal;
 };
 
 
@@ -123,29 +121,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    st->arch = opus_select_arch();
    return OPUS_OK;
 }
-//----------------------------------------------------------------------------------------------------------------------
 
-OpusDecoder *opus_decoder_create(int32_t Fs, int channels, int *error) {
-    int ret;
-    OpusDecoder *st;
-    if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2)) {
-        if (error) *error = OPUS_BAD_ARG;
-        return NULL;
-    }
-    st = (OpusDecoder *)malloc(opus_decoder_get_size(channels));
-	log_i("opus_decoder_create %dBytes", opus_decoder_get_size(channels));
-    if (st == NULL) {
-        if (error) *error = OPUS_ALLOC_FAIL;
-        return NULL;
-    }
-    ret = opus_decoder_init(st, Fs, channels);
-    if (error) *error = ret;
-    if (ret != OPUS_OK) {
-        free(st);
-        st = NULL;
-    }
-    return st;
-}
 //----------------------------------------------------------------------------------------------------------------------
 
 static void smooth_fade(const int16_t *in1, const int16_t *in2, int16_t *out, int overlap, int channels,
@@ -842,7 +818,8 @@ OpusMSDecoder_t *opus_multistream_decoder_create(int32_t Fs, int channels, int s
         if (error) *error = OPUS_BAD_ARG;
         return NULL;
     }
-    st = (OpusMSDecoder_t *)malloc(opus_multistream_decoder_get_size(streams, coupled_streams));
+    log_w("decoder get size %i", opus_multistream_decoder_get_size(streams, coupled_streams));
+    st = (OpusMSDecoder_t *)ps_malloc(opus_multistream_decoder_get_size(streams, coupled_streams));
     if (st == NULL) {
         if (error) *error = OPUS_ALLOC_FAIL;
         return NULL;

@@ -17,7 +17,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 
-silk_decoder_state_t    s_silk_decoder_state;
+silk_decoder_state_t channel_state[ DECODER_NUM_CHANNELS ];//   s_silk_decoder_state;
 silk_decoder_t          s_silk_decoder;
 silk_DecControlStruct_t s_silk_DecControlStruct;
 // extern ec_ctx_t    s_ec;
@@ -1677,7 +1677,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t MS_pred_Q13[2] = {0};
     int16_t *resample_out_ptr;
     silk_decoder_t *psDec = (silk_decoder_t *)decState;
-    silk_decoder_state_t *channel_state = psDec->channel_state;
+    //silk_decoder_state_t *channel_state = channel_state;
     int32_t has_side;
     int32_t stereo_to_mono;
     int delay_stack_alloc;
@@ -1822,12 +1822,12 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     /* Reset side channel decoder prediction memory for first frame with side coding */
     if (s_silk_DecControlStruct.nChannelsInternal == 2 && decode_only_middle == 0 && psDec->prev_decode_only_middle == 1) {
-        silk_memset(psDec->channel_state[1].outBuf, 0, sizeof(psDec->channel_state[1].outBuf));
-        silk_memset(psDec->channel_state[1].sLPC_Q14_buf, 0, sizeof(psDec->channel_state[1].sLPC_Q14_buf));
-        psDec->channel_state[1].lagPrev = 100;
-        psDec->channel_state[1].LastGainIndex = 10;
-        psDec->channel_state[1].prevSignalType = TYPE_NO_VOICE_ACTIVITY;
-        psDec->channel_state[1].first_frame_after_reset = 1;
+        silk_memset(channel_state[1].outBuf, 0, sizeof(channel_state[1].outBuf));
+        silk_memset(channel_state[1].sLPC_Q14_buf, 0, sizeof(channel_state[1].sLPC_Q14_buf));
+        channel_state[1].lagPrev = 100;
+        channel_state[1].LastGainIndex = 10;
+        channel_state[1].prevSignalType = TYPE_NO_VOICE_ACTIVITY;
+        channel_state[1].first_frame_after_reset = 1;
     }
 
     /* Check if the temp buffer fits into the output PCM buffer. If it fits,
@@ -1956,7 +1956,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (lostFlag == FLAG_PACKET_LOST) {
         /* On packet loss, remove the gain clamping to prevent having the energy "bounce back"
            if we lose packets when the energy is going down */
-        for (i = 0; i < psDec->nChannelsInternal; i++) psDec->channel_state[i].LastGainIndex = 10;
+        for (i = 0; i < psDec->nChannelsInternal; i++) channel_state[i].LastGainIndex = 10;
     } else {
         psDec->prev_decode_only_middle = decode_only_middle;
     }
@@ -1967,7 +1967,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
     int32_t ret = SILK_NO_ERROR;
 
-    *decSizeBytes = sizeof(silk_decoder_t);
+    *decSizeBytes = sizeof(silk_decoder_t) + sizeof(silk_decoder_state_t);
 
     return ret;
 }
@@ -1976,7 +1976,7 @@ int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
 /* Reset decoder state */
 int32_t silk_InitDecoder( void *decState) {
     int32_t n, ret = SILK_NO_ERROR;
-    silk_decoder_state_t *channel_state = ((silk_decoder_t *)decState)->channel_state;
+   // channel_state = (silk_decoder_state_t*) &decState->channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
         ret = silk_init_decoder(&channel_state[n]);

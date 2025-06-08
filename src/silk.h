@@ -775,7 +775,7 @@ typedef struct {
 
 /* Decoder Super Struct */
 typedef struct {
-    silk_decoder_state_t            channel_state[ DECODER_NUM_CHANNELS ];
+
     stereo_dec_state                sStereo;
     int32_t                         nChannelsAPI;
     int32_t                         nChannelsInternal;
