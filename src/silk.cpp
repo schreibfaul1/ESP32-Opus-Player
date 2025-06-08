@@ -1083,8 +1083,8 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
                         const int32_t frame_length     /* I    Frame length                                */
 ) {
     int32_t i, j, k, iter, abs_q, nLS, RateLevelIndex;
-    int32_t *sum_pulses = (int32_t *)silk_malloc(MAX_NB_SHELL_BLOCKS, sizeof(int32_t));
-    int32_t *nLshifts   = (int32_t *)silk_malloc(MAX_NB_SHELL_BLOCKS, sizeof(int32_t));
+    auto sum_pulses = audio_malloc<int32_t>(MAX_NB_SHELL_BLOCKS * sizeof(int32_t));
+    auto nLshifts   = audio_malloc<int32_t>(MAX_NB_SHELL_BLOCKS * sizeof(int32_t));
     int16_t *pulses_ptr;
     const uint8_t *cdf_ptr;
 
@@ -1153,10 +1153,7 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
     /****************************************/
     /* Decode and add signs to pulse signal */
     /****************************************/
-    silk_decode_signs(pulses, frame_length, signalType, quantOffsetType, sum_pulses);
-
-    silk_free(sum_pulses);
-    silk_free(nLshifts);
+    silk_decode_signs(pulses, frame_length, signalType, quantOffsetType, sum_pulses.get());
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Set decoder sampling rate (Decoder state pointer , Sampling frequency (kHz) , API Sampling frequency (Hz))*/
@@ -1563,7 +1560,7 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
     }
     /* Add CNG when packet is lost or during DTX */
     if(psDec->lossCnt) {
-        int32_t *CNG_sig_Q14 = (int32_t *)silk_malloc(length + MAX_LPC_ORDER, sizeof(int32_t));
+        auto CNG_sig_Q14 = audio_malloc<int32_t>(length + MAX_LPC_ORDER * sizeof(int32_t));
 
         /* Generate CNG excitation */
         gain_Q16 = silk_SMULWW(psDec->sPLC.randScale_Q14, psDec->sPLC.prevGain_Q16[1]);
@@ -1579,13 +1576,13 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
         }
         gain_Q10 = silk_RSHIFT(gain_Q16, 6);
 
-        silk_CNG_exc(CNG_sig_Q14 + MAX_LPC_ORDER, psCNG->CNG_exc_buf_Q14, length, &psCNG->rand_seed);
+        silk_CNG_exc(CNG_sig_Q14.get() + MAX_LPC_ORDER, psCNG->CNG_exc_buf_Q14, length, &psCNG->rand_seed);
 
         /* Convert CNG NLSF to filter representation */
         silk_NLSF2A(A_Q12, psCNG->CNG_smth_NLSF_Q15, psDec->LPC_order);
 
         /* Generate CNG signal, by synthesis filtering */
-        memcpy(CNG_sig_Q14, psCNG->CNG_synth_state, MAX_LPC_ORDER * sizeof(int32_t));
+        memcpy(CNG_sig_Q14.get(), psCNG->CNG_synth_state, MAX_LPC_ORDER * sizeof(int32_t));
         assert(psDec->LPC_order == 10 || psDec->LPC_order == 16);
         for(i = 0; i < length; i++) {
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
@@ -1616,7 +1613,6 @@ void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state            
             frame[i] = (int16_t)silk_ADD_SAT16(frame[i], silk_SAT16(silk_RSHIFT_ROUND(silk_SMULWW(CNG_sig_Q14[MAX_LPC_ORDER + i], gain_Q10), 8)));
         }
         memcpy(psCNG->CNG_synth_state, &CNG_sig_Q14[length], MAX_LPC_ORDER * sizeof(int32_t));
-        silk_free(CNG_sig_Q14);
     }
     else { memset(psCNG->CNG_synth_state, 0, psDec->LPC_order * sizeof(int32_t)); }
 }
@@ -1843,14 +1839,14 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                         decControl->API_sampleRate * decControl->nChannelsAPI;
 
     size_t samplesOut1_tmp_storage1_len = delay_stack_alloc ? ALLOC_NONE : decControl->nChannelsInternal * (channel_state[0].frame_length + 2);
-    int16_t *samplesOut1_tmp_storage1 = (int16_t *) silk_malloc(samplesOut1_tmp_storage1_len, sizeof(int16_t));
+    auto samplesOut1_tmp_storage1 = audio_malloc<int16_t>(samplesOut1_tmp_storage1_len * sizeof(int16_t));
 
     if (delay_stack_alloc) {
         samplesOut1_tmp[0] = samplesOut;
         samplesOut1_tmp[1] = samplesOut + channel_state[0].frame_length + 2;
     } else {
-        samplesOut1_tmp[0] = samplesOut1_tmp_storage1;
-        samplesOut1_tmp[1] = samplesOut1_tmp_storage1 + channel_state[0].frame_length + 2;
+        samplesOut1_tmp[0] = samplesOut1_tmp_storage1.get();
+        samplesOut1_tmp[1] = samplesOut1_tmp_storage1.get() + channel_state[0].frame_length + 2;
     }
 
     if (lostFlag == FLAG_DECODE_NORMAL) {
@@ -1902,24 +1898,24 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     /* Set up pointers to temp buffers */
     size_t samplesOut2_tmp_len = decControl->nChannelsAPI == 2 ? *nSamplesOut : ALLOC_NONE;
-    int16_t *samplesOut2_tmp = (int16_t *)silk_malloc(samplesOut2_tmp_len, sizeof(int16_t));
+    auto samplesOut2_tmp = audio_malloc<int16_t>(samplesOut2_tmp_len * sizeof(int16_t));
 
     if (decControl->nChannelsAPI == 2) {
-        resample_out_ptr = samplesOut2_tmp;
+        resample_out_ptr = samplesOut2_tmp.get();
     } else {
         resample_out_ptr = samplesOut;
     }
 
     size_t samplesOut1_tmp_storage2_len = delay_stack_alloc ? decControl->nChannelsInternal * (channel_state[0].frame_length + 2) : ALLOC_NONE;
-    int16_t *samplesOut1_tmp_storage2 = (int16_t *)silk_malloc(samplesOut1_tmp_storage2_len, sizeof(int16_t));
+    auto samplesOut1_tmp_storage2 = audio_malloc<int16_t>(samplesOut1_tmp_storage2_len * sizeof(int16_t));
 
     if (delay_stack_alloc) {
         size_t val1 = decControl->nChannelsInternal * (channel_state[0].frame_length + 2);
         size_t val2 = samplesOut1_tmp_storage2_len *sizeof(int16_t);
         size_t n = val1 * val2;
-        memcpy(samplesOut1_tmp_storage2, samplesOut, val2);
-        samplesOut1_tmp[0] = samplesOut1_tmp_storage2;
-        samplesOut1_tmp[1] = samplesOut1_tmp_storage2 + channel_state[0].frame_length + 2;
+        memcpy(samplesOut1_tmp_storage2.get(), samplesOut, val2);
+        samplesOut1_tmp[0] = samplesOut1_tmp_storage2.get();
+        samplesOut1_tmp[1] = samplesOut1_tmp_storage2.get() + channel_state[0].frame_length + 2;
     }
     for (n = 0; n < silk_min(decControl->nChannelsAPI, decControl->nChannelsInternal); n++) {
 
@@ -1966,10 +1962,6 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     } else {
         psDec->prev_decode_only_middle = decode_only_middle;
     }
-
-    silk_free(samplesOut1_tmp_storage1);
-    silk_free(samplesOut2_tmp);
-    silk_free(samplesOut1_tmp_storage2);
     return ret;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2012,10 +2004,10 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 
     assert(psDec->prev_gain_Q16 != 0);
 
-    int16_t *sLTP     = (int16_t *)silk_malloc(psDec->ltp_mem_length, sizeof(int16_t));
-    int32_t *sLTP_Q15 = (int32_t *)silk_malloc(psDec->ltp_mem_length + psDec->frame_length, sizeof(int32_t));
-    int32_t *res_Q14  = (int32_t *)silk_malloc(psDec->subfr_length, sizeof(int32_t));
-    int32_t *sLPC_Q14 = (int32_t *)silk_malloc(psDec->subfr_length + MAX_LPC_ORDER, sizeof(int32_t));
+    auto sLTP     = audio_malloc<int16_t>(psDec->ltp_mem_length * sizeof(int16_t));
+    auto sLTP_Q15 = audio_malloc<int32_t>(psDec->ltp_mem_length + psDec->frame_length * sizeof(int32_t));
+    auto res_Q14  = audio_malloc<int32_t>(psDec->subfr_length * sizeof(int32_t));
+    auto sLPC_Q14 = audio_malloc<int32_t>(psDec->subfr_length + MAX_LPC_ORDER * sizeof(int32_t));
 
     offset_Q10 = silk_Quantization_Offsets_Q10[psDec->indices.signalType >> 1][psDec->indices.quantOffsetType];
 
@@ -2036,14 +2028,14 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
     }
 
     /* Copy LPC state */
-    memcpy(sLPC_Q14, psDec->sLPC_Q14_buf, MAX_LPC_ORDER * sizeof(int32_t));
+    memcpy(sLPC_Q14.get(), psDec->sLPC_Q14_buf, MAX_LPC_ORDER * sizeof(int32_t));
 
     pexc_Q14 = psDec->exc_Q14;
     pxq = xq;
     sLTP_buf_idx = psDec->ltp_mem_length;
     /* Loop over subframes */
     for(k = 0; k < psDec->nb_subfr; k++) {
-        pres_Q14 = res_Q14;
+        pres_Q14 = res_Q14.get();
         A_Q12 = psDecCtrl->PredCoef_Q12[k >> 1];
 
         /* Preload LPC coeficients to array on stack. Gives small performance gain */
@@ -2162,19 +2154,13 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
         }
 
         /* Update LPC filter state */
-        silk_memcpy(sLPC_Q14, &sLPC_Q14[psDec->subfr_length], MAX_LPC_ORDER * sizeof(int32_t));
+        silk_memcpy(sLPC_Q14.get(), &sLPC_Q14[psDec->subfr_length], MAX_LPC_ORDER * sizeof(int32_t));
         pexc_Q14 += psDec->subfr_length;
         pxq += psDec->subfr_length;
     }
 
     /* Save LPC state */
-    memcpy(psDec->sLPC_Q14_buf, sLPC_Q14, MAX_LPC_ORDER * sizeof(int32_t));
-
-    silk_free(sLTP);
-    silk_free(sLTP_Q15);
-    silk_free(res_Q14);
-    silk_free(sLPC_Q14);
-
+    memcpy(psDec->sLPC_Q14_buf, sLPC_Q14.get(), MAX_LPC_ORDER * sizeof(int32_t));
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
@@ -3170,18 +3156,17 @@ void silk_PLC_update(silk_decoder_state*   psDec,    /* I/O Decoder state       
 void silk_PLC_energy(int32_t* energy1, int32_t* shift1, int32_t* energy2, int32_t* shift2, const int32_t* exc_Q14, const int32_t* prevGain_Q10, int subfr_length, int nb_subfr) {
     int i, k;
     int16_t* exc_buf_ptr;
-    int16_t *exc_buf = (int16_t *)silk_malloc(2 * subfr_length, sizeof(int16_t));
+    auto exc_buf = audio_malloc<int16_t>(2 * subfr_length * sizeof(int16_t));
     /* Find random noise component */
     /* Scale previous excitation signal */
-    exc_buf_ptr = exc_buf;
+    exc_buf_ptr = exc_buf.get();
     for(k = 0; k < 2; k++) {
         for(i = 0; i < subfr_length; i++) { exc_buf_ptr[i] = (int16_t)silk_SAT16(silk_RSHIFT(silk_SMULWW(exc_Q14[i + (k + nb_subfr - 2) * subfr_length], prevGain_Q10[k]), 8)); }
         exc_buf_ptr += subfr_length;
     }
     /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-    silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
+    silk_sum_sqr_shift(energy1, shift1, exc_buf.get(), subfr_length);
     silk_sum_sqr_shift(energy2, shift2, &exc_buf[subfr_length], subfr_length);
-    silk_free(exc_buf);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3201,8 +3186,8 @@ void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state     
     silk_PLC_struct* psPLC = &psDec->sPLC;
     int32_t          prevGain_Q10[2];
 
-    int32_t *sLTP_Q14 = (int32_t *)silk_malloc(psDec->ltp_mem_length + psDec->frame_length, sizeof(int32_t));
-    int16_t *sLTP = (int16_t *)silk_malloc(psDec->ltp_mem_length, sizeof(int16_t));
+    auto sLTP_Q14 = audio_malloc<int32_t>(psDec->ltp_mem_length + psDec->frame_length * sizeof(int32_t));
+    auto sLTP = audio_malloc<int16_t>(psDec->ltp_mem_length * sizeof(int16_t));
 
     prevGain_Q10[0] = silk_RSHIFT(psPLC->prevGain_Q16[0], 6);
     prevGain_Q10[1] = silk_RSHIFT(psPLC->prevGain_Q16[1], 6);
@@ -3350,9 +3335,6 @@ void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state     
     psPLC->rand_seed = rand_seed;
     psPLC->randScale_Q14 = rand_scale_Q14;
     for(i = 0; i < MAX_NB_SUBFR; i++) { psDecCtrl->pitchL[i] = lag; }
-
-    silk_free(sLTP_Q14);
-    silk_free(sLTP);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Glues concealed frames with new good received frames */
@@ -3417,10 +3399,10 @@ void silk_resampler_down2_3(int32_t*       S,    /* I/O  State vector [ 6 ]     
     int32_t nSamplesIn, counter, res_Q6;
     int32_t* buf_ptr;
 
-    int32_t* buf = (int32_t*)silk_malloc((RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR), sizeof(int32_t));
+    auto buf = audio_malloc<int32_t>((RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR) * sizeof(int32_t));
 
     /* Copy buffered samples to start of buffer */
-    memcpy(buf, S, ORDER_FIR * sizeof(int32_t));
+    memcpy(buf.get(), S, ORDER_FIR * sizeof(int32_t));
 
     /* Iterate over blocks of frameSizeIn input samples */
     while(1) {
@@ -3430,7 +3412,7 @@ void silk_resampler_down2_3(int32_t*       S,    /* I/O  State vector [ 6 ]     
         silk_resampler_private_AR2(&S[ORDER_FIR], &buf[ORDER_FIR], in, silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
 
         /* Interpolate filtered signal */
-        buf_ptr = buf;
+        buf_ptr = buf.get();
         counter = nSamplesIn;
         while(counter > 2) {
             /* Inner product */
@@ -3459,14 +3441,13 @@ void silk_resampler_down2_3(int32_t*       S,    /* I/O  State vector [ 6 ]     
 
         if(inLen > 0) {
             /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-            memcpy(buf, &buf[nSamplesIn], ORDER_FIR * sizeof(int32_t));
+            memcpy(buf.get(), &buf[nSamplesIn], ORDER_FIR * sizeof(int32_t));
         }
         else { break; }
     }
 
     /* Copy last part of filtered signal to the state for the next call */
     memcpy(S, &buf[nSamplesIn], ORDER_FIR * sizeof(int32_t));
-    silk_free(buf);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Downsample by a factor 2 */
@@ -3638,10 +3619,10 @@ void silk_resampler_private_down_FIR(void*         SS,    /* I/O  Resampler stat
     int32_t                      max_index_Q16, index_increment_Q16;
     const int16_t* FIR_Coefs;
 
-    int32_t *buf = (int32_t *)silk_malloc(S->batchSize + S->FIR_Order, sizeof(int32_t));
+    auto buf = audio_malloc<int32_t>(S->batchSize + S->FIR_Order * sizeof(int32_t));
 
     /* Copy buffered samples to start of buffer */
-    memcpy(buf, S->sFIR.i32, S->FIR_Order * sizeof(int32_t));
+    memcpy(buf.get(), S->sFIR.i32, S->FIR_Order * sizeof(int32_t));
 
     FIR_Coefs = &S->Coefs[2];
 
@@ -3656,21 +3637,20 @@ void silk_resampler_private_down_FIR(void*         SS,    /* I/O  Resampler stat
         max_index_Q16 = silk_LSHIFT32(nSamplesIn, 16);
 
         /* Interpolate filtered signal */
-        out = silk_resampler_private_down_FIR_INTERPOL(out, buf, FIR_Coefs, S->FIR_Order, S->FIR_Fracs, max_index_Q16, index_increment_Q16);
+        out = silk_resampler_private_down_FIR_INTERPOL(out, buf.get(), FIR_Coefs, S->FIR_Order, S->FIR_Fracs, max_index_Q16, index_increment_Q16);
 
         in += nSamplesIn;
         inLen -= nSamplesIn;
 
         if(inLen > 1) {
             /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-            memcpy(buf, &buf[nSamplesIn], S->FIR_Order * sizeof(int32_t));
+            memcpy(buf.get(), &buf[nSamplesIn], S->FIR_Order * sizeof(int32_t));
         }
         else { break; }
     }
 
     /* Copy last part of filtered signal to the state for the next call */
     memcpy(S->sFIR.i32, &buf[nSamplesIn], S->FIR_Order * sizeof(int32_t));
-    silk_free(buf);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3707,10 +3687,10 @@ void silk_resampler_private_IIR_FIR(void*         SS,    /* I/O  Resampler state
     int32_t                      nSamplesIn;
     int32_t                      max_index_Q16, index_increment_Q16;
 
-    int16_t *buf = (int16_t *)silk_malloc(2 * S->batchSize + RESAMPLER_ORDER_FIR_12, sizeof(int16_t));
+    auto buf = audio_malloc<int16_t>(2 * S->batchSize + RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
 
     /* Copy buffered samples to start of buffer */
-    memcpy(buf, S->sFIR.i16, RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
+    memcpy(buf.get(), S->sFIR.i16, RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
 
     /* Iterate over blocks of frameSizeIn input samples */
     index_increment_Q16 = S->invRatio_Q16;
@@ -3721,20 +3701,19 @@ void silk_resampler_private_IIR_FIR(void*         SS,    /* I/O  Resampler state
         silk_resampler_private_up2_HQ(S->sIIR, &buf[RESAMPLER_ORDER_FIR_12], in, nSamplesIn);
 
         max_index_Q16 = silk_LSHIFT32(nSamplesIn, 16 + 1); /* + 1 because 2x upsampling */
-        out = silk_resampler_private_IIR_FIR_INTERPOL(out, buf, max_index_Q16, index_increment_Q16);
+        out = silk_resampler_private_IIR_FIR_INTERPOL(out, buf.get(), max_index_Q16, index_increment_Q16);
         in += nSamplesIn;
         inLen -= nSamplesIn;
 
         if(inLen > 0) {
             /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-            memcpy(buf, &buf[nSamplesIn << 1], RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
+            memcpy(buf.get(), &buf[nSamplesIn << 1], RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
         }
         else { break; }
     }
 
     /* Copy last part of filtered signal to the state for the next call */
     memcpy(S->sFIR.i16, &buf[nSamplesIn << 1], RESAMPLER_ORDER_FIR_12 * sizeof(int16_t));
-    silk_free(buf);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Upsample by a factor 2, high quality. Uses 2nd order allpass filters for the 2x upsampling, followed by a      */
@@ -4270,7 +4249,7 @@ void silk_stereo_LR_to_MS(stereo_enc_state* state,                /* I/O  State 
     int32_t LP_ratio_Q14, HP_ratio_Q14, frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
     int16_t* mid = &x1[-2];
 
-    int16_t *side = (int16_t *)silk_malloc(frame_length + 2, sizeof(int16_t));
+    auto side = audio_malloc<int16_t>(frame_length + 2 * sizeof(int16_t));
     /* Convert to basic mid/side signals */
     for(n = 0; n < frame_length + 2; n++) {
         sum = x1[n - 2] + (int32_t)x2[n - 2];
@@ -4281,13 +4260,13 @@ void silk_stereo_LR_to_MS(stereo_enc_state* state,                /* I/O  State 
 
     /* Buffering */
     memcpy(mid, state->sMid, 2 * sizeof(int16_t));
-    memcpy(side, state->sSide, 2 * sizeof(int16_t));
+    memcpy(side.get(), state->sSide, 2 * sizeof(int16_t));
     memcpy(state->sMid, &mid[frame_length], 2 * sizeof(int16_t));
     memcpy(state->sSide, &side[frame_length], 2 * sizeof(int16_t));
 
     /* LP and HP filter mid signal */
-    int16_t *LP_mid = (int16_t *)silk_malloc(frame_length, sizeof(int16_t));
-    int16_t *HP_mid = (int16_t *)silk_malloc(frame_length, sizeof(int16_t));
+    auto LP_mid = audio_malloc<int16_t>(frame_length * sizeof(int16_t));
+    auto HP_mid = audio_malloc<int16_t>(frame_length * sizeof(int16_t));
     for(n = 0; n < frame_length; n++) {
         sum = silk_RSHIFT_ROUND(silk_ADD_LSHIFT(mid[n] + (int32_t)mid[n + 2], mid[n + 1], 1), 2);
         LP_mid[n] = sum;
@@ -4295,8 +4274,8 @@ void silk_stereo_LR_to_MS(stereo_enc_state* state,                /* I/O  State 
     }
 
     /* LP and HP filter side signal */
-    int16_t *LP_side = (int16_t *)silk_malloc(frame_length, sizeof(int16_t));
-    int16_t *HP_side = (int16_t *)silk_malloc(frame_length, sizeof(int16_t));
+    auto LP_side = audio_malloc<int16_t>(frame_length * sizeof(int16_t));
+    auto HP_side = audio_malloc<int16_t>(frame_length * sizeof(int16_t));
     for(n = 0; n < frame_length; n++) {
         sum = silk_RSHIFT_ROUND(silk_ADD_LSHIFT(side[n] + (int32_t)side[n + 2], side[n + 1], 1), 2);
         LP_side[n] = sum;
@@ -4308,8 +4287,8 @@ void silk_stereo_LR_to_MS(stereo_enc_state* state,                /* I/O  State 
     smooth_coef_Q16 = is10msFrame ? SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF / 2, 16) : SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF, 16);
     smooth_coef_Q16 = silk_SMULWB(silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-    pred_Q13[0] = silk_stereo_find_predictor(&LP_ratio_Q14, LP_mid, LP_side, &state->mid_side_amp_Q0[0], frame_length, smooth_coef_Q16);
-    pred_Q13[1] = silk_stereo_find_predictor(&HP_ratio_Q14, HP_mid, HP_side, &state->mid_side_amp_Q0[2], frame_length, smooth_coef_Q16);
+    pred_Q13[0] = silk_stereo_find_predictor(&LP_ratio_Q14, LP_mid.get(), LP_side.get(), &state->mid_side_amp_Q0[0], frame_length, smooth_coef_Q16);
+    pred_Q13[1] = silk_stereo_find_predictor(&HP_ratio_Q14, HP_mid.get(), HP_side.get(), &state->mid_side_amp_Q0[2], frame_length, smooth_coef_Q16);
     /* Ratio of the norms of residual and mid signals */
     frac_Q16 = silk_SMLABB(HP_ratio_Q14, LP_ratio_Q14, 3);
     frac_Q16 = silk_min(frac_Q16, SILK_FIX_CONST(1, 16));
@@ -4432,12 +4411,6 @@ void silk_stereo_LR_to_MS(stereo_enc_state* state,                /* I/O  State 
     state->pred_prev_Q13[0] = (int16_t)pred_Q13[0];
     state->pred_prev_Q13[1] = (int16_t)pred_Q13[1];
     state->width_prev_Q14 = (int16_t)width_Q14;
-
-    silk_free(side);
-    silk_free(LP_mid);
-    silk_free(HP_mid);
-    silk_free(LP_side);
-    silk_free(HP_side);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Convert adaptive Mid/Side representation to Left/Right stereo signal */
