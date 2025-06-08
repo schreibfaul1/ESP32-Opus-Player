@@ -1020,13 +1020,12 @@ unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B
 
     assert2(K > 0, "alg_unquant() needs at least one pulse");
     assert2(N > 1, "alg_unquant() needs at least two dimensions");
-    int32_t *iy = (int32_t *)celt_malloc(N + 3, sizeof(int32_t));
+    auto iy = audio_malloc<int32_t>((N + 3) * sizeof(int32_t));
 
-    Ryy = decode_pulses(iy, N, K, dec);
-    normalise_residual(iy, X, N, Ryy, gain);
+    Ryy = decode_pulses(iy.get(), N, K, dec);
+    normalise_residual(iy.get(), X, N, Ryy, gain);
     exp_rotation(X, N, -1, B, K, spread);
-    collapse_mask = extract_collapse_mask(iy, N, B);
-    celt_free(iy);
+    collapse_mask = extract_collapse_mask(iy.get(), N, B);
     return collapse_mask;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -1692,7 +1691,7 @@ void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadam
     int32_t i, j;
     int32_t N;
     N = N0 * stride;
-    int16_t *tmp = (int16_t *)celt_malloc(N, sizeof(*tmp));
+    auto tmp = audio_malloc<int16_t>(N * sizeof(int16_t*));
     assert(stride > 0);
     if (hadamard) {
         const int32_t *ordery = ordery_table + stride - 2;
@@ -1706,8 +1705,7 @@ void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadam
             for (j = 0; j < N0; j++)
                 tmp[i * N0 + j] = X[j * stride + i];
     }
-    memcpy(X, tmp, N * sizeof(*X));
-    celt_free(tmp);
+    memcpy(X, tmp.get(), N * sizeof(*X));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1715,7 +1713,7 @@ void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamar
     int32_t i, j;
     int32_t N;
     N = N0 * stride;
-    int16_t *tmp = (int16_t *)celt_malloc(N, sizeof(*tmp));
+    auto tmp = audio_malloc<int16_t>(N * sizeof(int16_t*));
     if (hadamard) {
         const int32_t *ordery = ordery_table + stride - 2;
         for (i = 0; i < stride; i++)
@@ -1727,8 +1725,7 @@ void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamar
             for (j = 0; j < N0; j++)
                 tmp[j * stride + i] = X[i * N0 + j];
     }
-    memcpy(X, tmp, N * sizeof(*X));
-    celt_free(tmp);
+    memcpy(X, tmp.get(), N * sizeof(*X));
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2452,8 +2449,8 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
     norm_offset = M * eBands[start];
     /* No need to allocate norm for the last band because we don't need an
        output in that band. */
-    int16_t *_norm = (int16_t *)celt_malloc(C * (M * eBands[m->nbEBands - 1] - norm_offset), sizeof(int16_t));
-    norm = _norm;
+    auto _norm = audio_malloc<int16_t>(C * (M * eBands[m->nbEBands - 1] - norm_offset) * sizeof(int16_t));
+    norm = _norm.get();
     norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
 
     /* For decoding, we can use the last band as scratch space because we don't need that
@@ -2464,16 +2461,16 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
     else
         resynth_alloc = ALLOC_NONE;
 
-    int16_t *_lowband_scratch = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    auto _lowband_scratch = audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
     if (encode && resynth)
-        lowband_scratch = _lowband_scratch;
+        lowband_scratch = _lowband_scratch.get();
     else
         lowband_scratch = X_ + M * eBands[m->nbEBands - 1];
-    int16_t *X_save = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
-    int16_t *Y_save = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
-    int16_t *X_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
-    int16_t *Y_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
-    int16_t *norm_save2 = (int16_t *)celt_malloc(resynth_alloc, sizeof(int16_t));
+    auto X_save =     audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto Y_save =     audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto X_save2 =    audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto Y_save2 =    audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto norm_save2 = audio_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
 
     lowband_offset = 0;
     ctx.bandE = bandE;
@@ -2603,25 +2600,25 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
                     cm = x_cm | y_cm;
                     ec_save = *ec;
                     ctx_save = ctx;
-                    memcpy(X_save, X, N * sizeof(X_save));
-                    memcpy(Y_save, Y, N * sizeof(Y_save));
+                    memcpy(X_save.get(), X, N * sizeof(X_save));
+                    memcpy(Y_save.get(), Y, N * sizeof(Y_save));
                     /* Encode and round down. */
                     ctx.theta_round = -1;
                     x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
                                              effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                                              last ? NULL : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
 
-                    dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N, arch)) +
-                            MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N, arch));
+                    dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save.get(), X, N, arch)) +
+                            MULT16_32_Q15(w[1], celt_inner_prod(Y_save.get(), Y, N, arch));
 
                     /* Save first result. */
                     cm2 = x_cm;
                     ec_save2 = *ec;
                     ctx_save2 = ctx;
-                    memcpy(X_save2, X, N * sizeof(X_save2));
-                    memcpy(Y_save2, Y, N * sizeof(Y_save2));
+                    memcpy(X_save2.get(), X, N * sizeof(X_save2));
+                    memcpy(Y_save2.get(), Y, N * sizeof(Y_save2));
                     if (!last)
-                        memcpy(norm_save2, norm + M * eBands[i] - norm_offset, N * sizeof(norm_save2));
+                        memcpy(norm_save2.get(), norm + M * eBands[i] - norm_offset, N * sizeof(norm_save2));
                     nstart_bytes = ec_save.offs;
                     nend_bytes = ec_save.storage;
                     bytes_buf = ec_save.buf + nstart_bytes;
@@ -2632,8 +2629,8 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
                     /* Restore */
                     *ec = ec_save;
                     ctx = ctx_save;
-                    memcpy(X, X_save, N * sizeof(*X));
-                    memcpy(Y, Y_save, N * sizeof(*Y));
+                    memcpy(X, X_save.get(), N * sizeof(*X));
+                    memcpy(Y, Y_save.get(), N * sizeof(*Y));
 
                     if (i == start + 1)
                         special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
@@ -2643,15 +2640,15 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
                     x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
                                              effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                                              last ? NULL : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
-                    dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N, arch)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N, arch));
+                    dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save.get(), X, N, arch)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save.get(), Y, N, arch));
                     if (dist0 >= dist1) {
                         x_cm = cm2;
                         *ec = ec_save2;
                         ctx = ctx_save2;
-                        memcpy(X, X_save2, N * sizeof(*X));
-                        memcpy(Y, Y_save2, N * sizeof(*Y));
+                        memcpy(X, X_save2.get(), N * sizeof(*X));
+                        memcpy(Y, Y_save2.get(), N * sizeof(*Y));
                         if (!last)
-                            memcpy(norm + M * eBands[i] - norm_offset, norm_save2, N * sizeof(*norm));
+                            memcpy(norm + M * eBands[i] - norm_offset, norm_save2.get(), N * sizeof(*norm));
                         memcpy(bytes_buf, bytes_save, save_bytes * sizeof(*bytes_buf));
                     }
                 }
@@ -2680,14 +2677,6 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
         ctx.avoid_split_noise = 0;
     }
     *seed = ctx.seed;
-
-    celt_free(_norm);
-    celt_free(_lowband_scratch);
-    celt_free(X_save);
-    celt_free(Y_save);
-    celt_free(X_save2);
-    celt_free(Y_save2);
-    celt_free(norm_save2);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2784,7 +2773,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
         return;
     }
 
-    int32_t *scratch = (int32_t *)celt_malloc(N, sizeof(*scratch));
+    auto scratch = audio_malloc<int32_t>(N * sizeof(int32_t*));
     coef0 = coef[0];
     Nd = N / downsample;
     c = 0;
@@ -2838,8 +2827,6 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
             }
         }
     } while (++c < C);
-
-    celt_free(scratch);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2857,7 +2844,7 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_
     overlap = mode->overlap;
     nbEBands = mode->nbEBands;
     N = mode->shortMdctSize << LM;
-    int32_t *freq = (int32_t *)celt_malloc(N, sizeof(*freq)); /**< Interleaved signal MDCTs */
+    auto freq = audio_malloc<int32_t>(N * sizeof(int32_t*)); /**< Interleaved signal MDCTs */
     M = 1 << LM;
 
     if (isTransient) {
@@ -2874,11 +2861,11 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_
     if (CC == 2 && C == 1) {
         /* Copying a mono streams to two channels */
         int32_t *freq2;
-        denormalise_bands(mode, X, freq, oldBandE, start, effEnd, M,
+        denormalise_bands(mode, X, freq.get(), oldBandE, start, effEnd, M,
                           downsample, silence);
         /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
         freq2 = out_syn[1] + overlap / 2;
-        memcpy(freq2, freq, N * sizeof(*freq2));
+        memcpy(freq2, freq.get(), N * sizeof(*freq2));
         for (b = 0; b < B; b++)
             clt_mdct_backward(&mode->mdct, &freq2[b], out_syn[0] + NB * b, mode->window, overlap, shift, B, arch);
         for (b = 0; b < B; b++)
@@ -2888,7 +2875,7 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_
         /* Downmixing a stereo stream to mono */
         int32_t *freq2;
         freq2 = out_syn[0] + overlap / 2;
-        denormalise_bands(mode, X, freq, oldBandE, start, effEnd, M,
+        denormalise_bands(mode, X, freq.get(), oldBandE, start, effEnd, M,
                           downsample, silence);
         /* Use the output buffer as temp array before downmixing. */
         denormalise_bands(mode, X + N, freq2, oldBandE + nbEBands, start, effEnd, M,
@@ -2902,7 +2889,7 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_
         /* Normal case (mono or stereo) */
         c = 0;
         do {
-            denormalise_bands(mode, X + c * N, freq, oldBandE + c * nbEBands, start, effEnd, M,
+            denormalise_bands(mode, X + c * N, freq.get(), oldBandE + c * nbEBands, start, effEnd, M,
                               downsample, silence);
             for (b = 0; b < B; b++)
                 clt_mdct_backward(&mode->mdct, &freq[b], out_syn[c] + NB * b, mode->window, overlap, shift, B, arch);
@@ -2915,8 +2902,6 @@ void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_
         for (i = 0; i < N; i++)
             out_syn[c][i] = SATURATE(out_syn[c][i], SIG_SAT);
     } while (++c < CC);
-
-    celt_free(freq);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2957,16 +2942,15 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
 
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch) {
     int32_t pitch_index;
-    int16_t *lp_pitch_buf = (int16_t *)celt_malloc((DECODE_BUFFER_SIZE >> 1), sizeof(int16_t));
+    auto lp_pitch_buf = audio_malloc<int16_t>((DECODE_BUFFER_SIZE >> 1) * sizeof(int16_t));
 
-    pitch_downsample(decode_mem, lp_pitch_buf,
+    pitch_downsample(decode_mem, lp_pitch_buf.get(),
                      DECODE_BUFFER_SIZE, C, arch);
-    pitch_search(lp_pitch_buf + (PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
+    pitch_search(lp_pitch_buf.get() + (PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf.get(),
                  DECODE_BUFFER_SIZE - PLC_PITCH_LAG_MAX,
                  PLC_PITCH_LAG_MAX - PLC_PITCH_LAG_MIN, &pitch_index, arch);
     pitch_index = PLC_PITCH_LAG_MAX - pitch_index;
 
-    celt_free(lp_pitch_buf);
     return pitch_index;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3015,7 +2999,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
         end = st->end;
         effEnd = max(start, min(end, mode->effEBands));
 
-        int16_t *X = (int16_t *) celt_malloc(C * N, sizeof(int16_t)); /**< Interleaved normalised MDCTs */
+        auto X = audio_malloc<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
         /* Energy decay */
         decay = loss_count == 0 ? QCONST16(1.5f, DB_SHIFT) : QCONST16(.5f, DB_SHIFT);
@@ -3038,7 +3022,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
                     seed = celt_lcg_rand(seed);
                     X[boffs + j] = (int16_t)((int32_t)seed >> 20);
                 }
-                renormalise_vector(X + boffs, blen, 32767, st->arch);
+                renormalise_vector(X.get() + boffs, blen, 32767, st->arch);
             }
         }
         st->rng = seed;
@@ -3049,8 +3033,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
                       DECODE_BUFFER_SIZE - N + (overlap >> 1));
         } while (++c < C);
 
-        celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
-        celt_free(X);
+        celt_synthesis(mode, X.get(), out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
     }
     else{
         int32_t exc_length;
@@ -3072,11 +3055,11 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
            decaying signal, but we can't get more than MAX_PERIOD. */
         exc_length = min(2 * pitch_index, (int32_t)MAX_PERIOD);
 
-        int32_t *etmp = (int32_t *)celt_malloc(overlap, sizeof(int32_t));
-        int16_t *_exc = (int16_t *)celt_malloc((MAX_PERIOD + LPC_ORDER), sizeof(int16_t));
-        int16_t *fir_tmp = (int16_t *)celt_malloc(exc_length, sizeof(int16_t));
+        auto etmp    = audio_malloc<int32_t>(overlap * sizeof(int32_t));
+        auto _exc    = audio_malloc<int16_t>((MAX_PERIOD + LPC_ORDER) * sizeof(int16_t));
+        auto fir_tmp = audio_malloc<int16_t>(exc_length * sizeof(int16_t));
 
-        exc = _exc + LPC_ORDER;
+        exc = _exc.get() + LPC_ORDER;
         window = mode->window;
         c = 0;
         do {
@@ -3133,8 +3116,8 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
                 /* Compute the excitation for exc_length samples before the loss. We need the copy
                    because celt_fir() cannot filter in-place. */
                 celt_fir(exc + MAX_PERIOD - exc_length, lpc + c * LPC_ORDER,
-                         fir_tmp, exc_length, LPC_ORDER, st->arch);
-                memcpy(exc + MAX_PERIOD - exc_length, fir_tmp, exc_length * sizeof(*exc));
+                         fir_tmp.get(), exc_length, LPC_ORDER, st->arch);
+                memcpy(exc + MAX_PERIOD - exc_length, fir_tmp.get(), exc_length * sizeof(*exc));
             }
 
             /* Check if the waveform is decaying, and if so how fast.
@@ -3238,7 +3221,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
             /* Apply the pre-filter to the MDCT overlap for the next frame because
                the post-filter will be re-applied in the decoder after the MDCT
                overlap. */
-            comb_filter(etmp, buf + DECODE_BUFFER_SIZE,
+            comb_filter(etmp.get(), buf + DECODE_BUFFER_SIZE,
                         st->postfilter_period, st->postfilter_period, overlap,
                         -st->postfilter_gain, -st->postfilter_gain,
                         st->postfilter_tapset, st->postfilter_tapset, NULL, 0, st->arch);
@@ -3250,9 +3233,6 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
                     MULT16_32_Q15(window[i], etmp[overlap - 1 - i]) + MULT16_32_Q15(window[overlap - i - 1], etmp[i]);
             }
         } while (++c < C);
-        celt_free(etmp);
-        celt_free(_exc);
-        celt_free(fir_tmp);
     }
     st->loss_count = loss_count + 1;
 }
@@ -5205,16 +5185,16 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     assert(max_pitch > 0);
     lag = len + max_pitch;
 
-    int16_t *x_lp4 = (int16_t *)celt_malloc(lag >> 2, sizeof(int16_t));
-    int16_t *y_lp4 = (int16_t *)celt_malloc(lag >> 2, sizeof(int16_t));
-    int32_t *xcorr = (int32_t *)celt_malloc(max_pitch >> 1, sizeof(int32_t));
+    auto x_lp4 = audio_malloc<int16_t>(lag >> 2 * sizeof(int16_t));
+    auto y_lp4 = audio_malloc<int16_t>(lag >> 2 * sizeof(int16_t));
+    auto xcorr = audio_malloc<int32_t>(max_pitch >> 1 * sizeof(int32_t));
 
     /* Downsample by 2 again */
     for (j = 0; j < len >> 2; j++) x_lp4[j] = x_lp[2 * j];
     for (j = 0; j < lag >> 2; j++) y_lp4[j] = y[2 * j];
 
-    xmax = celt_maxabs16(x_lp4, len >> 2);
-    ymax = celt_maxabs16(y_lp4, lag >> 2);
+    xmax = celt_maxabs16(x_lp4.get(), len >> 2);
+    ymax = celt_maxabs16(y_lp4.get(), lag >> 2);
     shift = celt_ilog2(max((int32_t)1, max(xmax, ymax))) - 11;
     if (shift > 0) {
         for (j = 0; j < len >> 2; j++) x_lp4[j] = SHR16(x_lp4[j], shift);
@@ -5228,9 +5208,9 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     /* Coarse search with 4x decimation */
     maxcorr =
 
-        celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2, arch);
+        celt_pitch_xcorr(x_lp4.get(), y_lp4.get(), xcorr.get(), len >> 2, max_pitch >> 2, arch);
 
-    find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
+    find_best_pitch(xcorr.get(), y_lp4.get(), len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 
     /* Finer search with 2x decimation */
     maxcorr = 1;
@@ -5245,7 +5225,7 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 
         maxcorr = max(maxcorr, sum);
     }
-    find_best_pitch(xcorr, y, len >> 1, max_pitch >> 1, best_pitch, shift + 1, maxcorr);
+    find_best_pitch(xcorr.get(), y, len >> 1, max_pitch >> 1, best_pitch, shift + 1, maxcorr);
 
     /* Refine by pseudo-interpolation */
     if (best_pitch[0] > 0 && best_pitch[0] < (max_pitch >> 1) - 1) {
@@ -5263,10 +5243,6 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
         offset = 0;
     }
     *pitch = 2 * best_pitch[0] - offset;
-
-    celt_free(xcorr);
-    celt_free(y_lp4);
-    celt_free(x_lp4);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5317,7 +5293,7 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
     if (*T0_ >= maxperiod) *T0_ = maxperiod - 1;
 
     T = T0 = *T0_;
-    int32_t *yy_lookup = (int32_t *)celt_malloc(maxperiod + 1, sizeof(int32_t));
+    auto yy_lookup = audio_malloc<int32_t>(maxperiod + 1 * sizeof(int32_t));
 
     dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
     yy_lookup[0] = xx;
@@ -5389,7 +5365,6 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
 
     if (*T0_ < minperiod0) *T0_ = minperiod0;
 
-    celt_free(yy_lookup);
     return pg;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5678,10 +5653,10 @@ int32_t clt_compute_allocation(const CELTMode *m, int32_t start, int32_t end, co
             total -= dual_stereo_rsv;
         }
     }
-    int32_t *bits1 = (int32_t *) celt_malloc(len, sizeof(int32_t));
-    int32_t *bits2 = (int32_t *) celt_malloc(len, sizeof(int32_t));
-    int32_t *thresh = (int32_t *) celt_malloc(len, sizeof(int32_t));
-    int32_t *trim_offset = (int32_t *) celt_malloc(len, sizeof(int32_t));
+    auto bits1       = audio_malloc<int32_t>(len * sizeof(int32_t));
+    auto bits2       = audio_malloc<int32_t>(len * sizeof(int32_t));
+    auto thresh      = audio_malloc<int32_t>(len * sizeof(int32_t));
+    auto trim_offset = audio_malloc<int32_t>(len * sizeof(int32_t));
 
     for (j = start; j < end; j++) {
         /* Below this threshold, we're sure not to allocate any PVQ bits */
@@ -5735,14 +5710,10 @@ int32_t clt_compute_allocation(const CELTMode *m, int32_t start, int32_t end, co
         bits1[j] = bits1j;
         bits2[j] = bits2j;
     }
-    codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap, total, balance, skip_rsv,
+    codedBands = interp_bits2pulses(m, start, end, skip_start, bits1.get(), bits2.get(), thresh.get(), cap, total, balance, skip_rsv,
                                     intensity, intensity_rsv, dual_stereo, dual_stereo_rsv, pulses, ebits,
                                     fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 
-    celt_free(trim_offset);
-    celt_free(thresh);
-    celt_free(bits2);
-    celt_free(bits1);
     return codedBands;
 }
 //----------------------------------------------------------------------------------------------------------------------
