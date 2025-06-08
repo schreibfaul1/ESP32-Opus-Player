@@ -1159,25 +1159,22 @@ static inline void combine_pulses(int32_t *out,      /* O    combined pulses vec
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 // ------- UNIQUE_PTR for PSRAM memory management ----------------
-struct PsramDeleter { // PSRAM deleter for Unique_PTR
+struct Silk_PsramDeleter { // PSRAM deleter for Unique_PTR
     void operator()(void* ptr) const {
         if (ptr){
             free(ptr);  // ps_malloc kann mit free freigegeben werden
         }
     }
 };
-template<typename T>
-using ps_ptr = std::unique_ptr<T[], PsramDeleter>;
-
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
-    std::unique_ptr<T[], PsramDeleter> silk_malloc(std::size_t count) {
+    std::unique_ptr<T[], Silk_PsramDeleter> silk_malloc(std::size_t count) {
         T* raw = static_cast<T*>(ps_malloc(sizeof(T) * count));
         if (!raw) {
             log_e("silk_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
         }
-        return std::unique_ptr<T[], PsramDeleter>(raw);
+        return std::unique_ptr<T[], Silk_PsramDeleter>(raw);
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 

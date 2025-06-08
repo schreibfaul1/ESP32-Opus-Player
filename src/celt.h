@@ -35,6 +35,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include <memory>
 
 typedef struct CELTMode CELTMode;
 typedef struct CELTDecoder CELTDecoder;
@@ -690,6 +691,32 @@ static inline void celt_free(void *ptr) {
         ptr = NULL;
     }
 }
+
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// ------- UNIQUE_PTR for PSRAM memory management ----------------
+struct Celt_PsramDeleter { // PSRAM deleter for Unique_PTR
+    void operator()(void* ptr) const {
+        if (ptr){
+            free(ptr);  // ps_malloc kann mit free freigegeben werden
+        }
+    }
+};
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+    // Request memory for an array of T
+    template <typename T>
+    std::unique_ptr<T[], Celt_PsramDeleter> audio_malloc(std::size_t count) {
+        T* raw = static_cast<T*>(ps_malloc(sizeof(T) * count));
+        if (!raw) {
+            log_e("silk_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
+        }
+        return std::unique_ptr<T[], Celt_PsramDeleter>(raw);
+    }
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+
+
 
 void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread);

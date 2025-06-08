@@ -856,8 +856,8 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
     int16_t yy;
 
     (void)arch;
-    int16_t *y = (int16_t *)celt_malloc(N, sizeof(int16_t));
-    int *signx = (int *)celt_malloc(N, sizeof(int));
+    auto y     = audio_malloc<int16_t>(N * sizeof(int16_t));
+    auto signx = audio_malloc<int32_t>(N * sizeof(int32_t));
 
     /* Get rid of the sign */
     sum = 0;
@@ -981,9 +981,6 @@ int16_t op_pvq_search_c(int16_t *X, int *iy, int K, int N, int arch) {
         iy[j] = (iy[j] ^ -signx[j]) + signx[j];
     } while (++j < N);
 
-    celt_free(y);
-    celt_free(signx);
-
     return yy;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -997,21 +994,20 @@ unsigned alg_quant(int16_t *X, int N, int K, int spread, int B, ec_enc *enc, int
     assert2(N > 1, "alg_quant() needs at least two dimensions");
 
     /* Covers vectorization by up to 4. */
-    int *iy = (int *)celt_malloc(N + 3, sizeof(int));
+    auto iy = audio_malloc<int>(N + 3 * sizeof(int));
 
     exp_rotation(X, N, 1, B, K, spread);
 
-    yy = op_pvq_search(X, iy, K, N, arch);
+    yy = op_pvq_search(X, iy.get(), K, N, arch);
 
-    encode_pulses(iy, N, K, enc);
+    encode_pulses(iy.get(), N, K, enc);
 
     if (resynth) {
-        normalise_residual(iy, X, N, yy, gain);
+        normalise_residual(iy.get(), X, N, yy, gain);
         exp_rotation(X, N, -1, B, K, spread);
     }
 
-    collapse_mask = extract_collapse_mask(iy, N, B);
-    celt_free(iy);
+    collapse_mask = extract_collapse_mask(iy.get(), N, B);
     return collapse_mask;
 }
 //----------------------------------------------------------------------------------------------------------------------
