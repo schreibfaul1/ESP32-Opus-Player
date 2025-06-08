@@ -1,0 +1,359 @@
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31mets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 281743[0m
+[0;32m[  1086][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:787] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x40088983  PS      : 0x00060330  A0      : 0x800dfe86  A1      : 0x3ffc4c60  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x000010a4  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x0000010a  A8      : 0x00000000  A9      : 0x3ffb18c0  
+A10     : 0x3ffb03f8  A11     : 0xffffffff  A12     : 0x00000004  A13     : 0x00060023  
+A14     : 0x3f8009fc  A15     : 0x0000abab  SAR     : 0x00000020  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000000  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x40088980:0x3ffc4c60 0x400dfe83:0x3ffc4c70 0x400dfeb9:0x3ffc4c90 0x400dc30f:0x3ffc4cb0 0x400dccc9:0x3ffc4ce0 0x400dcd6d:0x3ffc4d00 0x400dda5d:0x3ffc4d30 0x400ddb74:0x3ffc4d60 0x400de118:0x3ffc4d80 0x400db6de:0x3ffc4da0 0x400ec482:0x3ffc4df0 0x4008d3d1:0x3ffc4e10
+  #0  0x40088980 in memset at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/machine/xtensa/memset.S:131
+  #1  0x400dfe83 in silk_init_decoder(silk_decoder_state*) at src/silk.cpp:2386
+  #2  0x400dfeb9 in silk_InitDecoder(void*) at src/silk.cpp:1982
+  #3  0x400dc30f in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:111
+  #4  0x400dccc9 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:827
+  #5  0x400dcd6d in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:849
+  #6  0x400dda5d in op_make_decode_ready() at src/opusfile.cpp:693
+  #7  0x400ddb74 in op_open2() at src/opusfile.cpp:777
+  #8  0x400de118 in opus_init_decoder() at src/opusfile.cpp:793
+  #9  0x400db6de in setup() at src/main.cpp:308
+  #10 0x400ec482 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #11 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 7b66a83a4
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m

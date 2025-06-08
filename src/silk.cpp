@@ -17,7 +17,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 
-silk_decoder_state s_channel_state[2];
+silk_decoder_state_t s_silk_decoder_state;
 silk_decoder       s_decState;
 // extern ec_ctx_t    s_ec;
 
@@ -882,7 +882,7 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode side-information parameters from payload */
-void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State                                       */
+void silk_decode_indices(silk_decoder_state_t *psDec, /* I/O  State                                       */
                          int32_t FrameIndex,        /* I    Frame number                                */
                          int32_t decode_LBRR,       /* I    Flag indicating LBRR data is being decoded  */
                          int32_t condCoding         /* I    The type of conditional coding to use       */
@@ -1001,7 +1001,7 @@ void silk_decode_indices(silk_decoder_state *psDec, /* I/O  State               
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void silk_decode_parameters(silk_decoder_state*   psDec,     /* I/O  State                                       */
+void silk_decode_parameters(silk_decoder_state_t*   psDec,     /* I/O  State                                       */
                             silk_decoder_control* psDecCtrl, /* I/O  Decoder control                             */
                             int32_t               condCoding /* I    The type of conditional coding to use       */
 ) {
@@ -1155,7 +1155,7 @@ void silk_decode_pulses(int16_t pulses[],              /* O    Excitation signal
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Set decoder sampling rate (Decoder state pointer , Sampling frequency (kHz) , API Sampling frequency (Hz))*/
-int32_t silk_decoder_set_fs(silk_decoder_state* psDec, int32_t fs_kHz, int32_t fs_API_Hz) {
+int32_t silk_decoder_set_fs(silk_decoder_state_t* psDec, int32_t fs_kHz, int32_t fs_API_Hz) {
     int32_t frame_length, ret = 0;
 
     assert(fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16);
@@ -1503,7 +1503,7 @@ void silk_CNG_exc(int32_t  exc_Q14[],     /* O    CNG excitation signal Q10     
     *rand_seed = seed;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void silk_CNG_Reset(silk_decoder_state* psDec /* I/O  Decoder state                               */
+void silk_CNG_Reset(silk_decoder_state_t* psDec /* I/O  Decoder state                               */
 ) {
     int32_t i, NLSF_step_Q15, NLSF_acc_Q15;
 
@@ -1519,7 +1519,7 @@ void silk_CNG_Reset(silk_decoder_state* psDec /* I/O  Decoder state             
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Updates CNG estimate, and applies the CNG when packet was lost   */
-void silk_CNG(silk_decoder_state*   psDec,     /* I/O  Decoder state                               */
+void silk_CNG(silk_decoder_state_t*   psDec,     /* I/O  Decoder state                               */
               silk_decoder_control* psDecCtrl, /* I/O  Decoder control                             */
               int16_t               frame[],   /* I/O  Signal                                      */
               int32_t               length     /* I    Length of residual                          */
@@ -1677,7 +1677,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t MS_pred_Q13[2] = {0};
     int16_t *resample_out_ptr;
     silk_decoder *psDec = (silk_decoder *)decState;
-    silk_decoder_state *channel_state = psDec->channel_state;
+    silk_decoder_state_t *channel_state = psDec->channel_state;
     int32_t has_side;
     int32_t stereo_to_mono;
     int delay_stack_alloc;
@@ -1976,21 +1976,21 @@ int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
 /* Reset decoder state */
 int32_t silk_InitDecoder( void *decState) {
     int32_t n, ret = SILK_NO_ERROR;
-    silk_decoder_state *channel_state = ((silk_decoder *)decState)->channel_state;
+    silk_decoder_state_t *channel_state = ((silk_decoder *)decState)->channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
         ret = silk_init_decoder(&channel_state[n]);
     }
-    silk_memset(&((silk_decoder *)decState)->sStereo, 0, sizeof(((silk_decoder *)decState)->sStereo));
-    /* Not strictly needed, but it's cleaner that way */
-    ((silk_decoder *)decState)->prev_decode_only_middle = 0;
+    // silk_memset(&((silk_decoder *)decState)->sStereo, 0, sizeof(((silk_decoder *)decState)->sStereo));
+    // /* Not strictly needed, but it's cleaner that way */
+    // ((silk_decoder *)decState)->prev_decode_only_middle = 0;
 
     return ret;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Core decoder. Performs inverse NSQ operation LTP + LPC */
-void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder state                               */
+void silk_decode_core(silk_decoder_state_t *psDec,              /* I/O  Decoder state                               */
                       silk_decoder_control *psDecCtrl,        /* I    Decoder control                             */
                       int16_t xq[],                           /* O    Decoded speech                              */
                       const int16_t pulses[MAX_FRAME_LENGTH]  /* I    Pulse signal                                */
@@ -2162,7 +2162,7 @@ void silk_decode_core(silk_decoder_state *psDec,              /* I/O  Decoder st
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
-int32_t silk_decode_frame(silk_decoder_state *psDec, /* I/O  Pointer to Silk decoder state               */
+int32_t silk_decode_frame(silk_decoder_state_t *psDec, /* I/O  Pointer to Silk decoder state               */
                           int16_t pOut[],            /* O    Pointer to output speech frame              */
                           int32_t *pN,               /* O    Pointer to size of output frame             */
                           int32_t lostFlag,          /* I    0: no loss, 1 loss, 2 decode fec            */
@@ -2381,9 +2381,9 @@ int32_t silk_gains_ID(                                 /* O    returns unique id
     return gainsID;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-int32_t silk_init_decoder(silk_decoder_state* psDec) {
+int32_t silk_init_decoder(silk_decoder_state_t* psDec) {
     /* Clear the entire encoder state, except anything copied */
-    memset(psDec, 0, sizeof(silk_decoder_state));
+    memset(psDec, 0, sizeof(silk_decoder_state_t));
 
     /* Used to deactivate LSF interpolation */
     psDec->first_frame_after_reset = 1;
@@ -3051,7 +3051,7 @@ void silk_NLSF_VQ(int32_t       err_Q24[],  /* O    Quantization errors [K]     
     }
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void silk_PLC_Reset(silk_decoder_state* psDec) { /* I/O Decoder state        */
+void silk_PLC_Reset(silk_decoder_state_t* psDec) { /* I/O Decoder state        */
 
     psDec->sPLC.pitchL_Q8 = silk_LSHIFT(psDec->frame_length, 8 - 1);
     psDec->sPLC.prevGain_Q16[0] = SILK_FIX_CONST(1, 16);
@@ -3060,7 +3060,7 @@ void silk_PLC_Reset(silk_decoder_state* psDec) { /* I/O Decoder state        */
     psDec->sPLC.nb_subfr = 2;
 }
 
-void silk_PLC(silk_decoder_state*   psDec,     /* I/O Decoder state        */
+void silk_PLC(silk_decoder_state_t*   psDec,     /* I/O Decoder state        */
               silk_decoder_control* psDecCtrl, /* I/O Decoder control      */
               int16_t               frame[],   /* I/O  signal              */
               int32_t               lost       /* I Loss flag              */
@@ -3088,7 +3088,7 @@ void silk_PLC(silk_decoder_state*   psDec,     /* I/O Decoder state        */
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Update state of PLC                            */
-void silk_PLC_update(silk_decoder_state*   psDec,    /* I/O Decoder state        */
+void silk_PLC_update(silk_decoder_state_t*   psDec,    /* I/O Decoder state        */
                      silk_decoder_control* psDecCtrl /* I/O Decoder control      */
 ) {
     int32_t          LTP_Gain_Q14, temp_LTP_Gain_Q14;
@@ -3168,7 +3168,7 @@ void silk_PLC_energy(int32_t* energy1, int32_t* shift1, int32_t* energy2, int32_
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state        */
+void silk_PLC_conceal(silk_decoder_state_t*   psDec,     /* I/O Decoder state        */
                       silk_decoder_control* psDecCtrl, /* I/O Decoder control      */
                       int16_t               frame[]    /* O LPC residual signal    */
 ) {
@@ -3336,7 +3336,7 @@ void silk_PLC_conceal(silk_decoder_state*   psDec,     /* I/O Decoder state     
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Glues concealed frames with new good received frames */
-void silk_PLC_glue_frames(silk_decoder_state* psDec,   /* I/O decoder state        */
+void silk_PLC_glue_frames(silk_decoder_state_t* psDec,   /* I/O decoder state        */
                           int16_t             frame[], /* I/O signal               */
                           int32_t             length   /* I length of signal       */
 ) {
