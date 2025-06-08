@@ -831,7 +831,7 @@ typedef struct {
 
     /* O:   Pitch lag of previous frame (0 if unvoiced), measured in samples at 48 kHz      */
     int32_t prevPitchLag;
-} silk_DecControlStruct;
+} silk_DecControlStruct_t;
 
 
 extern const int16_t silk_Quantization_Offsets_Q10[2][2];
@@ -1119,7 +1119,7 @@ void silk_CNG_Reset(silk_decoder_state_t *psDec);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder(void *decState);
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
-int32_t silk_Decode(void* decState, silk_DecControlStruct* decControl, int32_t lostFlag, int32_t newPacketFlag,
+int32_t silk_Decode(void* decState, int32_t lostFlag, int32_t newPacketFlag,
                     int16_t *samplesOut, int32_t *nSamplesOut);
 void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
 void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d);
