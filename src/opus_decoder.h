@@ -34,12 +34,10 @@
 #define OPUS_H
 
 #include <stdint.h>
-#include <stdarg.h> /* va_list */
-#include <stddef.h> /* offsetof */
+#include "celt/celt.h"
+#include "silk/silk.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #define VARDECL(type, var)
 #define ALLOC(var, size, type) type var[size]
@@ -120,8 +118,8 @@ extern "C" {
 
 
 typedef struct OpusDecoder OpusDecoder;
-typedef struct CELTDecoder CELTDecoder;
-typedef struct CELTMode CELTMode;
+//typedef struct CELTDecoder CELTDecoder;
+//typedef struct CELTMode CELTMode;
 typedef enum { MAPPING_TYPE_NONE, MAPPING_TYPE_SURROUND, MAPPING_TYPE_AMBISONICS } MappingType;
 typedef void (*downmix_func)(const void *, int32_t *, int, int, int, int, int);
 typedef void (*opus_copy_channel_in_func)(int16_t *dst, int dst_stride, const void *src, int src_stride,
@@ -155,7 +153,7 @@ int opus_packet_get_nb_samples(uint8_t packet[], int32_t len, int32_t Fs);
 int opus_decoder_get_nb_samples(const OpusDecoder *dec, uint8_t packet[], int32_t len);
 
 
-CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
+//CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
 int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
 
 int encode_size(int size, unsigned char *data);
@@ -210,8 +208,5 @@ void opus_multistream_decoder_destroy(OpusMSDecoder_t *st);
 
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* OPUS_H */

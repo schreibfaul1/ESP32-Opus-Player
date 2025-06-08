@@ -27,15 +27,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 #include "Arduino.h"
-#include <stdint.h>
-
 #include "../celt/celt.h"
-#include "silk.h"
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define SILK_MAX_FRAMES_PER_PACKET 3
 /* Decoder API flags */
@@ -311,8 +304,6 @@ extern "C" {
 #define silk_TRUE        1
 #define silk_FALSE       0
 
-#define VARDECL(type, var)
-#define ALLOC(var, size, type) type var[size]
 #define silk_enc_map(a)                  ( silk_RSHIFT( (a), 15 ) + 1 )
 #define silk_dec_map(a)                  ( silk_LSHIFT( (a),  1 ) - 1 )
 
@@ -490,9 +481,11 @@ extern "C" {
                                         (( (a) & ((b)^0x80000000) & 0x80000000) ? silk_int32_MIN : (a)-(b)) :    \
                                         ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
 
-static inline int32_t silk_CLZ16(int16_t in16) { return 32 - EC_ILOG(in16 << 16 | 0x8000); }
-
-static inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32) : 32; }
+#define EC_CLZ0    ((int)sizeof(unsigned)*CHAR_BIT)
+#define EC_CLZ(_x) (__builtin_clz(_x))
+#define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
+inline int32_t silk_CLZ16(int16_t in16) { return 32 - EC_ILOG(in16 << 16 | 0x8000); }
+inline int32_t silk_CLZ32(int32_t in32) { return in32 ? 32 - EC_ILOG(in32) : 32; }
 
 /* Row based */
 #define matrix_ptr(Matrix_base_adr, row, column, N) (*((Matrix_base_adr) + ((row) * (N) + (column))))
@@ -1160,6 +1153,9 @@ static inline void combine_pulses(int32_t *out,      /* O    combined pulses vec
     }
 }
 
+
+
+
 static inline  void* silk_malloc(size_t count, size_t size) {
     void *ptr = ps_malloc(count * size);
     if (ptr == NULL) {
@@ -1177,9 +1173,9 @@ static inline void silk_free(void *ptr) {
 
 
 
-static void silk_A2NLSF_trans_poly(int32_t *p, const int32_t dd);
-static int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd);
-static void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const int32_t dd);
+void silk_A2NLSF_trans_poly(int32_t *p, const int32_t dd);
+int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd);
+void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const int32_t dd);
 void silk_A2NLSF(int16_t *NLSF, int32_t *a_Q16, const int32_t d);
 void silk_ana_filt_bank_1(const int16_t *in, int32_t *S, int16_t *outL, int16_t *outH, const int32_t N);
 void silk_biquad_alt_stride1(const int16_t *in, const int32_t *B_Q28, const int32_t *A_Q28, int32_t *S,
@@ -1193,7 +1189,7 @@ void silk_stereo_decode_mid_only(int32_t *decode_only_mid);
 void silk_PLC_Reset(silk_decoder_state *psDec);
 void silk_PLC(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost);
 void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t length);
-static void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA],
+void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA],
                                             const int32_t ind, const int32_t fac_Q16);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
 void silk_NLSF_unpack(int16_t ec_ix[], uint8_t pred_Q8[], const silk_NLSF_CB_struct *psNLSF_CB,
@@ -1250,17 +1246,18 @@ void silk_VQ_WMat_EC_c(int8_t *ind, int32_t *res_nrg_Q15, int32_t *rate_dist_Q8,
                        const uint8_t *cl_Q5, const int32_t subfr_len, const int32_t max_gain_Q7, const int32_t L);
 void silk_CNG_Reset(silk_decoder_state *psDec);
 void silk_CNG(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t length);
-void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR,
-                         int32_t condCoding);
+
+
+// void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR, int32_t condCoding);
 void silk_CNG_Reset(silk_decoder_state *psDec);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder(void *decState);
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
 int32_t silk_Decode(void* decState, silk_DecControlStruct* decControl, int32_t lostFlag, int32_t newPacketFlag,
                     int16_t *samplesOut, int32_t *nSamplesOut);
-static void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
+void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
 void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d);
-static void silk_CNG_exc(int32_t exc_Q14[], int32_t exc_buf_Q14[], int32_t length, int32_t *rand_seed);
+void silk_CNG_exc(int32_t exc_Q14[], int32_t exc_buf_Q14[], int32_t length, int32_t *rand_seed);
 void silk_decode_core(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t xq[],
                       const int16_t pulses[MAX_FRAME_LENGTH]);
 int32_t silk_decode_frame(silk_decoder_state *psDec, int16_t pOut[], int32_t *pN, int32_t lostFlag,
@@ -1274,25 +1271,25 @@ int32_t silk_lin2log(const int32_t inLin);
 int32_t silk_log2lin(const int32_t inLog_Q7);
 void silk_LPC_analysis_filter(int16_t *out, const int16_t *in, const int16_t *B, const int32_t len, const int32_t d);
 void silk_LPC_fit(int16_t *a_QOUT, int32_t *a_QIN, const int32_t QOUT, const int32_t QIN, const int32_t d);
-static int32_t LPC_inverse_pred_gain_QA_c(int32_t A_QA[SILK_MAX_ORDER_LPC], const int32_t order);
+int32_t LPC_inverse_pred_gain_QA_c(int32_t A_QA[SILK_MAX_ORDER_LPC], const int32_t order);
 int32_t silk_LPC_inverse_pred_gain_c(const int16_t *A_Q12, const int32_t order);
-static void silk_NLSF_residual_dequant(int16_t x_Q10[], const int8_t indices[], const uint8_t pred_coef_Q8[],
+void silk_NLSF_residual_dequant(int16_t x_Q10[], const int8_t indices[], const uint8_t pred_coef_Q8[],
                                        const int32_t quant_step_size_Q16, const int16_t order);
 void silk_NLSF_stabilize(int16_t *NLSF_Q15, const int16_t *NDeltaMin_Q15, const int32_t L);
 void silk_NLSF_VQ_weights_laroia(int16_t *pNLSFW_Q_OUT, const int16_t *pNLSF_Q15, const int32_t D);
-static void silk_PLC_update(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl);
-static void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
+void silk_PLC_update(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl);
+void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
                             const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr);
-static void silk_PLC_conceal(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[]);
+void silk_PLC_conceal(silk_decoder_state *psDec, silk_decoder_control *psDecCtrl, int16_t frame[]);
 void silk_PLC_glue_frames(silk_decoder_state *psDec, int16_t frame[], int32_t length);
 void silk_resampler_down2_3(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_down2(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_private_AR2(int32_t S[], int32_t out_Q8[], const int16_t in[], const int16_t A_Q14[], int32_t len);
-static int16_t *silk_resampler_private_down_FIR_INTERPOL(int16_t *out, int32_t *buf, const int16_t *FIR_Coefs,
+int16_t *silk_resampler_private_down_FIR_INTERPOL(int16_t *out, int32_t *buf, const int16_t *FIR_Coefs,
                                                          int32_t FIR_Order, int32_t FIR_Fracs, int32_t max_index_Q16,
                                                          int32_t index_increment_Q16);
 void silk_resampler_private_down_FIR(void *SS, int16_t out[], const int16_t in[], int32_t inLen);
-static int16_t *silk_resampler_private_IIR_FIR_INTERPOL(int16_t *out, int16_t *buf, int32_t max_index_Q16,
+int16_t *silk_resampler_private_IIR_FIR_INTERPOL(int16_t *out, int16_t *buf, int32_t max_index_Q16,
                                                         int32_t index_increment_Q16);
 void silk_resampler_private_IIR_FIR(void *SS, int16_t out[], const int16_t in[], int32_t inLen);
 void silk_resampler_private_up2_HQ(int32_t *S, int16_t *out, const int16_t *in, int32_t len);
@@ -1305,9 +1302,4 @@ void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_
 void silk_insertion_sort_increasing_all_values_int16(int16_t *a, const int32_t L);
 void silk_sum_sqr_shift(int32_t *energy, int32_t *shift, const int16_t *x, int32_t len);
 void silk_k2a(int32_t *A_Q24, const int16_t *rc_Q15, const int32_t order);
-
-#ifdef __cplusplus
-}
-#endif
-
 

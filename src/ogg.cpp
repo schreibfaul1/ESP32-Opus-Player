@@ -20,14 +20,10 @@
  ********************************************************************/
 
 // #include "config.h"
-#include <pgmspace.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
+#include "Arduino.h"
 #include "ogg.h"
 
-static const uint32_t crc_lookup[8][256] PROGMEM = {
+const uint32_t crc_lookup[8][256]  = {
     {0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005, 0x2608edb8,
      0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61, 0x350c9b64, 0x31cd86d3, 0x3c8ea00a, 0x384fbdbd, 0x4c11db70, 0x48d0c6c7,
      0x4593e01e, 0x4152fda9, 0x5f15adac, 0x5bd4b01b, 0x569796c2, 0x52568b75, 0x6a1936c8, 0x6ed82b7f, 0x639b0da6,
@@ -342,9 +338,9 @@ int ogg_stream_init(ogg_stream_state *os,int serialno){
     os->body_storage=16*1024;
     os->lacing_storage=1024;
 
-    os->body_data=malloc(os->body_storage*sizeof(*os->body_data));
-    os->lacing_vals=malloc(os->lacing_storage*sizeof(*os->lacing_vals));
-    os->granule_vals=malloc(os->lacing_storage*sizeof(*os->granule_vals));
+    os->body_data=(unsigned char *)malloc(os->body_storage*sizeof(*os->body_data));
+    os->lacing_vals=(int *)malloc(os->lacing_storage*sizeof(*os->lacing_vals));
+    os->granule_vals=(int64_t *)malloc(os->lacing_storage*sizeof(*os->granule_vals));
 
     if(!os->body_data || !os->lacing_vals || !os->granule_vals){
       ogg_stream_clear(os);
@@ -390,14 +386,14 @@ int ogg_stream_destroy(ogg_stream_state *os){
 static int _os_body_expand(ogg_stream_state *os,long needed){
   if(os->body_storage-needed<=os->body_fill){
     long body_storage;
-    void *ret;
+    unsigned char *ret;
     if(os->body_storage>LONG_MAX-needed){
       ogg_stream_clear(os);
       return -1;
     }
     body_storage=os->body_storage+needed;
     if(body_storage<LONG_MAX-1024)body_storage+=1024;
-    ret=realloc(os->body_data,body_storage*sizeof(*os->body_data));
+    ret=(unsigned char *)realloc(os->body_data,body_storage*sizeof(*os->body_data));
     if(!ret){
       ogg_stream_clear(os);
       return -1;
@@ -411,26 +407,26 @@ static int _os_body_expand(ogg_stream_state *os,long needed){
 static int _os_lacing_expand(ogg_stream_state *os,long needed){
   if(os->lacing_storage-needed<=os->lacing_fill){
     long lacing_storage;
-    void *ret;
+    int *ret;
     if(os->lacing_storage>LONG_MAX-needed){
       ogg_stream_clear(os);
       return -1;
     }
     lacing_storage=os->lacing_storage+needed;
     if(lacing_storage<LONG_MAX-32)lacing_storage+=32;
-    ret=realloc(os->lacing_vals,lacing_storage*sizeof(*os->lacing_vals));
+    ret=(int *)realloc(os->lacing_vals,lacing_storage*sizeof(*os->lacing_vals));
     if(!ret){
       ogg_stream_clear(os);
       return -1;
     }
     os->lacing_vals=ret;
-    ret=realloc(os->granule_vals,lacing_storage*
+    ret=(int *)realloc(os->granule_vals,lacing_storage*
                      sizeof(*os->granule_vals));
     if(!ret){
       ogg_stream_clear(os);
       return -1;
     }
-    os->granule_vals=ret;
+    os->granule_vals=(int64_t *)ret;
     os->lacing_storage=lacing_storage;
   }
   return 0;
@@ -805,12 +801,12 @@ char *ogg_sync_buffer(ogg_sync_state *oy, long size){
   if(size>oy->storage-oy->fill){
     /* We need to extend the internal buffer */
     long newsize=size+oy->fill+4096; /* an extra page to be nice */
-    void *ret;
+    unsigned char  *ret;
 
     if(oy->data)
-      ret=realloc(oy->data,newsize);
+      ret=(unsigned char *)realloc(oy->data,newsize);
     else
-      ret=malloc(newsize);
+      ret=(unsigned char *)malloc(newsize);
     if(!ret){
       ogg_sync_clear(oy);
       return NULL;
@@ -918,7 +914,7 @@ long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
   oy->bodybytes=0;
 
   /* search for possible capture */
-  next=memchr(page+1,'O',bytes-1);
+  next=(unsigned char *)memchr(page+1,'O',bytes-1);
   if(!next)
     next=oy->data+oy->fill;
 

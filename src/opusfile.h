@@ -13,8 +13,8 @@
 #pragma once
 
 #include "Arduino.h"
-#include "ogg.h"
 #include "opus_decoder.h"
+#include "ogg.h"
 
 extern __attribute__((weak)) int SD_read(unsigned char* buff, int nbytes);
 
@@ -154,5 +154,11 @@ OggOpusFile_t *opus_init_decoder();
 #define OP_ABSOLUTE_GAIN (3009)
 
 int op_read_stereo(int16_t *_pcm,int _buf_size);
+int op_get_data(int _nbytes);
+int64_t op_position();
+int64_t op_get_next_page( ogg_page *_og, int64_t _boundary);
+int op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int *_nserialnos, int *_cserialnos);
+int op_lookup_page_serialno(const ogg_page *_og, const uint32_t *_serialnos, int _nserialnos);
+int op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos, int *_nserialnos, int *_cserialnos, ogg_page *_og);
 
 

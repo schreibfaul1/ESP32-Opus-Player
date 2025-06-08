@@ -12,7 +12,10 @@
 
 // #include "config.h"
 // #include "internal.h"
+#include "Arduino.h"
 #include "opusfile.h"
+
+
 
 OggOpusFile_t    *m_OggOpusFile;
 OggOpusLink_t    *m_OggOpusLink;
@@ -30,7 +33,7 @@ OpusMSDecoder_t  *m_od;
 /* The read/seek functions track absolute position within the stream.*/
 /* Read a little more data from the file/pipe into the ogg_sync framer. _nbytes: The maximum number of bytes to read.
    Return: A positive number of bytes read on success, 0 on end-of-file, or a negative value on failure.*/
-static int op_get_data(int _nbytes) {
+int op_get_data(int _nbytes) {
     unsigned char *buffer;
     int nbytes;
     assert(_nbytes>0);
@@ -44,7 +47,7 @@ static int op_get_data(int _nbytes) {
 //----------------------------------------------------------------------------------------------------------------------
 /* Get the current position indicator of the underlying stream. This should be the same as the value reported
    by tell().*/
-static int64_t op_position() {
+int64_t op_position() {
     /*The current position indicator is _not_ simply offset.
      We may also have unprocessed, buffered data in the sync state.*/
     return m_OggOpusFile->offset + m_OggOpusFile->oy.fill - m_OggOpusFile->oy.returned;
@@ -57,7 +60,7 @@ static int64_t op_position() {
   OP_FALSE:   Hit the _boundary limit.
   OP_EREAD:   An underlying read operation failed.
   OP_BADLINK: We hit end-of-file before reaching _boundary.*/
-static int64_t op_get_next_page( ogg_page *_og, int64_t _boundary) {
+int64_t op_get_next_page( ogg_page *_og, int64_t _boundary) {
     while(_boundary <= 0 || m_OggOpusFile->offset < _boundary) {
         int more;
         more = ogg_sync_pageseek(&m_OggOpusFile->oy, _og);
@@ -100,7 +103,7 @@ static int64_t op_get_next_page( ogg_page *_og, int64_t _boundary) {
     return OP_FALSE;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int *_nserialnos, int *_cserialnos) {
+int op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int *_nserialnos, int *_cserialnos) {
     uint32_t *serialnos;
     int nserialnos;
     int cserialnos;
@@ -125,7 +128,7 @@ static int op_add_serialno(const ogg_page *_og, uint32_t **_serialnos, int *_nse
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_lookup_page_serialno(const ogg_page *_og, const uint32_t *_serialnos, int _nserialnos) {
+int op_lookup_page_serialno(const ogg_page *_og, const uint32_t *_serialnos, int _nserialnos) {
 
     int serialNo = getSerialNo(_og);
     int i;
@@ -148,7 +151,7 @@ typedef struct OpusSeekRecord {
 }OpusSeekRecord_t;
 //----------------------------------------------------------------------------------------------------------------------
 /*Uses the local ogg_stream storage in m_OggOpusFile.  This is important for non-streaming input sources.*/
-static int op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos,
+int op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos,
                                  int *_nserialnos, int *_cserialnos, ogg_page *_og) {
     ogg_packet op;
     int ret;
@@ -235,7 +238,7 @@ static int op_fetch_headers_impl(OpusHead_t *_head, OpusTags_t *_tags, uint32_t 
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_fetch_headers(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos,
+int op_fetch_headers(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_serialnos,
         int *_nserialnos, int *_cserialnos, ogg_page *_og) {
     ogg_page og;
     int ret;
@@ -293,7 +296,7 @@ static int op_fetch_headers(OpusHead_t *_head, OpusTags_t *_tags, uint32_t **_se
                   duration of a single Ogg page (255 packets * 120 ms per
                   packet == 1,468,800 samples at 48 kHz).
   Return: 0 on success, or OP_EINVAL if the result would wrap around past -1.*/
-static int op_granpos_add(int64_t *_dst_gp, int64_t _src_gp, int32_t _delta) {
+int op_granpos_add(int64_t *_dst_gp, int64_t _src_gp, int32_t _delta) {
     /*The code below handles this case correctly, but there's no reason we
      should ever be called with these values, so make sure we aren't.*/
     assert(_src_gp!=-1);
@@ -339,7 +342,7 @@ static int op_granpos_add(int64_t *_dst_gp, int64_t _src_gp, int32_t _delta) {
                 This must not be -1.
   Return: 0 on success, or OP_EINVAL if the result would not fit in a signed
            64-bit integer.*/
-static int op_granpos_diff(int64_t *_delta, int64_t _gp_a, int64_t _gp_b) {
+int op_granpos_diff(int64_t *_delta, int64_t _gp_a, int64_t _gp_b) {
     int gp_a_negative;
     int gp_b_negative;
     /*The code below handles these cases correctly, but there's no reason we
@@ -380,7 +383,7 @@ static int op_granpos_diff(int64_t *_delta, int64_t _gp_a, int64_t _gp_b) {
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_granpos_cmp(int64_t _gp_a, int64_t _gp_b) {
+int op_granpos_cmp(int64_t _gp_a, int64_t _gp_b) {
     /*The invalid granule position -1 should behave like NaN: neither greater
      than nor less than any other granule position, nor equal to any other
      granule position, including itself.
@@ -399,7 +402,8 @@ static int op_granpos_cmp(int64_t _gp_a, int64_t _gp_b) {
 //----------------------------------------------------------------------------------------------------------------------
 /*Returns the duration of the packet (in samples at 48 kHz), or a negative
    value on error.*/
-static int op_get_packet_duration(uint8_t *_data, int _len) {
+
+int op_get_packet_duration(uint8_t *_data, int _len) {
     int nframes;
     int frame_size;
     int nsamples;
@@ -417,7 +421,7 @@ static int op_get_packet_duration(uint8_t *_data, int _len) {
   m_OggOpusFile->op_count is set to the number of packets collected.
   [out] _durations: Returns the durations of the individual packets.
   Return: The total duration of all packets, or OP_HOLE if there was a hole.*/
-static int32_t op_collect_audio_packets(int _durations[255]) {
+int32_t op_collect_audio_packets(int _durations[255]) {
     int32_t total_duration;
     int op_count;
     /*Count the durations of all packets in the page.*/
@@ -479,7 +483,7 @@ static int32_t op_collect_audio_packets(int _durations[255]) {
                   which case this page will be discarded.
   Return: 0 on success, 1 if there is a buffered BOS page available, or a
            negative value on unrecoverable error.*/
-static int op_find_initial_pcm_offset(ogg_page *_og) {
+int op_find_initial_pcm_offset(ogg_page *_og) {
     ogg_page og;
     int64_t page_offset;
     int64_t pcm_start;
@@ -629,7 +633,7 @@ static int op_find_initial_pcm_offset(ogg_page *_og) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Rescale the number _x from the range [0,_from] to [0,_to]. _from and _to must be positive.*/
-static int64_t op_rescale64(int64_t _x, int64_t _from, int64_t _to) {
+int64_t op_rescale64(int64_t _x, int64_t _from, int64_t _to) {
     int64_t frac;
     int64_t ret;
     int i;
@@ -664,7 +668,7 @@ static int64_t op_rescale64(int64_t _x, int64_t _from, int64_t _to) {
    of 256.*/
 #define OP_GP_SPACING_MIN (48000)
 //----------------------------------------------------------------------------------------------------------------------
-static int op_make_decode_ready() {
+int op_make_decode_ready() {
     const OpusHead_t *head;
     int li;
     int stream_count;
@@ -702,7 +706,7 @@ static int op_make_decode_ready() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Clear out the current logical bitstream decoder.*/
-static void op_decode_clear() {
+void op_decode_clear() {
     /*We don't actually free the decoder.
      We might be able to re-use it for the next link.*/
     m_OggOpusFile->op_count = 0;
@@ -712,7 +716,7 @@ static void op_decode_clear() {
     m_OggOpusFile->ready_state = OP_OPENED;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static void op_clear() {
+void op_clear() {
     OggOpusLink_t *links;
     free(m_OggOpusFile->od_buffer);
     if(m_od != NULL) opus_multistream_decoder_destroy(m_od);
@@ -723,7 +727,7 @@ static void op_clear() {
     ogg_sync_clear(&m_OggOpusFile->oy);
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open1() {
+int op_open1() {
     ogg_page og;
     ogg_page *pog;
     int seekable;
@@ -761,7 +765,7 @@ static int op_open1() {
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
-static int op_open2() {
+int op_open2() {
     log_i("op_open2");
     int ret;
     assert(m_OggOpusFile->ready_state==OP_PARTOPEN);
@@ -796,7 +800,7 @@ OggOpusFile_t* opus_init_decoder() {
 /*Given a serialno, find a link with a corresponding Opus stream, if it exists.
  Return: The index of the link to which the page belongs, or a negative number
  if it was not a desired Opus bitstream section.*/
-static int op_get_link_from_serialno(int _cur_link, int64_t _page_offset,
+int op_get_link_from_serialno(int _cur_link, int64_t _page_offset,
         uint32_t _serialno) {
     const OggOpusLink_t *links;
     int nlinks;
@@ -826,7 +830,7 @@ static int op_get_link_from_serialno(int _cur_link, int64_t _page_offset,
  It also keeps prev_packet_gp up to date (seek and read both use this).
  Return: <0) Error, OP_HOLE (lost packet), or OP_EOF.
  0) Got at least one audio data packet.*/
-static int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _spanp,
+int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _spanp,
         int _ignore_holes) {
     OggOpusLink_t *links;
     uint32_t cur_serialno;
@@ -1128,7 +1132,7 @@ static int op_fetch_and_process_page(ogg_page *_og, int64_t _page_offset, int _s
 //----------------------------------------------------------------------------------------------------------------------
 /*A small helper to determine if an Ogg page contains data that continues onto
  a subsequent page.*/
-static int op_page_continues(const ogg_page *_og) {
+int op_page_continues(const ogg_page *_og) {
     int nlacing;
     assert(_og->header_len>=27);
     nlacing = _og->header[26];
@@ -1141,7 +1145,7 @@ static int op_page_continues(const ogg_page *_og) {
 /*Allocate the decoder scratch buffer.
  This is done lazily, since if the user provides large enough buffers, we'll
  never need it.*/
-static int op_init_buffer() {
+int op_init_buffer() {
     int nchannels_max;
     if(m_OggOpusFile->seekable) {
         const OggOpusLink_t *links;
@@ -1162,7 +1166,7 @@ static int op_init_buffer() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /*Read more samples from the stream, using the same API as op_read() or op_read_float().*/
-static int op_read_native() {
+int op_read_native() {
 
     int16_t *_pcm = NULL;
     int _buf_size = 0;

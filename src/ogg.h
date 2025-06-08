@@ -16,12 +16,8 @@
 #ifndef _OGG_H
 #define _OGG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "Arduino.h"
 
-#include <stddef.h>
-#include <stdint.h>
 
 typedef struct {
   void *iov_base;
@@ -92,26 +88,26 @@ typedef struct {
 
     /* Ogg BITSTREAM PRIMITIVES: decoding **************************/
 
-    extern int ogg_sync_init(ogg_sync_state *oy);
-    extern int ogg_sync_clear(ogg_sync_state *oy);
-    extern int ogg_sync_reset(ogg_sync_state *oy);
-    extern int ogg_sync_destroy(ogg_sync_state *oy);
-    extern int ogg_sync_check(ogg_sync_state *oy);
+    int ogg_sync_init(ogg_sync_state *oy);
+    int ogg_sync_clear(ogg_sync_state *oy);
+    int ogg_sync_reset(ogg_sync_state *oy);
+    int ogg_sync_destroy(ogg_sync_state *oy);
+    int ogg_sync_check(ogg_sync_state *oy);
 
-    extern char *ogg_sync_buffer(ogg_sync_state *oy, long size);
-    extern int ogg_sync_wrote(ogg_sync_state *oy, long bytes);
-    extern long ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og);
+    char *ogg_sync_buffer(ogg_sync_state *oy, long size);
+    int ogg_sync_wrote(ogg_sync_state *oy, long bytes);
+    long ogg_sync_pageseek(ogg_sync_state *oy, ogg_page *og);
     // extern int ogg_sync_pageout(ogg_sync_state *oy, ogg_page *og);
-    extern int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og);
-    extern int ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op);
+    int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og);
+    int ogg_stream_packetout(ogg_stream_state *os, ogg_packet *op);
     // extern int ogg_stream_packetpeek(ogg_stream_state *os, ogg_packet *op);
 
     /* Ogg BITSTREAM PRIMITIVES: general ***************************/
 
-    extern int ogg_stream_init(ogg_stream_state *os, int serialno);
-    extern int ogg_stream_clear(ogg_stream_state *os);
-    extern int ogg_stream_reset(ogg_stream_state *os);
-    extern int ogg_stream_reset_serialno(ogg_stream_state *os, int serialno);
+    int ogg_stream_init(ogg_stream_state *os, int serialno);
+    int ogg_stream_clear(ogg_stream_state *os);
+    int ogg_stream_reset(ogg_stream_state *os);
+    int ogg_stream_reset_serialno(ogg_stream_state *os, int serialno);
     // extern int ogg_stream_destroy(ogg_stream_state *os);
     // extern int ogg_stream_check(ogg_stream_state *os);
     // extern int ogg_stream_eos(ogg_stream_state *os);
@@ -120,18 +116,15 @@ typedef struct {
 
     // extern int ogg_page_version(const ogg_page *og);
     // extern int ogg_page_continued(const ogg_page *og);
-    extern int ogg_page_bos(const ogg_page *og);
+    int ogg_page_bos(const ogg_page *og);
     // extern int ogg_page_eos(const ogg_page *og);
-    extern int64_t ogg_page_granulepos(const ogg_page *og);
-    extern int getSerialNo(const ogg_page *og);
+    int64_t ogg_page_granulepos(const ogg_page *og);
+    int getSerialNo(const ogg_page *og);
     // extern long ogg_page_pageno(const ogg_page *og);
-    extern int ogg_page_packets(const ogg_page *og);
+    int ogg_page_packets(const ogg_page *og);
 
     // extern void ogg_packet_clear(ogg_packet *op);
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif  /* _OGG_H */

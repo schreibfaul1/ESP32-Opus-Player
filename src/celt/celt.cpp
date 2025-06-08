@@ -30,10 +30,6 @@
 #define CELT_C
 
 #include <Arduino.h>
-#include <stdint.h>
-#include <math.h>
-#include <stdarg.h>
-#include <pgmspace.h>
 #include "celt.h"
 
 ec_dec* s_ec_dec = NULL;
@@ -68,7 +64,7 @@ const uint32_t EC_CODE_EXTRA     = (EC_CODE_BITS-2) % EC_SYM_BITS + 1;
   achieved by splitting a band from a
   standard Opus mode: 176, 144, 96, 88, 72, 64, 48,44, 36, 32, 24, 22, 18, 16, 8, 4, 2).*/
 
-static const uint32_t CELT_PVQ_U_DATA[1272] PROGMEM = {
+const uint32_t CELT_PVQ_U_DATA[1272] PROGMEM = {
 
     /*N=0, K=0...176:*/
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -178,7 +174,7 @@ static const uint32_t CELT_PVQ_U_DATA[1272] PROGMEM = {
     /*N=14, K=14:*/
     1409933619};
 
-static const unsigned char band_allocation[] = {
+const unsigned char band_allocation[] = {
     /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     90,  80,  75,  69,  63,  56,  49,  40,  34,  29,  20,  18,  10,  0,   0,   0,   0,   0,   0,   0,   0,
@@ -193,12 +189,12 @@ static const unsigned char band_allocation[] = {
     200, 200, 200, 200, 200, 200, 200, 200, 198, 193, 188, 183, 178, 173, 168, 163, 158, 153, 148, 129, 104,
 };
 
-static const int16_t eband5ms[] = {
+const int16_t eband5ms[] = {
 /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
   0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100
 };
 
-static const int16_t mdct_twiddles960[1800] = {
+const int16_t mdct_twiddles960[1800] = {
     32767,  32767,  32767,  32766,  32765,  32763,  32761,  32759,  32756,  32753,  32750,  32746,  32742,  32738,
     32733,  32728,  32722,  32717,  32710,  32704,  32697,  32690,  32682,  32674,  32666,  32657,  32648,  32639,
     32629,  32619,  32609,  32598,  32587,  32576,  32564,  32552,  32539,  32526,  32513,  32500,  32486,  32472,
@@ -330,7 +326,7 @@ static const int16_t mdct_twiddles960[1800] = {
     -32074, -32239, -32381, -32501, -32600, -32675, -32729, -32759,
 };
 
-static const int16_t window120[120] = {
+const int16_t window120[120] = {
     2,     20,    55,    108,   178,   266,   372,   494,   635,   792,   966,   1157,  1365,  1590,  1831,
     2089,  2362,  2651,  2956,  3276,  3611,  3961,  4325,  4703,  5094,  5499,  5916,  6346,  6788,  7241,
     7705,  8179,  8663,  9156,  9657,  10167, 10684, 11207, 11736, 12271, 12810, 13353, 13899, 14447, 14997,
@@ -341,18 +337,18 @@ static const int16_t window120[120] = {
     32717, 32729, 32740, 32748, 32754, 32758, 32762, 32764, 32766, 32767, 32767, 32767, 32767, 32767, 32767,
 };
 
-static const int16_t logN400[21] = {
+const int16_t logN400[21] = {
     0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36,
 };
 
-static const int16_t cache_index50[105] = {
+const int16_t cache_index50[105] = {
     -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0,   0,   0,   0,   41,  41,  41,  82,  82,  123, 164, 200, 222,
     0,   0,   0,   0,   0,   0,   0,   0,   41,  41,  41,  41,  123, 123, 123, 164, 164, 240, 266, 283, 295,
     41,  41,  41,  41,  41,  41,  41,  41,  123, 123, 123, 123, 240, 240, 240, 266, 266, 305, 318, 328, 336,
     123, 123, 123, 123, 123, 123, 123, 123, 240, 240, 240, 240, 305, 305, 305, 318, 318, 343, 351, 358, 364,
     240, 240, 240, 240, 240, 240, 240, 240, 305, 305, 305, 305, 343, 343, 343, 351, 351, 370, 376, 382, 387,
 };
-static const unsigned char cache_bits50[392] = {
+const unsigned char cache_bits50[392] = {
     40,  7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
     7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   40,  15,  23,
     28,  31,  34,  36,  38,  39,  41,  42,  43,  44,  45,  46,  47,  47,  49,  50,  51,  52,  53,  54,  55,  55,
@@ -372,7 +368,7 @@ static const unsigned char cache_bits50[392] = {
     52,  97,  137, 174, 208, 240, 5,   57,  106, 151, 192, 231, 5,   59,  111, 158, 202, 243, 5,   55,  103, 147,
     187, 224, 5,   60,  113, 161, 206, 248, 4,   65,  122, 175, 224, 4,   67,  127, 182, 234,
 };
-static const unsigned char cache_caps50[168] = {
+const unsigned char cache_caps50[168] = {
     224, 224, 224, 224, 224, 224, 224, 224, 160, 160, 160, 160, 185, 185, 185, 178, 178, 168, 134, 61, 37,
     224, 224, 224, 224, 224, 224, 224, 224, 240, 240, 240, 240, 207, 207, 207, 198, 198, 183, 144, 66, 40,
     160, 160, 160, 160, 160, 160, 160, 160, 185, 185, 185, 185, 193, 193, 193, 183, 183, 172, 138, 64, 38,
@@ -383,7 +379,7 @@ static const unsigned char cache_caps50[168] = {
     204, 204, 204, 204, 204, 204, 204, 204, 201, 201, 201, 201, 198, 198, 198, 187, 187, 175, 140, 66, 40,
 };
 
-static const kiss_twiddle_cpx fft_twiddles48000_960[480] = {
+const kiss_twiddle_cpx fft_twiddles48000_960[480] = {
     {32767, 0},       {32766, -429},    {32757, -858},    {32743, -1287},   {32724, -1715},   {32698, -2143},
     {32667, -2570},   {32631, -2998},   {32588, -3425},   {32541, -3851},   {32488, -4277},   {32429, -4701},
     {32364, -5125},   {32295, -5548},   {32219, -5971},   {32138, -6393},   {32051, -6813},   {31960, -7231},
@@ -466,7 +462,7 @@ static const kiss_twiddle_cpx fft_twiddles48000_960[480] = {
     {32667, 2572},    {32698, 2144},    {32724, 1716},    {32742, 1287},    {32757, 860},     {32766, 430},
 };
 
-static const int16_t fft_bitrev480[480] = {
+const int16_t fft_bitrev480[480] = {
     0,   96,  192, 288, 384, 32,  128, 224, 320, 416, 64,  160, 256, 352, 448, 8,   104, 200, 296, 392, 40,  136, 232,
     328, 424, 72,  168, 264, 360, 456, 16,  112, 208, 304, 400, 48,  144, 240, 336, 432, 80,  176, 272, 368, 464, 24,
     120, 216, 312, 408, 56,  152, 248, 344, 440, 88,  184, 280, 376, 472, 4,   100, 196, 292, 388, 36,  132, 228, 324,
@@ -490,7 +486,7 @@ static const int16_t fft_bitrev480[480] = {
     87,  183, 279, 375, 471, 31,  127, 223, 319, 415, 63,  159, 255, 351, 447, 95,  191, 287, 383, 479,
 };
 
-static const int16_t fft_bitrev240[240] = {
+const int16_t fft_bitrev240[240] = {
     0,  48, 96,  144, 192, 16, 64, 112, 160, 208, 32, 80, 128, 176, 224, 4,  52, 100, 148, 196, 20, 68, 116, 164, 212,
     36, 84, 132, 180, 228, 8,  56, 104, 152, 200, 24, 72, 120, 168, 216, 40, 88, 136, 184, 232, 12, 60, 108, 156, 204,
     28, 76, 124, 172, 220, 44, 92, 140, 188, 236, 1,  49, 97,  145, 193, 17, 65, 113, 161, 209, 33, 81, 129, 177, 225,
@@ -503,7 +499,7 @@ static const int16_t fft_bitrev240[240] = {
     15, 63, 111, 159, 207, 31, 79, 127, 175, 223, 47, 95, 143, 191, 239,
 };
 
-static const int16_t fft_bitrev120[120] = {
+const int16_t fft_bitrev120[120] = {
     0,   24,  48,  72,  96, 8,   32,  56,  80,  104, 16, 40,  64,  88,  112, 4,   28, 52,  76,  100, 12,  36,  60, 84,
     108, 20,  44,  68,  92, 116, 1,   25,  49,  73,  97, 9,   33,  57,  81,  105, 17, 41,  65,  89,  113, 5,   29, 53,
     77,  101, 13,  37,  61, 85,  109, 21,  45,  69,  93, 117, 2,   26,  50,  74,  98, 10,  34,  58,  82,  106, 18, 42,
@@ -511,7 +507,7 @@ static const int16_t fft_bitrev120[120] = {
     35,  59,  83,  107, 19, 43,  67,  91,  115, 7,   31, 55,  79,  103, 15,  39,  63, 87,  111, 23,  47,  71,  95, 119,
 };
 
-static const int16_t fft_bitrev60[60] = {
+const int16_t fft_bitrev60[60] = {
     0, 12, 24, 36, 48, 4, 16, 28, 40, 52, 8,  20, 32, 44, 56, 1, 13, 25, 37, 49, 5, 17, 29, 41, 53, 9,  21, 33, 45, 57,
     2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58, 3, 15, 27, 39, 51, 7, 19, 31, 43, 55, 11, 23, 35, 47, 59,
 };
@@ -534,15 +530,15 @@ const signed char eMeans[25] = {
 };
 
 /* prediction coefficients: 0.9, 0.8, 0.65, 0.5 */
-static const int16_t pred_coef[4] = {29440, 26112, 21248, 16384};
-static const int16_t beta_coef[4] = {30147, 22282, 12124, 6554};
-static const int16_t beta_intra = 4915;
+const int16_t pred_coef[4] = {29440, 26112, 21248, 16384};
+const int16_t beta_coef[4] = {30147, 22282, 12124, 6554};
+const int16_t beta_intra = 4915;
 
 
 /*Parameters of the Laplace-like probability models used for the coarse energy. There is one pair of parameters for
   each frame size, prediction type (inter/intra), and band number. The first number of each pair is the probability
   of 0, and the second is the decay rate, both in Q8 precision.*/
-static const unsigned char e_prob_model[4][2][42] = {
+const unsigned char e_prob_model[4][2][42] = {
     /*120 sample frames.*/
     {/*Inter*/
      {72, 127, 65, 129, 66, 128, 65, 128, 64, 128, 62, 128, 64, 128, 64, 128, 92, 78,  92, 79,  92,
@@ -572,23 +568,23 @@ static const unsigned char e_prob_model[4][2][42] = {
      {22, 178, 63, 114, 74, 82,  84, 83,  92, 82,  103, 62,  96, 72,  96, 67,  101, 73, 107, 72, 113,
       55, 118, 52, 125, 52, 118, 52, 117, 55, 135, 49,  137, 39, 157, 32, 145, 29,  97, 33,  77, 40}}};
 
-static const unsigned long mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
+const unsigned long mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
                                      0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff,
                                      0x00003fff, 0x00007fff, 0x0000ffff, 0x0001ffff, 0x0003ffff, 0x0007ffff, 0x000fffff,
                                      0x001fffff, 0x003fffff, 0x007fffff, 0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
                                      0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff, 0xffffffff};
 
-static const unsigned char small_energy_icdf[3]={2,1,0};
+const unsigned char small_energy_icdf[3]={2,1,0};
 
-static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
+const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
 
-static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
+const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
 /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
-static const unsigned char spread_icdf[4] = {25, 23, 2, 0};
+const unsigned char spread_icdf[4] = {25, 23, 2, 0};
 
-static const unsigned char tapset_icdf[3]={2,1,0};
+const unsigned char tapset_icdf[3]={2,1,0};
 
-static const kiss_fft_state fft_state48000_960_0 = {
+const kiss_fft_state fft_state48000_960_0 = {
     480,   /* nfft */
     17476, /* scale */
     8,     /* scale_shift */
@@ -616,7 +612,7 @@ static const kiss_fft_state fft_state48000_960_0 = {
     NULL,
 };
 
-static const kiss_fft_state fft_state48000_960_1 = {
+const kiss_fft_state fft_state48000_960_1 = {
     240,   /* nfft */
     17476, /* scale */
     7,     /* scale_shift */
@@ -644,7 +640,7 @@ static const kiss_fft_state fft_state48000_960_1 = {
     NULL,
 };
 
-static const kiss_fft_state fft_state48000_960_2 = {
+const kiss_fft_state fft_state48000_960_2 = {
     120,   /* nfft */
     17476, /* scale */
     6,     /* scale_shift */
@@ -672,7 +668,7 @@ static const kiss_fft_state fft_state48000_960_2 = {
     NULL,
 };
 
-static const kiss_fft_state fft_state48000_960_3 = {
+const kiss_fft_state fft_state48000_960_3 = {
     60,    /* nfft */
     17476, /* scale */
     5,     /* scale_shift */
@@ -700,7 +696,7 @@ static const kiss_fft_state fft_state48000_960_3 = {
     NULL,
 };
 
-static const CELTMode mode48000_960_120 = {
+const CELTMode mode48000_960_120 = {
     48000, /* Fs */
     120,   /* overlap */
     21,    /* nbEBands */
@@ -731,13 +727,13 @@ static const CELTMode mode48000_960_120 = {
     {392, cache_index50, cache_bits50, cache_caps50}, /* cache */
 };
 
-static const CELTMode *const static_mode_list[TOTAL_MODES] = {
+const CELTMode *const static_mode_list[TOTAL_MODES] = {
     &mode48000_960_120,
 };
 
 const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
 
-static uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
+uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
     uint32_t  ret = CELT_PVQ_U_DATA[row_idx[row] + data];
     return ret;
 }
@@ -748,7 +744,7 @@ static uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s) {
+void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s) {
     int i;
     int16_t ms;
     int16_t *Xptr;
@@ -773,7 +769,7 @@ static void exp_rotation1(int16_t *X, int len, int stride, int16_t c, int16_t s)
 //----------------------------------------------------------------------------------------------------------------------
 
 void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread) {
-    static const int SPREAD_FACTOR[3] = {15, 10, 5};
+    const int SPREAD_FACTOR[3] = {15, 10, 5};
     int i;
     int16_t c, s;
     int16_t gain, theta;
@@ -812,7 +808,7 @@ void exp_rotation(int16_t *X, int len, int dir, int stride, int K, int spread) {
 
 /** Takes the pitch vector and the decoded residual vector, computes the gain
     that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain) {
+void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, int N, int32_t Ryy, int16_t gain) {
     int i;
     int k;
     int32_t t;
@@ -828,7 +824,7 @@ static void normalise_residual(int *__restrict__ iy, int16_t *__restrict__ X, in
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static unsigned extract_collapse_mask(int *iy, int N, int B) {
+unsigned extract_collapse_mask(int *iy, int N, int B) {
     unsigned collapse_mask;
     int N0;
     int i;
@@ -1127,7 +1123,7 @@ void comb_filter(int32_t *y, int32_t *x, int T0, int T1, int N, int16_t g0, int1
     /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
     int16_t g00, g01, g02, g10, g11, g12;
     int32_t x0, x1, x2, x3, x4;
-    static const int16_t gains[3][3] = {
+    const int16_t gains[3][3] = {
         {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
         {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
         {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
@@ -1200,7 +1196,7 @@ void init_caps(const CELTMode *m, int *cap, int LM, int C) {
 //----------------------------------------------------------------------------------------------------------------------
 
 const char *opus_strerror(int error) {
-    static const char *const error_strings[8] = {
+    const char *const error_strings[8] = {
         "success",
         "invalid argument",
         "buffer too small",
@@ -1472,7 +1468,7 @@ void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks
    square distortion, which means that we use the square root of the value we would have been using if we wanted to
    minimize the MSE in the non-normalized domain. This roughly corresponds to some quick-and-dirty perceptual
    experiments I ran to measure inter-aural masking (there doesn't seem to be any published data on the topic). */
-static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
+void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
     int32_t minE;
 
     int shift;
@@ -1489,7 +1485,7 @@ static void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
+void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
                              const int32_t *bandE, int bandID, int N){
     int i = bandID;
     int j;
@@ -1514,7 +1510,7 @@ static void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const i
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int N) {
+void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int N) {
     int j;
     for (j = 0; j < N; j++) {
         int32_t r, l;
@@ -1526,7 +1522,7 @@ static void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int N
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int N, int arch){
+void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int N, int arch){
     int j;
     int32_t xp = 0, side = 0;
     int32_t El, Er;
@@ -1662,7 +1658,7 @@ int spreading_decision(const CELTMode *m, const int16_t *X, int *average, int la
 /* Indexing table for converting from natural Hadamard to ordery Hadamard. This is essentially a bit-reversed Gray,
    on top of which we've added an inversion of the order because we want the DC at the end rather than the beginning.
    The lines are for N=2, 4, 8, 16 */
-static const int ordery_table[] = {
+const int ordery_table[] = {
     1,
     0,
     3,
@@ -1696,7 +1692,7 @@ static const int ordery_table[] = {
 };
 //----------------------------------------------------------------------------------------------------------------------
 
-static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
+void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
     int N;
     N = N0 * stride;
@@ -1719,7 +1715,7 @@ static void deinterleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
+void interleave_hadamard(int16_t *X, int N0, int stride, int hadamard){
     int i, j;
     int N;
     N = N0 * stride;
@@ -1754,8 +1750,8 @@ void haar1(int16_t *X, int N0, int stride) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
-    static const int16_t exp2_table8[8] =
+int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
+    const int16_t exp2_table8[8] =
         {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
     int qn, qb;
     int N2 = 2 * N - 1;
@@ -1781,7 +1777,7 @@ static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int N, int *b, int B,
+void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int N, int *b, int B,
                           int __B0, int LM, int stereo, int *fill) {
     int qn;
     int itheta = 0;
@@ -1976,7 +1972,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int b,  int16_t *lowband_out) {
+unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int b,  int16_t *lowband_out) {
     int c;
     int stereo;
     int16_t *x = X;
@@ -2014,7 +2010,7 @@ static unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int 
 /* This function is responsible for encoding and decoding a mono partition. It can split the band in two and transmit
    the energy difference with the two half-bands. It can be called recursively so bands can end up being
    split in 8 parts. */
-static unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
+unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
                                 int16_t gain, int fill){
     const unsigned char *cache;
     int q;
@@ -2173,7 +2169,7 @@ static unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int N, int b, 
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This function is responsible for encoding and decoding a band for the mono case. */
-static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
+unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B, int16_t *lowband, int LM,
                            int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int fill) {
     int N0 = N;
     int N_B = N;
@@ -2209,7 +2205,7 @@ static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B
     }
 
     for (k = 0; k < recombine; k++) {
-        static const unsigned char bit_interleave_table[16] = {
+        const unsigned char bit_interleave_table[16] = {
             0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3};
         if (encode)
             haar1(X, N >> k, 1 << k);
@@ -2261,7 +2257,7 @@ static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B
         }
 
         for (k = 0; k < recombine; k++) {
-            static const unsigned char bit_deinterleave_table[16] = {
+            const unsigned char bit_deinterleave_table[16] = {
                 0x00, 0x03, 0x0C, 0x0F, 0x30, 0x33, 0x3C, 0x3F,
                 0xC0, 0xC3, 0xCC, 0xCF, 0xF0, 0xF3, 0xFC, 0xFF};
             cm = bit_deinterleave_table[cm];
@@ -2284,7 +2280,7 @@ static unsigned quant_band(struct band_ctx *ctx, int16_t *X, int N, int b, int B
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This function is responsible for encoding and decoding a band for the stereo case. */
-static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int N, int b, int B, int16_t *lowband,
+unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int N, int b, int B, int16_t *lowband,
                                   int LM, int16_t *lowband_out, int16_t *lowband_scratch, int fill) {
     int imid = 0, iside = 0;
     int inv = 0;
@@ -2419,7 +2415,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int start, int M, int dual_stereo){
+void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int start, int M, int dual_stereo){
     int n1, n2;
     const int16_t *__restrict__ eBands = m->eBands;
     n1 = M * (eBands[start + 1] - eBands[start]);
@@ -2700,7 +2696,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end, int16_t 
 //----------------------------------------------------------------------------------------------------------------------
 
 int opus_custom_decoder_get_size(const CELTMode *mode, int channels){
-    static int size;
+    int size;
     size = sizeof(struct CELTDecoder) + (channels * (DECODE_BUFFER_SIZE + mode->overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
     return size;
 }
@@ -2755,7 +2751,7 @@ int celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int channels){
 
 /* Special case for stereo with no downsampling and no accumulation. This is quite common and we can make it faster by
    processing both channels in the same loop, reducing overhead due to the dependency loop in the IIR filter. */
-static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const int16_t coef0, int32_t *mem) {
+void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const int16_t coef0, int32_t *mem) {
     int32_t *__restrict__ x0;
     int32_t *__restrict__ x1;
     int32_t m0, m1;
@@ -2779,7 +2775,7 @@ static void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int N, const i
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
+void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample, const int16_t *coef,
                int32_t *mem, int accum) {
     int c;
     int Nd;
@@ -2851,7 +2847,7 @@ static void deemphasis(int32_t *in[], int16_t *pcm, int N, int C, int downsample
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int start,
+void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int start,
                            int effEnd, int C, int CC, int isTransient, int LM, int downsample, int silence, int arch){
     int c, i;
     int M;
@@ -2928,7 +2924,7 @@ static void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[],
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec){
+void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec){
     int i, curr, tf_select;
     int tf_select_rsv;
     int tf_changed;
@@ -2963,7 +2959,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
+int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
     int pitch_index;
     int16_t *lp_pitch_buf = (int16_t *)celt_malloc((DECODE_BUFFER_SIZE >> 1), sizeof(int16_t));
 
@@ -2979,7 +2975,7 @@ static int celt_plc_pitch_search(int32_t *decode_mem[2], int C, int arch) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
+void celt_decode_lost(CELTDecoder *__restrict__ st, int N, int LM){
     int c;
     int i;
     const int C = st->channels;
@@ -3854,7 +3850,7 @@ int _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static uint32_t icwrs(int _n, const int *_y) {
+uint32_t icwrs(int _n, const int *_y) {
     uint32_t i;
     int j;
     int k;
@@ -3878,7 +3874,7 @@ void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
+int32_t cwrsi(int _n, int _k, uint32_t _i, int *_y) {
     uint32_t p;
     int s;
     int k0;
@@ -3964,7 +3960,7 @@ int32_t decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
 /* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear
    function followed by a lookup to determine the exact transition thresholds. */
 uint32_t ec_tell_frac(ec_ctx *_this) {
-    static const unsigned correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
+    const unsigned correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
     uint32_t nbits;
     uint32_t r;
     int l;
@@ -3979,17 +3975,17 @@ uint32_t ec_tell_frac(ec_ctx *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int ec_read_byte(ec_dec *_this) { return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0; }
+int ec_read_byte(ec_dec *_this) { return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0; }
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static int ec_read_byte_from_end(ec_dec *_this) {
+int ec_read_byte_from_end(ec_dec *_this) {
     return _this->end_offs < _this->storage ? _this->buf[_this->storage - ++(_this->end_offs)] : 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 /*Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.*/
-static void ec_dec_normalize(ec_dec *_this) {
+void ec_dec_normalize(ec_dec *_this) {
     /*If the range is too small, rescale it and input some bits.*/
     while (_this->rng <= EC_CODE_BOT) {
         int sym;
@@ -4145,14 +4141,14 @@ uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int ec_write_byte(ec_enc *_this, unsigned _value) {
+int ec_write_byte(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
     _this->buf[_this->offs++] = (unsigned char)_value;
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
+int ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
     _this->buf[_this->storage - ++(_this->end_offs)] = (unsigned char)_value;
     return 0;
@@ -4164,7 +4160,7 @@ static int ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
   overflows, then the stream becomes undecodable. This gives a theoretical limit of a few billion symbols in a single
   packet on 32-bit systems. The alternative is to truncate the range in order to force a carry, but requires similar
   carry tracking in the decoder, needlessly slowing it down.*/
-static void ec_enc_carry_out(ec_enc *_this, int _c) {
+void ec_enc_carry_out(ec_enc *_this, int _c) {
     if (_c != EC_SYM_MAX) {
         /*No further carry propagation possible, flush buffer.*/
         int carry;
@@ -4184,7 +4180,7 @@ static void ec_enc_carry_out(ec_enc *_this, int _c) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static inline void ec_enc_normalize(ec_enc *_this) {
+inline void ec_enc_normalize(ec_enc *_this) {
     /*If the range is too small, output some bits and rescale it.*/
     while (_this->rng <= EC_CODE_BOT) {
         ec_enc_carry_out(_this, (int)(_this->val >> EC_CODE_SHIFT));
@@ -4304,7 +4300,7 @@ void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N) {
+void kf_bfly2(kiss_fft_cpx *Fout, int m, int N) {
     kiss_fft_cpx *Fout2;
     int i;
     (void)m;
@@ -4341,7 +4337,7 @@ static void kf_bfly2(kiss_fft_cpx *Fout, int m, int N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
+void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
     int i;
 
     if (m == 1) {
@@ -4399,7 +4395,7 @@ static void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
+void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
     int i;
     size_t k;
     const size_t m2 = 2 * m;
@@ -4443,7 +4439,7 @@ static void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
+void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int m, int N, int mm) {
     kiss_fft_cpx *Fout0, *Fout1, *Fout2, *Fout3, *Fout4;
     int i, u;
     kiss_fft_cpx scratch[13];
@@ -4586,7 +4582,7 @@ void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx
 //----------------------------------------------------------------------------------------------------------------------
 
 /* When called, decay is positive and at most 11456. */
-static unsigned ec_laplace_get_freq1(unsigned fs0, int decay) {
+unsigned ec_laplace_get_freq1(unsigned fs0, int decay) {
     unsigned ft;
     ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
     return ft * (int32_t)(16384 - decay) >> 15;
@@ -4743,7 +4739,7 @@ int32_t celt_sqrt(int32_t x) {
     int k;
     int16_t n;
     int32_t rt;
-    static const int16_t C[5] = {23175, 11561, -3011, 1699, -664};
+    const int16_t C[5] = {23175, 11561, -3011, 1699, -664};
     if (x == 0)
         return 0;
     else if (x >= 1073741824)
@@ -4760,7 +4756,7 @@ int32_t celt_sqrt(int32_t x) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static inline int16_t _celt_cos_pi_2(int16_t x) {
+inline int16_t _celt_cos_pi_2(int16_t x) {
     int16_t x2;
 
     x2 = MULT16_16_P15(x, x);
@@ -5043,7 +5039,7 @@ CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
+void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, int *best_pitch, int yshift,
                             int32_t maxcorr) {
     int i, j;
     int32_t Syy = 1;
@@ -5086,7 +5082,7 @@ static void find_best_pitch(int32_t *xcorr, int16_t *y, int len, int max_pitch, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static void celt_fir5(int16_t *x, const int16_t *num, int N) {
+void celt_fir5(int16_t *x, const int16_t *num, int N) {
     int i;
     int16_t num0, num1, num2, num3, num4;
     int32_t mem0, mem1, mem2, mem3, mem4;
@@ -5279,7 +5275,7 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy) {
+int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy) {
     int32_t x2y2;
     int sx, sy, shift;
     int32_t g;
@@ -5403,7 +5399,7 @@ int16_t remove_doubling(int16_t *x, int maxperiod, int minperiod, int N, int *T0
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-static int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, const int *bits1, const int *bits2,
+int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start, const int *bits1, const int *bits2,
                               const int *thresh, const int *cap, int32_t total, int32_t *_balance, int skip_rsv,
                               int *intensity, int intensity_rsv, int *dual_stereo, int dual_stereo_rsv, int *bits,
                               int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev,
@@ -5867,7 +5863,7 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, int16_t *old
 //----------------------------------------------------------------------------------------------------------------------
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC. */
-static void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len) {
+void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int len) {
     int j;
     int16_t y_0, y_1, y_2, y_3;
     assert(len >= 3);

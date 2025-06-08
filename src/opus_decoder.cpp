@@ -26,10 +26,9 @@
 */
 
 #include "Arduino.h"
-#include <stdarg.h>
-#include "celt/celt.h"
 #include "opus_decoder.h"
-#include "silk/silk.h"
+
+
 
 const uint32_t CELT_SET_SIGNALLING_REQUEST      = 10016;
 const uint32_t CELT_SET_END_BAND_REQUEST        = 10012;
