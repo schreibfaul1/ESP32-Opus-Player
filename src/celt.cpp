@@ -3389,19 +3389,19 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
     unquant_coarse_energy(mode, start, end, oldBandE,
                           intra_ener, dec, C, LM);
 
-    int32_t *tf_res = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
-    tf_decode(start, end, isTransient, tf_res, LM, dec);
+    auto tf_res = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    tf_decode(start, end, isTransient, tf_res.get(), LM, dec);
 
     tell = ec_tell(dec);
     spread_decision = SPREAD_NORMAL;
     if (tell + 4 <= total_bits)
         spread_decision = ec_dec_icdf(spread_icdf, 5);
 
-    int32_t *cap = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
+    auto cap = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
 
-    init_caps(mode, cap, LM, C);
+    init_caps(mode, cap.get(), LM, C);
 
-    int32_t *offsets = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
+    auto offsets = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
 
     dynalloc_logp = 6;
     total_bits <<= BITRES;
@@ -3433,7 +3433,7 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
             dynalloc_logp = max((int32_t)2, dynalloc_logp - 1);
     }
 
-    int32_t *fine_quant = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
+    auto fine_quant = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
 
     alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
@@ -3441,14 +3441,14 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
     bits -= anti_collapse_rsv;
 
-    int32_t *pulses = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
-    int32_t *fine_priority = (int32_t *)celt_malloc(nbEBands, sizeof(int32_t));
+    auto pulses = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto fine_priority = audio_malloc<int32_t>(nbEBands * sizeof(int32_t));
 
-    codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
-                                        alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
-                                        fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
+    codedBands = clt_compute_allocation(mode, start, end, offsets.get(), cap.get(),
+                                        alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses.get(),
+                                        fine_quant.get(), fine_priority.get(), C, LM, dec, 0, 0, 0);
 
-    unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
+    unquant_fine_energy(mode, start, end, oldBandE, fine_quant.get(), dec, C);
 
     c = 0;
     do {
@@ -3456,12 +3456,12 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
     } while (++c < CC);
 
     /* Decode fixed codebook */
-    unsigned char *collapse_masks = (unsigned char *)celt_malloc(C * nbEBands, sizeof(unsigned char));
+    auto collapse_masks = audio_malloc<unsigned char>(C * nbEBands * sizeof(unsigned char));
 
-    int16_t *X = (int16_t *) celt_malloc(C * N, sizeof(int16_t)); /**< Interleaved normalised MDCTs */
+    auto X = audio_malloc<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
-    quant_all_bands(0, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
-                    NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
+    quant_all_bands(0, mode, start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
+                    NULL, pulses.get(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.get(),
                     len * (8 << BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, &st->rng, 0,
                     st->arch, st->disable_inv);
 
@@ -3470,18 +3470,18 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
     }
 
     unquant_energy_finalise(mode, start, end, oldBandE,
-                            fine_quant, fine_priority, len * 8 - ec_tell(dec), dec, C);
+                            fine_quant.get(), fine_priority.get(), len * 8 - ec_tell(dec), dec, C);
 
     if (anti_collapse_on)
-        anti_collapse(mode, X, collapse_masks, LM, C, N,
-                      start, end, oldBandE, oldLogE, oldLogE2, pulses, st->rng, st->arch);
+        anti_collapse(mode, X.get(), collapse_masks.get(), LM, C, N,
+                      start, end, oldBandE, oldLogE, oldLogE2, pulses.get(), st->rng, st->arch);
 
     if (silence) {
         for (i = 0; i < C * nbEBands; i++)
             oldBandE[i] = -QCONST16(28.f, DB_SHIFT);
     }
 
-    celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
+    celt_synthesis(mode, X.get(), out_syn, oldBandE, start, effEnd,
                    C, CC, isTransient, LM, st->downsample, silence, st->arch);
 
     c = 0;
@@ -3548,16 +3548,6 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
 
     deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
     st->loss_count = 0;
-
-    celt_free(tf_res);
-    celt_free(cap);
-    celt_free(offsets);
-    celt_free(fine_quant);
-    celt_free(pulses);
-    celt_free(fine_priority);
-    celt_free(collapse_masks);
-    celt_free(X);
-
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;
     if (ec_get_error(dec))
@@ -3694,7 +3684,7 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int
     int32_t i, j;
     assert(x != y);
 
-    int16_t *rnum = (int16_t *)celt_malloc(ord, sizeof(int16_t));
+    auto rnum = audio_malloc<int16_t>(ord * sizeof(int16_t));
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
     for (i = 0; i < N - 3; i += 4) {
         int32_t sum[4];
@@ -3702,7 +3692,7 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int
         sum[1] = SHL32(EXTEND32(x[i + 1]), 12);
         sum[2] = SHL32(EXTEND32(x[i + 2]), 12);
         sum[3] = SHL32(EXTEND32(x[i + 3]), 12);
-        xcorr_kernel(rnum, x + i - ord, sum, ord, arch);
+        xcorr_kernel(rnum.get(), x + i - ord, sum, ord, arch);
         y[i] = ROUND16(sum[0], 12);
         y[i + 1] = ROUND16(sum[1], 12);
         y[i + 2] = ROUND16(sum[2], 12);
@@ -3713,7 +3703,6 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int
         for (j = 0; j < ord; j++) sum = MAC16_16(sum, rnum[j], x[i + j - ord]);
         y[i] = ROUND16(sum, 12);
     }
-    celt_free(rnum);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3721,8 +3710,8 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int
     int32_t i, j;
     assert((ord & 3) == 0);
 
-    int16_t *rden = (int16_t *)celt_malloc(ord, sizeof(int16_t));
-    int16_t *y = (int16_t *)celt_malloc(N + ord, sizeof(int16_t));
+    auto rden = audio_malloc<int16_t>(ord * sizeof(int16_t));
+    auto y    = audio_malloc<int16_t>(N + ord * sizeof(int16_t));
 
     for (i = 0; i < ord; i++) rden[i] = den[ord - i - 1];
     for (i = 0; i < ord; i++) y[i] = -mem[ord - i - 1];
@@ -3734,7 +3723,7 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int
         sum[1] = _x[i + 1];
         sum[2] = _x[i + 2];
         sum[3] = _x[i + 3];
-        xcorr_kernel(rden, y + i, sum, ord, arch);
+        xcorr_kernel(rden.get(), y.get() + i, sum, ord, arch);
 
         /* Patch up the result to compensate for the fact that this is an IIR */
         y[i + ord] = -SROUND16(sum[0], 12);
@@ -3760,8 +3749,6 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int
         _y[i] = sum;
     }
     for (i = 0; i < ord; i++) mem[i] = _y[N - i - 1];
-    celt_free(rden);
-    celt_free(y);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3773,7 +3760,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
     int32_t fastN = n - lag;
     int32_t shift;
     const int16_t *xptr;
-    int16_t *xx = (int16_t *)celt_malloc(n, sizeof(int16_t));
+    auto xx = audio_malloc<int16_t>(n * sizeof(int16_t));
      assert(n > 0);
     assert(overlap >= 0);
     if (overlap == 0) {
@@ -3784,7 +3771,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
             xx[i] = MULT16_16_Q15(x[i], window[i]);
             xx[n - i - 1] = MULT16_16_Q15(x[n - i - 1], window[i]);
         }
-        xptr = xx;
+        xptr = xx.get();
     }
     shift = 0;
     {
@@ -3800,7 +3787,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
         shift = (shift) / 2;
         if (shift > 0) {
             for (i = 0; i < n; i++) xx[i] = PSHR32(xptr[i], shift);
-            xptr = xx;
+            xptr = xx.get();
         } else
             shift = 0;
     }
@@ -3821,7 +3808,6 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
         for (i = 0; i <= lag; i++) ac[i] = SHR32(ac[i], shift2);
         shift += shift2;
     }
-    celt_free(xx);
     return shift;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4809,8 +4795,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     N2 = N >> 1;
     N4 = N >> 2;
 
-    int32_t *f = (int32_t *)celt_malloc(N2, sizeof(int32_t));
-    kiss_fft_cpx *f2 = (kiss_fft_cpx *)celt_malloc(N4, sizeof(kiss_fft_cpx));
+    auto  f = audio_malloc<int32_t>(N2 * sizeof(int32_t));
+    auto f2 = audio_malloc<kiss_fft_cpx>(N4 * sizeof(kiss_fft_cpx));
 
     /* Consider the input to be composed of four blocks: [a, b, c, d] */
     /* Window, shuffle, fold */
@@ -4818,7 +4804,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
         /* Temp pointers to make it really clear to the compiler what we're doing */
         const int32_t *__restrict__ xp1 = in + (overlap >> 1);
         const int32_t *__restrict__ xp2 = in + N2 - 1 + (overlap >> 1);
-        int32_t *__restrict__ yp = f;
+        int32_t *__restrict__ yp = f.get();
         const int16_t *__restrict__ wp1 = window + (overlap >> 1);
         const int16_t *__restrict__ wp2 = window + (overlap >> 1) - 1;
         for (i = 0; i < ((overlap + 3) >> 2); i++) {
@@ -4851,7 +4837,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     }
     /* Pre-rotation */
     {
-        int32_t *__restrict__ yp = f;
+        int32_t *__restrict__ yp = f.get();
         const int16_t *t = &trig[0];
         for (i = 0; i < N4; i++) {
             kiss_fft_cpx yc;
@@ -4872,12 +4858,12 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     }
 
     /* N/4 complex FFT, does not downscale anymore */
-    opus_fft_impl(st, f2);
+    opus_fft_impl(st, f2.get());
 
     /* Post-rotate */
     {
         /* Temp pointers to make it really clear to the compiler what we're doing */
-        const kiss_fft_cpx *__restrict__ fp = f2;
+        const kiss_fft_cpx *__restrict__ fp = f2.get();
         int32_t *__restrict__ yp1 = out;
         int32_t *__restrict__ yp2 = out + stride * (N2 - 1);
         const int16_t *t = &trig[0];
@@ -4893,8 +4879,6 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
             yp2 -= 2 * stride;
         }
     }
-    celt_free(f);
-    celt_free(f2);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
