@@ -913,7 +913,7 @@ typedef struct {
     int32_t                         nChannelsAPI;
     int32_t                         nChannelsInternal;
     int32_t                         prev_decode_only_middle;
-} silk_decoder;
+} silk_decoder_t;
 
 typedef struct {
     int32_t sLPC_Q14[MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH];

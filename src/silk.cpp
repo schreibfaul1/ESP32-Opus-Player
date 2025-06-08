@@ -18,7 +18,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 silk_decoder_state_t s_silk_decoder_state;
-silk_decoder       s_decState;
+silk_decoder_t       s_silk_decoder;
 // extern ec_ctx_t    s_ec;
 
 uint8_t            s_channelsInternal = 0;
@@ -1676,7 +1676,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int16_t* samplesOut1_tmp[2];
     int32_t MS_pred_Q13[2] = {0};
     int16_t *resample_out_ptr;
-    silk_decoder *psDec = (silk_decoder *)decState;
+    silk_decoder_t *psDec = (silk_decoder_t *)decState;
     silk_decoder_state_t *channel_state = psDec->channel_state;
     int32_t has_side;
     int32_t stereo_to_mono;
@@ -1967,7 +1967,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
     int32_t ret = SILK_NO_ERROR;
 
-    *decSizeBytes = sizeof(silk_decoder);
+    *decSizeBytes = sizeof(silk_decoder_t);
 
     return ret;
 }
@@ -1976,14 +1976,14 @@ int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
 /* Reset decoder state */
 int32_t silk_InitDecoder( void *decState) {
     int32_t n, ret = SILK_NO_ERROR;
-    silk_decoder_state_t *channel_state = ((silk_decoder *)decState)->channel_state;
+    silk_decoder_state_t *channel_state = ((silk_decoder_t *)decState)->channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
         ret = silk_init_decoder(&channel_state[n]);
     }
-    // silk_memset(&((silk_decoder *)decState)->sStereo, 0, sizeof(((silk_decoder *)decState)->sStereo));
-    // /* Not strictly needed, but it's cleaner that way */
-    // ((silk_decoder *)decState)->prev_decode_only_middle = 0;
+    silk_memset(&((silk_decoder_t *)decState)->sStereo, 0, sizeof(((silk_decoder_t *)decState)->sStereo));
+    /* Not strictly needed, but it's cleaner that way */
+    ((silk_decoder_t *)decState)->prev_decode_only_middle = 0;
 
     return ret;
 }
