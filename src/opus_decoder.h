@@ -154,7 +154,7 @@ int opus_decoder_get_nb_samples(const OpusDecoder *dec, uint8_t packet[], int32_
 
 
 //CELTMode *opus_custom_mode_create(int32_t Fs, int frame_size, int *error);
-int celt_decoder_ctl(CELTDecoder *__restrict__ st, int request, ...);
+int celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int request, ...);
 
 int encode_size(int size, unsigned char *data);
 int opus_decode_native(OpusDecoder *st, uint8_t *data, int32_t len, int16_t *pcm, int frame_size,

@@ -37,9 +37,6 @@
 #include "Arduino.h"
 #include <memory>
 
-typedef struct CELTMode CELTMode;
-typedef struct CELTDecoder CELTDecoder;
-
 #define OPUS_OK                0
 #define OPUS_BAD_ARG          -1
 #define OPUS_BUFFER_TOO_SMALL -2
@@ -147,7 +144,7 @@ typedef struct {
 
 
 
-struct CELTMode {
+typedef struct _CELTMode {
     int32_t Fs;
     int32_t overlap;
 
@@ -167,13 +164,13 @@ struct CELTMode {
     const int16_t *window;
     mdct_lookup mdct;
     PulseCache cache;
-};
+}CELTMode_t;
 
 
 struct band_ctx{
     int32_t encode;
     int32_t resynth;
-    const CELTMode *m;
+    const CELTMode_t *m;
     int32_t i;
     int32_t intensity;
     int32_t spread;
@@ -197,8 +194,8 @@ struct split_ctx{
     int32_t qalloc;
 };
 
-struct CELTDecoder {
-    const CELTMode *mode;
+typedef struct _CELTDecoder {
+    const CELTMode_t *mode;
     int32_t overlap;
     int32_t channels;
     int32_t stream_channels;
@@ -232,9 +229,9 @@ struct CELTDecoder {
                             /* int16_t oldLogE[], Size = 2*mode->nbEBands */
                             /* int16_t oldLogE2[], Size = 2*mode->nbEBands */
                             /* int16_t backgroundLogE[], Size = 2*mode->nbEBands */
-};
+}CELTDecoder_t;
 
-
+extern CELTDecoder_t CELTDecoder;
 
 
 
@@ -643,7 +640,7 @@ static inline int32_t get_pulses(int32_t i){
    return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
 }
 
-static inline int32_t bits2pulses(const CELTMode *m, int32_t band, int32_t LM, int32_t bits){
+static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM, int32_t bits){
    int32_t i;
    int32_t lo, hi;
    const unsigned char *cache;
@@ -669,7 +666,7 @@ static inline int32_t bits2pulses(const CELTMode *m, int32_t band, int32_t LM, i
       return hi;
 }
 
-static inline int32_t pulses2bits(const CELTMode *m, int32_t band, int32_t LM, int32_t pulses){
+static inline int32_t pulses2bits(const CELTMode_t *m, int32_t band, int32_t LM, int32_t pulses){
    const unsigned char *cache;
 
    LM++;
@@ -715,26 +712,26 @@ int32_t resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
 void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1,
                  const int16_t *window, int32_t overlap, int32_t arch);
-void init_caps(const CELTMode *m, int32_t *cap, int32_t LM, int32_t C);
+void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C);
 const char *opus_strerror(int32_t error);
 int32_t hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int32_t N, int32_t prev);
 uint32_t celt_lcg_rand(uint32_t seed);
 int16_t bitexact_cos(int16_t x);
 int32_t bitexact_log2tan(int32_t isin, int32_t icos);
-void compute_band_energies(const CELTMode *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM, int32_t arch);
-void normalise_bands(const CELTMode *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE,
+void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM, int32_t arch);
+void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE,
                      int32_t end, int32_t C, int32_t M);
-void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
+void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
-void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
+void anti_collapse(const CELTMode_t *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed, int32_t arch);
 void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
-void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
+void intensity_stereo(const CELTMode_t *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
                       const int32_t *bandE, int32_t bandID, int32_t N);
 void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int32_t N);
 void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int32_t N, int32_t arch);
-int32_t spreading_decision(const CELTMode *m, const int16_t *X, int32_t *average, int32_t last_decision, int32_t *hf_average,
+int32_t spreading_decision(const CELTMode_t *m, const int16_t *X, int32_t *average, int32_t last_decision, int32_t *hf_average,
                        int32_t *tapset_decision, int32_t update_hf, int32_t end, int32_t C, int32_t M, const int32_t *spread_weight);
 void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
@@ -749,26 +746,26 @@ unsigned quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int3
                     int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill);
 unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                            int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
-void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
-void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
+void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
+void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      unsigned char *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t arch, int32_t disable_inv);
-int32_t opus_custom_decoder_get_size(const CELTMode *mode, int32_t channels);
+int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels);
 int32_t celt_decoder_get_size(int32_t channels);
-int32_t opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int32_t channels);
-int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels);
+int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int32_t channels);
+int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t channels);
 void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
                 int32_t *mem, int32_t accum);
-void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
+void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                     int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence, int32_t arch);
 void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec);
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch);
-void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM);
-int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
+void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM);
+int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
                         int32_t frame_size, ec_dec *dec, int32_t accum);
-int32_t celt_decoder_ctl(CELTDecoder *__restrict__ st, int32_t request, ...);
+int32_t celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int32_t request, ...);
 void _celt_lpc(int16_t *_lpc, const int32_t *ac, int32_t p);
 void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int32_t ord, int32_t arch);
 void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int32_t ord, int16_t *mem, int32_t arch);
@@ -820,7 +817,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
                         const int16_t *window, int32_t overlap, int32_t shift, int32_t stride, int32_t arch);
 void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
                          const int16_t *__restrict__ window, int32_t overlap, int32_t shift, int32_t stride, int32_t arch);
-CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
+CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max_pitch, int32_t *best_pitch, int32_t yshift,
                      int32_t maxcorr);
 void celt_fir5(int16_t *x, const int16_t *num, int32_t N);
@@ -845,18 +842,18 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
 int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
 int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_t N, int32_t *T0_, int32_t prev_period, int16_t prev_gain,
                         int32_t arch);
-int32_t interp_bits2pulses(const CELTMode *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
+int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                        const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                        int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
                        int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev,
                        int32_t signalBandwidth);
-int32_t clt_compute_allocation(const CELTMode *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
+int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
                            int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
                            int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev, int32_t signalBandwidth);
-void unquant_coarse_energy(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
+void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
                            int32_t LM);
-void unquant_fine_energy(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec *dec,
+void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec *dec,
                          int32_t C);
-void unquant_energy_finalise(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
+void unquant_energy_finalise(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C);
 void xcorr_kernel_c(const int16_t *x, const int16_t *y, int32_t sum[4], int32_t len);

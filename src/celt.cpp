@@ -32,6 +32,9 @@
 #include <Arduino.h>
 #include "celt.h"
 
+CELTMode_t CELTMode;
+CELTDecoder_t CELTDecoder;
+
 ec_dec* s_ec_dec = NULL;
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
@@ -696,7 +699,7 @@ const kiss_fft_state fft_state48000_960_3 = {
     NULL,
 };
 
-const CELTMode mode48000_960_120 = {
+const CELTMode_t mode48000_960_120 = {
     48000, /* Fs */
     120,   /* overlap */
     21,    /* nbEBands */
@@ -727,7 +730,7 @@ const CELTMode mode48000_960_120 = {
     {392, cache_index50, cache_bits50, cache_caps50}, /* cache */
 };
 
-const CELTMode *const static_mode_list[TOTAL_MODES] = {
+const CELTMode_t *const static_mode_list[TOTAL_MODES] = {
     &mode48000_960_120,
 };
 
@@ -1179,7 +1182,7 @@ const signed char tf_select_table[4][8] = {
 };
 //----------------------------------------------------------------------------------------------------------------------
 
-void init_caps(const CELTMode *m, int32_t *cap, int32_t LM, int32_t C) {
+void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C) {
     int32_t i;
     for (i = 0; i < m->nbEBands; i++)
     {
@@ -1249,7 +1252,7 @@ int32_t bitexact_log2tan(int32_t isin, int32_t icos) {
 //----------------------------------------------------------------------------------------------------------------------
 
 /* Compute the amplitude (sqrt energy) in each of the bands */
-void compute_band_energies(const CELTMode *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM, int32_t arch) {
+void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM, int32_t arch) {
     int32_t i, c, N;
     const int16_t *eBands = m->eBands;
     (void)arch;
@@ -1291,7 +1294,7 @@ void compute_band_energies(const CELTMode *m, const int32_t *X, int32_t *bandE, 
 //----------------------------------------------------------------------------------------------------------------------
 
 /* Normalise each band such that the energy is one. */
-void normalise_bands(const CELTMode *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE, int32_t end, int32_t C, int32_t M)
+void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE, int32_t end, int32_t C, int32_t M)
 {
     int32_t i, c, N;
     const int16_t *eBands = m->eBands;
@@ -1319,7 +1322,7 @@ void normalise_bands(const CELTMode *m, const int32_t *__restrict__ freq, int16_
 //----------------------------------------------------------------------------------------------------------------------
 
 /* De-normalise the energy to produce the synthesis from the unit-energy bands */
-void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
+void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence) {
     int32_t i, N;
     int32_t bound;
@@ -1384,7 +1387,7 @@ void denormalise_bands(const CELTMode *m, const int16_t *__restrict__ X, int32_t
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This prevents energy collapse for transients with multiple short MDCTs */
-void anti_collapse(const CELTMode *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
+void anti_collapse(const CELTMode_t *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed, int32_t arch){
     int32_t c, i, j, k;
@@ -1480,7 +1483,7 @@ void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void intensity_stereo(const CELTMode *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
+void intensity_stereo(const CELTMode_t *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
                              const int32_t *bandE, int32_t bandID, int32_t N){
     int32_t i = bandID;
     int32_t j;
@@ -1563,7 +1566,7 @@ void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid,
 //----------------------------------------------------------------------------------------------------------------------
 
 /* Decide whether we should spread the pulses in the current frame */
-int32_t spreading_decision(const CELTMode *m, const int16_t *X, int32_t *average, int32_t last_decision, int32_t *hf_average,
+int32_t spreading_decision(const CELTMode_t *m, const int16_t *X, int32_t *average, int32_t last_decision, int32_t *hf_average,
                        int32_t *tapset_decision, int32_t update_hf, int32_t end, int32_t C, int32_t M, const int32_t *spread_weight) {
     int32_t i, c, N0;
     int32_t sum = 0, nbBands = 0;
@@ -1782,7 +1785,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
     int32_t tell;
     int32_t inv = 0;
     int32_t encode;
-    const CELTMode *m;
+    const CELTMode_t *m;
     int32_t i;
     int32_t intensity;
     ec_ctx *ec;
@@ -2014,7 +2017,7 @@ unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b,
     unsigned cm = 0;
     int16_t *Y = NULL;
     int32_t encode;
-    const CELTMode *m;
+    const CELTMode_t *m;
     int32_t i;
     int32_t spread;
     ec_ctx *ec;
@@ -2408,7 +2411,7 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
+void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
     int32_t n1, n2;
     const int16_t *__restrict__ eBands = m->eBands;
     n1 = M * (eBands[start + 1] - eBands[start]);
@@ -2421,7 +2424,7 @@ void special_hybrid_folding(const CELTMode *m, int16_t *norm, int16_t *norm2, in
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
+void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      unsigned char *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t arch, int32_t disable_inv){
@@ -2680,20 +2683,20 @@ void quant_all_bands(int32_t encode, const CELTMode *m, int32_t start, int32_t e
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_get_size(const CELTMode *mode, int32_t channels){
+int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels){
     int32_t size;
-    size = sizeof(struct CELTDecoder) + (channels * (DECODE_BUFFER_SIZE + mode->overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
+    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + mode->overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
     return size;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t celt_decoder_get_size(int32_t channels){
-    const CELTMode *mode = opus_custom_mode_create(48000, 960, NULL);
+    const CELTMode_t *mode = opus_custom_mode_create(48000, 960, NULL);
     return opus_custom_decoder_get_size(mode, channels);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int32_t channels){
+int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int32_t channels){
     if (channels < 0 || channels > 2)
         return OPUS_BAD_ARG;
 
@@ -2721,7 +2724,7 @@ int32_t opus_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int32_t 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decoder_init(CELTDecoder *st, int32_t sampling_rate, int32_t channels){
+int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t channels){
     int32_t ret;
     ret = opus_custom_decoder_init(st, opus_custom_mode_create(48000, 960, NULL), channels);
     if (ret != OPUS_OK)
@@ -2830,7 +2833,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void celt_synthesis(const CELTMode *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
+void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                            int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence, int32_t arch){
     int32_t c, i;
     int32_t M;
@@ -2955,7 +2958,7 @@ int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
+void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM){
     int32_t c;
     int32_t i;
     const int32_t C = st->channels;
@@ -2963,7 +2966,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
     int32_t *out_syn[2];
     int16_t *lpc;
     int16_t *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
-    const CELTMode *mode;
+    const CELTMode_t *mode;
     int32_t nbEBands;
     int32_t overlap;
     int32_t start;
@@ -3238,7 +3241,7 @@ void celt_decode_lost(CELTDecoder *__restrict__ st, int32_t N, int32_t LM){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
+int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
                         int32_t frame_size, ec_dec *dec, int32_t accum) {
     int32_t c, i, N;
     int32_t spread_decision;
@@ -3273,7 +3276,7 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
     int32_t anti_collapse_on = 0;
     int32_t silence;
     int32_t C = st->stream_channels;
-    const CELTMode *mode;
+    const CELTMode_t *mode;
     int32_t nbEBands;
     int32_t overlap;
     const int16_t *eBands;
@@ -3556,7 +3559,7 @@ int32_t celt_decode_with_ec(CELTDecoder *__restrict__ st, const unsigned char *d
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decoder_ctl(CELTDecoder *__restrict__ st, int32_t request, ...) {
+int32_t celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int32_t request, ...) {
     va_list ap;
 
     va_start(ap, request);
@@ -3605,7 +3608,7 @@ int32_t celt_decoder_ctl(CELTDecoder *__restrict__ st, int32_t request, ...) {
             *value = st->postfilter_period;
         } break;
         case CELT_GET_MODE_REQUEST: {
-            const CELTMode **value = va_arg(ap, const CELTMode **);
+            const CELTMode_t **value = va_arg(ap, const CELTMode_t **);
             if (value == 0) goto bad_arg;
             *value = st->mode;
         } break;
@@ -4980,7 +4983,7 @@ void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error) {
+CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error) {
     int32_t i;
     for (i = 0; i < TOTAL_MODES; i++) {
         int32_t j;
@@ -4988,7 +4991,7 @@ CELTMode *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error
             if (Fs == static_mode_list[i]->Fs &&
                 (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts) {
                 if (error) *error = OPUS_OK;
-                return (CELTMode *)static_mode_list[i];
+                return (CELTMode_t *)static_mode_list[i];
             }
         }
     }
@@ -5353,7 +5356,7 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t interp_bits2pulses(const CELTMode *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
+int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                               const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                               int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
                               int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev,
@@ -5609,7 +5612,7 @@ int32_t interp_bits2pulses(const CELTMode *m, int32_t start, int32_t end, int32_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t clt_compute_allocation(const CELTMode *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
+int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
                            int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
                            int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev, int32_t signalBandwidth) {
     int32_t lo, hi, len, j;
@@ -5702,7 +5705,7 @@ int32_t clt_compute_allocation(const CELTMode *m, int32_t start, int32_t end, co
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void unquant_coarse_energy(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
+void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
                            int32_t LM) {
     const unsigned char *prob_model = e_prob_model[LM][intra];
     int32_t i, c;
@@ -5757,7 +5760,7 @@ void unquant_coarse_energy(const CELTMode *m, int32_t start, int32_t end, int16_
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void unquant_fine_energy(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec *dec,
+void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec *dec,
                          int32_t C) {
     int32_t i, c;
     /* Decode finer resolution */
@@ -5776,7 +5779,7 @@ void unquant_fine_energy(const CELTMode *m, int32_t start, int32_t end, int16_t 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void unquant_energy_finalise(const CELTMode *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
+void unquant_energy_finalise(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C) {
     int32_t i, prio, c;
 

@@ -83,7 +83,7 @@ int opus_decoder_get_size(int channels)
 int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
 {
    void *silk_dec;
-   CELTDecoder *celt_dec;
+   CELTDecoder_t *celt_dec;
    int32_t ret, silkDecSizeBytes;
 
    if ((Fs!=48000&&Fs!=24000&&Fs!=16000&&Fs!=12000&&Fs!=8000)
@@ -100,7 +100,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    st->silk_dec_offset = align(sizeof(OpusDecoder));
    st->celt_dec_offset = st->silk_dec_offset+silkDecSizeBytes;
    silk_dec = (char*)st+st->silk_dec_offset;
-   celt_dec = (CELTDecoder*)((char*)st+st->celt_dec_offset);
+   celt_dec = (CELTDecoder_t*)((char*)st+st->celt_dec_offset);
    st->stream_channels = st->channels = channels;
 
    st->Fs = Fs;
@@ -182,7 +182,7 @@ static int opus_packet_get_mode(uint8_t *data) {
 static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen, int16_t *outbuf, int16_t samplesPerFrame) {
 if(!inbuf)log_e("Inbuf is null");
     void *silk_dec;
-    CELTDecoder *celt_dec;
+    CELTDecoder_t *celt_dec;
     int i, silk_ret = 0, celt_ret = 0;
     ec_dec dec;
     int32_t silk_frame_size;
@@ -203,7 +203,7 @@ if(!inbuf)log_e("Inbuf is null");
     uint16_t F2_5 = F5 >> 1;    // 120
 
     silk_dec = (char *)st + st->silk_dec_offset;
-    celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
+    celt_dec = (CELTDecoder_t *)((char *)st + st->celt_dec_offset);
 
 
 //____________________________________________________________________________________________________________________________--
@@ -314,7 +314,7 @@ if(!inbuf)log_e("Inbuf is null");
     }
 
     {
-        const CELTMode *celt_mode;
+        const CELTMode_t *celt_mode;
         silk_setRawParams(channels, 2, payloadSize_ms, internalSampleRate, 48000);
         celt_decoder_ctl(celt_dec, (int32_t)CELT_GET_MODE_REQUEST,(&celt_mode));
     }
@@ -414,10 +414,10 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
     int ret = OPUS_OK;
     va_list ap;
     void *silk_dec;
-    CELTDecoder *celt_dec;
+    CELTDecoder_t *celt_dec;
 
     silk_dec = (char *)st + st->silk_dec_offset;
-    celt_dec = (CELTDecoder *)((char *)st + st->celt_dec_offset);
+    celt_dec = (CELTDecoder_t *)((char *)st + st->celt_dec_offset);
 
     va_start(ap, request);
 
