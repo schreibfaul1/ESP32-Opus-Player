@@ -494,21 +494,21 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
     int32_t  xlo, xhi, xmid;
     int32_t  ylo, yhi, ymid, thr;
     int32_t  nom, den;
-    int32_t  *P = (int32_t*)silk_malloc(SILK_MAX_ORDER_LPC / 2 + 1, sizeof(int32_t));
-    int32_t  *Q = (int32_t*)silk_malloc(SILK_MAX_ORDER_LPC / 2 + 1, sizeof(int32_t));
+    auto     P = audio_malloc<int32_t>(SILK_MAX_ORDER_LPC / 2 + 1 * sizeof(int32_t));
+    auto     Q = audio_malloc<int32_t>(SILK_MAX_ORDER_LPC / 2 + 1 * sizeof(int32_t));
     int32_t* PQ[2];
     int32_t* p;
 
     /* Store pointers to array */
-    PQ[0] = P;
-    PQ[1] = Q;
+    PQ[0] = P.get();
+    PQ[1] = Q.get();
 
     dd = silk_RSHIFT(d, 1);
 
-    silk_A2NLSF_init(a_Q16, P, Q, dd);
+    silk_A2NLSF_init(a_Q16, P.get(), Q.get(), dd);
 
     /* Find roots, alternating between P and Q */
-    p = P; /* Pointer to polynomial */
+    p = P.get(); /* Pointer to polynomial */
 
     xlo = silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
     ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
@@ -516,7 +516,7 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
     if(ylo < 0) {
         /* Set the first NLSF to zero and move on to the next */
         NLSF[0] = 0;
-        p = Q; /* Pointer to polynomial */
+        p = Q.get(); /* Pointer to polynomial */
         ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
         root_ix = 1; /* Index of current root */
     }
@@ -596,22 +596,22 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
                     /* Set NLSFs to white spectrum and exit */
                     NLSF[0] = (int16_t)silk_DIV32_16(1 << 15, d + 1);
                     for(k = 1; k < d; k++) { NLSF[k] = (int16_t)(NLSF[k - 1] + NLSF[0]); }
-                    silk_free(P);
-                    silk_free(Q);
+                    silk_free(P.get());
+                    silk_free(Q.get());
                     return;
                 }
 
                 /* Error: Apply progressively more bandwidth expansion and run again */
                 silk_bwexpander_32(a_Q16, d, 65536 - silk_LSHIFT(1, i));
 
-                silk_A2NLSF_init(a_Q16, P, Q, dd);
-                p = P;                           /* Pointer to polynomial */
+                silk_A2NLSF_init(a_Q16, P.get(), Q.get(), dd);
+                p = P.get();                           /* Pointer to polynomial */
                 xlo = silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
                 ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                 if(ylo < 0) {
                     /* Set the first NLSF to zero and move on to the next */
                     NLSF[0] = 0;
-                    p = Q; /* Pointer to polynomial */
+                    p = Q.get(); /* Pointer to polynomial */
                     ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                     root_ix = 1; /* Index of current root */
                 }
@@ -620,8 +620,6 @@ void silk_A2NLSF(int16_t*      NLSF,  /* O    Normalized Line Spectral Frequenci
             }
         }
     }
-    silk_free(P);
-    silk_free(Q);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Split signal into two decimated bands using first-order allpass filters */
@@ -827,11 +825,11 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
     const unsigned char*       ordering;
     uint8_t                    QA16 = 16;
     int32_t                    k, i, dd;
-    int32_t*                   cos_LSF_QA = (int32_t*)malloc(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
-    int32_t*                   P = (int32_t*)malloc(sizeof(int32_t) * (SILK_MAX_ORDER_LPC / 2 + 1));
-    int32_t*                   Q = (int32_t*)malloc(sizeof(int32_t) * (SILK_MAX_ORDER_LPC / 2 + 1));
+    auto                       cos_LSF_QA = audio_malloc<int32_t>(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
+    auto                       P = audio_malloc<int32_t>(sizeof(int32_t) * (SILK_MAX_ORDER_LPC / 2 + 1));
+    auto                       Q = audio_malloc<int32_t>(sizeof(int32_t) * (SILK_MAX_ORDER_LPC / 2 + 1));
     int32_t                    Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
-    int32_t*                   a32_QA1 = (int32_t*)malloc(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
+    auto                       a32_QA1 = audio_malloc<int32_t>(sizeof(int32_t) * SILK_MAX_ORDER_LPC);
 
     assert(LSF_COS_TAB_SZ_FIX == 128);
     assert(d == 10 || d == 16);
@@ -861,8 +859,8 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
     dd = silk_RSHIFT(d, 1);
 
     /* generate even and odd polynomials using convolution */
-    silk_NLSF2A_find_poly(P, &cos_LSF_QA[0], dd);
-    silk_NLSF2A_find_poly(Q, &cos_LSF_QA[1], dd);
+    silk_NLSF2A_find_poly(P.get(), &cos_LSF_QA[0], dd);
+    silk_NLSF2A_find_poly(Q.get(), &cos_LSF_QA[1], dd);
 
     /* convert even and odd polynomials to int32_t Q12 filter coefs */
     for(k = 0; k < dd; k++) {
@@ -875,18 +873,14 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
     }
 
     /* Convert int32 coefficients to Q12 int16 coefs */
-    silk_LPC_fit(a_Q12, a32_QA1, 12, QA16 + 1, d);
+    silk_LPC_fit(a_Q12, a32_QA1.get(), 12, QA16 + 1, d);
 
     for(i = 0; silk_LPC_inverse_pred_gain(a_Q12, d) == 0 && i < MAX_LPC_STABILIZE_ITERATIONS; i++) {
         /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
         /* on the unscaled coefficients, convert to Q12 and measure again                   */
-        silk_bwexpander_32(a32_QA1, d, 65536 - silk_LSHIFT(2, i));
+        silk_bwexpander_32(a32_QA1.get(), d, 65536 - silk_LSHIFT(2, i));
         for(k = 0; k < d; k++) { a_Q12[k] = (int16_t)silk_RSHIFT_ROUND(a32_QA1[k], QA16 + 1 - 12); /* QA16+1 -> Q12 */ }
     }
-    free(cos_LSF_QA);
-    free(P);
-    free(Q);
-    free(a32_QA1);
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode side-information parameters from payload */
