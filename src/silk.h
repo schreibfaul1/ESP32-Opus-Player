@@ -593,33 +593,6 @@ typedef struct {
     int32_t inbandFECFlag;                        /* Flag indicating if packet contains in-band FEC       */
 } silk_TOC_struct;
 
-typedef struct {         /* Structure for controlling encoder operation */
-    int32_t nChannelsAPI;/* Number of channels; 1/2 */
-    int32_t nChannelsInternal;/* Number of channels; 1/2 */
-    int32_t API_sampleRate; /* Input signal sampling rate in Hertz; 8000/12000/16000/24000/32000/44100/48000 */
-    int32_t maxInternalSampleRate; /* Maximum internal sampling rate in Hertz; 8000/12000/16000 */
-    int32_t minInternalSampleRate; /* Minimum internal sampling rate in Hertz; 8000/12000/16000 */
-    int32_t desiredInternalSampleRate; /* Soft request for internal sampling rate in Hertz; 8000/12000/16000 */
-    int32_t payloadSize_ms;/* Number of samples per packet in milliseconds; 10/20/40/60 */
-    int32_t bitRate;/*  Bitrate during active speech in bits/second; internally limited */
-    int32_t packetLossPercentage;/* Uplink packet loss in percent (0-100) */
-    int32_t complexity; /* Complexity mode; 0 is lowest, 10 is highest complexity */
-    int32_t useInBandFEC; /* Flag to enable in-band Forward Error Correction (FEC); 0/1 */
-    int32_t LBRR_coded; /* Flag to actually code in-band Forward Error Correction (FEC) in the current packet; 0/1 */
-    int32_t useDTX; /* Flag to enable discontinuous transmission (DTX); 0/1 */
-    int32_t useCBR; /* Flag to use constant bitrate */
-    int32_t maxBits; /* Maximum number of bits allowed for the frame */
-    int32_t toMono; /* Causes a smooth downmix to mono */
-    int32_t opusCanSwitch; /* Opus encoder is allowing us to switch bandwidth  */
-    int32_t reducedDependency; /* Make frames as independent as possible (but still use LPC)*/
-    int32_t internalSampleRate; /* Internal sampling rate used, in Hertz; 8000/12000/16000 */
-    int32_t allowBandwidthSwitch; /* Flag that bandwidth switching is allowed */
-    int32_t inWBmodeWithoutVariableLP; /* use for switching between WB/SWB/FB */
-    int32_t stereoWidth_Q14; /* Stereo width */
-    int32_t switchReady; /* Tells the Opus encoder we're ready to switch */
-    int32_t signalType; /* SILK Signal type */
-    int32_t offset; /* SILK offset (dithering) */
-} silk_EncControlStruct;
 
 typedef struct {
     int8_t                    GainsIndices[ MAX_NB_SUBFR ];
@@ -706,102 +679,6 @@ typedef struct _silk_resampler_state_struct{
 } silk_resampler_state_struct;
 
 typedef struct {
-    int32_t In_HP_State[2];                /* High pass filter state                                           */
-    int32_t variable_HP_smth1_Q15;         /* State of first smoother                                          */
-    int32_t variable_HP_smth2_Q15;         /* State of second smoother                                         */
-    silk_LP_state sLP;                     /* Low pass filter state                                            */
-    silk_VAD_state sVAD;                   /* Voice activity detector state                                    */
-    silk_nsq_state sNSQ;                   /* Noise Shape Quantizer State                                      */
-    int16_t prev_NLSFq_Q15[MAX_LPC_ORDER]; /* Previously quantized NLSF vector                                 */
-    int32_t speech_activity_Q8;            /* Speech activity                                                  */
-    int32_t allow_bandwidth_switch;        /* Flag indicating that switching of internal bandwidth is allowed  */
-    int8_t LBRRprevLastGainIndex;
-    int8_t prevSignalType;
-    int32_t prevLag;
-    int32_t pitch_LPC_win_length;
-    int32_t max_pitch_lag;         /* Highest possible pitch lag (samples)                             */
-    int32_t API_fs_Hz;             /* API sampling frequency (Hz)                                      */
-    int32_t prev_API_fs_Hz;        /* Previous API sampling frequency (Hz)                             */
-    int32_t maxInternal_fs_Hz;     /* Maximum internal sampling frequency (Hz)                         */
-    int32_t minInternal_fs_Hz;     /* Minimum internal sampling frequency (Hz)                         */
-    int32_t desiredInternal_fs_Hz; /* Soft request for internal sampling frequency (Hz)                */
-    int32_t fs_kHz;                /* Internal sampling frequency (kHz)                                */
-    int32_t nb_subfr;              /* Number of 5 ms subframes in a frame                              */
-    int32_t frame_length;          /* Frame length (samples)                                           */
-    int32_t subfr_length;          /* Subframe length (samples)                                        */
-    int32_t ltp_mem_length;        /* Length of LTP memory                                             */
-    int32_t la_pitch;              /* Look-ahead for pitch analysis (samples)                          */
-    int32_t la_shape;              /* Look-ahead for noise shape analysis (samples)                    */
-    int32_t shapeWinLength;        /* Window length for noise shape analysis (samples)                 */
-    int32_t TargetRate_bps;        /* Target bitrate (bps)                                             */
-    int32_t PacketSize_ms;         /* Number of milliseconds to put in each packet                     */
-    int32_t PacketLoss_perc;       /* Packet loss rate measured by farend                              */
-    int32_t frameCounter;
-    int32_t Complexity;                     /* Complexity setting                                               */
-    int32_t nStatesDelayedDecision;         /* Number of states in delayed decision quantization                */
-    int32_t useInterpolatedNLSFs;           /* Flag for using NLSF interpolation                                */
-    int32_t shapingLPCOrder;                /* Filter order for noise shaping filters                           */
-    int32_t predictLPCOrder;                /* Filter order for prediction filters                              */
-    int32_t pitchEstimationComplexity;      /* Complexity level for pitch estimator                             */
-    int32_t pitchEstimationLPCOrder;        /* Whitening filter order for pitch estimator                       */
-    int32_t pitchEstimationThreshold_Q16;   /* Threshold for pitch estimator                                    */
-    int32_t sum_log_gain_Q7;                /* Cumulative max prediction gain                                   */
-    int32_t NLSF_MSVQ_Survivors;            /* Number of survivors in NLSF MSVQ                                 */
-    int32_t first_frame_after_reset;        /* Flag for deactivating NLSF interpolation, pitch prediction       */
-    int32_t controlled_since_last_payload;  /* Flag for ensuring codec_control only runs once per packet        */
-    int32_t warping_Q16;                    /* Warping parameter for warped noise shaping                       */
-    int32_t useCBR;                         /* Flag to enable constant bitrate                                  */
-    int32_t prefillFlag;                    /* Flag to indicate that only buffers are prefilled, no coding      */
-    const uint8_t *pitch_lag_low_bits_iCDF; /* Pointer to iCDF table for low bits of pitch lag index            */
-    const uint8_t *pitch_contour_iCDF;      /* Pointer to iCDF table for pitch contour index                    */
-    const silk_NLSF_CB_struct *psNLSF_CB;   /* Pointer to NLSF codebook                                         */
-    int32_t input_quality_bands_Q15[VAD_N_BANDS];
-    int32_t input_tilt_Q15;
-    int32_t SNR_dB_Q7; /* Quality setting                                                  */
-    int8_t VAD_flags[MAX_FRAMES_PER_PACKET];
-    int8_t LBRR_flag;
-    int32_t LBRR_flags[MAX_FRAMES_PER_PACKET];
-    SideInfoIndices indices;
-    int8_t pulses[MAX_FRAME_LENGTH];
-    /* Input/output buffering */
-    int16_t inputBuf[MAX_FRAME_LENGTH + 2]; /* Buffer containing input signal */
-    int32_t inputBufIx;
-    int32_t nFramesPerPacket;
-    int32_t nFramesEncoded; /* Number of frames analyzed in current packet */
-    int32_t nChannelsAPI;
-    int32_t nChannelsInternal;
-    int32_t channelNb;
-    /* Parameters For LTP scaling Control */
-    int32_t frames_since_onset;
-    /* Specifically for entropy coding */
-    int32_t ec_prevSignalType;
-    int16_t ec_prevLagIndex;
-    silk_resampler_state_struct resampler_state;
-    /* DTX */
-    int32_t useDTX;          /* Flag to enable DTX                                               */
-    int32_t inDTX;           /* Flag to signal DTX period                                        */
-    int32_t noSpeechCounter; /* Counts concecutive nonactive frames, used by DTX                 */
-    /* Inband Low Bitrate Redundancy (LBRR) data */
-    int32_t useInBandFEC;       /* Saves the API setting for query                               */
-    int32_t LBRR_enabled;       /* Depends on useInBandFRC, bitrate and packet loss rate         */
-    int32_t LBRR_GainIncreases; /* Gains increment for coding LBRR frames                        */
-    SideInfoIndices indices_LBRR[MAX_FRAMES_PER_PACKET];
-    int8_t pulses_LBRR[MAX_FRAMES_PER_PACKET][MAX_FRAME_LENGTH];
-} silk_encoder_state;
-
-typedef struct {
-    int16_t                   pred_prev_Q13[ 2 ];
-    int16_t                   sMid[ 2 ];
-    int16_t                   sSide[ 2 ];
-    int32_t                   mid_side_amp_Q0[ 4 ];
-    int16_t                   smth_width_Q14;
-    int16_t                   width_prev_Q14;
-    int16_t                   silent_side_len;
-    int8_t                    predIx[ MAX_FRAMES_PER_PACKET ][ 2 ][ 3 ];
-    int8_t                    mid_only_flags[ MAX_FRAMES_PER_PACKET ];
-} stereo_enc_state;
-
-typedef struct {
     int16_t                   pred_prev_Q13[ 2 ];
     int16_t                   sMid[ 2 ];
     int16_t                   sSide[ 2 ];
@@ -880,16 +757,6 @@ typedef struct {
     int32_t Tilt_smth_Q16;
 } silk_shape_state_FIX;
 
-typedef struct {
-    silk_encoder_state sCmn;     /* Common struct, shared with floating-point code       */
-    silk_shape_state_FIX sShape; /* Shape state                                          */
-
-    /* Buffer for find pitch and noise shape analysis */
-     int16_t
-        x_buf[2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX]; /* Buffer for find pitch and noise shape analysis  */
-    int32_t LTPCorr_Q15;                            /* Normalized correlation from pitch lag estimator      */
-    int32_t resNrgSmth;
-} silk_encoder_state_FIX;
 
 
 
@@ -1218,9 +1085,6 @@ void silk_NLSF_VQ(int32_t err_Q26[], const int16_t in_Q15[], const uint8_t pCB_Q
                   const int32_t K, const int32_t LPC_order);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
 int32_t silk_VAD_Init(silk_VAD_state *psSilk_VAD);
-void silk_stereo_LR_to_MS(stereo_enc_state *state, int16_t x1[], int16_t x2[], int8_t ix[2][3], int8_t *mid_only_flag,
-                          int32_t mid_side_rates_bps[], int32_t total_rate_bps, int32_t prev_speech_act_Q8,
-                          int32_t toMono, int32_t fs_kHz, int32_t frame_length);
 void silk_stereo_MS_to_LR(stereo_dec_state *state, int16_t x1[], int16_t x2[], const int32_t pred_Q13[], int32_t fs_kHz,
                           int32_t frame_length);
 int32_t silk_stereo_find_predictor(int32_t *ratio_Q14, const int16_t x[], const int16_t y[], int32_t mid_res_amp_Q0[],
@@ -1230,7 +1094,6 @@ void silk_stereo_decode_pred(int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(int32_t *decode_only_mid);
 void silk_decode_signs(int16_t pulses[], int32_t length, const int32_t signalType,
                        const int32_t quantOffsetType, const int32_t sum_pulses[MAX_NB_SHELL_BLOCKS]);
-int32_t silk_control_SNR(silk_encoder_state *psEncC, int32_t TargetRate_bps);
 void silk_shell_decoder(int16_t *pulses0, const int32_t pulses4);
 void silk_gains_quant(int8_t ind[MAX_NB_SUBFR], int32_t gain_Q16[MAX_NB_SUBFR], int8_t *prev_ind,
                       const int32_t conditional, const int32_t nb_subfr);
@@ -1267,7 +1130,6 @@ int32_t silk_decode_frame(silk_decoder_state_t *psDec, int16_t pOut[], int32_t *
                           int32_t condCoding);
 void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz,
                        const int32_t nb_subfr);
-int32_t silk_init_encoder(silk_encoder_state_Fxx *psEnc);
 int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t *const inVec2, const int32_t scale,
                                       const int32_t len);
 int32_t silk_lin2log(const int32_t inLin);
