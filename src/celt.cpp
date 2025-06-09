@@ -3677,12 +3677,6 @@ uint32_t icwrs(int32_t _n, const int32_t *_y) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void encode_pulses(const int32_t *_y, int32_t _n, int32_t _k, ec_enc *_enc) {
-    assert(_k > 0);
-    ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
     uint32_t p;
     int32_t s;
@@ -3961,151 +3955,6 @@ int32_t ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
     _this->buf[_this->storage - ++(_this->end_offs)] = (uint8_t)_value;
     return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-/*Outputs a symbol, with a carry bit. If there is a potential to propagate a carry over several symbols, they are
-  buffered until it can be determined whether or not an actual carry will occur. If the counter for the buffered symbols
-  overflows, then the stream becomes undecodable. This gives a theoretical limit of a few billion symbols in a single
-  packet on 32-bit systems. The alternative is to truncate the range in order to force a carry, but requires similar
-  carry tracking in the decoder, needlessly slowing it down.*/
-void ec_enc_carry_out(ec_enc *_this, int32_t _c) {
-    if (_c != EC_SYM_MAX) {
-        /*No further carry propagation possible, flush buffer.*/
-        int32_t carry;
-        carry = _c >> EC_SYM_BITS;
-        /*Don't output a byte on the first write.
-          This compare should be taken care of by branch-prediction thereafter.*/
-        if (_this->rem >= 0) _this->error |= ec_write_byte(_this, _this->rem + carry);
-        if (_this->ext > 0) {
-            unsigned sym;
-            sym = (EC_SYM_MAX + carry) & EC_SYM_MAX;
-            do _this->error |= ec_write_byte(_this, sym);
-            while (--(_this->ext) > 0);
-        }
-        _this->rem = _c & EC_SYM_MAX;
-    } else
-        _this->ext++;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-inline void ec_enc_normalize(ec_enc *_this) {
-    /*If the range is too small, output some bits and rescale it.*/
-    while (_this->rng <= EC_CODE_BOT) {
-        ec_enc_carry_out(_this, (int32_t)(_this->val >> EC_CODE_SHIFT));
-        /*Move the next-to-high-order symbol into the high-order position.*/
-        _this->val = (_this->val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
-        _this->rng <<= EC_SYM_BITS;
-        _this->nbits_total += EC_SYM_BITS;
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_init(ec_enc *_this, uint8_t *_buf, uint32_t _size) {
-    _this->buf = _buf;
-    _this->end_offs = 0;
-    _this->end_window = 0;
-    _this->nend_bits = 0;
-    /*This is the offset from which ec_tell() will subtract partial bits.*/
-    _this->nbits_total = EC_CODE_BITS + 1;
-    _this->offs = 0;
-    _this->rng = EC_CODE_TOP;
-    _this->rem = -1;
-    _this->val = 0;
-    _this->ext = 0;
-    _this->storage = _size;
-    _this->error = 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
-    uint32_t r;
-    r = celt_udiv(_this->rng, _ft);
-    if (_fl > 0) {
-        _this->val += _this->rng - (r * (_ft - _fl));
-        _this->rng = r * (_fh - _fl);
-    } else
-        _this->rng -= r * (_ft - _fh);
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
-    uint32_t r;
-    r = _this->rng >> _bits;
-    if (_fl > 0) {
-        _this->val += _this->rng - (r * ((1U << _bits) - _fl));
-        _this->rng = r * (_fh - _fl);
-    } else
-        _this->rng -= r * (((1U << _bits) - _fh));
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-/*The probability of having a "one" is 1/(1<<_logp).*/
-void ec_enc_bit_logp(ec_enc *_this, int32_t _val, unsigned _logp) {
-    uint32_t r;
-    uint32_t s;
-    uint32_t l;
-    r = _this->rng;
-    l = _this->val;
-    s = r >> _logp;
-    r -= s;
-    if (_val) _this->val = l + r;
-    _this->rng = _val ? s : r;
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_icdf(ec_enc *_this, int32_t _s, const uint8_t *_icdf, unsigned _ftb) {
-    uint32_t r;
-    r = _this->rng >> _ftb;
-    if (_s > 0) {
-        _this->val += _this->rng - r * _icdf[_s - 1];
-        _this->rng = r * (_icdf[_s - 1] - _icdf[_s]);
-    } else
-        _this->rng -= r * _icdf[_s];
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft) {
-    unsigned ft;
-    unsigned fl;
-    int32_t ftb;
-    /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-    assert(_ft > 1);
-    _ft--;
-    ftb = EC_ILOG(_ft);
-    if (ftb > EC_UINT_BITS) {
-        ftb -= EC_UINT_BITS;
-        ft = (_ft >> ftb) + 1;
-        fl = (unsigned)(_fl >> ftb);
-        ec_encode(_this, fl, fl + 1, ft);
-        ec_enc_bits(_this, _fl & (((uint32_t)1 << ftb) - 1U), ftb);
-    } else
-        ec_encode(_this, _fl, _fl + 1, _ft + 1);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
-    uint32_t window;
-    int32_t used;
-    window = _this->end_window;
-    used = _this->nend_bits;
-    assert(_bits > 0);
-    if (used + _bits > EC_WINDOW_SIZE) {
-        do {
-            _this->error |= ec_write_byte_at_end(_this, (unsigned)window & EC_SYM_MAX);
-            window >>= EC_SYM_BITS;
-            used -= EC_SYM_BITS;
-        } while (used >= EC_SYM_BITS);
-    }
-    window |= (uint32_t)_fl << used;
-    used += _bits;
-    _this->end_window = window;
-    _this->nend_bits = used;
-    _this->nbits_total += _bits;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4395,44 +4244,6 @@ unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay) {
     unsigned ft;
     ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
     return ft * (int32_t)(16384 - decay) >> 15;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_laplace_encode(ec_enc *enc, int32_t *value, unsigned fs, int32_t decay) {
-    unsigned fl;
-    int32_t val = *value;
-    fl = 0;
-    if (val) {
-        int32_t s;
-        int32_t i;
-        s = -(val < 0);
-        val = (val + s) ^ s;
-        fl = fs;
-        fs = ec_laplace_get_freq1(fs, decay);
-        /* Search the decaying part of the PDF.*/
-        for (i = 1; fs > 0 && i < val; i++) {
-            fs *= 2;
-            fl += fs + 2 * LAPLACE_MINP;
-            fs = (fs * (int32_t)decay) >> 15;
-        }
-        /* Everything beyond that has probability LAPLACE_MINP. */
-        if (!fs) {
-            int32_t di;
-            int32_t ndi_max;
-            ndi_max = (32768 - fl + LAPLACE_MINP - 1) >> LAPLACE_LOG_MINP;
-            ndi_max = (ndi_max - s) >> 1;
-            di = min(val - i, ndi_max - 1);
-            fl += (2 * di + 1 + s) * LAPLACE_MINP;
-            fs = min((int32_t)LAPLACE_MINP, (int32_t)(32768 - fl));
-            *value = (i + di + s) ^ s;
-        } else {
-            fs += LAPLACE_MINP;
-            fl += fs & ~s;
-        }
-        assert(fl + fs <= 32768);
-        assert(fs > 0);
-    }
-    ec_encode_bin(enc, fl, fl + fs, 15);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
