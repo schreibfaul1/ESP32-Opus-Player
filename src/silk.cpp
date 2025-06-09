@@ -1171,7 +1171,7 @@ int32_t silk_decoder_set_fs(uint8_t n, int32_t fs_kHz, int32_t fs_API_Hz) {
     if(channel_state[n].fs_kHz != fs_kHz || channel_state[n].fs_API_hz != fs_API_Hz) {
         /* Initialize the resampler for dec_API.c preparing resampling from fs_kHz to API_fs_Hz */
 
-        ret += silk_resampler_init(&s_resampler_state[n], silk_SMULBB(fs_kHz, 1000), fs_API_Hz, 0);
+        ret += silk_resampler_init(n, silk_SMULBB(fs_kHz, 1000), fs_API_Hz, 0);
 
         channel_state[n].fs_API_hz = fs_API_Hz;
     }
@@ -3794,31 +3794,31 @@ void silk_resampler_private_up2_HQ_wrapper(void*          SS,  /* I/O  Resampler
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Initialize/reset the resampler state for a given pair of input/output sampling rates */
-int32_t silk_resampler_init(silk_resampler_state_struct_t* S,         /* I/O  Resampler state */
+int32_t silk_resampler_init(uint8_t n,
                             int32_t                      Fs_Hz_in,  /* I    Input sampling rate (Hz)                                    */
                             int32_t                      Fs_Hz_out, /* I    Output sampling rate (Hz)                                   */
                             int32_t                      forEnc     /* I    If 1: encoder; if 0: decoder                                */
 ) {
     int32_t up2x;
-
+s_resampler_state[n];
     /* Clear state */
-    memset(S, 0, sizeof(silk_resampler_state_struct_t));
+    memset(&s_resampler_state[n], 0, sizeof(silk_resampler_state_struct_t));
 
     /* Input checking */
     if(forEnc) {
         if((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000) || (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000)) { return -1; }
-        S->inputDelay = delay_matrix_enc[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
+        s_resampler_state[n].inputDelay = delay_matrix_enc[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
     }
     else {
         if((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) || (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000)) { return -1; }
-        S->inputDelay = delay_matrix_dec[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
+        s_resampler_state[n].inputDelay = delay_matrix_dec[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
     }
 
-    S->Fs_in_kHz = silk_DIV32_16(Fs_Hz_in, 1000);
-    S->Fs_out_kHz = silk_DIV32_16(Fs_Hz_out, 1000);
+    s_resampler_state[n].Fs_in_kHz = silk_DIV32_16(Fs_Hz_in, 1000);
+    s_resampler_state[n].Fs_out_kHz = silk_DIV32_16(Fs_Hz_out, 1000);
 
     /* Number of samples processed per batch */
-    S->batchSize = S->Fs_in_kHz * RESAMPLER_MAX_BATCH_SIZE_MS;
+    s_resampler_state[n].batchSize = s_resampler_state[n].Fs_in_kHz * RESAMPLER_MAX_BATCH_SIZE_MS;
 
     /* Find resampler with the right sampling ratio */
     up2x = 0;
@@ -3826,41 +3826,41 @@ int32_t silk_resampler_init(silk_resampler_state_struct_t* S,         /* I/O  Re
         /* Upsample */
         if(Fs_Hz_out == silk_MUL(Fs_Hz_in, 2)) { /* Fs_out : Fs_in = 2 : 1 */
             /* Special case: directly use 2x upsampler */
-            S->resampler_function = USE_silk_resampler_private_up2_HQ_wrapper;
+            s_resampler_state[n].resampler_function = USE_silk_resampler_private_up2_HQ_wrapper;
         }
         else {
             /* Default resampler */
-            S->resampler_function = USE_silk_resampler_private_IIR_FIR;
+            s_resampler_state[n].resampler_function = USE_silk_resampler_private_IIR_FIR;
             up2x = 1;
         }
     }
     else if(Fs_Hz_out < Fs_Hz_in) {
         /* Downsample */
-        S->resampler_function = USE_silk_resampler_private_down_FIR;
+        s_resampler_state[n].resampler_function = USE_silk_resampler_private_down_FIR;
         if(silk_MUL(Fs_Hz_out, 4) == silk_MUL(Fs_Hz_in, 3)) { /* Fs_out : Fs_in = 3 : 4 */
-            S->FIR_Fracs = 3;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
-            S->Coefs = silk_Resampler_3_4_COEFS;
+            s_resampler_state[n].FIR_Fracs = 3;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
+            s_resampler_state[n].Coefs = silk_Resampler_3_4_COEFS;
         }
-        else if(silk_MUL(Fs_Hz_out, 3) == silk_MUL(Fs_Hz_in, 2)) { /* Fs_out : Fs_in = 2 : 3 */ S->FIR_Fracs = 2;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
-            S->Coefs = silk_Resampler_2_3_COEFS;
+        else if(silk_MUL(Fs_Hz_out, 3) == silk_MUL(Fs_Hz_in, 2)) { /* Fs_out : Fs_in = 2 : 3 */ s_resampler_state[n].FIR_Fracs = 2;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
+            s_resampler_state[n].Coefs = silk_Resampler_2_3_COEFS;
         }
-        else if(silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 2 */ S->FIR_Fracs = 1;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR1;
-            S->Coefs = silk_Resampler_1_2_COEFS;
+        else if(silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 2 */ s_resampler_state[n].FIR_Fracs = 1;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR1;
+            s_resampler_state[n].Coefs = silk_Resampler_1_2_COEFS;
         }
-        else if(silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 3 */ S->FIR_Fracs = 1;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_3_COEFS;
+        else if(silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 3 */ s_resampler_state[n].FIR_Fracs = 1;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            s_resampler_state[n].Coefs = silk_Resampler_1_3_COEFS;
         }
-        else if(silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 4 */ S->FIR_Fracs = 1;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_4_COEFS;
+        else if(silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 4 */ s_resampler_state[n].FIR_Fracs = 1;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            s_resampler_state[n].Coefs = silk_Resampler_1_4_COEFS;
         }
-        else if(silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 6 */ S->FIR_Fracs = 1;
-            S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_6_COEFS;
+        else if(silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in) { /* Fs_out : Fs_in = 1 : 6 */ s_resampler_state[n].FIR_Fracs = 1;
+            s_resampler_state[n].FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
+            s_resampler_state[n].Coefs = silk_Resampler_1_6_COEFS;
         }
         else {
             /* None available */
@@ -3869,19 +3869,19 @@ int32_t silk_resampler_init(silk_resampler_state_struct_t* S,         /* I/O  Re
     }
     else {
         /* Input and output sampling rates are equal: copy */
-        S->resampler_function = USE_silk_resampler_copy;
+        s_resampler_state[n].resampler_function = USE_silk_resampler_copy;
     }
 
     /* Ratio of input/output samples */
-    S->invRatio_Q16 = silk_LSHIFT32(silk_DIV32(silk_LSHIFT32(Fs_Hz_in, 14 + up2x), Fs_Hz_out), 2);
+    s_resampler_state[n].invRatio_Q16 = silk_LSHIFT32(silk_DIV32(silk_LSHIFT32(Fs_Hz_in, 14 + up2x), Fs_Hz_out), 2);
     /* Make sure the ratio is rounded up */
-    while(silk_SMULWW(S->invRatio_Q16, Fs_Hz_out) < silk_LSHIFT32(Fs_Hz_in, up2x)) { S->invRatio_Q16++; }
+    while(silk_SMULWW(s_resampler_state[n].invRatio_Q16, Fs_Hz_out) < silk_LSHIFT32(Fs_Hz_in, up2x)) { s_resampler_state[n].invRatio_Q16++; }
 
     return 0;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Resampler: convert from one sampling rate to another Input and output sampling rate are at most 48000 Hz  */
-int32_t silk_resampler(uint8_t n,                                                //silk_resampler_state_struct_t* S,     /* I/O  Resampler state */
+int32_t silk_resampler(uint8_t n,
                        int16_t                      out[], /* O    Output signal                                               */
                        const int16_t                in[],  /* I    Input signal                                                */
                        int32_t                      inLen  /* I    Number of input samples                                     */
