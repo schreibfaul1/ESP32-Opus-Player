@@ -1159,7 +1159,7 @@ void silk_resampler_private_IIR_FIR(void *SS, int16_t out[], const int16_t in[],
 void silk_resampler_private_up2_HQ(int32_t *S, int16_t *out, const int16_t *in, int32_t len);
 void silk_resampler_private_up2_HQ_wrapper(void *SS, int16_t *out, const int16_t *in, int32_t len);
 int32_t silk_resampler_init(silk_resampler_state_struct_t *S, int32_t Fs_Hz_in, int32_t Fs_Hz_out, int32_t forEnc);
-int32_t silk_resampler(silk_resampler_state_struct_t *S, int16_t out[], const int16_t in[], int32_t inLen);
+int32_t silk_resampler(uint8_t n, int16_t out[], const int16_t in[], int32_t inLen);
 int32_t silk_sigm_Q15(int32_t in_Q5);
 void silk_insertion_sort_increasing(int32_t *a, int32_t *idx, const int32_t L, const int32_t K);
 void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_t L, const int32_t K);

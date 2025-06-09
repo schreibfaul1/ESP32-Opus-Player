@@ -1673,7 +1673,8 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                     int32_t *nSamplesOut               /* O    Number of samples decoded                       */
 ) {
 
-    int32_t  i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
+    uint8_t n = 0;
+    int32_t  i, decode_only_middle = 0, ret = SILK_NO_ERROR;
     int32_t  nSamplesOutDec, LBRR_symbol;
     int16_t* samplesOut1_tmp[2];
     int32_t MS_pred_Q13[2] = {0};
@@ -1921,7 +1922,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
         /* Resample decoded signal to API_sampleRate */
         ret +=
-            silk_resampler(&s_resampler_state[n], resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
+            silk_resampler(n, resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
 
         /* Interleave if stereo output and stereo stream */
         if (s_silk_DecControlStruct.nChannelsAPI == 2) {
@@ -1935,7 +1936,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         if (stereo_to_mono) {
             /* Resample right channel for newly collapsed stereo just in case
                we weren't doing collapsing when switching to mono */
-            ret += silk_resampler(&s_resampler_state[n], resample_out_ptr, &samplesOut1_tmp[0][1],
+            ret += silk_resampler(n, resample_out_ptr, &samplesOut1_tmp[0][1],
                                   nSamplesOutDec);
 
             for (i = 0; i < *nSamplesOut; i++) {
@@ -3880,7 +3881,7 @@ int32_t silk_resampler_init(silk_resampler_state_struct_t* S,         /* I/O  Re
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Resampler: convert from one sampling rate to another Input and output sampling rate are at most 48000 Hz  */
-int32_t silk_resampler(silk_resampler_state_struct_t* S,     /* I/O  Resampler state */
+int32_t silk_resampler(uint8_t n,                                                //silk_resampler_state_struct_t* S,     /* I/O  Resampler state */
                        int16_t                      out[], /* O    Output signal                                               */
                        const int16_t                in[],  /* I    Input signal                                                */
                        int32_t                      inLen  /* I    Number of input samples                                     */
@@ -3888,33 +3889,33 @@ int32_t silk_resampler(silk_resampler_state_struct_t* S,     /* I/O  Resampler s
     int32_t nSamples;
 
     /* Need at least 1 ms of input data */
-    assert(inLen >= S->Fs_in_kHz);
+    assert(inLen >= s_resampler_state[n].Fs_in_kHz);
     /* Delay can't exceed the 1 ms of buffering */
-    assert(S->inputDelay <= S->Fs_in_kHz);
+    assert(s_resampler_state[n].inputDelay <= s_resampler_state[n].Fs_in_kHz);
 
-    nSamples = S->Fs_in_kHz - S->inputDelay;
+    nSamples = s_resampler_state[n].Fs_in_kHz - s_resampler_state[n].inputDelay;
 
     /* Copy to delay buffer */
-    memcpy(&S->delayBuf[S->inputDelay], in, nSamples * sizeof(int16_t));
+    memcpy(&s_resampler_state[n].delayBuf[s_resampler_state[n].inputDelay], in, nSamples * sizeof(int16_t));
 
-    switch(S->resampler_function) {
+    switch(s_resampler_state[n].resampler_function) {
         case USE_silk_resampler_private_up2_HQ_wrapper:
-            silk_resampler_private_up2_HQ_wrapper(S, out, S->delayBuf, S->Fs_in_kHz);
-            silk_resampler_private_up2_HQ_wrapper(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            silk_resampler_private_up2_HQ_wrapper(&s_resampler_state[n], out, s_resampler_state[n].delayBuf, s_resampler_state[n].Fs_in_kHz);
+            silk_resampler_private_up2_HQ_wrapper(&s_resampler_state[n], &out[s_resampler_state[n].Fs_out_kHz], &in[nSamples], inLen - s_resampler_state[n].Fs_in_kHz);
             break;
         case USE_silk_resampler_private_IIR_FIR:
-            silk_resampler_private_IIR_FIR(S, out, S->delayBuf, S->Fs_in_kHz);
-            silk_resampler_private_IIR_FIR(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            silk_resampler_private_IIR_FIR(&s_resampler_state[n], out, s_resampler_state[n].delayBuf, s_resampler_state[n].Fs_in_kHz);
+            silk_resampler_private_IIR_FIR(&s_resampler_state[n], &out[s_resampler_state[n].Fs_out_kHz], &in[nSamples], inLen - s_resampler_state[n].Fs_in_kHz);
             break;
         case USE_silk_resampler_private_down_FIR:
-            silk_resampler_private_down_FIR(S, out, S->delayBuf, S->Fs_in_kHz);
-            silk_resampler_private_down_FIR(S, &out[S->Fs_out_kHz], &in[nSamples], inLen - S->Fs_in_kHz);
+            silk_resampler_private_down_FIR(&s_resampler_state[n], out, s_resampler_state[n].delayBuf, s_resampler_state[n].Fs_in_kHz);
+            silk_resampler_private_down_FIR(&s_resampler_state[n], &out[s_resampler_state[n].Fs_out_kHz], &in[nSamples], inLen - s_resampler_state[n].Fs_in_kHz);
             break;
-        default: memcpy(out, S->delayBuf, S->Fs_in_kHz * sizeof(int16_t)); memcpy(&out[S->Fs_out_kHz], &in[nSamples], (inLen - S->Fs_in_kHz) * sizeof(int16_t));
+        default: memcpy(out, s_resampler_state[n].delayBuf, s_resampler_state[n].Fs_in_kHz * sizeof(int16_t)); memcpy(&out[s_resampler_state[n].Fs_out_kHz], &in[nSamples], (inLen - s_resampler_state[n].Fs_in_kHz) * sizeof(int16_t));
     }
 
     /* Copy to delay buffer */
-    memcpy(S->delayBuf, &in[inLen - S->inputDelay], S->inputDelay * sizeof(int16_t));
+    memcpy(s_resampler_state[n].delayBuf, &in[inLen - s_resampler_state[n].inputDelay], s_resampler_state[n].inputDelay * sizeof(int16_t));
 
     return 0;
 }
