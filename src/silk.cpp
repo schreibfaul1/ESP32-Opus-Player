@@ -691,7 +691,7 @@ void silk_NLSF2A(int16_t* a_Q12, const int16_t* NLSF, const int32_t  d) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode side-information parameters from payload */
-void silk_decode_indices(silk_decoder_state_t *psDec, /* I/O  State                                       */
+void silk_decode_indices(uint8_t n,
                          int32_t FrameIndex,        /* I    Frame number                                */
                          int32_t decode_LBRR,       /* I    Flag indicating LBRR data is being decoded  */
                          int32_t condCoding         /* I    The type of conditional coding to use       */
@@ -704,13 +704,13 @@ void silk_decode_indices(silk_decoder_state_t *psDec, /* I/O  State             
     /*******************************************/
     /* Decode signal type and quantizer offset */
     /*******************************************/
-    if (decode_LBRR || psDec->VAD_flags[FrameIndex]) {
+    if (decode_LBRR || s_channel_state[n].VAD_flags[FrameIndex]) {
         Ix = ec_dec_icdf(silk_type_offset_VAD_iCDF, 8) + 2;
     } else {
         Ix = ec_dec_icdf(silk_type_offset_no_VAD_iCDF, 8);
     }
-    psDec->indices.signalType = (int8_t)silk_RSHIFT(Ix, 1);
-    psDec->indices.quantOffsetType = (int8_t)(Ix & 1);
+    s_channel_state[n].indices.signalType = (int8_t)silk_RSHIFT(Ix, 1);
+    s_channel_state[n].indices.quantOffsetType = (int8_t)(Ix & 1);
 
     /****************/
     /* Decode gains */
@@ -718,95 +718,95 @@ void silk_decode_indices(silk_decoder_state_t *psDec, /* I/O  State             
     /* First subframe */
     if(condCoding == CODE_CONDITIONALLY) {
         /* Conditional coding */
-        psDec->indices.GainsIndices[0] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
+        s_channel_state[n].indices.GainsIndices[0] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
     } else {
         /* Independent coding, in two stages: MSB bits followed by 3 LSBs */
-        psDec->indices.GainsIndices[0] =
-            (int8_t)silk_LSHIFT(ec_dec_icdf(silk_gain_iCDF[psDec->indices.signalType], 8), 3);
-        psDec->indices.GainsIndices[0] += (int8_t)ec_dec_icdf(silk_uniform8_iCDF, 8);
+        s_channel_state[n].indices.GainsIndices[0] =
+            (int8_t)silk_LSHIFT(ec_dec_icdf(silk_gain_iCDF[s_channel_state[n].indices.signalType], 8), 3);
+        s_channel_state[n].indices.GainsIndices[0] += (int8_t)ec_dec_icdf(silk_uniform8_iCDF, 8);
     }
 
     /* Remaining subframes */
-    for (i = 1; i < psDec->nb_subfr; i++) {
-        psDec->indices.GainsIndices[i] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
+    for (i = 1; i < s_channel_state[n].nb_subfr; i++) {
+        s_channel_state[n].indices.GainsIndices[i] = (int8_t)ec_dec_icdf(silk_delta_gain_iCDF, 8);
     }
 
     /**********************/
     /* Decode LSF Indices */
     /**********************/
-    psDec->indices.NLSFIndices[0] = (int8_t)ec_dec_icdf(
-        &psDec->psNLSF_CB->CB1_iCDF[(psDec->indices.signalType >> 1) * psDec->psNLSF_CB->nVectors], 8);
-    silk_NLSF_unpack(ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[0]);
-    assert(psDec->psNLSF_CB->order == psDec->LPC_order);
-    for (i = 0; i < psDec->psNLSF_CB->order; i++) {
-        Ix = ec_dec_icdf(&psDec->psNLSF_CB->ec_iCDF[ec_ix[i]], 8);
+    s_channel_state[n].indices.NLSFIndices[0] = (int8_t)ec_dec_icdf(
+        &s_channel_state[n].psNLSF_CB->CB1_iCDF[(s_channel_state[n].indices.signalType >> 1) * s_channel_state[n].psNLSF_CB->nVectors], 8);
+    silk_NLSF_unpack(ec_ix, pred_Q8, s_channel_state[n].psNLSF_CB, s_channel_state[n].indices.NLSFIndices[0]);
+    assert(s_channel_state[n].psNLSF_CB->order == s_channel_state[n].LPC_order);
+    for (i = 0; i < s_channel_state[n].psNLSF_CB->order; i++) {
+        Ix = ec_dec_icdf(&s_channel_state[n].psNLSF_CB->ec_iCDF[ec_ix[i]], 8);
         if (Ix == 0) {
             Ix -= ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
         } else if (Ix == 2 * NLSF_QUANT_MAX_AMPLITUDE) {
             Ix += ec_dec_icdf(silk_NLSF_EXT_iCDF, 8);
         }
-        psDec->indices.NLSFIndices[i + 1] = (int8_t)(Ix - NLSF_QUANT_MAX_AMPLITUDE);
+        s_channel_state[n].indices.NLSFIndices[i + 1] = (int8_t)(Ix - NLSF_QUANT_MAX_AMPLITUDE);
     }
 
     /* Decode LSF interpolation factor */
-    if (psDec->nb_subfr == MAX_NB_SUBFR) {
-        psDec->indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(silk_NLSF_interpolation_factor_iCDF, 8);
+    if (s_channel_state[n].nb_subfr == MAX_NB_SUBFR) {
+        s_channel_state[n].indices.NLSFInterpCoef_Q2 = (int8_t)ec_dec_icdf(silk_NLSF_interpolation_factor_iCDF, 8);
     } else {
-        psDec->indices.NLSFInterpCoef_Q2 = 4;
+        s_channel_state[n].indices.NLSFInterpCoef_Q2 = 4;
     }
 
-    if(psDec->indices.signalType == TYPE_VOICED) {
+    if(s_channel_state[n].indices.signalType == TYPE_VOICED) {
         /*********************/
         /* Decode pitch lags */
         /*********************/
         /* Get lag index */
         decode_absolute_lagIndex = 1;
-        if(condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
+        if(condCoding == CODE_CONDITIONALLY && s_channel_state[n].ec_prevSignalType == TYPE_VOICED) {
             /* Decode Delta index */
             delta_lagIndex = (int16_t)ec_dec_icdf(silk_pitch_delta_iCDF, 8);
             if (delta_lagIndex > 0) {
                 delta_lagIndex = delta_lagIndex - 9;
-                psDec->indices.lagIndex = (int16_t)(psDec->ec_prevLagIndex + delta_lagIndex);
+                s_channel_state[n].indices.lagIndex = (int16_t)(s_channel_state[n].ec_prevLagIndex + delta_lagIndex);
                 decode_absolute_lagIndex = 0;
             }
         }
         if(decode_absolute_lagIndex) {
             /* Absolute decoding */
-            psDec->indices.lagIndex =
-                (int16_t)ec_dec_icdf(silk_pitch_lag_iCDF, 8) * silk_RSHIFT(psDec->fs_kHz, 1);
-            psDec->indices.lagIndex += (int16_t)ec_dec_icdf(psDec->pitch_lag_low_bits_iCDF, 8);
+            s_channel_state[n].indices.lagIndex =
+                (int16_t)ec_dec_icdf(silk_pitch_lag_iCDF, 8) * silk_RSHIFT(s_channel_state[n].fs_kHz, 1);
+            s_channel_state[n].indices.lagIndex += (int16_t)ec_dec_icdf(s_channel_state[n].pitch_lag_low_bits_iCDF, 8);
         }
-        psDec->ec_prevLagIndex = psDec->indices.lagIndex;
+        s_channel_state[n].ec_prevLagIndex = s_channel_state[n].indices.lagIndex;
 
         /* Get countour index */
-        psDec->indices.contourIndex = (int8_t)ec_dec_icdf(psDec->pitch_contour_iCDF, 8);
+        s_channel_state[n].indices.contourIndex = (int8_t)ec_dec_icdf(s_channel_state[n].pitch_contour_iCDF, 8);
 
         /********************/
         /* Decode LTP gains */
         /********************/
         /* Decode PERIndex value */
-        psDec->indices.PERIndex = (int8_t)ec_dec_icdf(silk_LTP_per_index_iCDF, 8);
+        s_channel_state[n].indices.PERIndex = (int8_t)ec_dec_icdf(silk_LTP_per_index_iCDF, 8);
 
-        for (k = 0; k < psDec->nb_subfr; k++) {
-            psDec->indices.LTPIndex[k] =
-                (int8_t)ec_dec_icdf(silk_LTP_gain_iCDF_ptrs[psDec->indices.PERIndex], 8);
+        for (k = 0; k < s_channel_state[n].nb_subfr; k++) {
+            s_channel_state[n].indices.LTPIndex[k] =
+                (int8_t)ec_dec_icdf(silk_LTP_gain_iCDF_ptrs[s_channel_state[n].indices.PERIndex], 8);
         }
 
         /**********************/
         /* Decode LTP scaling */
         /**********************/
         if (condCoding == CODE_INDEPENDENTLY) {
-            psDec->indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(silk_LTPscale_iCDF, 8);
+            s_channel_state[n].indices.LTP_scaleIndex = (int8_t)ec_dec_icdf(silk_LTPscale_iCDF, 8);
         } else {
-            psDec->indices.LTP_scaleIndex = 0;
+            s_channel_state[n].indices.LTP_scaleIndex = 0;
         }
     }
-    psDec->ec_prevSignalType = psDec->indices.signalType;
+    s_channel_state[n].ec_prevSignalType = s_channel_state[n].indices.signalType;
 
     /***************/
     /* Decode seed */
     /***************/
-    psDec->indices.Seed = (int8_t)ec_dec_icdf(silk_uniform4_iCDF, 8);
+    s_channel_state[n].indices.Seed = (int8_t)ec_dec_icdf(silk_uniform4_iCDF, 8);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1601,7 +1601,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                         } else {
                             condCoding = CODE_INDEPENDENTLY;
                         }
-                        silk_decode_indices(&s_channel_state[n], i, 1, condCoding);
+                        silk_decode_indices(n, i, 1, condCoding);
                         silk_decode_pulses(pulses, s_channel_state[n].indices.signalType,
                                            s_channel_state[n].indices.quantOffsetType, s_channel_state[n].frame_length);
                     }
@@ -1988,7 +1988,7 @@ int32_t silk_decode_frame(uint8_t n,
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
-        silk_decode_indices(&s_channel_state[n], s_channel_state[n].nFramesDecoded, lostFlag, condCoding);
+        silk_decode_indices(n, s_channel_state[n].nFramesDecoded, lostFlag, condCoding);
 
         /*********************************************/
         /* Decode quantization indices of excitation */
@@ -3604,7 +3604,6 @@ int32_t silk_resampler_init(uint8_t n,
                             int32_t                      forEnc     /* I    If 1: encoder; if 0: decoder                                */
 ) {
     int32_t up2x;
-s_resampler_state[n];
     /* Clear state */
     memset(&s_resampler_state[n], 0, sizeof(silk_resampler_state_struct_t));
 
