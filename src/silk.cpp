@@ -2885,33 +2885,31 @@ void silk_PLC(uint8_t n,
         /****************************/
         /* Update state             */
         /****************************/
-        silk_PLC_update(&s_channel_state[n], psDecCtrl);
+        silk_PLC_update(n, psDecCtrl);
     }
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Update state of PLC                            */
-void silk_PLC_update(silk_decoder_state_t*   psDec,    /* I/O Decoder state        */
-                     silk_decoder_control* psDecCtrl /* I/O Decoder control      */
-) {
+void silk_PLC_update(uint8_t n, silk_decoder_control* psDecCtrl) {
     int32_t          LTP_Gain_Q14, temp_LTP_Gain_Q14;
     int32_t          i, j;
     silk_PLC_struct* psPLC;
-
-    psPLC = &psDec->sPLC;
+s_channel_state[n].
+    psPLC = &s_channel_state[n].sPLC;
 
     /* Update parameters used in case of packet loss */
-    psDec->prevSignalType = psDec->indices.signalType;
+    s_channel_state[n].prevSignalType = s_channel_state[n].indices.signalType;
     LTP_Gain_Q14 = 0;
-    if(psDec->indices.signalType == TYPE_VOICED) {
+    if(s_channel_state[n].indices.signalType == TYPE_VOICED) {
         /* Find the parameters for the last subframe which contains a pitch pulse */
-        for(j = 0; j * psDec->subfr_length < psDecCtrl->pitchL[psDec->nb_subfr - 1]; j++) {
-            if(j == psDec->nb_subfr) { break; }
+        for(j = 0; j * s_channel_state[n].subfr_length < psDecCtrl->pitchL[s_channel_state[n].nb_subfr - 1]; j++) {
+            if(j == s_channel_state[n].nb_subfr) { break; }
             temp_LTP_Gain_Q14 = 0;
-            for(i = 0; i < LTP_ORDER; i++) { temp_LTP_Gain_Q14 += psDecCtrl->LTPCoef_Q14[(psDec->nb_subfr - 1 - j) * LTP_ORDER + i]; }
+            for(i = 0; i < LTP_ORDER; i++) { temp_LTP_Gain_Q14 += psDecCtrl->LTPCoef_Q14[(s_channel_state[n].nb_subfr - 1 - j) * LTP_ORDER + i]; }
             if(temp_LTP_Gain_Q14 > LTP_Gain_Q14) {
                 LTP_Gain_Q14 = temp_LTP_Gain_Q14;
-                memcpy(psPLC->LTPCoef_Q14, &psDecCtrl->LTPCoef_Q14[silk_SMULBB(psDec->nb_subfr - 1 - j, LTP_ORDER)], LTP_ORDER * sizeof(int16_t));
-                psPLC->pitchL_Q8 = silk_LSHIFT(psDecCtrl->pitchL[psDec->nb_subfr - 1 - j], 8);
+                memcpy(psPLC->LTPCoef_Q14, &psDecCtrl->LTPCoef_Q14[silk_SMULBB(s_channel_state[n].nb_subfr - 1 - j, LTP_ORDER)], LTP_ORDER * sizeof(int16_t));
+                psPLC->pitchL_Q8 = silk_LSHIFT(psDecCtrl->pitchL[s_channel_state[n].nb_subfr - 1 - j], 8);
             }
         }
 
@@ -2937,19 +2935,19 @@ void silk_PLC_update(silk_decoder_state_t*   psDec,    /* I/O Decoder state     
         }
     }
     else {
-        psPLC->pitchL_Q8 = silk_LSHIFT(silk_SMULBB(psDec->fs_kHz, 18), 8);
+        psPLC->pitchL_Q8 = silk_LSHIFT(silk_SMULBB(s_channel_state[n].fs_kHz, 18), 8);
         memset(psPLC->LTPCoef_Q14, 0, LTP_ORDER * sizeof(int16_t));
     }
 
     /* Save LPC coeficients */
-    memcpy(psPLC->prevLPC_Q12, psDecCtrl->PredCoef_Q12[1], psDec->LPC_order * sizeof(int16_t));
+    memcpy(psPLC->prevLPC_Q12, psDecCtrl->PredCoef_Q12[1], s_channel_state[n].LPC_order * sizeof(int16_t));
     psPLC->prevLTP_scale_Q14 = psDecCtrl->LTP_scale_Q14;
 
     /* Save last two gains */
-    memcpy(psPLC->prevGain_Q16, &psDecCtrl->Gains_Q16[psDec->nb_subfr - 2], 2 * sizeof(int32_t));
+    memcpy(psPLC->prevGain_Q16, &psDecCtrl->Gains_Q16[s_channel_state[n].nb_subfr - 2], 2 * sizeof(int32_t));
 
-    psPLC->subfr_length = psDec->subfr_length;
-    psPLC->nb_subfr = psDec->nb_subfr;
+    psPLC->subfr_length = s_channel_state[n].subfr_length;
+    psPLC->nb_subfr = s_channel_state[n].nb_subfr;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
