@@ -1977,17 +1977,15 @@ int32_t silk_Get_Decoder_Size(int32_t* decSizeBytes) {
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* Reset decoder state */
-int32_t silk_InitDecoder( void *decState) {
+int32_t silk_InitDecoder() {
     int32_t n, ret = SILK_NO_ERROR;
    // s_channel_state = (silk_decoder_state_t*) &decState->s_channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
         ret = silk_init_decoder(&s_channel_state[n]);
     }
-    silk_memset(&((silk_decoder_t *)decState)->sStereo, 0, sizeof(((silk_decoder_t *)decState)->sStereo));
-    /* Not strictly needed, but it's cleaner that way */
-    ((silk_decoder_t *)decState)->prev_decode_only_middle = 0;
-
+    memset(&s_silk_decoder.sStereo, 0, sizeof(s_silk_decoder.sStereo));
+    s_silk_decoder.prev_decode_only_middle = 0;
     return ret;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

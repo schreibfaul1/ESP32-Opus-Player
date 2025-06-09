@@ -1116,7 +1116,7 @@ void silk_CNG(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int1
 // void silk_encode_indices(silk_encoder_state *psEncC, ec_enc *psRangeEnc, int32_t FrameIndex, int32_t encode_LBRR, int32_t condCoding);
 void silk_CNG_Reset(silk_decoder_state_t *psDec);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
-int32_t silk_InitDecoder(void *decState);
+int32_t silk_InitDecoder();
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
 int32_t silk_Decode(void* decState, int32_t lostFlag, int32_t newPacketFlag,
                     int16_t *samplesOut, int32_t *nSamplesOut);

@@ -107,7 +107,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    s_silk_DecControlStruct.nChannelsAPI      = st->channels;
 
    /* Reset decoder */
-   ret = silk_InitDecoder( silk_dec );
+   ret = silk_InitDecoder();
    if(ret)return OPUS_INTERNAL_ERROR;
 
    /* Initialize CELT decoder */
@@ -198,7 +198,7 @@ if(!inbuf)log_e("Inbuf is null");
         int16_t *pcm_ptr;
         pcm_ptr = pcm_silk;
 
-        if (st->prev_mode == MODE_CELT_ONLY) silk_InitDecoder(silk_dec);
+        if (st->prev_mode == MODE_CELT_ONLY) silk_InitDecoder();
 
         /* The SILK PLC cannot produce frames of less than 10 ms */
         payloadSize_ms = max(10, 1000 * audiosize / 48000);
@@ -418,7 +418,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
                        sizeof(OpusDecoder) - ((char *)&st->OPUS_DECODER_RESET_START - (char *)st));
 
             celt_decoder_ctl(celt_dec, (int32_t)OPUS_RESET_STATE);
-            silk_InitDecoder(silk_dec);
+            silk_InitDecoder();
             st->stream_channels = st->channels;
             st->frame_size = st->Fs / 400;
         } break;
