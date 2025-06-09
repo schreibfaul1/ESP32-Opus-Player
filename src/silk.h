@@ -1067,7 +1067,7 @@ void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t 
 void silk_NLSF_unpack(int16_t ec_ix[], uint8_t pred_Q8[], const silk_NLSF_CB_struct *psNLSF_CB,
                           const int32_t CB1_index);
 void silk_NLSF_decode(int16_t *pNLSF_Q15, int8_t *NLSFIndices, const silk_NLSF_CB_struct   *psNLSF_CB);
-int32_t silk_decoder_set_fs(silk_decoder_state_t *psDec, int32_t fs_kHz, int32_t fs_API_Hz);
+int32_t silk_decoder_set_fs(uint8_t n, int32_t fs_kHz, int32_t fs_API_Hz);
 
 void silk_decode_indices(silk_decoder_state_t *psDec, int32_t FrameIndex, int32_t decode_LBRR,
                          int32_t condCoding);
