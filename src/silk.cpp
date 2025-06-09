@@ -810,7 +810,7 @@ void silk_decode_indices(uint8_t n,
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void silk_decode_parameters(silk_decoder_state_t*   psDec,     /* I/O  State                                       */
+void silk_decode_parameters(uint8_t n,
                             silk_decoder_control* psDecCtrl, /* I/O  Decoder control                             */
                             int32_t               condCoding /* I    The type of conditional coding to use       */
 ) {
@@ -819,65 +819,65 @@ void silk_decode_parameters(silk_decoder_state_t*   psDec,     /* I/O  State    
     const int8_t* cbk_ptr_Q7;
 
     /* Dequant Gains */
-    silk_gains_dequant(psDecCtrl->Gains_Q16, psDec->indices.GainsIndices, &psDec->LastGainIndex, condCoding == CODE_CONDITIONALLY, psDec->nb_subfr);
+    silk_gains_dequant(psDecCtrl->Gains_Q16, s_channel_state[n].indices.GainsIndices, &s_channel_state[n].LastGainIndex, condCoding == CODE_CONDITIONALLY, s_channel_state[n].nb_subfr);
 
     /****************/
     /* Decode NLSFs */
     /****************/
-    silk_NLSF_decode(pNLSF_Q15, psDec->indices.NLSFIndices, psDec->psNLSF_CB);
+    silk_NLSF_decode(pNLSF_Q15, s_channel_state[n].indices.NLSFIndices, s_channel_state[n].psNLSF_CB);
 
     /* Convert NLSF parameters to AR prediction filter coefficients */
-    silk_NLSF2A(psDecCtrl->PredCoef_Q12[1], pNLSF_Q15, psDec->LPC_order);
+    silk_NLSF2A(psDecCtrl->PredCoef_Q12[1], pNLSF_Q15, s_channel_state[n].LPC_order);
 
     /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
     /* improves the case of packet loss in the first frame after a switch           */
-    if(psDec->first_frame_after_reset == 1) { psDec->indices.NLSFInterpCoef_Q2 = 4; }
+    if(s_channel_state[n].first_frame_after_reset == 1) { s_channel_state[n].indices.NLSFInterpCoef_Q2 = 4; }
 
-    if(psDec->indices.NLSFInterpCoef_Q2 < 4) {
+    if(s_channel_state[n].indices.NLSFInterpCoef_Q2 < 4) {
         /* Calculation of the interpolated NLSF0 vector from the interpolation factor, the previous NLSF1, and the current NLSF1 */
-        for(i = 0; i < psDec->LPC_order; i++) { pNLSF0_Q15[i] = psDec->prevNLSF_Q15[i] + silk_RSHIFT(silk_MUL(psDec->indices.NLSFInterpCoef_Q2, pNLSF_Q15[i] - psDec->prevNLSF_Q15[i]), 2); }
+        for(i = 0; i < s_channel_state[n].LPC_order; i++) { pNLSF0_Q15[i] = s_channel_state[n].prevNLSF_Q15[i] + silk_RSHIFT(silk_MUL(s_channel_state[n].indices.NLSFInterpCoef_Q2, pNLSF_Q15[i] - s_channel_state[n].prevNLSF_Q15[i]), 2); }
 
         /* Convert NLSF parameters to AR prediction filter coefficients */
-        silk_NLSF2A(psDecCtrl->PredCoef_Q12[0], pNLSF0_Q15, psDec->LPC_order);
+        silk_NLSF2A(psDecCtrl->PredCoef_Q12[0], pNLSF0_Q15, s_channel_state[n].LPC_order);
     }
     else {
         /* Copy LPC coefficients for first half from second half */
-        memcpy(psDecCtrl->PredCoef_Q12[0], psDecCtrl->PredCoef_Q12[1], psDec->LPC_order * sizeof(int16_t));
+        memcpy(psDecCtrl->PredCoef_Q12[0], psDecCtrl->PredCoef_Q12[1], s_channel_state[n].LPC_order * sizeof(int16_t));
     }
-    memcpy(psDec->prevNLSF_Q15, pNLSF_Q15, psDec->LPC_order * sizeof(int16_t));
+    memcpy(s_channel_state[n].prevNLSF_Q15, pNLSF_Q15, s_channel_state[n].LPC_order * sizeof(int16_t));
 
     /* After a packet loss do BWE of LPC coefs */
-    if(psDec->lossCnt) {
-        silk_bwexpander(psDecCtrl->PredCoef_Q12[0], psDec->LPC_order, BWE_AFTER_LOSS_Q16);
-        silk_bwexpander(psDecCtrl->PredCoef_Q12[1], psDec->LPC_order, BWE_AFTER_LOSS_Q16);
+    if(s_channel_state[n].lossCnt) {
+        silk_bwexpander(psDecCtrl->PredCoef_Q12[0], s_channel_state[n].LPC_order, BWE_AFTER_LOSS_Q16);
+        silk_bwexpander(psDecCtrl->PredCoef_Q12[1], s_channel_state[n].LPC_order, BWE_AFTER_LOSS_Q16);
     }
 
-    if(psDec->indices.signalType == TYPE_VOICED) {
+    if(s_channel_state[n].indices.signalType == TYPE_VOICED) {
         /*********************/
         /* Decode pitch lags */
         /*********************/
 
         /* Decode pitch values */
-        silk_decode_pitch(psDec->indices.lagIndex, psDec->indices.contourIndex, psDecCtrl->pitchL, psDec->fs_kHz, psDec->nb_subfr);
+        silk_decode_pitch(s_channel_state[n].indices.lagIndex, s_channel_state[n].indices.contourIndex, psDecCtrl->pitchL, s_channel_state[n].fs_kHz, s_channel_state[n].nb_subfr);
 
         /* Decode Codebook Index */
-        cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[psDec->indices.PERIndex]; /* set pointer to start of codebook */
+        cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[s_channel_state[n].indices.PERIndex]; /* set pointer to start of codebook */
 
-        for(k = 0; k < psDec->nb_subfr; k++) {
-            Ix = psDec->indices.LTPIndex[k];
+        for(k = 0; k < s_channel_state[n].nb_subfr; k++) {
+            Ix = s_channel_state[n].indices.LTPIndex[k];
             for(i = 0; i < LTP_ORDER; i++) { psDecCtrl->LTPCoef_Q14[k * LTP_ORDER + i] = silk_LSHIFT(cbk_ptr_Q7[Ix * LTP_ORDER + i], 7); }
         }
 
         /**********************/
         /* Decode LTP scaling */
         /**********************/
-        Ix = psDec->indices.LTP_scaleIndex;
+        Ix = s_channel_state[n].indices.LTP_scaleIndex;
         psDecCtrl->LTP_scale_Q14 = silk_LTPScales_table_Q14[Ix];
     }
     else {
-        memset(psDecCtrl->pitchL, 0, psDec->nb_subfr * sizeof(int32_t));
-        memset(psDecCtrl->LTPCoef_Q14, 0, LTP_ORDER * psDec->nb_subfr * sizeof(int16_t));
-        psDec->indices.PERIndex = 0;
+        memset(psDecCtrl->pitchL, 0, s_channel_state[n].nb_subfr * sizeof(int32_t));
+        memset(psDecCtrl->LTPCoef_Q14, 0, LTP_ORDER * s_channel_state[n].nb_subfr * sizeof(int16_t));
+        s_channel_state[n].indices.PERIndex = 0;
         psDecCtrl->LTP_scale_Q14 = 0;
     }
 }
@@ -1998,7 +1998,7 @@ int32_t silk_decode_frame(uint8_t n,
         /********************************************/
         /* Decode parameters and pulse signal       */
         /********************************************/
-        silk_decode_parameters(&s_channel_state[n], psDecCtrl, condCoding);
+        silk_decode_parameters(n, psDecCtrl, condCoding);
 
         /********************************************************/
         /* Run inverse NSQ                                      */
