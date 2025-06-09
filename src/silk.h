@@ -1053,8 +1053,8 @@ void silk_bwexpander_32(int32_t *ar, const int32_t d, int32_t chirp_Q16);
 void silk_bwexpander(int16_t *ar, const int32_t d, int32_t chirp_Q16);
 void silk_stereo_decode_pred(int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(int32_t *decode_only_mid);
-void silk_PLC_Reset(silk_decoder_state_t *psDec);
-void silk_PLC(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost);
+void silk_PLC_Reset(uint8_t n);
+void silk_PLC(uint8_t n, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost);
 void silk_PLC_glue_frames(silk_decoder_state_t *psDec, int16_t frame[], int32_t length);
 void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA], const int32_t ind, const int32_t fac_Q16);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
@@ -1094,8 +1094,8 @@ void silk_quant_LTP_gains(int16_t B_Q14[MAX_NB_SUBFR * LTP_ORDER], int8_t cbk_in
 void silk_VQ_WMat_EC_c(int8_t *ind, int32_t *res_nrg_Q15, int32_t *rate_dist_Q8, int32_t *gain_Q7,
                        const int32_t *XX_Q17, const int32_t *xX_Q17, const int8_t *cb_Q7, const uint8_t *cb_gain_Q7,
                        const uint8_t *cl_Q5, const int32_t subfr_len, const int32_t max_gain_Q7, const int32_t L);
-void silk_CNG_Reset(silk_decoder_state_t *psDec);
-void silk_CNG(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t length);
+void silk_CNG_Reset(uint8_t n);
+void silk_CNG(uint8_t n, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t length);
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder();
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
