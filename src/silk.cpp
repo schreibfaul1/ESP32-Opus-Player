@@ -19,9 +19,7 @@ silk_ptr_arr<silk_resampler_state_struct_t> s_resampler_state;
 silk_ptr_arr<silk_decoder_state_t>          s_channel_state;
 silk_ptr_obj<silk_decoder_t>                s_silk_decoder;
 silk_ptr_obj<silk_decoder_control_t>        s_silk_decoder_control;
-               ;
-silk_DecControlStruct_t       s_silk_DecControlStruct;
-//silk_resampler_state_struct_t s_resampler_state[ DECODER_NUM_CHANNELS ];;
+silk_ptr_obj<silk_DecControlStruct_t>       s_silk_DecControlStruct;
 
 uint8_t            s_channelsInternal = 0;
 uint8_t            s_payloadSize_ms = 0;
@@ -429,10 +427,11 @@ const silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = {
 };
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 bool SILKDecoder_AllocateBuffers(){
-    s_resampler_state      = silk_malloc_arr<silk_resampler_state_struct_t>(DECODER_NUM_CHANNELS);
-    s_channel_state        = silk_malloc_arr<silk_decoder_state_t>(DECODER_NUM_CHANNELS);
-    s_silk_decoder         = silk_malloc_obj<silk_decoder_t>();
-    s_silk_decoder_control = silk_malloc_obj<silk_decoder_control_t>();
+    s_resampler_state       = silk_malloc_arr<silk_resampler_state_struct_t>(DECODER_NUM_CHANNELS);
+    s_channel_state         = silk_malloc_arr<silk_decoder_state_t>(DECODER_NUM_CHANNELS);
+    s_silk_decoder          = silk_malloc_obj<silk_decoder_t>();
+    s_silk_decoder_control  = silk_malloc_obj<silk_decoder_control_t>();
+    s_silk_DecControlStruct = silk_malloc_obj<silk_DecControlStruct_t>();
 
     log_w("s_silk_resampler_state length: %i", sizeof(silk_resampler_state_struct_t) * DECODER_NUM_CHANNELS);
     log_w("s_channel_state length: %i", sizeof(silk_decoder_state_t) * DECODER_NUM_CHANNELS);
@@ -1498,27 +1497,27 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int32_t stereo_to_mono;
     int delay_stack_alloc;
 
-    assert(s_silk_DecControlStruct.nChannelsInternal == 1 || s_silk_DecControlStruct.nChannelsInternal == 2);
+    assert(s_silk_DecControlStruct->nChannelsInternal == 1 || s_silk_DecControlStruct->nChannelsInternal == 2);
 
     /**********************************/
     /* Test if first frame in payload */
     /**********************************/
     if (newPacketFlag) {
-        for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+        for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
             s_channel_state[n].nFramesDecoded = 0; /* Used to count frames in packet */
         }
     }
 
     /* If Mono -> Stereo transition in bitstream: init state of second channel */
-    if (s_silk_DecControlStruct.nChannelsInternal > s_silk_decoder.get()->nChannelsInternal) {
+    if (s_silk_DecControlStruct->nChannelsInternal > s_silk_decoder.get()->nChannelsInternal) {
         ret += silk_init_decoder(1);
     }
 
-    stereo_to_mono = s_silk_DecControlStruct.nChannelsInternal == 1 && s_silk_decoder.get()->nChannelsInternal == 2 &&
+    stereo_to_mono = s_silk_DecControlStruct->nChannelsInternal == 1 && s_silk_decoder.get()->nChannelsInternal == 2 &&
                      (s_silk_internalSampleRate == 1000 * s_channel_state[0].fs_kHz);
 
     if (s_channel_state[0].nFramesDecoded == 0) {
-        for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+        for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
             int32_t fs_kHz_dec;
             if (s_payloadSize_ms == 0) {
                 /* Assuming packet loss, use 10 ms */
@@ -1543,21 +1542,21 @@ int32_t silk_Decode(                                   /* O    Returns error cod
             if (fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16) {
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
-            ret += silk_decoder_set_fs(n, fs_kHz_dec, s_silk_DecControlStruct.API_sampleRate);
+            ret += silk_decoder_set_fs(n, fs_kHz_dec, s_silk_DecControlStruct->API_sampleRate);
         }
     }
 
-    if (s_silk_DecControlStruct.nChannelsAPI == 2 && s_silk_DecControlStruct.nChannelsInternal == 2 &&
+    if (s_silk_DecControlStruct->nChannelsAPI == 2 && s_silk_DecControlStruct->nChannelsInternal == 2 &&
         (s_silk_decoder->nChannelsAPI == 1 || s_silk_decoder->nChannelsInternal == 1)) {
         silk_memset(s_silk_decoder->sStereo.pred_prev_Q13, 0, sizeof(s_silk_decoder->sStereo.pred_prev_Q13));
         silk_memset(s_silk_decoder->sStereo.sSide, 0, sizeof(s_silk_decoder->sStereo.sSide));
         silk_memcpy(&s_resampler_state[n], &s_resampler_state[n],
                     sizeof(silk_resampler_state_struct_t));
     }
-    s_silk_decoder->nChannelsAPI = s_silk_DecControlStruct.nChannelsAPI;
-    s_silk_decoder->nChannelsInternal = s_silk_DecControlStruct.nChannelsInternal;
+    s_silk_decoder->nChannelsAPI = s_silk_DecControlStruct->nChannelsAPI;
+    s_silk_decoder->nChannelsInternal = s_silk_DecControlStruct->nChannelsInternal;
 
-    if (s_silk_DecControlStruct.API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || s_silk_DecControlStruct.API_sampleRate < 8000) {
+    if (s_silk_DecControlStruct->API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || s_silk_DecControlStruct->API_sampleRate < 8000) {
         ret = SILK_DEC_INVALID_SAMPLING_FREQUENCY;
 
         return (ret);
@@ -1566,14 +1565,14 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (lostFlag != FLAG_PACKET_LOST && s_channel_state[0].nFramesDecoded == 0) {
         /* First decoder call for this payload */
         /* Decode VAD flags and LBRR flag */
-        for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+        for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
             for (i = 0; i < s_channel_state[n].nFramesPerPacket; i++) {
                 s_channel_state[n].VAD_flags[i] = ec_dec_bit_logp(1);
             }
             s_channel_state[n].LBRR_flag = ec_dec_bit_logp(1);
         }
         /* Decode LBRR flags */
-        for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+        for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
             silk_memset(s_channel_state[n].LBRR_flags, 0, sizeof(s_channel_state[n].LBRR_flags));
             if (s_channel_state[n].LBRR_flag) {
                 if (s_channel_state[n].nFramesPerPacket == 1) {
@@ -1591,12 +1590,12 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         if (lostFlag == FLAG_DECODE_NORMAL) {
             /* Regular decoding: skip all LBRR data */
             for (i = 0; i < s_channel_state[0].nFramesPerPacket; i++) {
-                for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+                for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
                     if (s_channel_state[n].LBRR_flags[i]) {
                         int16_t pulses[MAX_FRAME_LENGTH];
                         int32_t condCoding;
 
-                        if (s_silk_DecControlStruct.nChannelsInternal == 2 && n == 0) {
+                        if (s_silk_DecControlStruct->nChannelsInternal == 2 && n == 0) {
                             silk_stereo_decode_pred(MS_pred_Q13);
                             if (s_channel_state[1].LBRR_flags[i] == 0) {
                                 silk_stereo_decode_mid_only(&decode_only_middle);
@@ -1618,7 +1617,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Get MS predictor index */
-    if (s_silk_DecControlStruct.nChannelsInternal == 2) {
+    if (s_silk_DecControlStruct->nChannelsInternal == 2) {
         if (lostFlag == FLAG_DECODE_NORMAL ||
             (lostFlag == FLAG_DECODE_LBRR && s_channel_state[0].LBRR_flags[s_channel_state[0].nFramesDecoded] == 1)) {
             silk_stereo_decode_pred(MS_pred_Q13);
@@ -1637,7 +1636,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Reset side channel decoder prediction memory for first frame with side coding */
-    if (s_silk_DecControlStruct.nChannelsInternal == 2 && decode_only_middle == 0 && s_silk_decoder->prev_decode_only_middle == 1) {
+    if (s_silk_DecControlStruct->nChannelsInternal == 2 && decode_only_middle == 0 && s_silk_decoder->prev_decode_only_middle == 1) {
         silk_memset(s_channel_state[1].outBuf, 0, sizeof(s_channel_state[1].outBuf));
         silk_memset(s_channel_state[1].sLPC_Q14_buf, 0, sizeof(s_channel_state[1].sLPC_Q14_buf));
         s_channel_state[1].lagPrev = 100;
@@ -1649,10 +1648,10 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     /* Check if the temp buffer fits into the output PCM buffer. If it fits,
        we can delay allocating the temp buffer until after the SILK peak stack
        usage. We need to use a < and not a <= because of the two extra samples. */
-    delay_stack_alloc = s_silk_DecControlStruct.internalSampleRate * s_silk_DecControlStruct.nChannelsInternal <
-                        s_silk_DecControlStruct.API_sampleRate * s_silk_DecControlStruct.nChannelsAPI;
+    delay_stack_alloc = s_silk_DecControlStruct->internalSampleRate * s_silk_DecControlStruct->nChannelsInternal <
+                        s_silk_DecControlStruct->API_sampleRate * s_silk_DecControlStruct->nChannelsAPI;
 
-    size_t samplesOut1_tmp_storage1_len = delay_stack_alloc ? ALLOC_NONE : s_silk_DecControlStruct.nChannelsInternal * (s_channel_state[0].frame_length + 2);
+    size_t samplesOut1_tmp_storage1_len = delay_stack_alloc ? ALLOC_NONE : s_silk_DecControlStruct->nChannelsInternal * (s_channel_state[0].frame_length + 2);
     auto samplesOut1_tmp_storage1 = silk_malloc_arr<int16_t>(samplesOut1_tmp_storage1_len * sizeof(int16_t));
 
     if (delay_stack_alloc) {
@@ -1667,11 +1666,11 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         has_side = !decode_only_middle;
     } else {
         has_side =
-            !s_silk_decoder->prev_decode_only_middle || (s_silk_DecControlStruct.nChannelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
+            !s_silk_decoder->prev_decode_only_middle || (s_silk_DecControlStruct->nChannelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
                                                 s_channel_state[1].LBRR_flags[s_channel_state[1].nFramesDecoded] == 1);
     }
     /* Call decoder for one frame */
-    for (n = 0; n < s_silk_DecControlStruct.nChannelsInternal; n++) {
+    for (n = 0; n < s_silk_DecControlStruct->nChannelsInternal; n++) {
         if (n == 0 || has_side) {
             int32_t FrameIndex;
             int32_t condCoding;
@@ -1697,7 +1696,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         s_channel_state[n].nFramesDecoded++;
     }
 
-    if (s_silk_DecControlStruct.nChannelsAPI == 2 && s_silk_DecControlStruct.nChannelsInternal == 2) {
+    if (s_silk_DecControlStruct->nChannelsAPI == 2 && s_silk_DecControlStruct->nChannelsInternal == 2) {
         /* Convert Mid/Side to Left/Right */
         silk_stereo_MS_to_LR(&s_silk_decoder->sStereo, samplesOut1_tmp[0], samplesOut1_tmp[1], MS_pred_Q13,
                              s_channel_state[0].fs_kHz, nSamplesOutDec);
@@ -1708,44 +1707,44 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* Number of output samples */
-    *nSamplesOut = silk_DIV32(nSamplesOutDec * s_silk_DecControlStruct.API_sampleRate, silk_SMULBB(s_channel_state[0].fs_kHz, 1000));
+    *nSamplesOut = silk_DIV32(nSamplesOutDec * s_silk_DecControlStruct->API_sampleRate, silk_SMULBB(s_channel_state[0].fs_kHz, 1000));
 
     /* Set up pointers to temp buffers */
-    size_t samplesOut2_tmp_len = s_silk_DecControlStruct.nChannelsAPI == 2 ? *nSamplesOut : ALLOC_NONE;
+    size_t samplesOut2_tmp_len = s_silk_DecControlStruct->nChannelsAPI == 2 ? *nSamplesOut : ALLOC_NONE;
     auto samplesOut2_tmp = silk_malloc_arr<int16_t>(samplesOut2_tmp_len * sizeof(int16_t));
 
-    if (s_silk_DecControlStruct.nChannelsAPI == 2) {
+    if (s_silk_DecControlStruct->nChannelsAPI == 2) {
         resample_out_ptr = samplesOut2_tmp.get();
     } else {
         resample_out_ptr = samplesOut;
     }
 
-    size_t samplesOut1_tmp_storage2_len = delay_stack_alloc ? s_silk_DecControlStruct.nChannelsInternal * (s_channel_state[0].frame_length + 2) : ALLOC_NONE;
+    size_t samplesOut1_tmp_storage2_len = delay_stack_alloc ? s_silk_DecControlStruct->nChannelsInternal * (s_channel_state[0].frame_length + 2) : ALLOC_NONE;
     auto samplesOut1_tmp_storage2 = silk_malloc_arr<int16_t>(samplesOut1_tmp_storage2_len * sizeof(int16_t));
 
     if (delay_stack_alloc) {
-        size_t val1 = s_silk_DecControlStruct.nChannelsInternal * (s_channel_state[0].frame_length + 2);
+        size_t val1 = s_silk_DecControlStruct->nChannelsInternal * (s_channel_state[0].frame_length + 2);
         size_t val2 = samplesOut1_tmp_storage2_len *sizeof(int16_t);
         //size_t n = val1 * val2;
         memcpy(samplesOut1_tmp_storage2.get(), samplesOut, val2);
         samplesOut1_tmp[0] = samplesOut1_tmp_storage2.get();
         samplesOut1_tmp[1] = samplesOut1_tmp_storage2.get() + s_channel_state[0].frame_length + 2;
     }
-    for (n = 0; n < silk_min(s_silk_DecControlStruct.nChannelsAPI, s_silk_DecControlStruct.nChannelsInternal); n++) {
+    for (n = 0; n < silk_min(s_silk_DecControlStruct->nChannelsAPI, s_silk_DecControlStruct->nChannelsInternal); n++) {
 
         /* Resample decoded signal to API_sampleRate */
         ret +=
             silk_resampler(n, resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
 
         /* Interleave if stereo output and stereo stream */
-        if (s_silk_DecControlStruct.nChannelsAPI == 2) {
+        if (s_silk_DecControlStruct->nChannelsAPI == 2) {
             for (i = 0; i < *nSamplesOut; i++) {
                 samplesOut[n + 2 * i] = resample_out_ptr[i];
             }
         }
     }
     /* Create two channel output from mono stream */
-    if (s_silk_DecControlStruct.nChannelsAPI == 2 && s_silk_DecControlStruct.nChannelsInternal == 1) {
+    if (s_silk_DecControlStruct->nChannelsAPI == 2 && s_silk_DecControlStruct->nChannelsInternal == 1) {
         if (stereo_to_mono) {
             /* Resample right channel for newly collapsed stereo just in case
                we weren't doing collapsing when switching to mono */
@@ -1764,9 +1763,9 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     /* Export pitch lag, measured at 48 kHz sampling rate */
     if (s_channel_state[0].prevSignalType == TYPE_VOICED) {
         int mult_tab[3] = {6, 4, 3};
-        s_silk_DecControlStruct.prevPitchLag = s_channel_state[0].lagPrev * mult_tab[(s_channel_state[0].fs_kHz - 8) >> 2];
+        s_silk_DecControlStruct->prevPitchLag = s_channel_state[0].lagPrev * mult_tab[(s_channel_state[0].fs_kHz - 8) >> 2];
     } else {
-        s_silk_DecControlStruct.prevPitchLag = 0;
+        s_silk_DecControlStruct->prevPitchLag = 0;
     }
 
     if (lostFlag == FLAG_PACKET_LOST) {

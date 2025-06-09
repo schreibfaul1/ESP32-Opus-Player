@@ -35,7 +35,7 @@ const uint32_t CELT_SET_END_BAND_REQUEST        = 10012;
 const uint32_t CELT_SET_START_BAND_REQUEST      = 10010;
 const uint32_t CELT_GET_MODE_REQUEST            = 10015;
 
-extern silk_DecControlStruct_t s_silk_DecControlStruct;
+extern silk_ptr_obj<silk_DecControlStruct_t>    s_silk_DecControlStruct;
 
 struct OpusDecoder {
    int          celt_dec_offset;
@@ -103,8 +103,8 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    st->stream_channels = st->channels = channels;
 
    st->Fs = Fs;
-   s_silk_DecControlStruct.API_sampleRate = st->Fs;
-   s_silk_DecControlStruct.nChannelsAPI      = st->channels;
+   s_silk_DecControlStruct->API_sampleRate = st->Fs;
+   s_silk_DecControlStruct->nChannelsAPI      = st->channels;
 
    /* Reset decoder */
    ret = silk_InitDecoder();
@@ -203,7 +203,7 @@ if(!inbuf)log_e("Inbuf is null");
         /* The SILK PLC cannot produce frames of less than 10 ms */
         payloadSize_ms = max(10, 1000 * audiosize / 48000);
 
-            s_silk_DecControlStruct.nChannelsInternal = channels;
+            s_silk_DecControlStruct->nChannelsInternal = channels;
             if (mode == MODE_SILK_ONLY) {
                 if (bandwidth == OPUS_BANDWIDTH_NARROWBAND) {
                     internalSampleRate = 8000;
@@ -437,7 +437,7 @@ int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
             if (st->prev_mode == MODE_CELT_ONLY)
                 ret = celt_decoder_ctl(celt_dec, (int32_t)value);
             else
-                *value = s_silk_DecControlStruct.prevPitchLag;
+                *value = s_silk_DecControlStruct->prevPitchLag;
         } break;
         case OPUS_GET_GAIN_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
