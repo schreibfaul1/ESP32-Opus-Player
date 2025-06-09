@@ -177,7 +177,7 @@ const uint32_t CELT_PVQ_U_DATA[1272] PROGMEM = {
     /*N=14, K=14:*/
     1409933619};
 
-const unsigned char band_allocation[] = {
+const uint8_t band_allocation[] = {
     /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     90,  80,  75,  69,  63,  56,  49,  40,  34,  29,  20,  18,  10,  0,   0,   0,   0,   0,   0,   0,   0,
@@ -351,7 +351,7 @@ const int16_t cache_index50[105] = {
     123, 123, 123, 123, 123, 123, 123, 123, 240, 240, 240, 240, 305, 305, 305, 318, 318, 343, 351, 358, 364,
     240, 240, 240, 240, 240, 240, 240, 240, 305, 305, 305, 305, 343, 343, 343, 351, 351, 370, 376, 382, 387,
 };
-const unsigned char cache_bits50[392] = {
+const uint8_t cache_bits50[392] = {
     40,  7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
     7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   40,  15,  23,
     28,  31,  34,  36,  38,  39,  41,  42,  43,  44,  45,  46,  47,  47,  49,  50,  51,  52,  53,  54,  55,  55,
@@ -371,7 +371,7 @@ const unsigned char cache_bits50[392] = {
     52,  97,  137, 174, 208, 240, 5,   57,  106, 151, 192, 231, 5,   59,  111, 158, 202, 243, 5,   55,  103, 147,
     187, 224, 5,   60,  113, 161, 206, 248, 4,   65,  122, 175, 224, 4,   67,  127, 182, 234,
 };
-const unsigned char cache_caps50[168] = {
+const uint8_t cache_caps50[168] = {
     224, 224, 224, 224, 224, 224, 224, 224, 160, 160, 160, 160, 185, 185, 185, 178, 178, 168, 134, 61, 37,
     224, 224, 224, 224, 224, 224, 224, 224, 240, 240, 240, 240, 207, 207, 207, 198, 198, 183, 144, 66, 40,
     160, 160, 160, 160, 160, 160, 160, 160, 185, 185, 185, 185, 193, 193, 193, 183, 183, 172, 138, 64, 38,
@@ -515,7 +515,7 @@ const int16_t fft_bitrev60[60] = {
     2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58, 3, 15, 27, 39, 51, 7, 19, 31, 43, 55, 11, 23, 35, 47, 59,
 };
 
-const unsigned char LOG2_FRAC_TABLE[24]={
+const uint8_t LOG2_FRAC_TABLE[24]={
    0,
    8,13,
   16,19,21,23,
@@ -541,7 +541,7 @@ const int16_t beta_intra = 4915;
 /*Parameters of the Laplace-like probability models used for the coarse energy. There is one pair of parameters for
   each frame size, prediction type (inter/intra), and band number. The first number of each pair is the probability
   of 0, and the second is the decay rate, both in Q8 precision.*/
-const unsigned char e_prob_model[4][2][42] = {
+const uint8_t e_prob_model[4][2][42] = {
     /*120 sample frames.*/
     {/*Inter*/
      {72, 127, 65, 129, 66, 128, 65, 128, 64, 128, 62, 128, 64, 128, 64, 128, 92, 78,  92, 79,  92,
@@ -577,15 +577,15 @@ const unsigned long mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x
                                      0x001fffff, 0x003fffff, 0x007fffff, 0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
                                      0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff, 0xffffffff};
 
-const unsigned char small_energy_icdf[3]={2,1,0};
+const uint8_t small_energy_icdf[3]={2,1,0};
 
 const int32_t second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
 
-const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
+const uint8_t trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
 /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
-const unsigned char spread_icdf[4] = {25, 23, 2, 0};
+const uint8_t spread_icdf[4] = {25, 23, 2, 0};
 
-const unsigned char tapset_icdf[3]={2,1,0};
+const uint8_t tapset_icdf[3]={2,1,0};
 
 const kiss_fft_state fft_state48000_960_0 = {
     480,   /* nfft */
@@ -1380,7 +1380,7 @@ void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This prevents energy collapse for transients with multiple short MDCTs */
-void anti_collapse(const CELTMode_t *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
+void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
                    uint32_t seed){
     int32_t c, i, j, k;
@@ -2001,7 +2001,7 @@ unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t b, 
    split in 8 parts. */
 unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                                 int16_t gain, int32_t fill){
-    const unsigned char *cache;
+    const uint8_t *cache;
     int32_t q;
     int32_t curr_bits;
     int32_t imid = 0, iside = 0;
@@ -2194,7 +2194,7 @@ unsigned quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int3
     }
 
     for (k = 0; k < recombine; k++) {
-        const unsigned char bit_interleave_table[16] = {
+        const uint8_t bit_interleave_table[16] = {
             0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3};
         if (encode)
             haar1(X, N >> k, 1 << k);
@@ -2246,7 +2246,7 @@ unsigned quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int3
         }
 
         for (k = 0; k < recombine; k++) {
-            const unsigned char bit_deinterleave_table[16] = {
+            const uint8_t bit_deinterleave_table[16] = {
                 0x00, 0x03, 0x0C, 0x0F, 0x30, 0x33, 0x3C, 0x3F,
                 0xC0, 0xC3, 0xCC, 0xCF, 0xF0, 0xF3, 0xFC, 0xFF};
             cm = bit_deinterleave_table[cm];
@@ -2418,7 +2418,7 @@ void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, 
 //----------------------------------------------------------------------------------------------------------------------
 
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
-                     unsigned char *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
+                     uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
@@ -2587,8 +2587,8 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
                     int32_t dist0, dist1;
                     unsigned cm, cm2;
                     int32_t nstart_bytes, nend_bytes, save_bytes;
-                    unsigned char *bytes_buf;
-                    unsigned char bytes_save[1275];
+                    uint8_t *bytes_buf;
+                    uint8_t bytes_save[1275];
                     int16_t w[2];
                     compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
                     /* Make a copy. */
@@ -2661,8 +2661,8 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
             }
             y_cm = x_cm;
         }
-        collapse_masks[i * C + 0] = (unsigned char)x_cm;
-        collapse_masks[i * C + C - 1] = (unsigned char)y_cm;
+        collapse_masks[i * C + 0] = (uint8_t)x_cm;
+        collapse_masks[i * C + C - 1] = (uint8_t)y_cm;
         balance += pulses[i] + tell;
 
         /* Update the folding position only as long as we have 1 bit/sample depth. */
@@ -3230,7 +3230,7 @@ void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
+int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
                         int32_t frame_size, ec_dec *dec, int32_t accum) {
     int32_t c, i, N;
     int32_t spread_decision;
@@ -3322,7 +3322,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     st->skip_plc = st->loss_count != 0;
 
     if (dec == NULL) {
-        ec_dec_init(&_dec, (unsigned char *)data, len);
+        ec_dec_init(&_dec, (uint8_t *)data, len);
         dec = &_dec;
     }
 
@@ -3448,7 +3448,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     } while (++c < CC);
 
     /* Decode fixed codebook */
-    auto collapse_masks = celt_malloc_arr<unsigned char>(C * nbEBands * sizeof(unsigned char));
+    auto collapse_masks = celt_malloc_arr<uint8_t>(C * nbEBands * sizeof(uint8_t));
 
     auto X = celt_malloc_arr<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
@@ -3542,7 +3542,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     st->loss_count = 0;
     if (ec_tell(dec) > 8 * len)
         return OPUS_INTERNAL_ERROR;
-    if (ec_get_error(dec))
+    if (dec->error)
         st->error = 1;
     return frame_size / st->downsample;
 }
@@ -3957,7 +3957,7 @@ void ec_dec_normalize(ec_dec *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_init(ec_dec *_this, unsigned char *_buf, uint32_t _storage) {
+void ec_dec_init(ec_dec *_this, uint8_t *_buf, uint32_t _storage) {
 
     s_ec_dec = _this;
 
@@ -4025,7 +4025,7 @@ int32_t ec_dec_bit_logp( unsigned _logp) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_dec_icdf(const unsigned char *_icdf, unsigned _ftb) {
+int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
     uint32_t r;
     uint32_t d;
     uint32_t s;
@@ -4074,14 +4074,14 @@ uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft) {
 //----------------------------------------------------------------------------------------------------------------------
 
 uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits) {
-    ec_window window;
+    uint32_t window;
     int32_t available;
     uint32_t ret;
     window = _this->end_window;
     available = _this->nend_bits;
     if ((unsigned)available < _bits) {
         do {
-            window |= (ec_window)ec_read_byte_from_end(_this) << available;
+            window |= (uint32_t)ec_read_byte_from_end(_this) << available;
             available += EC_SYM_BITS;
         } while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
     }
@@ -4097,14 +4097,14 @@ uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits) {
 
 int32_t ec_write_byte(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
-    _this->buf[_this->offs++] = (unsigned char)_value;
+    _this->buf[_this->offs++] = (uint8_t)_value;
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
-    _this->buf[_this->storage - ++(_this->end_offs)] = (unsigned char)_value;
+    _this->buf[_this->storage - ++(_this->end_offs)] = (uint8_t)_value;
     return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -4146,7 +4146,7 @@ inline void ec_enc_normalize(ec_enc *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_enc_init(ec_enc *_this, unsigned char *_buf, uint32_t _size) {
+void ec_enc_init(ec_enc *_this, uint8_t *_buf, uint32_t _size) {
     _this->buf = _buf;
     _this->end_offs = 0;
     _this->end_window = 0;
@@ -4202,7 +4202,7 @@ void ec_enc_bit_logp(ec_enc *_this, int32_t _val, unsigned _logp) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_enc_icdf(ec_enc *_this, int32_t _s, const unsigned char *_icdf, unsigned _ftb) {
+void ec_enc_icdf(ec_enc *_this, int32_t _s, const uint8_t *_icdf, unsigned _ftb) {
     uint32_t r;
     r = _this->rng >> _ftb;
     if (_s > 0) {
@@ -4234,7 +4234,7 @@ void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft) {
 //----------------------------------------------------------------------------------------------------------------------
 
 void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
-    ec_window window;
+    uint32_t window;
     int32_t used;
     window = _this->end_window;
     used = _this->nend_bits;
@@ -4246,7 +4246,7 @@ void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
             used -= EC_SYM_BITS;
         } while (used >= EC_SYM_BITS);
     }
-    window |= (ec_window)_fl << used;
+    window |= (uint32_t)_fl << used;
     used += _bits;
     _this->end_window = window;
     _this->nend_bits = used;
@@ -5121,7 +5121,7 @@ int32_t celt_pitch_xcorr_c(const int16_t *_x, const int16_t *_y, int32_t *xcorr,
       Since it's hard to put asserts in assembly, put them here.*/
     int32_t maxcorr = 1;
     assert(max_pitch > 0);
-    assert((((unsigned char *)_x - (unsigned char *)NULL) & 3) == 0);
+    assert((((uint8_t *)_x - (uint8_t *)NULL) & 3) == 0);
     for (i = 0; i < max_pitch - 3; i += 4) {
         int32_t sum[4] = {0, 0, 0, 0};
         xcorr_kernel(_x, _y + i, sum, len);
@@ -5692,7 +5692,7 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
 
 void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
                            int32_t LM) {
-    const unsigned char *prob_model = e_prob_model[LM][intra];
+    const uint8_t *prob_model = e_prob_model[LM][intra];
     int32_t i, c;
     int32_t prev[2] = {0, 0};
     int16_t coef;

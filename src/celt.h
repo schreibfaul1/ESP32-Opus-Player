@@ -57,9 +57,6 @@
 #define MAXFACTORS 8
 
 
-/*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
-   larger type, you can speed up the decoder by using it here.*/
-typedef uint32_t           ec_window;
 typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
 typedef struct ec_ctx         ec_dec;
@@ -76,10 +73,10 @@ typedef struct {
 }kiss_twiddle_cpx;
 
 struct ec_ctx {
-    unsigned char *buf; /*Buffered input/output.*/
+    uint8_t *buf; /*Buffered input/output.*/
     uint32_t storage; /*The size of the buffer.*/
     uint32_t end_offs; /*The offset at which the last byte containing raw bits was read/written.*/
-    ec_window end_window; /*Bits that will be read from/written at the end.*/
+    uint32_t end_window; /*Bits that will be read from/written at the end.*/
     int32_t nend_bits; /*Number of valid bits in end_window.*/
     int32_t nbits_total;
     uint32_t offs; /*The offset at which the next range coder byte will be read/written.*/
@@ -110,8 +107,8 @@ typedef struct {
 typedef struct {
     int32_t size;
     const int16_t *index;
-    const unsigned char *bits;
-    const unsigned char *caps;
+    const uint8_t *bits;
+    const uint8_t *caps;
 } PulseCache;
 
 
@@ -130,7 +127,7 @@ typedef struct _CELTMode {
     int32_t shortMdctSize;
 
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
-    const unsigned char *allocVectors; /**< Number of bits in each band for several rates */
+    const uint8_t *allocVectors; /**< Number of bits in each band for several rates */
     const int16_t *logN;
 
     const int16_t *window;
@@ -288,7 +285,7 @@ extern CELTDecoder_t CELTDecoder;
 #define SCALEIN(a)      (a)
 #define SCALEOUT(a)     (a)
 
-# define EC_WINDOW_SIZE ((int32_t)sizeof(ec_window)*CHAR_BIT)
+# define EC_WINDOW_SIZE ((int32_t)sizeof(uint32_t)*CHAR_BIT)
 # define EC_UINT_BITS   (8)
 # define BITRES 3
 #define EC_MINI(_a,_b)      ((_a)+(((_b)-(_a))&-((_b)<(_a))))
@@ -444,7 +441,7 @@ int32_t celt_rcp(int32_t x);
 
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
-extern const unsigned char LOG2_FRAC_TABLE[24];
+extern const uint8_t LOG2_FRAC_TABLE[24];
 
 /* Prototypes and inlines*/
 
@@ -452,31 +449,12 @@ static inline int16_t SAT16(int32_t x) {
    return x > 32767 ? 32767 : x < -32768 ? -32768 : (int16_t)x;
 }
 
-static inline int32_t opus_select_arch(void)
-{
-  return 0;
-}
-
-static inline uint32_t ec_range_bytes(ec_ctx *_this){
-  return _this->offs;
-}
-
-static inline unsigned char *ec_get_buffer(ec_ctx *_this){
-  return _this->buf;
-}
-
-static inline int32_t ec_get_error(ec_ctx *_this){
-  return _this->error;
-}
-
 static inline uint32_t celt_udiv(uint32_t n, uint32_t d) {
    assert(d>0); return n/d;
-
 }
 
 static inline int32_t celt_sudiv(int32_t n, int32_t d) {
    assert(d>0); return n/d;
-
 }
 
 static inline int16_t sig2word16(int32_t x){
@@ -606,7 +584,7 @@ static inline int32_t get_pulses(int32_t i){
 static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM, int32_t bits){
    int32_t i;
    int32_t lo, hi;
-   const unsigned char *cache;
+   const uint8_t *cache;
 
    LM++;
    cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
@@ -630,7 +608,7 @@ static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM,
 }
 
 static inline int32_t pulses2bits(const CELTMode_t *m, int32_t band, int32_t LM, int32_t pulses){
-   const unsigned char *cache;
+   const uint8_t *cache;
 
    LM++;
    cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
@@ -699,7 +677,7 @@ void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int1
                      int32_t end, int32_t C, int32_t M);
 void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
-void anti_collapse(const CELTMode_t *m, int16_t *X_, unsigned char *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
+void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses, uint32_t seed);
 void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
 void intensity_stereo(const CELTMode_t *m, int16_t *__restrict__ X, const int16_t *__restrict__ Y,
@@ -723,7 +701,7 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
                            int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
-                     unsigned char *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
+                     uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels);
@@ -738,7 +716,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
 void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec);
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C);
 void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM);
-int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char *data, int32_t len, int16_t *__restrict__ pcm,
+int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
                         int32_t frame_size, ec_dec *dec, int32_t accum);
 int32_t celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int32_t request, ...);
 void _celt_lpc(int16_t *_lpc, const int32_t *ac, int32_t p);
@@ -753,23 +731,23 @@ uint32_t ec_tell_frac(ec_ctx *_this);
 int32_t ec_read_byte(ec_dec *_this);
 int32_t ec_read_byte_from_end(ec_dec *_this);
 void ec_dec_normalize(ec_dec *_this);
-void ec_dec_init(ec_dec *_this, unsigned char *_buf, uint32_t _storage);
+void ec_dec_init(ec_dec *_this, uint8_t *_buf, uint32_t _storage);
 unsigned ec_decode(ec_dec *_this, unsigned _ft);
 unsigned ec_decode_bin(ec_dec *_this, unsigned _bits);
 void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft);
 int32_t ec_dec_bit_logp(unsigned _logp);
-int32_t ec_dec_icdf(const unsigned char *_icdf, unsigned _ftb);
+int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb);
 uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft);
 uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits);
 int32_t ec_write_byte(ec_enc *_this, unsigned _value);
 int32_t ec_write_byte_at_end(ec_enc *_this, unsigned _value);
 void ec_enc_carry_out(ec_enc *_this, int32_t _c);
 inline void ec_enc_normalize(ec_enc *_this);
-void ec_enc_init(ec_enc *_this, unsigned char *_buf, uint32_t _size);
+void ec_enc_init(ec_enc *_this, uint8_t *_buf, uint32_t _size);
 void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft);
 void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits);
 void ec_enc_bit_logp(ec_enc *_this, int32_t _val, unsigned _logp);
-void ec_enc_icdf(ec_enc *_this, int32_t _s, const unsigned char *_icdf, unsigned _ftb);
+void ec_enc_icdf(ec_enc *_this, int32_t _s, const uint8_t *_icdf, unsigned _ftb);
 void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft);
 void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits);
 void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N);

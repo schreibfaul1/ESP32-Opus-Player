@@ -118,7 +118,6 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
 
    st->prev_mode = 0;
    st->frame_size = Fs/400;
-   st->arch = opus_select_arch();
    return OPUS_OK;
 }
 
