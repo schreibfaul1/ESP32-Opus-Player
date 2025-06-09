@@ -658,7 +658,6 @@ void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t 
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
 unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_enc *enc, int16_t gain, int32_t resynth);
 unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
@@ -781,7 +780,6 @@ void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t 
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
 unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_enc *enc, int16_t gain, int32_t resynth);
 unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
