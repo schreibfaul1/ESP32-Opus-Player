@@ -676,7 +676,7 @@ typedef struct _silk_resampler_state_struct{
     int32_t         Fs_out_kHz;
     int32_t         inputDelay;
     const int16_t *Coefs;
-} silk_resampler_state_struct;
+} silk_resampler_state_struct_t;
 
 typedef struct {
     int16_t                   pred_prev_Q13[ 2 ];
@@ -738,7 +738,6 @@ typedef struct {
     int32_t VAD_flags[MAX_FRAMES_PER_PACKET];
     int32_t LBRR_flag;
     int32_t LBRR_flags[MAX_FRAMES_PER_PACKET];
-    silk_resampler_state_struct resampler_state;
     const silk_NLSF_CB_struct *psNLSF_CB; /* Pointer to NLSF codebook                                         */
     /* Quantization indices */
     SideInfoIndices indices;
@@ -1159,8 +1158,8 @@ int16_t *silk_resampler_private_IIR_FIR_INTERPOL(int16_t *out, int16_t *buf, int
 void silk_resampler_private_IIR_FIR(void *SS, int16_t out[], const int16_t in[], int32_t inLen);
 void silk_resampler_private_up2_HQ(int32_t *S, int16_t *out, const int16_t *in, int32_t len);
 void silk_resampler_private_up2_HQ_wrapper(void *SS, int16_t *out, const int16_t *in, int32_t len);
-int32_t silk_resampler_init(silk_resampler_state_struct *S, int32_t Fs_Hz_in, int32_t Fs_Hz_out, int32_t forEnc);
-int32_t silk_resampler(silk_resampler_state_struct *S, int16_t out[], const int16_t in[], int32_t inLen);
+int32_t silk_resampler_init(silk_resampler_state_struct_t *S, int32_t Fs_Hz_in, int32_t Fs_Hz_out, int32_t forEnc);
+int32_t silk_resampler(silk_resampler_state_struct_t *S, int16_t out[], const int16_t in[], int32_t inLen);
 int32_t silk_sigm_Q15(int32_t in_Q5);
 void silk_insertion_sort_increasing(int32_t *a, int32_t *idx, const int32_t L, const int32_t K);
 void silk_insertion_sort_decreasing_int16(int16_t *a, int32_t *idx, const int32_t L, const int32_t K);

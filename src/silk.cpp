@@ -17,9 +17,10 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 
-silk_decoder_state_t    channel_state[ DECODER_NUM_CHANNELS ];//   s_silk_decoder_state;
-silk_decoder_t          s_silk_decoder;
-silk_DecControlStruct_t s_silk_DecControlStruct;
+silk_decoder_state_t          channel_state[ DECODER_NUM_CHANNELS ];//   s_silk_decoder_state;
+silk_decoder_t                s_silk_decoder;
+silk_DecControlStruct_t       s_silk_DecControlStruct;
+silk_resampler_state_struct_t s_resampler_state[ DECODER_NUM_CHANNELS ];;
 // extern ec_ctx_t    s_ec;
 
 uint8_t            s_channelsInternal = 0;
@@ -1169,7 +1170,8 @@ int32_t silk_decoder_set_fs(uint8_t n, int32_t fs_kHz, int32_t fs_API_Hz) {
     /* Initialize resampler when switching internal or external sampling frequency */
     if(channel_state[n].fs_kHz != fs_kHz || channel_state[n].fs_API_hz != fs_API_Hz) {
         /* Initialize the resampler for dec_API.c preparing resampling from fs_kHz to API_fs_Hz */
-        ret += silk_resampler_init(&channel_state[n].resampler_state, silk_SMULBB(fs_kHz, 1000), fs_API_Hz, 0);
+
+        ret += silk_resampler_init(&s_resampler_state[n], silk_SMULBB(fs_kHz, 1000), fs_API_Hz, 0);
 
         channel_state[n].fs_API_hz = fs_API_Hz;
     }
@@ -1735,8 +1737,8 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         (psDec->nChannelsAPI == 1 || psDec->nChannelsInternal == 1)) {
         silk_memset(psDec->sStereo.pred_prev_Q13, 0, sizeof(psDec->sStereo.pred_prev_Q13));
         silk_memset(psDec->sStereo.sSide, 0, sizeof(psDec->sStereo.sSide));
-        silk_memcpy(&channel_state[1].resampler_state, &channel_state[0].resampler_state,
-                    sizeof(silk_resampler_state_struct));
+        silk_memcpy(&s_resampler_state[n], &s_resampler_state[n],
+                    sizeof(silk_resampler_state_struct_t));
     }
     psDec->nChannelsAPI = s_silk_DecControlStruct.nChannelsAPI;
     psDec->nChannelsInternal = s_silk_DecControlStruct.nChannelsInternal;
@@ -1919,7 +1921,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
         /* Resample decoded signal to API_sampleRate */
         ret +=
-            silk_resampler(&channel_state[n].resampler_state, resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
+            silk_resampler(&s_resampler_state[n], resample_out_ptr, &samplesOut1_tmp[n][1], nSamplesOutDec);
 
         /* Interleave if stereo output and stereo stream */
         if (s_silk_DecControlStruct.nChannelsAPI == 2) {
@@ -1933,7 +1935,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         if (stereo_to_mono) {
             /* Resample right channel for newly collapsed stereo just in case
                we weren't doing collapsing when switching to mono */
-            ret += silk_resampler(&channel_state[1].resampler_state, resample_out_ptr, &samplesOut1_tmp[0][1],
+            ret += silk_resampler(&s_resampler_state[n], resample_out_ptr, &samplesOut1_tmp[0][1],
                                   nSamplesOutDec);
 
             for (i = 0; i < *nSamplesOut; i++) {
@@ -3612,7 +3614,7 @@ void silk_resampler_private_down_FIR(void*         SS,    /* I/O  Resampler stat
                                      const int16_t in[],  /* I    Input signal                */
                                      int32_t       inLen  /* I    Number of input samples     */
 ) {
-    silk_resampler_state_struct* S = (silk_resampler_state_struct*)SS;
+    silk_resampler_state_struct_t * S = (silk_resampler_state_struct_t*)SS;
     int32_t                      nSamplesIn;
     int32_t                      max_index_Q16, index_increment_Q16;
     const int16_t* FIR_Coefs;
@@ -3681,7 +3683,7 @@ void silk_resampler_private_IIR_FIR(void*         SS,    /* I/O  Resampler state
                                     const int16_t in[],  /* I    Input signal                */
                                     int32_t       inLen  /* I    Number of input samples     */
 ) {
-    silk_resampler_state_struct* S = (silk_resampler_state_struct*)SS;
+    silk_resampler_state_struct_t* S = (silk_resampler_state_struct_t*)SS;
     int32_t                      nSamplesIn;
     int32_t                      max_index_Q16, index_increment_Q16;
 
@@ -3786,12 +3788,12 @@ void silk_resampler_private_up2_HQ_wrapper(void*          SS,  /* I/O  Resampler
                                            const int16_t* in,  /* I    Input signal [ len ]        */
                                            int32_t        len  /* I    Number of input samples     */
 ) {
-    silk_resampler_state_struct* S = (silk_resampler_state_struct*)SS;
+    silk_resampler_state_struct_t* S = (silk_resampler_state_struct_t*)SS;
     silk_resampler_private_up2_HQ(S->sIIR, out, in, len);
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Initialize/reset the resampler state for a given pair of input/output sampling rates */
-int32_t silk_resampler_init(silk_resampler_state_struct* S,         /* I/O  Resampler state */
+int32_t silk_resampler_init(silk_resampler_state_struct_t* S,         /* I/O  Resampler state */
                             int32_t                      Fs_Hz_in,  /* I    Input sampling rate (Hz)                                    */
                             int32_t                      Fs_Hz_out, /* I    Output sampling rate (Hz)                                   */
                             int32_t                      forEnc     /* I    If 1: encoder; if 0: decoder                                */
@@ -3799,7 +3801,7 @@ int32_t silk_resampler_init(silk_resampler_state_struct* S,         /* I/O  Resa
     int32_t up2x;
 
     /* Clear state */
-    memset(S, 0, sizeof(silk_resampler_state_struct));
+    memset(S, 0, sizeof(silk_resampler_state_struct_t));
 
     /* Input checking */
     if(forEnc) {
@@ -3878,7 +3880,7 @@ int32_t silk_resampler_init(silk_resampler_state_struct* S,         /* I/O  Resa
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Resampler: convert from one sampling rate to another Input and output sampling rate are at most 48000 Hz  */
-int32_t silk_resampler(silk_resampler_state_struct* S,     /* I/O  Resampler state */
+int32_t silk_resampler(silk_resampler_state_struct_t* S,     /* I/O  Resampler state */
                        int16_t                      out[], /* O    Output signal                                               */
                        const int16_t                in[],  /* I    Input signal                                                */
                        int32_t                      inLen  /* I    Number of input samples                                     */
