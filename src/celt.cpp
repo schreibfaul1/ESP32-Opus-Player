@@ -35,7 +35,7 @@
 CELTMode_t CELTMode;
 CELTDecoder_t CELTDecoder;
 
-ec_dec* s_ec_dec = NULL;
+ec_dec_t* s_ec_dec = NULL;
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
 const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
@@ -982,7 +982,7 @@ int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *enc, int16_t gain, int32_t resynth) {
+unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec_t *enc, int16_t gain, int32_t resynth) {
 
     int16_t yy;
     unsigned collapse_mask;
@@ -1011,7 +1011,7 @@ unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, 
 
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
-unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *dec, int16_t gain) {
+unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec_t *dec, int16_t gain) {
     int32_t Ryy;
     unsigned collapse_mask;
 
@@ -2886,7 +2886,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec *dec){
+void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_dec_t *dec){
     int32_t i, curr, tf_select;
     int32_t tf_select_rsv;
     int32_t tf_changed;
@@ -3220,11 +3220,11 @@ void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM){
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
-                        int32_t frame_size, ec_dec *dec, int32_t accum) {
+                        int32_t frame_size, ec_dec_t *dec, int32_t accum) {
     int32_t c, i, N;
     int32_t spread_decision;
     int32_t bits;
-    ec_dec _dec;
+    ec_dec_t _dec;
 
     int32_t *decode_mem[2];
     int32_t *out_syn[2];
@@ -3889,7 +3889,7 @@ int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_dec *_dec) {
+int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_dec_t *_dec) {
     return cwrsi(_n, _k, ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3912,17 +3912,17 @@ uint32_t ec_tell_frac(ec_ctx *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_read_byte(ec_dec *_this) { return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0; }
+int32_t ec_read_byte(ec_dec_t *_this) { return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0; }
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_read_byte_from_end(ec_dec *_this) {
+int32_t ec_read_byte_from_end(ec_dec_t *_this) {
     return _this->end_offs < _this->storage ? _this->buf[_this->storage - ++(_this->end_offs)] : 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 /*Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.*/
-void ec_dec_normalize(ec_dec *_this) {
+void ec_dec_normalize(ec_dec_t *_this) {
     /*If the range is too small, rescale it and input some bits.*/
     while (_this->rng <= EC_CODE_BOT) {
         int32_t sym;
@@ -3940,7 +3940,7 @@ void ec_dec_normalize(ec_dec *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_init(ec_dec *_this, uint8_t *_buf, uint32_t _storage) {
+void ec_dec_init(ec_dec_t *_this, uint8_t *_buf, uint32_t _storage) {
 
     s_ec_dec = _this;
 
@@ -3960,7 +3960,7 @@ void ec_dec_init(ec_dec *_this, uint8_t *_buf, uint32_t _storage) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned ec_decode(ec_dec *_this, unsigned _ft) {
+unsigned ec_decode(ec_dec_t *_this, unsigned _ft) {
     unsigned s;
     _this->ext = celt_udiv(_this->rng, _ft);
     s = (unsigned)(_this->val / _this->ext);
@@ -3968,7 +3968,7 @@ unsigned ec_decode(ec_dec *_this, unsigned _ft) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned ec_decode_bin(ec_dec *_this, unsigned _bits) {
+unsigned ec_decode_bin(ec_dec_t *_this, unsigned _bits) {
     unsigned s;
     _this->ext = _this->rng >> _bits;
     s = (unsigned)(_this->val / _this->ext);
@@ -3976,7 +3976,7 @@ unsigned ec_decode_bin(ec_dec *_this, unsigned _bits) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
+void ec_dec_update(ec_dec_t *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     uint32_t s;
     s = _this->ext *  (_ft - _fh);
     _this->val -= s;
@@ -4029,7 +4029,7 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft) {
+uint32_t ec_dec_uint(ec_dec_t *_this, uint32_t _ft) {
     unsigned ft;
     unsigned s;
     int32_t ftb;
@@ -4056,7 +4056,7 @@ uint32_t ec_dec_uint(ec_dec *_this, uint32_t _ft) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits) {
+uint32_t ec_dec_bits(ec_dec_t *_this, unsigned _bits) {
     uint32_t window;
     int32_t available;
     uint32_t ret;
@@ -4367,7 +4367,7 @@ unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_laplace_decode(ec_dec *dec, unsigned fs, int32_t decay) {
+int32_t ec_laplace_decode(ec_dec_t *dec, unsigned fs, int32_t decay) {
     int32_t val = 0;
     unsigned fl;
     unsigned fm;
@@ -5457,7 +5457,7 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec *dec, int32_t C,
+void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec_t *dec, int32_t C,
                            int32_t LM) {
     const uint8_t *prob_model = e_prob_model[LM][intra];
     int32_t i, c;
@@ -5512,7 +5512,7 @@ void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int1
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec *dec,
+void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec_t *dec,
                          int32_t C) {
     int32_t i, c;
     /* Decode finer resolution */
@@ -5532,7 +5532,7 @@ void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_
 //----------------------------------------------------------------------------------------------------------------------
 
 void unquant_energy_finalise(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
-                             int32_t *fine_priority, int32_t bits_left, ec_dec *dec, int32_t C) {
+                             int32_t *fine_priority, int32_t bits_left, ec_dec_t *dec, int32_t C) {
     int32_t i, prio, c;
 
     /* Use up the remaining bits */

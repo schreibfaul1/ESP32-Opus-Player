@@ -160,7 +160,7 @@ if(!inbuf)log_e("Inbuf is null");
     void *silk_dec;
     CELTDecoder_t *celt_dec;
     int i, silk_ret = 0, celt_ret = 0;
-    ec_dec dec;
+    ec_dec_t dec;
     int32_t silk_frame_size;
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
