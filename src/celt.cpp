@@ -982,7 +982,7 @@ int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_enc *enc, int16_t gain, int32_t resynth) {
+unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_dec *enc, int16_t gain, int32_t resynth) {
 
     int16_t yy;
     unsigned collapse_mask;
@@ -997,7 +997,7 @@ unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, 
 
     yy = op_pvq_search(X, iy.get(), K, N);
 
-    encode_pulses(iy.get(), N, K, enc);
+    //encode_pulses(iy.get(), N, K, enc);
 
     if (resynth) {
         normalise_residual(iy.get(), X, N, yy, gain);
@@ -1840,9 +1840,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
             int32_t ft = p0 * (x0 + 1) + x0;
             /* Use a probability of p0 up to itheta=8192 and then use 1 after */
             if (encode) {
-                ec_encode(ec, x <= x0 ?
-                              p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ?
-                                  p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
+                ;
             }
             else {
                 int32_t fs;
@@ -1858,7 +1856,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
         else if (__B0 > 1 || stereo) {
             /* Uniform pdf */
             if (encode)
-                ec_enc_uint(ec, itheta, qn + 1);
+                ;
             else
                 itheta = ec_dec_uint(ec, qn + 1);
         }
@@ -1866,12 +1864,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
             int32_t fs = 1, ft;
             ft = ((qn >> 1) + 1) * ((qn >> 1) + 1);
             if (encode) {
-                int32_t fl;
-
-                fs = itheta <= (qn >> 1) ? itheta + 1 : qn + 1 - itheta;
-                fl = itheta <= (qn >> 1) ? itheta * (itheta + 1) >> 1 : ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
-
-                ec_encode(ec, fl, fl + fs, ft);
+                ;
             }
             else {
                 /* Triangular pdf */
@@ -1918,7 +1911,7 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
         }
         if (*b > 2 << BITRES && ctx->remaining_bits > 2 << BITRES) {
             if (encode)
-                ec_enc_bit_logp(ec, inv, 2);
+                ;
             else
                 inv = ec_dec_bit_logp(2);
         }
@@ -1977,8 +1970,7 @@ unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t b, 
         int32_t sign = 0;
         if (ctx->remaining_bits >= 1 << BITRES) {
             if (encode) {
-                sign = x[0] < 0;
-                ec_enc_bits(ec, sign, 1);
+                ;
             }
             else {
                 sign = ec_dec_bits(ec, 1);
@@ -2104,9 +2096,8 @@ unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b,
             int32_t K = get_pulses(q);
 
             /* Finally do the actual quantization */
-            if (encode)
-            {
-                cm = alg_quant(X, N, K, spread, B, ec, gain, ctx->resynth);
+            if (encode){
+                ;
             }
             else
             {
@@ -2324,9 +2315,7 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
         y2 = c ? X : Y;
         if (sbits) {
             if (encode) {
-                /* Here we only need to encode a sign for the side. */
-                sign = x2[0] * y2[1] - x2[1] * y2[0] < 0;
-                ec_enc_bits(ec, sign, 1);
+                ;
             }
             else {
                 sign = ec_dec_bits(ec, 1);
@@ -3822,12 +3811,6 @@ uint32_t icwrs(int32_t _n, const int32_t *_y) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void encode_pulses(const int32_t *_y, int32_t _n, int32_t _k, ec_enc *_enc) {
-    assert(_k > 0);
-    ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
     uint32_t p;
     int32_t s;
@@ -4092,165 +4075,6 @@ uint32_t ec_dec_bits(ec_dec *_this, unsigned _bits) {
     _this->nend_bits = available;
     _this->nbits_total += _bits;
     return ret;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t ec_write_byte(ec_enc *_this, unsigned _value) {
-    if (_this->offs + _this->end_offs >= _this->storage) return -1;
-    _this->buf[_this->offs++] = (uint8_t)_value;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
-    if (_this->offs + _this->end_offs >= _this->storage) return -1;
-    _this->buf[_this->storage - ++(_this->end_offs)] = (uint8_t)_value;
-    return 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-/*Outputs a symbol, with a carry bit. If there is a potential to propagate a carry over several symbols, they are
-  buffered until it can be determined whether or not an actual carry will occur. If the counter for the buffered symbols
-  overflows, then the stream becomes undecodable. This gives a theoretical limit of a few billion symbols in a single
-  packet on 32-bit systems. The alternative is to truncate the range in order to force a carry, but requires similar
-  carry tracking in the decoder, needlessly slowing it down.*/
-void ec_enc_carry_out(ec_enc *_this, int32_t _c) {
-    if (_c != EC_SYM_MAX) {
-        /*No further carry propagation possible, flush buffer.*/
-        int32_t carry;
-        carry = _c >> EC_SYM_BITS;
-        /*Don't output a byte on the first write.
-          This compare should be taken care of by branch-prediction thereafter.*/
-        if (_this->rem >= 0) _this->error |= ec_write_byte(_this, _this->rem + carry);
-        if (_this->ext > 0) {
-            unsigned sym;
-            sym = (EC_SYM_MAX + carry) & EC_SYM_MAX;
-            do _this->error |= ec_write_byte(_this, sym);
-            while (--(_this->ext) > 0);
-        }
-        _this->rem = _c & EC_SYM_MAX;
-    } else
-        _this->ext++;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-inline void ec_enc_normalize(ec_enc *_this) {
-    /*If the range is too small, output some bits and rescale it.*/
-    while (_this->rng <= EC_CODE_BOT) {
-        ec_enc_carry_out(_this, (int32_t)(_this->val >> EC_CODE_SHIFT));
-        /*Move the next-to-high-order symbol into the high-order position.*/
-        _this->val = (_this->val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
-        _this->rng <<= EC_SYM_BITS;
-        _this->nbits_total += EC_SYM_BITS;
-    }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_init(ec_enc *_this, uint8_t *_buf, uint32_t _size) {
-    _this->buf = _buf;
-    _this->end_offs = 0;
-    _this->end_window = 0;
-    _this->nend_bits = 0;
-    /*This is the offset from which ec_tell() will subtract partial bits.*/
-    _this->nbits_total = EC_CODE_BITS + 1;
-    _this->offs = 0;
-    _this->rng = EC_CODE_TOP;
-    _this->rem = -1;
-    _this->val = 0;
-    _this->ext = 0;
-    _this->storage = _size;
-    _this->error = 0;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
-    uint32_t r;
-    r = celt_udiv(_this->rng, _ft);
-    if (_fl > 0) {
-        _this->val += _this->rng - (r * (_ft - _fl));
-        _this->rng = r * (_fh - _fl);
-    } else
-        _this->rng -= r * (_ft - _fh);
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
-    uint32_t r;
-    r = _this->rng >> _bits;
-    if (_fl > 0) {
-        _this->val += _this->rng - (r * ((1U << _bits) - _fl));
-        _this->rng = r * (_fh - _fl);
-    } else
-        _this->rng -= r * (((1U << _bits) - _fh));
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-/*The probability of having a "one" is 1/(1<<_logp).*/
-void ec_enc_bit_logp(ec_enc *_this, int32_t _val, unsigned _logp) {
-    uint32_t r;
-    uint32_t s;
-    uint32_t l;
-    r = _this->rng;
-    l = _this->val;
-    s = r >> _logp;
-    r -= s;
-    if (_val) _this->val = l + r;
-    _this->rng = _val ? s : r;
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_icdf(ec_enc *_this, int32_t _s, const uint8_t *_icdf, unsigned _ftb) {
-    uint32_t r;
-    r = _this->rng >> _ftb;
-    if (_s > 0) {
-        _this->val += _this->rng - r * _icdf[_s - 1];
-        _this->rng = r * (_icdf[_s - 1] - _icdf[_s]);
-    } else
-        _this->rng -= r * _icdf[_s];
-    ec_enc_normalize(_this);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_uint(ec_enc *_this, uint32_t _fl, uint32_t _ft) {
-    unsigned ft;
-    unsigned fl;
-    int32_t ftb;
-    /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-    assert(_ft > 1);
-    _ft--;
-    ftb = EC_ILOG(_ft);
-    if (ftb > EC_UINT_BITS) {
-        ftb -= EC_UINT_BITS;
-        ft = (_ft >> ftb) + 1;
-        fl = (unsigned)(_fl >> ftb);
-        ec_encode(_this, fl, fl + 1, ft);
-        ec_enc_bits(_this, _fl & (((uint32_t)1 << ftb) - 1U), ftb);
-    } else
-        ec_encode(_this, _fl, _fl + 1, _ft + 1);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_enc_bits(ec_enc *_this, uint32_t _fl, unsigned _bits) {
-    uint32_t window;
-    int32_t used;
-    window = _this->end_window;
-    used = _this->nend_bits;
-    assert(_bits > 0);
-    if (used + _bits > EC_WINDOW_SIZE) {
-        do {
-            _this->error |= ec_write_byte_at_end(_this, (unsigned)window & EC_SYM_MAX);
-            window >>= EC_SYM_BITS;
-            used -= EC_SYM_BITS;
-        } while (used >= EC_SYM_BITS);
-    }
-    window |= (uint32_t)_fl << used;
-    used += _bits;
-    _this->end_window = window;
-    _this->nend_bits = used;
-    _this->nbits_total += _bits;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4540,44 +4364,6 @@ unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay) {
     unsigned ft;
     ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
     return ft * (int32_t)(16384 - decay) >> 15;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void ec_laplace_encode(ec_enc *enc, int32_t *value, unsigned fs, int32_t decay) {
-    unsigned fl;
-    int32_t val = *value;
-    fl = 0;
-    if (val) {
-        int32_t s;
-        int32_t i;
-        s = -(val < 0);
-        val = (val + s) ^ s;
-        fl = fs;
-        fs = ec_laplace_get_freq1(fs, decay);
-        /* Search the decaying part of the PDF.*/
-        for (i = 1; fs > 0 && i < val; i++) {
-            fs *= 2;
-            fl += fs + 2 * LAPLACE_MINP;
-            fs = (fs * (int32_t)decay) >> 15;
-        }
-        /* Everything beyond that has probability LAPLACE_MINP. */
-        if (!fs) {
-            int32_t di;
-            int32_t ndi_max;
-            ndi_max = (32768 - fl + LAPLACE_MINP - 1) >> LAPLACE_LOG_MINP;
-            ndi_max = (ndi_max - s) >> 1;
-            di = min(val - i, ndi_max - 1);
-            fl += (2 * di + 1 + s) * LAPLACE_MINP;
-            fs = min((int32_t)LAPLACE_MINP, (int32_t)(32768 - fl));
-            *value = (i + di + s) ^ s;
-        } else {
-            fs += LAPLACE_MINP;
-            fl += fs & ~s;
-        }
-        assert(fl + fs <= 32768);
-        assert(fs > 0);
-    }
-    ec_encode_bin(enc, fl, fl + fs, 15);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5430,25 +5216,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
           This ensures that we have enough bits to code the skip flag.*/
         if (band_bits >= max(thresh[j], alloc_floor + (1 << BITRES))) {
             if (encode) {
-                /*This if() block is the only part of the allocation function that
-                   is not a mandatory part of the bitstream: any bands we choose to
-                   skip here must be explicitly signaled.*/
-                int32_t depth_threshold;
-                /*We choose a threshold with some hysteresis to keep bands from
-                   fluctuating in and out, but we try not to fold below a certain point. */
-                if (codedBands > 17)
-                    depth_threshold = j < prev ? 7 : 9;
-                else
-                    depth_threshold = 0;
-
-                if (codedBands <= start + 2 ||
-                    (band_bits > (depth_threshold * band_width << LM << BITRES) >> 4 && j <= signalBandwidth))
-
-                {
-                    ec_enc_bit_logp(ec, 1, 1);
-                    break;
-                }
-                ec_enc_bit_logp(ec, 0, 1);
+                ;
             } else if (ec_dec_bit_logp(1)) {
                 break;
             }
@@ -5474,8 +5242,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
     /* Code the intensity and dual stereo parameters. */
     if (intensity_rsv > 0) {
         if (encode) {
-            *intensity = min(*intensity, codedBands);
-            ec_enc_uint(ec, *intensity - start, codedBands + 1 - start);
+            ;
         } else
             *intensity = start + ec_dec_uint(ec, codedBands + 1 - start);
     } else
@@ -5486,7 +5253,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
     }
     if (dual_stereo_rsv > 0) {
         if (encode)
-            ec_enc_bit_logp(ec, *dual_stereo, 1);
+            ;
         else
             *dual_stereo = ec_dec_bit_logp(1);
     } else
