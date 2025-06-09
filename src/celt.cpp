@@ -859,8 +859,8 @@ int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N, int32_t a
     int16_t yy;
 
     (void)arch;
-    auto y     = celt_malloc<int16_t>(N * sizeof(int16_t));
-    auto signx = celt_malloc<int32_t>(N * sizeof(int32_t));
+    auto y     = celt_malloc_arr<int16_t>(N * sizeof(int16_t));
+    auto signx = celt_malloc_arr<int32_t>(N * sizeof(int32_t));
 
     /* Get rid of the sign */
     sum = 0;
@@ -997,7 +997,7 @@ unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, 
     assert2(N > 1, "alg_quant() needs at least two dimensions");
 
     /* Covers vectorization by up to 4. */
-    auto iy = celt_malloc<int32_t>(N + 3 * sizeof(int32_t));
+    auto iy = celt_malloc_arr<int32_t>(N + 3 * sizeof(int32_t));
 
     exp_rotation(X, N, 1, B, K, spread);
 
@@ -1023,7 +1023,7 @@ unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B
 
     assert2(K > 0, "alg_unquant() needs at least one pulse");
     assert2(N > 1, "alg_unquant() needs at least two dimensions");
-    auto iy = celt_malloc<int32_t>((N + 3) * sizeof(int32_t));
+    auto iy = celt_malloc_arr<int32_t>((N + 3) * sizeof(int32_t));
 
     Ryy = decode_pulses(iy.get(), N, K, dec);
     normalise_residual(iy.get(), X, N, Ryy, gain);
@@ -1694,7 +1694,7 @@ void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadam
     int32_t i, j;
     int32_t N;
     N = N0 * stride;
-    auto tmp = celt_malloc<int16_t>(N * sizeof(int16_t*));
+    auto tmp = celt_malloc_arr<int16_t>(N * sizeof(int16_t*));
     assert(stride > 0);
     if (hadamard) {
         const int32_t *ordery = ordery_table + stride - 2;
@@ -1716,7 +1716,7 @@ void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamar
     int32_t i, j;
     int32_t N;
     N = N0 * stride;
-    auto tmp = celt_malloc<int16_t>(N * sizeof(int16_t*));
+    auto tmp = celt_malloc_arr<int16_t>(N * sizeof(int16_t*));
     if (hadamard) {
         const int32_t *ordery = ordery_table + stride - 2;
         for (i = 0; i < stride; i++)
@@ -2452,7 +2452,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
     norm_offset = M * eBands[start];
     /* No need to allocate norm for the last band because we don't need an
        output in that band. */
-    auto _norm = celt_malloc<int16_t>(C * (M * eBands[m->nbEBands - 1] - norm_offset) * sizeof(int16_t));
+    auto _norm = celt_malloc_arr<int16_t>(C * (M * eBands[m->nbEBands - 1] - norm_offset) * sizeof(int16_t));
     norm = _norm.get();
     norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
 
@@ -2464,16 +2464,16 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
     else
         resynth_alloc = ALLOC_NONE;
 
-    auto _lowband_scratch = celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto _lowband_scratch = celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
     if (encode && resynth)
         lowband_scratch = _lowband_scratch.get();
     else
         lowband_scratch = X_ + M * eBands[m->nbEBands - 1];
-    auto X_save =     celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
-    auto Y_save =     celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
-    auto X_save2 =    celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
-    auto Y_save2 =    celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
-    auto norm_save2 = celt_malloc<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto X_save =     celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto Y_save =     celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto X_save2 =    celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto Y_save2 =    celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
+    auto norm_save2 = celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
 
     lowband_offset = 0;
     ctx.bandE = bandE;
@@ -2776,7 +2776,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
         return;
     }
 
-    auto scratch = celt_malloc<int32_t>(N * sizeof(int32_t*));
+    auto scratch = celt_malloc_arr<int32_t>(N * sizeof(int32_t*));
     coef0 = coef[0];
     Nd = N / downsample;
     c = 0;
@@ -2847,7 +2847,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
     overlap = mode->overlap;
     nbEBands = mode->nbEBands;
     N = mode->shortMdctSize << LM;
-    auto freq = celt_malloc<int32_t>(N * sizeof(int32_t*)); /**< Interleaved signal MDCTs */
+    auto freq = celt_malloc_arr<int32_t>(N * sizeof(int32_t*)); /**< Interleaved signal MDCTs */
     M = 1 << LM;
 
     if (isTransient) {
@@ -2945,7 +2945,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
 
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C, int32_t arch) {
     int32_t pitch_index;
-    auto lp_pitch_buf = celt_malloc<int16_t>((DECODE_BUFFER_SIZE >> 1) * sizeof(int16_t));
+    auto lp_pitch_buf = celt_malloc_arr<int16_t>((DECODE_BUFFER_SIZE >> 1) * sizeof(int16_t));
 
     pitch_downsample(decode_mem, lp_pitch_buf.get(),
                      DECODE_BUFFER_SIZE, C, arch);
@@ -3002,7 +3002,7 @@ void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM){
         end = st->end;
         effEnd = max(start, min(end, mode->effEBands));
 
-        auto X = celt_malloc<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
+        auto X = celt_malloc_arr<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
         /* Energy decay */
         decay = loss_count == 0 ? QCONST16(1.5f, DB_SHIFT) : QCONST16(.5f, DB_SHIFT);
@@ -3058,9 +3058,9 @@ void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM){
            decaying signal, but we can't get more than MAX_PERIOD. */
         exc_length = min(2 * pitch_index, (int32_t)MAX_PERIOD);
 
-        auto etmp    = celt_malloc<int32_t>(overlap * sizeof(int32_t));
-        auto _exc    = celt_malloc<int16_t>((MAX_PERIOD + LPC_ORDER) * sizeof(int16_t));
-        auto fir_tmp = celt_malloc<int16_t>(exc_length * sizeof(int16_t));
+        auto etmp    = celt_malloc_arr<int32_t>(overlap * sizeof(int32_t));
+        auto _exc    = celt_malloc_arr<int16_t>((MAX_PERIOD + LPC_ORDER) * sizeof(int16_t));
+        auto fir_tmp = celt_malloc_arr<int16_t>(exc_length * sizeof(int16_t));
 
         exc = _exc.get() + LPC_ORDER;
         window = mode->window;
@@ -3392,7 +3392,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     unquant_coarse_energy(mode, start, end, oldBandE,
                           intra_ener, dec, C, LM);
 
-    auto tf_res = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto tf_res = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
     tf_decode(start, end, isTransient, tf_res.get(), LM, dec);
 
     tell = ec_tell(dec);
@@ -3400,11 +3400,11 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     if (tell + 4 <= total_bits)
         spread_decision = ec_dec_icdf(spread_icdf, 5);
 
-    auto cap = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto cap = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
 
     init_caps(mode, cap.get(), LM, C);
 
-    auto offsets = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto offsets = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
 
     dynalloc_logp = 6;
     total_bits <<= BITRES;
@@ -3436,7 +3436,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
             dynalloc_logp = max((int32_t)2, dynalloc_logp - 1);
     }
 
-    auto fine_quant = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto fine_quant = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
 
     alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
@@ -3444,8 +3444,8 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
     bits -= anti_collapse_rsv;
 
-    auto pulses = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
-    auto fine_priority = celt_malloc<int32_t>(nbEBands * sizeof(int32_t));
+    auto pulses = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
+    auto fine_priority = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
 
     codedBands = clt_compute_allocation(mode, start, end, offsets.get(), cap.get(),
                                         alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses.get(),
@@ -3459,9 +3459,9 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const unsigned char 
     } while (++c < CC);
 
     /* Decode fixed codebook */
-    auto collapse_masks = celt_malloc<unsigned char>(C * nbEBands * sizeof(unsigned char));
+    auto collapse_masks = celt_malloc_arr<unsigned char>(C * nbEBands * sizeof(unsigned char));
 
-    auto X = celt_malloc<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
+    auto X = celt_malloc_arr<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
     quant_all_bands(0, mode, start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
                     NULL, pulses.get(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.get(),
@@ -3687,7 +3687,7 @@ void celt_fir_c(const int16_t *x, const int16_t *num, int16_t *y, int32_t N, int
     int32_t i, j;
     assert(x != y);
 
-    auto rnum = celt_malloc<int16_t>(ord * sizeof(int16_t));
+    auto rnum = celt_malloc_arr<int16_t>(ord * sizeof(int16_t));
     for (i = 0; i < ord; i++) rnum[i] = num[ord - i - 1];
     for (i = 0; i < N - 3; i += 4) {
         int32_t sum[4];
@@ -3713,8 +3713,8 @@ void celt_iir(const int32_t *_x, const int16_t *den, int32_t *_y, int32_t N, int
     int32_t i, j;
     assert((ord & 3) == 0);
 
-    auto rden = celt_malloc<int16_t>(ord * sizeof(int16_t));
-    auto y    = celt_malloc<int16_t>(N + ord * sizeof(int16_t));
+    auto rden = celt_malloc_arr<int16_t>(ord * sizeof(int16_t));
+    auto y    = celt_malloc_arr<int16_t>(N + ord * sizeof(int16_t));
 
     for (i = 0; i < ord; i++) rden[i] = den[ord - i - 1];
     for (i = 0; i < ord; i++) y[i] = -mem[ord - i - 1];
@@ -3763,7 +3763,7 @@ int32_t _celt_autocorr(const int16_t *x, /*  in: [0...n-1] samples x   */
     int32_t fastN = n - lag;
     int32_t shift;
     const int16_t *xptr;
-    auto xx = celt_malloc<int16_t>(n * sizeof(int16_t));
+    auto xx = celt_malloc_arr<int16_t>(n * sizeof(int16_t));
      assert(n > 0);
     assert(overlap >= 0);
     if (overlap == 0) {
@@ -4798,8 +4798,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__
     N2 = N >> 1;
     N4 = N >> 2;
 
-    auto  f = celt_malloc<int32_t>(N2 * sizeof(int32_t));
-    auto f2 = celt_malloc<kiss_fft_cpx>(N4 * sizeof(kiss_fft_cpx));
+    auto  f = celt_malloc_arr<int32_t>(N2 * sizeof(int32_t));
+    auto f2 = celt_malloc_arr<kiss_fft_cpx>(N4 * sizeof(kiss_fft_cpx));
 
     /* Consider the input to be composed of four blocks: [a, b, c, d] */
     /* Window, shuffle, fold */
@@ -5172,9 +5172,9 @@ void pitch_search(const int16_t *__restrict__ x_lp, int16_t *__restrict__ y, int
     assert(max_pitch > 0);
     lag = len + max_pitch;
 
-    auto x_lp4 = celt_malloc<int16_t>(lag >> 2 * sizeof(int16_t));
-    auto y_lp4 = celt_malloc<int16_t>(lag >> 2 * sizeof(int16_t));
-    auto xcorr = celt_malloc<int32_t>(max_pitch >> 1 * sizeof(int32_t));
+    auto x_lp4 = celt_malloc_arr<int16_t>(lag >> 2 * sizeof(int16_t));
+    auto y_lp4 = celt_malloc_arr<int16_t>(lag >> 2 * sizeof(int16_t));
+    auto xcorr = celt_malloc_arr<int32_t>(max_pitch >> 1 * sizeof(int32_t));
 
     /* Downsample by 2 again */
     for (j = 0; j < len >> 2; j++) x_lp4[j] = x_lp[2 * j];
@@ -5280,7 +5280,7 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
     if (*T0_ >= maxperiod) *T0_ = maxperiod - 1;
 
     T = T0 = *T0_;
-    auto yy_lookup = celt_malloc<int32_t>(maxperiod + 1 * sizeof(int32_t));
+    auto yy_lookup = celt_malloc_arr<int32_t>(maxperiod + 1 * sizeof(int32_t));
 
     dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
     yy_lookup[0] = xx;
@@ -5640,10 +5640,10 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
             total -= dual_stereo_rsv;
         }
     }
-    auto bits1       = celt_malloc<int32_t>(len * sizeof(int32_t));
-    auto bits2       = celt_malloc<int32_t>(len * sizeof(int32_t));
-    auto thresh      = celt_malloc<int32_t>(len * sizeof(int32_t));
-    auto trim_offset = celt_malloc<int32_t>(len * sizeof(int32_t));
+    auto bits1       = celt_malloc_arr<int32_t>(len * sizeof(int32_t));
+    auto bits2       = celt_malloc_arr<int32_t>(len * sizeof(int32_t));
+    auto thresh      = celt_malloc_arr<int32_t>(len * sizeof(int32_t));
+    auto trim_offset = celt_malloc_arr<int32_t>(len * sizeof(int32_t));
 
     for (j = start; j < end; j++) {
         /* Below this threshold, we're sure not to allocate any PVQ bits */

@@ -683,10 +683,15 @@ struct Celt_PsramDeleter { // PSRAM deleter for Unique_PTR
         }
     }
 };
+template<typename T>
+using celt_ptr_arr = std::unique_ptr<T[], Celt_PsramDeleter>;
+
+template<typename T>
+using celt_ptr_obj = std::unique_ptr<T, Celt_PsramDeleter>;
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
-    std::unique_ptr<T[], Celt_PsramDeleter> celt_malloc(std::size_t count) {
+    std::unique_ptr<T[], Celt_PsramDeleter> celt_malloc_arr(std::size_t count) {
         T* raw = static_cast<T*>(ps_malloc(sizeof(T) * count));
         if (!raw) {
             log_e("silk_malloc_array: OOM, no space for %zu bytes", sizeof(T) * count);
@@ -694,7 +699,15 @@ struct Celt_PsramDeleter { // PSRAM deleter for Unique_PTR
         return std::unique_ptr<T[], Celt_PsramDeleter>(raw);
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
+    template <typename T>
+    celt_ptr_obj<T> celt_malloc_obj() {
+        T* raw = static_cast<T*>(ps_malloc(sizeof(T)));
+        if (!raw) {
+            log_e("silk_malloc_obj: OOM, no space for %zu bytes", sizeof(T));
+        }
+        return celt_ptr_obj<T>(raw);
+    }
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
 
