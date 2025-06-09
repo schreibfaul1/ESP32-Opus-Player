@@ -2039,7 +2039,7 @@ int32_t silk_decode_frame(uint8_t n,
     /****************************************************************/
     /* Ensure smooth connection of extrapolated and good frames     */
     /****************************************************************/
-    silk_PLC_glue_frames(&s_channel_state[n], pOut, L);
+    silk_PLC_glue_frames(n, pOut, L);
 
     /* Update some decoder state variables */
     s_channel_state[n].lagPrev = psDecCtrl->pitchL[s_channel_state[n].nb_subfr - 1];
@@ -3142,23 +3142,20 @@ void silk_PLC_conceal(silk_decoder_state_t*   psDec,     /* I/O Decoder state   
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Glues concealed frames with new good received frames */
-void silk_PLC_glue_frames(silk_decoder_state_t* psDec,   /* I/O decoder state        */
-                          int16_t             frame[], /* I/O signal               */
-                          int32_t             length   /* I length of signal       */
-) {
+void silk_PLC_glue_frames(uint8_t n, int16_t frame[], int32_t length) {
     int32_t          i, energy_shift;
     int32_t          energy;
     silk_PLC_struct* psPLC;
-    psPLC = &psDec->sPLC;
+    psPLC = &s_channel_state[n].sPLC;
 
-    if(psDec->lossCnt) {
+    if(s_channel_state[n].lossCnt) {
         /* Calculate energy in concealed residual */
         silk_sum_sqr_shift(&psPLC->conc_energy, &psPLC->conc_energy_shift, frame, length);
 
         psPLC->last_frame_lost = 1;
     }
     else {
-        if(psDec->sPLC.last_frame_lost) {
+        if(s_channel_state[n].sPLC.last_frame_lost) {
             /* Calculate residual in decoded signal if last frame was lost */
             silk_sum_sqr_shift(&energy, &energy_shift, frame, length);
 

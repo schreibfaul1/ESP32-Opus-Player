@@ -1055,7 +1055,7 @@ void silk_stereo_decode_pred(int32_t pred_Q13[]);
 void silk_stereo_decode_mid_only(int32_t *decode_only_mid);
 void silk_PLC_Reset(uint8_t n);
 void silk_PLC(uint8_t n, silk_decoder_control *psDecCtrl, int16_t frame[], int32_t lost);
-void silk_PLC_glue_frames(silk_decoder_state_t *psDec, int16_t frame[], int32_t length);
+void silk_PLC_glue_frames(uint8_t, int16_t frame[], int32_t length);
 void silk_LP_interpolate_filter_taps(int32_t B_Q28[TRANSITION_NB], int32_t A_Q28[TRANSITION_NA], const int32_t ind, const int32_t fac_Q16);
 void silk_LP_variable_cutoff(silk_LP_state *psLP, int16_t *frame, const int32_t frame_length);
 void silk_NLSF_unpack(int16_t ec_ix[], uint8_t pred_Q8[], const silk_NLSF_CB_struct *psNLSF_CB, const int32_t CB1_index);
@@ -1123,7 +1123,6 @@ void silk_PLC_update(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtr
 void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
                             const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr);
 void silk_PLC_conceal(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t frame[]);
-void silk_PLC_glue_frames(silk_decoder_state_t *psDec, int16_t frame[], int32_t length);
 void silk_resampler_down2_3(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_down2(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_private_AR2(int32_t S[], int32_t out_Q8[], const int16_t in[], const int16_t A_Q14[], int32_t len);
