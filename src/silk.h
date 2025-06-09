@@ -1120,7 +1120,7 @@ void silk_NLSF_VQ_weights_laroia(int16_t *pNLSFW_Q_OUT, const int16_t *pNLSF_Q15
 void silk_PLC_update(uint8_t n, silk_decoder_control *psDecCtrl);
 void silk_PLC_energy(int32_t *energy1, int32_t *shift1, int32_t *energy2, int32_t *shift2,
                             const int32_t *exc_Q14, const int32_t *prevGain_Q10, int subfr_length, int nb_subfr);
-void silk_PLC_conceal(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t frame[]);
+void silk_PLC_conceal(uint8_t n, silk_decoder_control *psDecCtrl, int16_t frame[]);
 void silk_resampler_down2_3(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_down2(int32_t *S, int16_t *out, const int16_t *in, int32_t inLen);
 void silk_resampler_private_AR2(int32_t S[], int32_t out_Q8[], const int16_t in[], const int16_t A_Q14[], int32_t len);
