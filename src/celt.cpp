@@ -36,6 +36,7 @@ CELTMode_t CELTMode;
 CELTDecoder_t CELTDecoder;
 
 ec_dec_t* s_ec_dec = NULL;
+ec_ctx_t *s_ec;
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
 const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
@@ -1781,14 +1782,14 @@ void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int
     const CELTMode_t *m;
     int32_t i;
     int32_t intensity;
-    ec_ctx *ec;
+    ec_ctx_t *ec;
     const int32_t *bandE;
 
     encode = ctx->encode;
     m = ctx->m;
     i = ctx->i;
     intensity = ctx->intensity;
-    ec = ctx->ec;
+    ec = s_ec;
     bandE = ctx->bandE;
 
     /* Decide on the resolution to give to the split parameter theta */
@@ -1959,10 +1960,10 @@ unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t b, 
     int32_t stereo;
     int16_t *x = X;
     int32_t encode;
-    ec_ctx *ec;
+    ec_ctx_t *ec;
 
     encode = ctx->encode;
-    ec = ctx->ec;
+    ec = s_ec;
 
     stereo = Y != NULL;
     c = 0;
@@ -2005,13 +2006,13 @@ unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b,
     const CELTMode_t *m;
     int32_t i;
     int32_t spread;
-    ec_ctx *ec;
+    ec_ctx_t *ec;
 
     encode = ctx->encode;
     m = ctx->m;
     i = ctx->i;
     spread = ctx->spread;
-    ec = ctx->ec;
+    ec = s_ec;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
     cache = m->cache.bits + m->cache.index[(LM + 1) * m->nbEBands + i];
@@ -2272,10 +2273,10 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
     struct split_ctx sctx;
     int32_t orig_fill;
     int32_t encode;
-    ec_ctx *ec;
+    ec_ctx_t *ec;
 
     encode = ctx->encode;
-    ec = ctx->ec;
+    ec = s_ec;
 
     /* Special case for one sample */
     if (N == 1){
@@ -2408,7 +2409,7 @@ void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, 
 
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
-                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx *ec,
+                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx_t *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
     int32_t remaining_bits;
@@ -2459,7 +2460,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
 
     lowband_offset = 0;
     ctx.bandE = bandE;
-    ctx.ec = ec;
+    s_ec = ec;
     ctx.encode = encode;
     ctx.intensity = intensity;
     ctx.m = m;
@@ -2571,7 +2572,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
         else {
             if (Y != NULL) {
                 if (theta_rdo && i < intensity) {
-                    ec_ctx ec_save, ec_save2;
+                    ec_ctx_t ec_save, ec_save2;
                     struct band_ctx ctx_save, ctx_save2;
                     int32_t dist0, dist1;
                     unsigned cm, cm2;
@@ -3896,7 +3897,7 @@ int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_dec_t *_dec) {
 
 /* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear
    function followed by a lookup to determine the exact transition thresholds. */
-uint32_t ec_tell_frac(ec_ctx *_this) {
+uint32_t ec_tell_frac(ec_ctx_t *_this) {
     const unsigned correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
     uint32_t nbits;
     uint32_t r;
@@ -5130,7 +5131,7 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
 int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                               const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                               int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
-                              int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev,
+                              int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx_t *ec, int32_t encode, int32_t prev,
                               int32_t signalBandwidth) {
     int32_t psum;
     int32_t lo, hi;
@@ -5366,7 +5367,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
 
 int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
                            int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
-                           int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx *ec, int32_t encode, int32_t prev, int32_t signalBandwidth) {
+                           int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx_t *ec, int32_t encode, int32_t prev, int32_t signalBandwidth) {
     int32_t lo, hi, len, j;
     int32_t codedBands;
     int32_t skip_start;
