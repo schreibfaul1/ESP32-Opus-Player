@@ -1044,10 +1044,6 @@ struct Silk_PsramDeleter { // PSRAM deleter for Unique_PTR
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-void silk_A2NLSF_trans_poly(int32_t *p, const int32_t dd);
-int32_t silk_A2NLSF_eval_poly(int32_t *p, const int32_t x, const int32_t dd);
-void silk_A2NLSF_init(const int32_t *a_Q16, int32_t *P, int32_t *Q, const int32_t dd);
-void silk_A2NLSF(int16_t *NLSF, int32_t *a_Q16, const int32_t d);
 void silk_ana_filt_bank_1(const int16_t *in, int32_t *S, int16_t *outL, int16_t *outH, const int32_t N);
 void silk_biquad_alt_stride1(const int16_t *in, const int32_t *B_Q28, const int32_t *A_Q28, int32_t *S,
                              int16_t *out, const int32_t len);
