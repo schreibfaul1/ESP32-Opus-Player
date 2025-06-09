@@ -614,15 +614,42 @@ static inline int32_t pulses2bits(const CELTMode_t *m, int32_t band, int32_t LM,
 struct Celt_PsramDeleter { // PSRAM deleter for Unique_PTR
     void operator()(void* ptr) const {
         if (ptr){
-            free(ptr);  // ps_malloc kann mit free freigegeben werden
+            free(ptr);  // ps_malloc can be released with free
         }
     }
 };
 template<typename T>
 using celt_ptr_arr = std::unique_ptr<T[], Celt_PsramDeleter>;
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// Typical smart pointer for any types with dynamic allocation size
+template <typename T>
+class celt_raw_ptr {
+    std::unique_ptr<void, Celt_PsramDeleter> mem;
 
-template<typename T>
-using celt_ptr_obj = std::unique_ptr<T, Celt_PsramDeleter>;
+public:
+    celt_raw_ptr() = default;
+
+    // Speicher zuweisen mit benutzerdefinierter Größe (z. B. celt_decoder_get_size)
+    void alloc(std::size_t size, const char* name = nullptr) {
+        mem.reset(ps_malloc(size));
+        if (!mem) {
+            if (name) {
+                printf("OOM: failed to allocate %zu bytes for %s\n", size, name);
+            } else {
+                printf("OOM: failed to allocate %zu bytes\n", size);
+            }
+        }
+    }
+
+    // Zugriff
+    T* get() const { return static_cast<T*>(mem.get()); }
+    T* operator->() const { return get(); }
+    T& operator*() const { return *get(); }
+
+    // Gültigkeitsprüfung und manuelles Freigeben
+    bool valid() const { return mem != nullptr; }
+    void reset() { mem.reset(); }
+};
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
@@ -634,19 +661,11 @@ using celt_ptr_obj = std::unique_ptr<T, Celt_PsramDeleter>;
         return std::unique_ptr<T[], Celt_PsramDeleter>(raw);
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-    template <typename T>
-    celt_ptr_obj<T> celt_malloc_obj() {
-        T* raw = static_cast<T*>(ps_malloc(sizeof(T)));
-        if (!raw) {
-            log_e("silk_malloc_obj: OOM, no space for %zu bytes", sizeof(T));
-        }
-        return celt_ptr_obj<T>(raw);
-    }
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
 
-
+bool CELTDecoder_AllocateBuffers();
+void CELTDecoder_FreeBuffers();
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);

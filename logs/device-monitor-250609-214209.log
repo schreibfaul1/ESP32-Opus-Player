@@ -1,0 +1,420 @@
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281691[0m
+[0;33m[  1082][W][celt.cpp:747] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1089][W][celt.cpp:750] CELTDecoder_AllocateBuffers(): s_celtDec 17860 bytes allokiert[0m
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception). 
+Debug exception reason: BREAK instr 
+Core  1 register dump:
+PC      : 0x400d6a11  PS      : 0x00060b36  A0      : 0x800dda7d  A1      : 0x3ffc4d80  
+A2      : 0x00000001  A3      : 0x3ffc4da0  A4      : 0x00000047  A5      : 0x00000047  
+A6      : 0x00000441  A7      : 0x000045c4  A8      : 0x800d6a11  A9      : 0x3ffc4d30  
+A10     : 0x00000065  A11     : 0x00000441  A12     : 0x3f400954  A13     : 0x000002ee  
+A14     : 0x3f400960  A15     : 0x000045c4  SAR     : 0x00000013  EXCCAUSE: 0x00000001  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xfffffff8  
+
+
+Backtrace: 0x400d6a0e:0x3ffc4d80 0x400dda7a:0x3ffc4da0 0x400db046:0x3ffc4dc0 0x400ec682:0x3ffc4e10 0x4008d3d1:0x3ffc4e30
+  #0  0x400d6a0e in CELTDecoder_AllocateBuffers() at src/celt.cpp:750 (discriminator 2)
+  #1  0x400dda7a in opus_init_decoder() at src/opusfile.cpp:787
+  #2  0x400db046 in setup() at src/main.cpp:308
+  #3  0x400ec682 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #4  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f876aca27
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m

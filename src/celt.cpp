@@ -32,8 +32,7 @@
 #include <Arduino.h>
 #include "celt.h"
 
-CELTMode_t CELTMode;
-CELTDecoder_t CELTDecoder;
+celt_raw_ptr<CELTDecoder_t> s_celtDec;
 
 ec_dec_t* s_ec_dec = NULL;
 ec_ctx_t *s_ec;
@@ -741,6 +740,24 @@ uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
 #define DECODE_BUFFER_SIZE 2048
 #define CELT_PVQ_U(_n, _k) (celt_pvq_u_row(min(_n, _k), max(_n, _k)))
 #define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bool CELTDecoder_AllocateBuffers(){
+    log_w("Allocate");
+    size_t omd = celt_decoder_get_size(2);
+    s_celtDec.alloc(omd, "CELTDecoder");
+    if(s_celtDec.valid()) log_w("s_celtDec %i bytes allokiert", omd);
+    return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void CELTDecoder_FreeBuffers(){
+    s_celtDec.reset();
+}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2682,8 +2699,7 @@ int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int3
     if (channels < 0 || channels > 2)
         return OPUS_BAD_ARG;
 
-    if (st == NULL)
-        return OPUS_ALLOC_FAIL;
+    //CELTDecoder_t *st = s_celtDec.get();
 
     OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(mode, channels));
 
@@ -4116,7 +4132,7 @@ void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm) {
+void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw, int32_t m, int32_t N, int32_t mm) {
     int32_t i;
 
     if (m == 1) {
@@ -4146,7 +4162,7 @@ void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
         kiss_fft_cpx *Fout_beg = Fout;
         for (i = 0; i < N; i++) {
             Fout = Fout_beg + i * mm;
-            tw3 = tw2 = tw1 = st->twiddles;
+            tw3 = tw2 = tw1 = tw->twiddles;
             /* m is guaranteed to be a multiple of 4. */
             for (j = 0; j < m; j++) {
                 C_MUL(scratch[0], Fout[m], *tw1);
@@ -4174,7 +4190,7 @@ void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm) {
+void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw, int32_t m, int32_t N, int32_t mm) {
     int32_t i;
     size_t k;
     const size_t m2 = 2 * m;
@@ -4187,7 +4203,7 @@ void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
     epi3.i = -28378;
     for (i = 0; i < N; i++) {
         Fout = Fout_beg + i * mm;
-        tw1 = tw2 = st->twiddles;
+        tw1 = tw2 = tw->twiddles;
         /* For non-custom modes, m is guaranteed to be a multiple of 4. */
         k = m;
         do {
@@ -4218,7 +4234,7 @@ void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm) {
+void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tff, int32_t m, int32_t N, int32_t mm) {
     kiss_fft_cpx *Fout0, *Fout1, *Fout2, *Fout3, *Fout4;
     int32_t i, u;
     kiss_fft_cpx scratch[13];
@@ -4230,7 +4246,7 @@ void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
     ya.i = -31164;
     yb.r = -26510;
     yb.i = -19261;
-    tw = st->twiddles;
+    tw = tff->twiddles;
 
     for (i = 0; i < N; i++) {
         Fout = Fout_beg + i * mm;
@@ -4286,7 +4302,7 @@ void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout) {
+void opus_fft_impl(const kiss_fft_state *tff, kiss_fft_cpx *fout) {
     int32_t m2, m;
     int32_t p;
     int32_t L;
@@ -4295,34 +4311,34 @@ void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout) {
     int32_t shift;
 
     /* st->shift can be -1 */
-    shift = st->shift > 0 ? st->shift : 0;
+    shift = tff->shift > 0 ? tff->shift : 0;
 
     fstride[0] = 1;
     L = 0;
     do {
-        p = st->factors[2 * L];
-        m = st->factors[2 * L + 1];
+        p = tff->factors[2 * L];
+        m = tff->factors[2 * L + 1];
         fstride[L + 1] = fstride[L] * p;
         L++;
     } while (m != 1);
-    m = st->factors[2 * L - 1];
+    m = tff->factors[2 * L - 1];
     for (i = L - 1; i >= 0; i--) {
         if (i != 0)
-            m2 = st->factors[2 * i - 1];
+            m2 = tff->factors[2 * i - 1];
         else
             m2 = 1;
-        switch (st->factors[2 * i]) {
+        switch (tff->factors[2 * i]) {
             case 2:
                 kf_bfly2(fout, m, fstride[i]);
                 break;
             case 4:
-                kf_bfly4(fout, fstride[i] << shift, st, m, fstride[i], m2);
+                kf_bfly4(fout, fstride[i] << shift, tff, m, fstride[i], m2);
                 break;
             case 3:
-                kf_bfly3(fout, fstride[i] << shift, st, m, fstride[i], m2);
+                kf_bfly3(fout, fstride[i] << shift, tff, m, fstride[i], m2);
                 break;
             case 5:
-                kf_bfly5(fout, fstride[i] << shift, st, m, fstride[i], m2);
+                kf_bfly5(fout, fstride[i] << shift, tff, m, fstride[i], m2);
                 break;
         }
         m = m2;
@@ -4330,33 +4346,33 @@ void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
+void opus_fft_c(const kiss_fft_state *tff, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
     int32_t i;
     int16_t scale;
     /* Allows us to scale with MULT16_32_Q16(), which is faster than
        MULT16_32_Q15() on ARM. */
-    int32_t scale_shift = st->scale_shift - 1;
-    scale = st->scale;
+    int32_t scale_shift = tff->scale_shift - 1;
+    scale = tff->scale;
 
     assert2(fin != fout, "In-place FFT not supported");
     /* Bit-reverse the input */
-    for (i = 0; i < st->nfft; i++) {
+    for (i = 0; i < tff->nfft; i++) {
         kiss_fft_cpx x = fin[i];
-        fout[st->bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
-        fout[st->bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
+        fout[tff->bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
+        fout[tff->bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
     }
-    opus_fft_impl(st, fout);
+    opus_fft_impl(tff, fout);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
+void opus_ifft_c(const kiss_fft_state *tff, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
     int32_t i;
     assert2(fin != fout, "In-place FFT not supported");
     /* Bit-reverse the input */
-    for (i = 0; i < st->nfft; i++) fout[st->bitrev[i]] = fin[i];
-    for (i = 0; i < st->nfft; i++) fout[i].i = -fout[i].i;
-    opus_fft_impl(st, fout);
-    for (i = 0; i < st->nfft; i++) fout[i].i = -fout[i].i;
+    for (i = 0; i < tff->nfft; i++) fout[tff->bitrev[i]] = fin[i];
+    for (i = 0; i < tff->nfft; i++) fout[i].i = -fout[i].i;
+    opus_fft_impl(tff, fout);
+    for (i = 0; i < tff->nfft; i++) fout[i].i = -fout[i].i;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
