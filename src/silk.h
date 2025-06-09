@@ -1032,6 +1032,8 @@ struct Silk_PsramDeleter { // PSRAM deleter for Unique_PTR
         }
     }
 };
+template<typename T>
+using silk_ptr = std::unique_ptr<T[], Silk_PsramDeleter>;
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
@@ -1044,6 +1046,7 @@ struct Silk_PsramDeleter { // PSRAM deleter for Unique_PTR
     }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
+bool SILKDecoder_AllocateBuffers();
 void silk_ana_filt_bank_1(const int16_t *in, int32_t *S, int16_t *outL, int16_t *outH, const int32_t N);
 void silk_biquad_alt_stride1(const int16_t *in, const int32_t *B_Q28, const int32_t *A_Q28, int32_t *S,
                              int16_t *out, const int32_t len);

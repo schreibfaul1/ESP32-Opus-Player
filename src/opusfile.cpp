@@ -783,6 +783,7 @@ int op_open2() {
 //----------------------------------------------------------------------------------------------------------------------
 OggOpusFile_t* opus_init_decoder() {
     int ret = OP_EFAULT;
+    SILKDecoder_AllocateBuffers();
     m_OggOpusFile = (OggOpusFile_t*) malloc(sizeof(*m_OggOpusFile));
     if(m_OggOpusFile==NULL) return NULL;
     ret = op_open1();

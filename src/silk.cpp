@@ -17,12 +17,13 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 
-silk_decoder_state_t          s_channel_state[ DECODER_NUM_CHANNELS ];//   s_silk_decoder_state;
-silk_decoder_state_t          s_psDec;
+silk_ptr<silk_resampler_state_struct_t> s_resampler_state;
+silk_ptr<silk_decoder_state_t>          s_channel_state;
+
+
 silk_decoder_t                s_silk_decoder;
 silk_DecControlStruct_t       s_silk_DecControlStruct;
-silk_resampler_state_struct_t s_resampler_state[ DECODER_NUM_CHANNELS ];;
-// extern ec_ctx_t    s_ec;
+//silk_resampler_state_struct_t s_resampler_state[ DECODER_NUM_CHANNELS ];;
 
 uint8_t            s_channelsInternal = 0;
 uint8_t            s_payloadSize_ms = 0;
@@ -428,6 +429,19 @@ const silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = {
     silk_NLSF_CB2_BITS_NB_MB_Q5,
     silk_NLSF_DELTA_MIN_NB_MB_Q15,
 };
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bool SILKDecoder_AllocateBuffers(){
+    s_resampler_state = silk_malloc<silk_resampler_state_struct_t>(DECODER_NUM_CHANNELS);
+    s_channel_state   = silk_malloc<silk_decoder_state_t>(DECODER_NUM_CHANNELS);
+
+    log_w("s_silk_resampler_state length: %i", sizeof(silk_resampler_state_struct_t) * DECODER_NUM_CHANNELS);
+    log_w("s_channel_state length: %i", sizeof(silk_decoder_state_t) * DECODER_NUM_CHANNELS);
+    return true;
+}
+
+
+
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Split signal into two decimated bands using first-order allpass filters */
 void silk_ana_filt_bank_1(const int16_t* in,   /* I    Input signal [N]        */
