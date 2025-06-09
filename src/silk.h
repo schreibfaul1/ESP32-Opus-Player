@@ -1065,7 +1065,7 @@ void silk_decode_indices(uint8_t n, int32_t FrameIndex, int32_t decode_LBRR, int
 void silk_decode_parameters(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int32_t condCoding);
 void silk_decode_core(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t xq[], const int16_t pulses[MAX_FRAME_LENGTH]);
 void silk_decode_pulses(int16_t pulses[], const int32_t signalType, const int32_t quantOffsetType, const int32_t frame_length);
-int32_t silk_init_decoder(silk_decoder_state_t *psDec);
+int32_t silk_init_decoder(uint8_t n);
 int32_t silk_NLSF_del_dec_quant(int8_t indices[], const int16_t x_Q10[], const int16_t w_Q5[],
                                 const uint8_t pred_coef_Q8[], const int16_t ec_ix[], const uint8_t ec_rates_Q5[],
                                 const int32_t quant_step_size_Q16, const int16_t inv_quant_step_size_Q6,

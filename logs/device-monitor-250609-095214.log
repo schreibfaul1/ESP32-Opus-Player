@@ -1,0 +1,21 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (191) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;3��[0;32m[  1078][I][main.cpp:307] setup(): free heap before 273175[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;33m[  1092][W][opus_decoder.cpp:821] opus_multistream_decoder_create(): decoder get size 13452[0m
+[0;32m[  1112][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;32m[  1123][I][main.cpp:309] setup(): free heap after 229499[0m
+[0;32m[  1130][I][opus_decoder.cpp:154] opus_packet_get_mode(): opus mode is MODE_HYBRID   [0m

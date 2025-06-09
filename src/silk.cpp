@@ -1504,7 +1504,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     /* If Mono -> Stereo transition in bitstream: init state of second channel */
     if (s_silk_DecControlStruct.nChannelsInternal > s_silk_decoder.nChannelsInternal) {
-        ret += silk_init_decoder(&s_channel_state[1]);
+        ret += silk_init_decoder(1);
     }
 
     stereo_to_mono = s_silk_DecControlStruct.nChannelsInternal == 1 && s_silk_decoder.nChannelsInternal == 2 &&
@@ -1788,7 +1788,7 @@ int32_t silk_InitDecoder() {
    // s_channel_state = (silk_decoder_state_t*) &decState->s_channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
-        ret = silk_init_decoder(&s_channel_state[n]);
+        ret = silk_init_decoder(n);
     }
     memset(&s_silk_decoder.sStereo, 0, sizeof(s_silk_decoder.sStereo));
     s_silk_decoder.prev_decode_only_middle = 0;
@@ -2188,19 +2188,19 @@ int32_t silk_gains_ID(                                 /* O    returns unique id
     return gainsID;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-int32_t silk_init_decoder(silk_decoder_state_t* psDec) {
+int32_t silk_init_decoder(uint8_t n) {
     /* Clear the entire encoder state, except anything copied */
-    memset(psDec, 0, sizeof(silk_decoder_state_t));
+    memset(&s_channel_state[n], 0, sizeof(silk_decoder_state_t));
 
     /* Used to deactivate LSF interpolation */
-    psDec->first_frame_after_reset = 1;
-    psDec->prev_gain_Q16 = 65536;
+    s_channel_state[n].first_frame_after_reset = 1;
+    s_channel_state[n].prev_gain_Q16 = 65536;
 
     /* Reset CNG state */
-    silk_CNG_Reset(psDec);
+    silk_CNG_Reset(s_channel_state);
 
     /* Reset PLC state */
-    silk_PLC_Reset(psDec);
+    silk_PLC_Reset(s_channel_state);
 
     return (0);
 }
