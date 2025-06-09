@@ -432,16 +432,16 @@ bool SILKDecoder_AllocateBuffers(){
     s_silk_decoder          = silk_malloc_obj<silk_decoder_t>();
     s_silk_decoder_control  = silk_malloc_obj<silk_decoder_control_t>();
     s_silk_DecControlStruct = silk_malloc_obj<silk_DecControlStruct_t>();
-
-    log_w("s_silk_resampler_state length: %i", sizeof(silk_resampler_state_struct_t) * DECODER_NUM_CHANNELS);
-    log_w("s_channel_state length: %i", sizeof(silk_decoder_state_t) * DECODER_NUM_CHANNELS);
-    log_w("s_silk_decoder length: %i", sizeof(silk_decoder_t) * DECODER_NUM_CHANNELS);
     return true;
 }
-
-
-
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void SILKDecoder_FreeBuffers(){
+    s_resampler_state.reset();
+    s_channel_state.reset();
+    s_silk_decoder.reset();
+    s_silk_decoder_control.reset();
+    s_silk_DecControlStruct.reset();
+}
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Split signal into two decimated bands using first-order allpass filters */
 void silk_ana_filt_bank_1(const int16_t* in,   /* I    Input signal [N]        */
