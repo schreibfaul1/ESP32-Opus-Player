@@ -1,0 +1,142 @@
+[0;32m[  1078][I][main.cpp:307] setup(): free heap before 269215[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;33m[  1092][W][opus_decoder.cpp:821] opus_multistream_decoder_create(): decoder get size 13452[0m
+[0;32m[  1112][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;32m[  1123][I][main.cpp:309] setup(): free heap after 225539[0m
+[0;32m[  1130][I][opus_decoder.cpp:154] opus_packet_get_mode(): opus mode is MODE_HYBRID   [0m
+
+assert failed: int32_t silk_decode_frame(silk_decoder_state_t*, int16_t*, int32_t*, int32_t, int32_t) silk.cpp:1982 (L > 0 && L <= MAX_FRAME_LENGTH)
+
+
+Backtrace: 0x40084fd8:0x3ffbede0 0x4008c8e5:0x3ffbee00 0x400930a9:0x3ffbee20 0x400e37d6:0x3ffbef40 0x400e4283:0x3ffbf000 0x400dc0cc:0x3ffbf2f0 0x400dcbcf:0x3ffbfb10 0x400dd1a9:0x3ffbfbd0 0x400dd2bb:0x3ffc2930 0x400de905:0x3ffc2950 0x400de9b5:0x3ffc2990 0x400db505:0x3ffc29b0 0x4008d3d1:0x3ffc29d0
+  #0  0x40084fd8 in panic_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/panic.c:454
+  #1  0x4008c8e5 in esp_system_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c:87
+  #2  0x400930a9 in __assert_func at /home/wolle/.platformio/packages/framework-espidf/components/newlib/assert.c:80
+  #3  0x400e37d6 in silk_decode_frame(silk_decoder_state_t*, short*, long*, long, long) at src/silk.cpp:1982 (discriminator 1)
+  #4  0x400e4283 in silk_Decode(long, long, short*, long*) at src/silk.cpp:1684
+  #5  0x400dc0cc in opus_decode_frame(OpusDecoder*, unsigned char*, long, short*, short) at src/opus_decoder.cpp:226
+  #6  0x400dcbcf in opus_decode_native(OpusDecoder*, unsigned char*, long, short*, int, int, long*) at src/opus_decoder.cpp:365
+  #7  0x400dd1a9 in opus_multistream_decode_native(OpusMSDecoder*, unsigned char*, long, void*, void (*)(void*, int, int, short const*, int, int, void*), int) at src/opus_decoder.cpp:908
+  #8  0x400dd2bb in opus_multistream_decode(OpusMSDecoder*, unsigned char*, long, short*, int) at src/opus_decoder.cpp:966
+  #9  0x400de905 in op_read_native() at src/opusfile.cpp:1236
+  #10 0x400de9b5 in op_read_stereo(short*, int) at src/opusfile.cpp:1295
+  #11 0x400db505 in opusTask(void*) at src/main.cpp:273
+  #12 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f0c225a72
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 269215[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;33m[  1092][W][opus_decoder.cpp:821] opus_multistream_decoder_create(): decoder get size 13452[0m
+[0;32m[  1112][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;32m[  1123][I][main.cpp:309] setup(): free heap after 225539[0m
+[0;32m[  1130][I][opus_decoder.cpp:154] opus_packet_get_mode(): opus mode is MODE_HYBRID   [0m
+
+assert failed: int32_t silk_decode_frame(silk_decoder_state_t*, int16_t*, int32_t*, int32_t, int32_t) silk.cpp:1982 (L > 0 && L <= MAX_FRAME_LENGTH)
+
+
+Backtrace: 0x40084fd8:0x3ffbede0 0x4008c8e5:0x3ffbee00 0x400930a9:0x3ffbee20 0x400e37d6:0x3ffbef40 0x400e4283:0x3ffbf000 0x400dc0cc:0x3ffbf2f0 0x400dcbcf:0x3ffbfb10 0x400dd1a9:0x3ffbfbd0 0x400dd2bb:0x3ffc2930 0x400de905:0x3ffc2950 0x400de9b5:0x3ffc2990 0x400db505:0x3ffc29b0 0x4008d3d1:0x3ffc29d0
+  #0  0x40084fd8 in panic_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/panic.c:454
+  #1  0x4008c8e5 in esp_system_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c:87
+  #2  0x400930a9 in __assert_func at /home/wolle/.platformio/packages/framework-espidf/components/newlib/assert.c:80
+  #3  0x400e37d6 in silk_decode_frame(silk_decoder_state_t*, short*, long*, long, long) at src/silk.cpp:1982 (discriminator 1)
+  #4  0x400e4283 in silk_Decode(long, long, short*, long*) at src/silk.cpp:1684
+  #5  0x400dc0cc in opus_decode_frame(OpusDecoder*, unsigned char*, long, short*, short) at src/opus_decoder.cpp:226
+  #6  0x400dcbcf in opus_decode_native(OpusDecoder*, unsigned char*, long, short*, int, int, long*) at src/opus_decoder.cpp:365
+  #7  0x400dd1a9 in opus_multistream_decode_native(OpusMSDecoder*, unsigned char*, long, void*, void (*)(void*, int, int, short const*, int, int, void*), int) at src/opus_decoder.cpp:908
+  #8  0x400dd2bb in opus_multistream_decode(OpusMSDecoder*, unsigned char*, long, short*, int) at src/opus_decoder.cpp:966
+  #9  0x400de905 in op_read_native() at src/opusfile.cpp:1236
+  #10 0x400de9b5 in op_read_stereo(short*, int) at src/opusfile.cpp:1295
+  #11 0x400db505 in opusTask(void*) at src/main.cpp:273
+  #12 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f0c225a72
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1078][I][main.cpp:307] setup(): free heap before 269215[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1092][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;33m[  1092][W][opus_decoder.cpp:821] opus_multistream_decoder_create(): decoder get size 13452[0m
+[0;32m[  1112][I][opus_decoder.cpp:764] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 0[0m
+[0;32m[  1123][I][main.cpp:309] setup(): free heap after 225539[0m
+[0;32m[  1130][I][opus_decoder.cpp:154] opus_packet_get_mode(): opus mode is MODE_HYBRID   [0m
+
+assert failed: int32_t silk_decode_frame(silk_decoder_state_t*, int16_t*, int32_t*, int32_t, int32_t) silk.cpp:1982 (L > 0 && L <= MAX_FRAME_LENGTH)
+
+
+Backtrace: 0x40084fd8:0x3ffbede0 0x4008c8e5:0x3ffbee00 0x400930a9:0x3ffbee20 0x400e37d6:0x3ffbef40 0x400e4283:0x3ffbf000 0x400dc0cc:0x3ffbf2f0 0x400dcbcf:0x3ffbfb10 0x400dd1a9:0x3ffbfbd0 0x400dd2bb:0x3ffc2930 0x400de905:0x3ffc2950 0x400de9b5:0x3ffc2990 0x400db505:0x3ffc29b0 0x4008d3d1:0x3ffc29d0
+  #0  0x40084fd8 in panic_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/panic.c:454
+  #1  0x4008c8e5 in esp_system_abort at /home/wolle/.platformio/packages/framework-espidf/components/esp_system/port/esp_system_chip.c:87
+  #2  0x400930a9 in __assert_func at /home/wolle/.platformio/packages/framework-espidf/components/newlib/assert.c:80
+  #3  0x400e37d6 in silk_decode_frame(silk_decoder_state_t*, short*, long*, long, long) at src/silk.cpp:1982 (discriminator 1)
+  #4  0x400e4283 in silk_Decode(long, long, short*, long*) at src/silk.cpp:1684
+  #5  0x400dc0cc in opus_decode_frame(OpusDecoder*, unsigned char*, long, short*, short) at src/opus_decoder.cpp:226
+  #6  0x400dcbcf in opus_decode_native(OpusDecoder*, unsigned char*, long, short*, int, int, long*) at src/opus_decoder.cpp:365
+  #7  0x400dd1a9 in opus_multistream_decode_native(OpusMSDecoder*, unsigned char*, long, void*, void (*)(void*, int, int, short const*, int, int, void*), int) at src/opus_decoder.cpp:908
+  #8  0x400dd2bb in opus_multistream_decode(OpusMSDecoder*, unsigned char*, long, short*, int) at src/opus_decoder.cpp:966
+  #9  0x400de905 in op_read_native() at src/opusfile.cpp:1236
+  #10 0x400de9b5 in op_read_stereo(short*, int) at src/opusfile.cpp:1295
+  #11 0x400db505 in opusTask(void*) at src/main.cpp:273
+  #12 0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: f0c225a72
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (190) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m

@@ -1099,14 +1099,13 @@ void silk_CNG(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int1
 int32_t silk_Get_Decoder_Size(int32_t *decSizeBytes);
 int32_t silk_InitDecoder();
 void silk_setRawParams(uint8_t channels, uint8_t API_channels, uint8_t payloadSize_ms, uint32_t internalSampleRate, uint32_t API_samleRate);
-int32_t silk_Decode(int32_t lostFlag, int32_t newPacketFlag,
-                    int16_t *samplesOut, int32_t *nSamplesOut);
+int32_t silk_Decode(int32_t lostFlag, int32_t newPacketFlag, int16_t *samplesOut, int32_t *nSamplesOut);
 void silk_NLSF2A_find_poly(int32_t *out, const int32_t *cLSF, int32_t dd);
 void silk_NLSF2A(int16_t *a_Q12, const int16_t *NLSF, const int32_t d);
 void silk_CNG_exc(int32_t exc_Q14[], int32_t exc_buf_Q14[], int32_t length, int32_t *rand_seed);
 void silk_decode_core(silk_decoder_state_t *psDec, silk_decoder_control *psDecCtrl, int16_t xq[],
                       const int16_t pulses[MAX_FRAME_LENGTH]);
-int32_t silk_decode_frame(silk_decoder_state_t *psDec, int16_t pOut[], int32_t *pN, int32_t lostFlag,
+int32_t silk_decode_frame(uint8_t n, int16_t pOut[], int32_t *pN, int32_t lostFlag,
                           int32_t condCoding);
 void silk_decode_pitch(int16_t lagIndex, int8_t contourIndex, int32_t pitch_lags[], const int32_t Fs_kHz, const int32_t nb_subfr);
 int32_t silk_inner_prod_aligned_scale(const int16_t *const inVec1, const int16_t *const inVec2, const int32_t scale, const int32_t len);

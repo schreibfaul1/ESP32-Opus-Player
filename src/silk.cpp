@@ -1473,6 +1473,7 @@ uint32_t silk_getPrevPitchLag(){
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode a frame */
 int32_t silk_Decode(                                   /* O    Returns error code                              */
+
                     int32_t lostFlag,                  /* I    0: no loss, 1 loss, 2 decode fec                */
                     int32_t newPacketFlag,             /* I    Indicates first decoder call for this packet    */
                     int16_t *samplesOut,               /* O    Decoded output speech vector                    */
@@ -1681,7 +1682,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
             } else {
                 condCoding = CODE_CONDITIONALLY;
             }
-            ret += silk_decode_frame(&s_channel_state[n], &samplesOut1_tmp[n][2], &nSamplesOutDec, lostFlag,
+            ret += silk_decode_frame(n, &samplesOut1_tmp[n][2], &nSamplesOutDec, lostFlag,
                                      condCoding);
         } else {
             silk_memset(&samplesOut1_tmp[n][2], 0, nSamplesOutDec * sizeof(int16_t));
@@ -1968,81 +1969,81 @@ void silk_decode_core(silk_decoder_state_t *psDec,              /* I/O  Decoder 
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* Decode frame */
-int32_t silk_decode_frame(silk_decoder_state_t *psDec, /* I/O  Pointer to Silk decoder state               */
+int32_t silk_decode_frame(uint8_t n,
                           int16_t pOut[],            /* O    Pointer to output speech frame              */
                           int32_t *pN,               /* O    Pointer to size of output frame             */
                           int32_t lostFlag,          /* I    0: no loss, 1 loss, 2 decode fec            */
                           int32_t condCoding         /* I    The type of conditional coding to use       */
 ) {
     int32_t L, mv_len, ret = 0;
-    L = psDec->frame_length;
+    L = s_channel_state[n].frame_length;
     silk_decoder_control psDecCtrl[1];
     psDecCtrl->LTP_scale_Q14 = 0;
 
     /* Safety checks */
     assert(L > 0 && L <= MAX_FRAME_LENGTH);
 
-    if(lostFlag == FLAG_DECODE_NORMAL || (lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[psDec->nFramesDecoded] == 1)) {
+    if(lostFlag == FLAG_DECODE_NORMAL || (lostFlag == FLAG_DECODE_LBRR && s_channel_state[n].LBRR_flags[s_channel_state[n].nFramesDecoded] == 1)) {
         int16_t pulses[(L + SHELL_CODEC_FRAME_LENGTH - 1) & ~(SHELL_CODEC_FRAME_LENGTH - 1)];
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
-        silk_decode_indices(psDec, psDec->nFramesDecoded, lostFlag, condCoding);
+        silk_decode_indices(&s_channel_state[n], s_channel_state[n].nFramesDecoded, lostFlag, condCoding);
 
         /*********************************************/
         /* Decode quantization indices of excitation */
         /*********************************************/
-        silk_decode_pulses(pulses, psDec->indices.signalType, psDec->indices.quantOffsetType,
-                           psDec->frame_length);
+        silk_decode_pulses(pulses, s_channel_state[n].indices.signalType, s_channel_state[n].indices.quantOffsetType,
+                           s_channel_state[n].frame_length);
 
         /********************************************/
         /* Decode parameters and pulse signal       */
         /********************************************/
-        silk_decode_parameters(psDec, psDecCtrl, condCoding);
+        silk_decode_parameters(&s_channel_state[n], psDecCtrl, condCoding);
 
         /********************************************************/
         /* Run inverse NSQ                                      */
         /********************************************************/
-        silk_decode_core(psDec, psDecCtrl, pOut, pulses);
+        silk_decode_core(&s_channel_state[n], psDecCtrl, pOut, pulses);
 
         /********************************************************/
         /* Update PLC state                                     */
         /********************************************************/
-        silk_PLC(psDec, psDecCtrl, pOut, 0);
+        silk_PLC(&s_channel_state[n], psDecCtrl, pOut, 0);
 
-        psDec->lossCnt = 0;
-        psDec->prevSignalType = psDec->indices.signalType;
-        assert(psDec->prevSignalType >= 0 && psDec->prevSignalType <= 2);
+        s_channel_state[n].lossCnt = 0;
+        s_channel_state[n].prevSignalType = s_channel_state[n].indices.signalType;
+        assert(s_channel_state[n].prevSignalType >= 0 && s_channel_state[n].prevSignalType <= 2);
 
         /* A frame has been decoded without errors */
-        psDec->first_frame_after_reset = 0;
+        s_channel_state[n].first_frame_after_reset = 0;
     }
     else {
         /* Handle packet loss by extrapolation */
-        psDec->indices.signalType = psDec->prevSignalType;
-        silk_PLC(psDec, psDecCtrl, pOut, 1);
+        s_channel_state[n].indices.signalType = s_channel_state[n].prevSignalType;
+        silk_PLC(&s_channel_state[n], psDecCtrl, pOut, 1);
     }
 
     /*************************/
     /* Update output buffer. */
     /*************************/
-    assert(psDec->ltp_mem_length >= psDec->frame_length);
-    mv_len = psDec->ltp_mem_length - psDec->frame_length;
-    memmove(psDec->outBuf, &psDec->outBuf[psDec->frame_length], mv_len * sizeof(int16_t));
-    memcpy(&psDec->outBuf[mv_len], pOut, psDec->frame_length * sizeof(int16_t));
+    assert(s_channel_state[n].ltp_mem_length >= s_channel_state[n].frame_length);
+    mv_len = s_channel_state[n].ltp_mem_length - s_channel_state[n].frame_length;
+    memmove(s_channel_state[n].outBuf, &s_channel_state[n].outBuf[s_channel_state[n].frame_length], mv_len * sizeof(int16_t));
+    memcpy(&s_channel_state[n].outBuf[mv_len], pOut, s_channel_state[n].frame_length * sizeof(int16_t));
 
     /************************************************/
     /* Comfort noise generation / estimation        */
     /************************************************/
-    silk_CNG(psDec, psDecCtrl, pOut, L);
+    silk_CNG(&s_channel_state[n], psDecCtrl, pOut, L);
 
     /****************************************************************/
     /* Ensure smooth connection of extrapolated and good frames     */
     /****************************************************************/
-    silk_PLC_glue_frames(psDec, pOut, L);
+    silk_PLC_glue_frames(&s_channel_state[n], pOut, L);
 
     /* Update some decoder state variables */
-    psDec->lagPrev = psDecCtrl->pitchL[psDec->nb_subfr - 1];
+    s_channel_state[n].lagPrev = psDecCtrl->pitchL[s_channel_state[n].nb_subfr - 1];
 
     /* Set output frame length */
     *pN = L;
