@@ -223,7 +223,7 @@ if(!inbuf)log_e("Inbuf is null");
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode(silk_dec, 0, first_frame, pcm_ptr, &silk_frame_size);
+            silk_ret = silk_Decode(0, first_frame, pcm_ptr, &silk_frame_size);
             if (silk_ret) {
                     return OPUS_INTERNAL_ERROR;
             }

@@ -18,6 +18,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 
 
 silk_decoder_state_t          s_channel_state[ DECODER_NUM_CHANNELS ];//   s_silk_decoder_state;
+silk_decoder_state_t          s_psDec;
 silk_decoder_t                s_silk_decoder;
 silk_DecControlStruct_t       s_silk_DecControlStruct;
 silk_resampler_state_struct_t s_resampler_state[ DECODER_NUM_CHANNELS ];;
@@ -1472,7 +1473,6 @@ uint32_t silk_getPrevPitchLag(){
 //----------------------------------------------------------------------------------------------------------------------
 /* Decode a frame */
 int32_t silk_Decode(                                   /* O    Returns error code                              */
-                    void *decState,                    /* I/O  State                                           */
                     int32_t lostFlag,                  /* I    0: no loss, 1 loss, 2 decode fec                */
                     int32_t newPacketFlag,             /* I    Indicates first decoder call for this packet    */
                     int16_t *samplesOut,               /* O    Decoded output speech vector                    */
@@ -1485,7 +1485,6 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     int16_t* samplesOut1_tmp[2];
     int32_t MS_pred_Q13[2] = {0};
     int16_t *resample_out_ptr;
-    silk_decoder_t *psDec = (silk_decoder_t *)decState;
     //silk_decoder_state_t *s_channel_state = s_channel_state;
     int32_t has_side;
     int32_t stereo_to_mono;
@@ -1503,11 +1502,11 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     /* If Mono -> Stereo transition in bitstream: init state of second channel */
-    if (s_silk_DecControlStruct.nChannelsInternal > psDec->nChannelsInternal) {
+    if (s_silk_DecControlStruct.nChannelsInternal > s_silk_decoder.nChannelsInternal) {
         ret += silk_init_decoder(&s_channel_state[1]);
     }
 
-    stereo_to_mono = s_silk_DecControlStruct.nChannelsInternal == 1 && psDec->nChannelsInternal == 2 &&
+    stereo_to_mono = s_silk_DecControlStruct.nChannelsInternal == 1 && s_silk_decoder.nChannelsInternal == 2 &&
                      (s_silk_internalSampleRate == 1000 * s_channel_state[0].fs_kHz);
 
     if (s_channel_state[0].nFramesDecoded == 0) {
@@ -1541,14 +1540,14 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     }
 
     if (s_silk_DecControlStruct.nChannelsAPI == 2 && s_silk_DecControlStruct.nChannelsInternal == 2 &&
-        (psDec->nChannelsAPI == 1 || psDec->nChannelsInternal == 1)) {
-        silk_memset(psDec->sStereo.pred_prev_Q13, 0, sizeof(psDec->sStereo.pred_prev_Q13));
-        silk_memset(psDec->sStereo.sSide, 0, sizeof(psDec->sStereo.sSide));
+        (s_silk_decoder.nChannelsAPI == 1 || s_silk_decoder.nChannelsInternal == 1)) {
+        silk_memset(s_silk_decoder.sStereo.pred_prev_Q13, 0, sizeof(s_silk_decoder.sStereo.pred_prev_Q13));
+        silk_memset(s_silk_decoder.sStereo.sSide, 0, sizeof(s_silk_decoder.sStereo.sSide));
         silk_memcpy(&s_resampler_state[n], &s_resampler_state[n],
                     sizeof(silk_resampler_state_struct_t));
     }
-    psDec->nChannelsAPI = s_silk_DecControlStruct.nChannelsAPI;
-    psDec->nChannelsInternal = s_silk_DecControlStruct.nChannelsInternal;
+    s_silk_decoder.nChannelsAPI = s_silk_DecControlStruct.nChannelsAPI;
+    s_silk_decoder.nChannelsInternal = s_silk_DecControlStruct.nChannelsInternal;
 
     if (s_silk_DecControlStruct.API_sampleRate > (int32_t)MAX_API_FS_KHZ * 1000 || s_silk_DecControlStruct.API_sampleRate < 8000) {
         ret = SILK_DEC_INVALID_SAMPLING_FREQUENCY;
@@ -1624,13 +1623,13 @@ int32_t silk_Decode(                                   /* O    Returns error cod
             }
         } else {
             for (n = 0; n < 2; n++) {
-                MS_pred_Q13[n] = psDec->sStereo.pred_prev_Q13[n];
+                MS_pred_Q13[n] = s_silk_decoder.sStereo.pred_prev_Q13[n];
             }
         }
     }
 
     /* Reset side channel decoder prediction memory for first frame with side coding */
-    if (s_silk_DecControlStruct.nChannelsInternal == 2 && decode_only_middle == 0 && psDec->prev_decode_only_middle == 1) {
+    if (s_silk_DecControlStruct.nChannelsInternal == 2 && decode_only_middle == 0 && s_silk_decoder.prev_decode_only_middle == 1) {
         silk_memset(s_channel_state[1].outBuf, 0, sizeof(s_channel_state[1].outBuf));
         silk_memset(s_channel_state[1].sLPC_Q14_buf, 0, sizeof(s_channel_state[1].sLPC_Q14_buf));
         s_channel_state[1].lagPrev = 100;
@@ -1660,7 +1659,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
         has_side = !decode_only_middle;
     } else {
         has_side =
-            !psDec->prev_decode_only_middle || (s_silk_DecControlStruct.nChannelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
+            !s_silk_decoder.prev_decode_only_middle || (s_silk_DecControlStruct.nChannelsInternal == 2 && lostFlag == FLAG_DECODE_LBRR &&
                                                 s_channel_state[1].LBRR_flags[s_channel_state[1].nFramesDecoded] == 1);
     }
     /* Call decoder for one frame */
@@ -1675,7 +1674,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
                 condCoding = CODE_INDEPENDENTLY;
             } else if (lostFlag == FLAG_DECODE_LBRR) {
                 condCoding = s_channel_state[n].LBRR_flags[FrameIndex - 1] ? CODE_CONDITIONALLY : CODE_INDEPENDENTLY;
-            } else if (n > 0 && psDec->prev_decode_only_middle) {
+            } else if (n > 0 && s_silk_decoder.prev_decode_only_middle) {
                 /* If we skipped a side frame in this packet, we don't
                    need LTP scaling; the LTP state is well-defined. */
                 condCoding = CODE_INDEPENDENTLY_NO_LTP_SCALING;
@@ -1692,12 +1691,12 @@ int32_t silk_Decode(                                   /* O    Returns error cod
 
     if (s_silk_DecControlStruct.nChannelsAPI == 2 && s_silk_DecControlStruct.nChannelsInternal == 2) {
         /* Convert Mid/Side to Left/Right */
-        silk_stereo_MS_to_LR(&psDec->sStereo, samplesOut1_tmp[0], samplesOut1_tmp[1], MS_pred_Q13,
+        silk_stereo_MS_to_LR(&s_silk_decoder.sStereo, samplesOut1_tmp[0], samplesOut1_tmp[1], MS_pred_Q13,
                              s_channel_state[0].fs_kHz, nSamplesOutDec);
     } else {
         /* Buffering */
-        silk_memcpy(samplesOut1_tmp[0], psDec->sStereo.sMid, 2 * sizeof(int16_t));
-        silk_memcpy(psDec->sStereo.sMid, &samplesOut1_tmp[0][nSamplesOutDec], 2 * sizeof(int16_t));
+        silk_memcpy(samplesOut1_tmp[0], s_silk_decoder.sStereo.sMid, 2 * sizeof(int16_t));
+        silk_memcpy(s_silk_decoder.sStereo.sMid, &samplesOut1_tmp[0][nSamplesOutDec], 2 * sizeof(int16_t));
     }
 
     /* Number of output samples */
@@ -1765,9 +1764,9 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     if (lostFlag == FLAG_PACKET_LOST) {
         /* On packet loss, remove the gain clamping to prevent having the energy "bounce back"
            if we lose packets when the energy is going down */
-        for (i = 0; i < psDec->nChannelsInternal; i++) s_channel_state[i].LastGainIndex = 10;
+        for (i = 0; i < s_silk_decoder.nChannelsInternal; i++) s_channel_state[i].LastGainIndex = 10;
     } else {
-        psDec->prev_decode_only_middle = decode_only_middle;
+        s_silk_decoder.prev_decode_only_middle = decode_only_middle;
     }
     return ret;
 }
