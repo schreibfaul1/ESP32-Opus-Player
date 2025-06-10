@@ -754,8 +754,6 @@ void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st
 void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
-void opus_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
-void opus_ifft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
 unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay);
 int32_t ec_laplace_decode(ec_dec_t *dec, unsigned fs, int32_t decay);
 unsigned isqrt32(uint32_t _val);

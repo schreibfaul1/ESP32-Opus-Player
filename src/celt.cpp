@@ -4318,36 +4318,6 @@ void opus_fft_impl(const kiss_fft_state *tff, kiss_fft_cpx *fout) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void opus_fft_c(const kiss_fft_state *tff, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
-    int32_t i;
-    int16_t scale;
-    /* Allows us to scale with MULT16_32_Q16(), which is faster than
-       MULT16_32_Q15() on ARM. */
-    int32_t scale_shift = tff->scale_shift - 1;
-    scale = tff->scale;
-
-    assert2(fin != fout, "In-place FFT not supported");
-    /* Bit-reverse the input */
-    for (i = 0; i < tff->nfft; i++) {
-        kiss_fft_cpx x = fin[i];
-        fout[tff->bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
-        fout[tff->bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
-    }
-    opus_fft_impl(tff, fout);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-void opus_ifft_c(const kiss_fft_state *tff, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {
-    int32_t i;
-    assert2(fin != fout, "In-place FFT not supported");
-    /* Bit-reverse the input */
-    for (i = 0; i < tff->nfft; i++) fout[tff->bitrev[i]] = fin[i];
-    for (i = 0; i < tff->nfft; i++) fout[i].i = -fout[i].i;
-    opus_fft_impl(tff, fout);
-    for (i = 0; i < tff->nfft; i++) fout[i].i = -fout[i].i;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 /* When called, decay is positive and at most 11456. */
 unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay) {
     unsigned ft;
