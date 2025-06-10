@@ -2407,7 +2407,7 @@ void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, 
 
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
-                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx_t *ec,
+                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
     int32_t remaining_bits;
@@ -2456,7 +2456,6 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
 
     lowband_offset = 0;
     s_band_ctx.bandE = bandE;
-    s_ec_ptr = ec;
     s_band_ctx.encode = encode;
     s_band_ctx.intensity = intensity;
     s_band_ctx.m = m;
@@ -2812,7 +2811,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_ctx_t *dec){
+void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM){
     int32_t i, curr, tf_select;
     int32_t tf_select_rsv;
     int32_t tf_changed;
@@ -2820,8 +2819,8 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
     uint32_t budget;
     uint32_t tell;
 
-    budget = dec->storage * 8;
-    tell = ec_tell(dec);
+    budget = s_ec.storage * 8;
+    tell = ec_tell(&s_ec);
     logp = isTransient ? 2 : 4;
     tf_select_rsv = LM > 0 && tell + logp + 1 <= budget;
     budget -= tf_select_rsv;
@@ -2829,7 +2828,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
             curr ^= ec_dec_bit_logp(logp);
-            tell = ec_tell(dec);
+            tell = ec_tell(&s_ec);
             tf_changed |= curr;
         }
         tf_res[i] = curr;
@@ -3290,7 +3289,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
                           intra_ener, C, LM);
 
     auto tf_res = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
-    tf_decode(start, end, isTransient, tf_res.get(), LM, &s_ec);
+    tf_decode(start, end, isTransient, tf_res.get(), LM);
 
     tell = ec_tell(&s_ec);
     spread_decision = SPREAD_NORMAL;
@@ -3362,7 +3361,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
 
     quant_all_bands(0, mode, start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
                     NULL, pulses.get(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.get(),
-                    len * (8 << BITRES) - anti_collapse_rsv, balance, &s_ec, LM, codedBands, &st->rng, 0,
+                    len * (8 << BITRES) - anti_collapse_rsv, balance, LM, codedBands, &st->rng, 0,
                     st->disable_inv);
 
     if (anti_collapse_rsv > 0) {

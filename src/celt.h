@@ -707,7 +707,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
-                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx_t *ec,
+                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels);
 int32_t celt_decoder_get_size(int32_t channels);
@@ -718,7 +718,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
                 int32_t *mem, int32_t accum);
 void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                     int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence);
-void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM, ec_ctx_t *dec);
+void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM);
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C);
 void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM);
 int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
