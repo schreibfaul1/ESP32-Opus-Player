@@ -564,7 +564,7 @@ static inline int32_t bits2pulses(int32_t band, int32_t LM, int32_t bits){
    const uint8_t *cache;
 
    LM++;
-   cache = cache_bits50 + cache_index50[LM*m_CELTMode.nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM * m_CELTMode.nbEBands+band];
 
    lo = 0;
    hi = cache[0];
@@ -588,7 +588,7 @@ static inline int32_t pulses2bits(int32_t band, int32_t LM, int32_t pulses){
    const uint8_t *cache;
 
    LM++;
-   cache = cache_bits50 + cache_index50[LM*m_CELTMode.nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM * m_CELTMode.nbEBands+band];
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
@@ -658,11 +658,10 @@ void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
 void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1);
-void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C);
+void init_caps(int32_t *cap, int32_t LM, int32_t C);
 uint32_t celt_lcg_rand(uint32_t seed);
 int16_t bitexact_cos(int16_t x);
 int32_t bitexact_log2tan(int32_t isin, int32_t icos);
-void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM);
 void denormalise_bands(const int16_t * X, int32_t * freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
 void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
@@ -734,16 +733,16 @@ void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t 
 void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
-int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
+int32_t interp_bits2pulses(int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                        const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                        int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
                        int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, int32_t encode, int32_t prev,
                        int32_t signalBandwidth);
-int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
+int32_t clt_compute_allocation(int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
                            int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
                            int32_t *fine_priority, int32_t C, int32_t LM, int32_t encode, int32_t prev, int32_t signalBandwidth);
-void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, int32_t C,
+void unquant_coarse_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, int32_t C,
                            int32_t LM);
-void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, int32_t C);
+void unquant_fine_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, int32_t C);
 void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, int32_t C);
