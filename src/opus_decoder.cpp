@@ -273,7 +273,7 @@ if(!inbuf)log_e("Inbuf is null");
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl(celt_dec, (int32_t)OPUS_RESET_STATE);
         /* Decode CELT */
-        celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, &s_ec, 0);
+        celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
         for (i = 0; i < audiosize * channels; i++) outbuf[i] = 0;
@@ -281,7 +281,7 @@ if(!inbuf)log_e("Inbuf is null");
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
             celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_START_BAND_REQUEST, 0);
-            celt_decode_with_ec(celt_dec, silence, 2, outbuf, F2_5, NULL, 0);
+            celt_decode_with_ec(celt_dec, silence, 2, outbuf, F2_5, NULL);
         }
     }
 
