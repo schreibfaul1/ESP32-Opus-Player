@@ -573,7 +573,7 @@ const uint8_t e_prob_model[4][2][42] = {
      {22, 178, 63, 114, 74, 82,  84, 83,  92, 82,  103, 62,  96, 72,  96, 67,  101, 73, 107, 72, 113,
       55, 118, 52, 125, 52, 118, 52, 117, 55, 135, 49,  137, 39, 157, 32, 145, 29,  97, 33,  77, 40}}};
 
-const unsigned long mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
+const uint32_t mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
                                      0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff,
                                      0x00003fff, 0x00007fff, 0x0000ffff, 0x0001ffff, 0x0003ffff, 0x0007ffff, 0x000fffff,
                                      0x001fffff, 0x003fffff, 0x007fffff, 0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
@@ -852,8 +852,8 @@ void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
-    unsigned collapse_mask;
+uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
+    uint32_t collapse_mask;
     int32_t N0;
     int32_t i;
     if (B <= 1) return 1;
@@ -864,7 +864,7 @@ unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
     i = 0;
     do {
         int32_t j;
-        unsigned tmp = 0;
+        uint32_t tmp = 0;
         j = 0;
         do {
             tmp |= iy[i * N0 + j];
@@ -1011,10 +1011,10 @@ int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth) {
+uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth) {
 
     int16_t yy;
-    unsigned collapse_mask;
+    uint32_t collapse_mask;
 
     assert2(K > 0, "alg_quant() needs at least one pulse");
     assert2(N > 1, "alg_quant() needs at least two dimensions");
@@ -1040,9 +1040,9 @@ unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, 
 
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
-unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain) {
+uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain) {
     int32_t Ryy;
-    unsigned collapse_mask;
+    uint32_t collapse_mask;
 
     assert2(K > 0, "alg_unquant() needs at least one pulse");
     assert2(N > 1, "alg_unquant() needs at least two dimensions");
@@ -1953,7 +1953,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out) {
+uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out) {
     int32_t c;
     int32_t stereo;
     int16_t *x = X;
@@ -1990,7 +1990,7 @@ unsigned quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
 /* This function is responsible for encoding and decoding a mono partition. It can split the band in two and transmit
    the energy difference with the two half-bands. It can be called recursively so bands can end up being
    split in 8 parts. */
-unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                                 int16_t gain, int32_t fill){
     const uint8_t *cache;
     int32_t q;
@@ -1998,7 +1998,7 @@ unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     int32_t imid = 0, iside = 0;
     int32_t _B0 = B;
     int16_t mid = 0, side = 0;
-    unsigned cm = 0;
+    uint32_t cm = 0;
     int16_t *Y = NULL;
     int32_t encode;
     const CELTMode_t *m;
@@ -2108,10 +2108,10 @@ unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
             int32_t j;
             if (s_band_ctx.resynth)
             {
-                unsigned cm_mask;
+                uint32_t cm_mask;
                 /* B can be as large as 16, so this shift might overflow an int32_t on a
                    16-bit platform; use a long to get defined behavior.*/
-                cm_mask = (unsigned)(1UL << B) - 1;
+                cm_mask = (uint32_t)(1UL << B) - 1;
                 fill &= cm_mask;
                 if (!fill) {
                     OPUS_CLEAR(X, N);
@@ -2148,7 +2148,7 @@ unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This function is responsible for encoding and decoding a band for the mono case. */
-unsigned quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                            int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill) {
     int32_t N0 = N;
     int32_t N_B = N;
@@ -2157,7 +2157,7 @@ unsigned quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
     int32_t time_divide = 0;
     int32_t recombine = 0;
     int32_t longBlocks;
-    unsigned cm = 0;
+    uint32_t cm = 0;
     int32_t k;
     int32_t encode;
     int32_t tf_change;
@@ -2259,12 +2259,12 @@ unsigned quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
 //----------------------------------------------------------------------------------------------------------------------
 
 /* This function is responsible for encoding and decoding a band for the stereo case. */
-unsigned quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
+uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                                   int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill) {
     int32_t imid = 0, iside = 0;
     int32_t inv = 0;
     int16_t mid = 0, side = 0;
-    unsigned cm = 0;
+    uint32_t cm = 0;
     int32_t mbits, sbits, delta;
     int32_t itheta;
     int32_t qalloc;
@@ -2475,8 +2475,8 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
         int32_t effective_lowband = -1;
         int16_t *__restrict__ X, *__restrict__ Y;
         int32_t tf_change = 0;
-        unsigned x_cm;
-        unsigned y_cm;
+        uint32_t x_cm;
+        uint32_t y_cm;
         int32_t last;
 
         s_band_ctx.i = i;
@@ -3823,11 +3823,11 @@ int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_ctx_t *_dec) {
 /* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear
    function followed by a lookup to determine the exact transition thresholds. */
 uint32_t ec_tell_frac() {
-    const unsigned correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
+    const uint32_t correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
     uint32_t nbits;
     uint32_t r;
     int32_t l;
-    unsigned b;
+    uint32_t b;
     nbits = s_ec.nbits_total << BITRES;
     l = EC_ILOG(s_ec.rng);
     r = s_ec.rng >> (l - 16);
@@ -3884,23 +3884,23 @@ void ec_dec_init(uint8_t *_buf, uint32_t _storage) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned ec_decode(unsigned _ft) {
-    unsigned s;
+uint32_t ec_decode(uint32_t _ft) {
+    uint32_t s;
     s_ec.ext = celt_udiv(s_ec.rng, _ft);
-    s = (unsigned)(s_ec.val / s_ec.ext);
+    s = (uint32_t)(s_ec.val / s_ec.ext);
     return _ft - EC_MINI(s + 1, _ft);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned ec_decode_bin(ec_ctx_t *_this, unsigned _bits) {
-    unsigned s;
+uint32_t ec_decode_bin(ec_ctx_t *_this, uint32_t _bits) {
+    uint32_t s;
     _this->ext = _this->rng >> _bits;
-    s = (unsigned)(_this->val / _this->ext);
+    s = (uint32_t)(_this->val / _this->ext);
     return (1U << _bits) - EC_MINI(s + 1U, 1U << _bits);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_update(ec_ctx_t *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
+void ec_dec_update(ec_ctx_t *_this, uint32_t _fl, uint32_t _fh, uint32_t _ft) {
     uint32_t s;
     s = _this->ext *  (_ft - _fh);
     _this->val -= s;
@@ -3916,7 +3916,7 @@ void ec_dec_update(ec_ctx_t *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
 //----------------------------------------------------------------------------------------------------------------------
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
-int32_t ec_dec_bit_logp( unsigned _logp) {
+int32_t ec_dec_bit_logp( uint32_t _logp) {
     uint32_t r;
     uint32_t d;
     uint32_t s;
@@ -3932,7 +3932,7 @@ int32_t ec_dec_bit_logp( unsigned _logp) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
+int32_t ec_dec_icdf(const uint8_t *_icdf, uint32_t _ftb) {
     uint32_t r;
     uint32_t d;
     uint32_t s;
@@ -3954,8 +3954,8 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
 //----------------------------------------------------------------------------------------------------------------------
 
 uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
-    unsigned ft;
-    unsigned s;
+    uint32_t ft;
+    uint32_t s;
     int32_t ftb;
     /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
     assert(_ft > 1);
@@ -3964,7 +3964,7 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
     if (ftb > EC_UINT_BITS) {
         uint32_t t;
         ftb -= EC_UINT_BITS;
-        ft = (unsigned)(_ft >> ftb) + 1;
+        ft = (uint32_t)(_ft >> ftb) + 1;
         s = ec_decode(ft);
         ec_dec_update(_this, s, s + 1, ft);
         t = (uint32_t)s << ftb | ec_dec_bits(_this, ftb);
@@ -3973,20 +3973,20 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
         return _ft;
     } else {
         _ft++;
-        s = ec_decode((unsigned)_ft);
-        ec_dec_update(_this, s, s + 1, (unsigned)_ft);
+        s = ec_decode((uint32_t)_ft);
+        ec_dec_update(_this, s, s + 1, (uint32_t)_ft);
         return s;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_dec_bits(ec_ctx_t *_this, unsigned _bits) {
+uint32_t ec_dec_bits(ec_ctx_t *_this, uint32_t _bits) {
     uint32_t window;
     int32_t available;
     uint32_t ret;
     window = _this->end_window;
     available = _this->nend_bits;
-    if ((unsigned)available < _bits) {
+    if ((uint32_t)available < _bits) {
         do {
             window |= (uint32_t)ec_read_byte_from_end() << available;
             available += EC_SYM_BITS;
@@ -4254,17 +4254,17 @@ void opus_fft_impl(const kiss_fft_state *tff, kiss_fft_cpx *fout) {
 //----------------------------------------------------------------------------------------------------------------------
 
 /* When called, decay is positive and at most 11456. */
-unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay) {
-    unsigned ft;
+uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay) {
+    uint32_t ft;
     ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
     return ft * (int32_t)(16384 - decay) >> 15;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_laplace_decode(ec_ctx_t *dec, unsigned fs, int32_t decay) {
+int32_t ec_laplace_decode(ec_ctx_t *dec, uint32_t fs, int32_t decay) {
     int32_t val = 0;
-    unsigned fl;
-    unsigned fm;
+    uint32_t fl;
+    uint32_t fm;
     fm = ec_decode_bin(dec, 15);
     fl = 0;
     if (fm >= fs) {
@@ -4302,9 +4302,9 @@ int32_t ec_laplace_decode(ec_ctx_t *dec, unsigned fs, int32_t decay) {
 
 /*Compute floor(sqrt(_val)) with exact arithmetic. _val must be greater than 0. This has been tested on all
  possible 32-bit inputs greater than 0.*/
-unsigned isqrt32(uint32_t _val) {
-    unsigned b;
-    unsigned g;
+uint32_t isqrt32(uint32_t _val) {
+    uint32_t b;
+    uint32_t g;
     int32_t bshift;
     /*Uses the second method from  http://www.azillionmonkeys.com/qed/sqroot.html The main idea is to search for the
      largest binary digit b such that (g+b)*(g+b) <= _val, and add it to the solution g.*/

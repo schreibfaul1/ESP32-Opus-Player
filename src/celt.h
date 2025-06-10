@@ -277,11 +277,11 @@ extern CELTDecoder_t CELTDecoder;
 # define EC_UINT_BITS   (8)
 # define BITRES 3
 #define EC_MINI(_a,_b)      ((_a)+(((_b)-(_a))&-((_b)<(_a))))
-#define EC_CLZ0s    ((int32_t)sizeof(unsigned)*CHAR_BIT)
+#define EC_CLZ0s    ((int32_t)sizeof(uint32_t)*CHAR_BIT)
 #define EC_CLZ(_x) (__builtin_clz(_x))
 #define EC_ILOG(_x) (EC_CLZ0s-EC_CLZ(_x))
 
-/** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
+/** Multiply a 16-bit signed value by a 16-bit uint32_t value. The result is a 32-bit signed value */
 #define MULT16_16SU(a,b) ((int32_t)(int16_t)(a)*(int32_t)(uint16_t)(b))
 
 /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
@@ -358,7 +358,7 @@ inline int32_t MULT16_32_Q16(int64_t a, int64_t b){return (int32_t) (a * b) >> 1
 #define ADD32_ovflw(a,b) ((int32_t)((uint32_t)(a)+(uint32_t)(b)))
 /** Subtract two 32-bit values, ignore any overflows */
 #define SUB32_ovflw(a,b) ((int32_t)((uint32_t)(a)-(uint32_t)(b)))
-/* Avoid MSVC warning C4146: unary minus operator applied to unsigned type */
+/* Avoid MSVC warning C4146: unary minus operator applied to uint32_t type */
 /** Negate 32-bit value, ignore any overflows */
 #define NEG32_ovflw(a) ((int32_t)(0-(uint32_t)(a)))
 
@@ -663,10 +663,10 @@ void CELTDecoder_FreeBuffers();
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
-unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
+uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-unsigned alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth);
-unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain);
+uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth);
+uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
 int32_t resampling_factor(int32_t rate);
@@ -697,12 +697,12 @@ void haar1(int16_t *X, int32_t N0, int32_t stride);
 int32_t compute_qn(int32_t N, int32_t b, int32_t offset, int32_t pulse_cap, int32_t stereo);
 void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
                    int32_t __B0, int32_t LM, int32_t stereo, int32_t *fill);
-unsigned quant_band_n1( int16_t *X, int16_t *Y, int32_t b, int16_t *lowband_out);
-unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+uint32_t quant_band_n1( int16_t *X, int16_t *Y, int32_t b, int16_t *lowband_out);
+uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                          int16_t gain, int32_t fill);
-unsigned quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                     int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill);
-unsigned quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
+uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                            int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
@@ -736,21 +736,21 @@ int32_t ec_read_byte();
 int32_t ec_read_byte_from_end();
 void ec_dec_normalize();
 void ec_dec_init(uint8_t *_buf, uint32_t _storage);
-unsigned ec_decode(unsigned _ft);
-unsigned ec_decode_bin(ec_ctx_t *_this, unsigned _bits);
-void ec_dec_update(ec_ctx_t *_this, unsigned _fl, unsigned _fh, unsigned _ft);
-int32_t ec_dec_bit_logp(unsigned _logp);
-int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb);
+uint32_t ec_decode(uint32_t _ft);
+uint32_t ec_decode_bin(ec_ctx_t *_this, uint32_t _bits);
+void ec_dec_update(ec_ctx_t *_this, uint32_t _fl, uint32_t _fh, uint32_t _ft);
+int32_t ec_dec_bit_logp(uint32_t _logp);
+int32_t ec_dec_icdf(const uint8_t *_icdf, uint32_t _ftb);
 uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft);
-uint32_t ec_dec_bits(ec_ctx_t *_this, unsigned _bits);
+uint32_t ec_dec_bits(ec_ctx_t *_this, uint32_t _bits);
 void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N);
 void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *st, int32_t m, int32_t N, int32_t mm);
 void opus_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
-unsigned ec_laplace_get_freq1(unsigned fs0, int32_t decay);
-int32_t ec_laplace_decode(ec_ctx_t *dec, unsigned fs, int32_t decay);
-unsigned isqrt32(uint32_t _val);
+uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay);
+int32_t ec_laplace_decode(ec_ctx_t *dec, uint32_t fs, int32_t decay);
+uint32_t isqrt32(uint32_t _val);
 int32_t frac_div32(int32_t a, int32_t b);
 int16_t celt_rsqrt_norm(int32_t x);
 int32_t celt_sqrt(int32_t x);
@@ -765,9 +765,9 @@ int16_t compute_pitch_gain(int32_t xy, int32_t xx, int32_t yy);
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
-unsigned extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
+uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-unsigned alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain);
+uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *dec, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
 void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max_pitch, int32_t *best_pitch, int32_t yshift,
