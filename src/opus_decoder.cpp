@@ -160,7 +160,7 @@ if(!inbuf)log_e("Inbuf is null");
     void *silk_dec;
     CELTDecoder_t *celt_dec;
     int i, silk_ret = 0, celt_ret = 0;
-    ec_ctx_t dec;
+    
     int32_t silk_frame_size;
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
@@ -183,9 +183,9 @@ if(!inbuf)log_e("Inbuf is null");
 
 
 //____________________________________________________________________________________________________________________________--
-
-
-    ec_dec_init(&dec, inbuf, packetLen);
+    extern ec_ctx_t      s_ec;
+   // ec_ctx_t dec;
+    ec_dec_init(&s_ec, inbuf, packetLen);
 
     /* Don't allocate any memory when in CELT-only mode */
     pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * channels : ALLOC_NONE;
@@ -232,7 +232,7 @@ if(!inbuf)log_e("Inbuf is null");
     }
 
     start_band = 0;
-    if (mode != MODE_CELT_ONLY && ec_tell(&dec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
+    if (mode != MODE_CELT_ONLY && ec_tell(&s_ec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID) ec_dec_bit_logp(12);
     }
@@ -273,7 +273,7 @@ if(!inbuf)log_e("Inbuf is null");
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl(celt_dec, (int32_t)OPUS_RESET_STATE);
         /* Decode CELT */
-        celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, &dec, 0);
+        celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, &s_ec, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
         for (i = 0; i < audiosize * channels; i++) outbuf[i] = 0;

@@ -3869,9 +3869,10 @@ void ec_dec_normalize(ec_ctx_t *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_init(ec_ctx_t *_this, uint8_t *_buf, uint32_t _storage) {
+void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
 
-    s_ec_dec = _this;
+    s_ec_dec = &s_ec;
+
 
     s_ec_dec->buf = _buf;
     s_ec_dec->storage = _storage;
