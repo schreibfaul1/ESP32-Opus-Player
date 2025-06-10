@@ -80,7 +80,7 @@ typedef struct _ec_ctx {
     uint32_t ext;
     int32_t rem; /*A buffered input/output symbol, awaiting carry propagation.*/
     int32_t error; /*Nonzero if an error occurred.*/
-} ec_dec_t, ec_ctx_t;
+} ec_dec_t;
 
 typedef struct kiss_fft_state{
     int32_t nfft;
@@ -458,7 +458,7 @@ static inline int16_t sig2word16(int32_t x){
    return EXTRACT16(x);
 }
 
-static inline int32_t ec_tell(ec_ctx_t *_this){
+static inline int32_t ec_tell(ec_dec_t *_this){
   return _this->nbits_total-EC_ILOG(_this->rng);
 }
 
@@ -715,7 +715,7 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
-                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_ctx_t *ec,
+                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance, ec_dec_t *ec,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels);
 int32_t celt_decoder_get_size(int32_t channels);
@@ -739,7 +739,7 @@ int32_t _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int
 uint32_t icwrs(int32_t _n, const int32_t *_y);
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y);
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_dec_t *_dec);
-uint32_t ec_tell_frac(ec_ctx_t *_this);
+uint32_t ec_tell_frac(ec_dec_t *_this);
 int32_t ec_read_byte(ec_dec_t *_this);
 int32_t ec_read_byte_from_end(ec_dec_t *_this);
 void ec_dec_normalize(ec_dec_t *_this);
@@ -794,11 +794,11 @@ int16_t remove_doubling(int16_t *x, int32_t maxperiod, int32_t minperiod, int32_
 int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
                        const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
                        int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
-                       int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx_t *ec, int32_t encode, int32_t prev,
+                       int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, ec_dec_t *ec, int32_t encode, int32_t prev,
                        int32_t signalBandwidth);
 int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
                            int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
-                           int32_t *fine_priority, int32_t C, int32_t LM, ec_ctx_t *ec, int32_t encode, int32_t prev, int32_t signalBandwidth);
+                           int32_t *fine_priority, int32_t C, int32_t LM, ec_dec_t *ec, int32_t encode, int32_t prev, int32_t signalBandwidth);
 void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, ec_dec_t *dec, int32_t C,
                            int32_t LM);
 void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, ec_dec_t *dec,
