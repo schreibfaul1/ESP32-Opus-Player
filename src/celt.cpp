@@ -1291,12 +1291,9 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     int32_t offset;
     int32_t tell;
     int32_t inv = 0;
-    int32_t encode;
     int32_t i;
     int32_t intensity;
 
-
-    encode = s_band_ctx.encode;
     i = s_band_ctx.i;
     intensity = s_band_ctx.intensity;
 
@@ -1309,33 +1306,6 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
 
     tell = ec_tell_frac();
     if (qn != 1) {
-        if (encode) {
-            if (!stereo || s_band_ctx.theta_round == 0) {
-                itheta = (itheta * (int32_t)qn + 8192) >> 14;
-                if (!stereo && s_band_ctx.avoid_split_noise && itheta > 0 && itheta < qn) {
-                    /* Check if the selected value of theta will cause the bit allocation to inject noise on one side.
-                       If so, make sure the energy of that side is zero. */
-                    int32_t unquantized = celt_udiv((int32_t)itheta * 16384, qn);
-                    imid = bitexact_cos((int16_t)unquantized);
-                    iside = bitexact_cos((int16_t)(16384 - unquantized));
-                    delta = FRAC_MUL16((N - 1) << 7, bitexact_log2tan(iside, imid));
-                    if (delta > *b)
-                        itheta = qn;
-                    else if (delta < -*b)
-                        itheta = 0;
-                }
-            }
-            else {
-                int32_t down;
-                /* Bias quantization towards itheta=0 and itheta=16384. */
-                int32_t bias = itheta > 8192 ? 32767 / qn : -32767 / qn;
-                down = min(qn - (int32_t)1, max((int32_t)0, (itheta * (int32_t)qn + bias) >> 14));
-                if (s_band_ctx.theta_round < 0)
-                    itheta = down;
-                else
-                    itheta = down + 1;
-            }
-        }
         /* Entropy coding of the angle. We use a uniform pdf for the time split, a step for stereo,
            and a triangular one for the rest. */
         if (stereo && N > 2) {
@@ -1344,54 +1314,39 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             int32_t x0 = qn / 2;
             int32_t ft = p0 * (x0 + 1) + x0;
             /* Use a probability of p0 up to itheta=8192 and then use 1 after */
-            if (encode) {
-                ;
-            }
-            else {
-                int32_t fs;
-                fs = ec_decode(ft);
-                if (fs < (x0 + 1) * p0)
-                    x = fs / p0;
-                else
-                    x = x0 + 1 + (fs - (x0 + 1) * p0);
-                ec_dec_update( x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
-                itheta = x;
-            }
+            int32_t fs;
+            fs = ec_decode(ft);
+            if (fs < (x0 + 1) * p0)
+                x = fs / p0;
+            else
+                x = x0 + 1 + (fs - (x0 + 1) * p0);
+            ec_dec_update( x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
+            itheta = x;
         }
         else if (__B0 > 1 || stereo) {
             /* Uniform pdf */
-            if (encode)
-                ;
-            else
-                itheta = ec_dec_uint(qn + 1);
+            itheta = ec_dec_uint(qn + 1);
         }
         else {
             int32_t fs = 1, ft;
             ft = ((qn >> 1) + 1) * ((qn >> 1) + 1);
-            if (encode) {
-                ;
+            /* Triangular pdf */
+            int32_t fl = 0;
+            int32_t fm;
+            fm = ec_decode(ft);
+            if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
+            {
+                itheta = (isqrt32(8 * (uint32_t)fm + 1) - 1) >> 1;
+                fs = itheta + 1;
+                fl = itheta * (itheta + 1) >> 1;
             }
-            else {
-                /* Triangular pdf */
-                int32_t fl = 0;
-                int32_t fm;
-                fm = ec_decode(ft);
-
-                if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
-                {
-                    itheta = (isqrt32(8 * (uint32_t)fm + 1) - 1) >> 1;
-                    fs = itheta + 1;
-                    fl = itheta * (itheta + 1) >> 1;
-                }
-                else
-                {
-                    itheta = (2 * (qn + 1) - isqrt32(8 * (uint32_t)(ft - fm - 1) + 1)) >> 1;
-                    fs = qn + 1 - itheta;
-                    fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
-                }
-
-                ec_dec_update(fl, fl + fs, ft);
+            else
+            {
+                itheta = (2 * (qn + 1) - isqrt32(8 * (uint32_t)(ft - fm - 1) + 1)) >> 1;
+                fs = qn + 1 - itheta;
+                fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
             }
+            ec_dec_update(fl, fl + fs, ft);
         }
         assert(itheta >= 0);
         itheta = celt_udiv((int32_t)itheta * 16384, qn);
@@ -1402,10 +1357,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     else if (stereo) {
 
         if (*b > 2 << BITRES && s_band_ctx.remaining_bits > 2 << BITRES) {
-            if (encode)
-                ;
-            else
-                inv = ec_dec_bit_logp(2);
+            inv = ec_dec_bit_logp(2);
         }
         else
             inv = 0;
@@ -1450,21 +1402,13 @@ uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
     int32_t c;
     int32_t stereo;
     int16_t *x = X;
-    int32_t encode;
-
-    encode = s_band_ctx.encode;
 
     stereo = Y != NULL;
     c = 0;
     do {
         int32_t sign = 0;
         if (s_band_ctx.remaining_bits >= 1 << BITRES) {
-            if (encode) {
-                ;
-            }
-            else {
-                sign = ec_dec_bits(1);
-            }
+            sign = ec_dec_bits(1);
             s_band_ctx.remaining_bits -= 1 << BITRES;
             b -= 1 << BITRES;
         }
@@ -1491,11 +1435,9 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     int16_t mid = 0, side = 0;
     uint32_t cm = 0;
     int16_t *Y = NULL;
-    int32_t encode;
     int32_t i;
     int32_t spread;
 
-    encode = s_band_ctx.encode;
     i = s_band_ctx.i;
     spread = s_band_ctx.spread;
 
@@ -1582,13 +1524,7 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
             int32_t K = get_pulses(q);
 
             /* Finally do the actual quantization */
-            if (encode){
-                ;
-            }
-            else
-            {
-                cm = alg_unquant(X, N, K, spread, B, gain);
-            }
+            cm = alg_unquant(X, N, K, spread, B, gain);
         }
         else {
             /* If there's no pulse, fill the band anyway */
@@ -1646,10 +1582,8 @@ uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
     int32_t longBlocks;
     uint32_t cm = 0;
     int32_t k;
-    int32_t encode;
     int32_t tf_change;
 
-    encode = s_band_ctx.encode;
     tf_change = s_band_ctx.tf_change;
 
     longBlocks = _B0 == 1;
@@ -1673,8 +1607,6 @@ uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
     for (k = 0; k < recombine; k++) {
         const uint8_t bit_interleave_table[16] = {
             0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3};
-        if (encode)
-            haar1(X, N >> k, 1 << k);
         if (lowband)
             haar1(lowband, N >> k, 1 << k);
         fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
@@ -1684,8 +1616,6 @@ uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
 
     /* Increasing the time resolution */
     while ((N_B & 1) == 0 && tf_change < 0) {
-        if (encode)
-            haar1(X, N_B, B);
         if (lowband)
             haar1(lowband, N_B, B);
         fill |= fill << B;
@@ -1699,8 +1629,6 @@ uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
 
     /* Reorganize the samples in time order instead of frequency order */
     if (_B0 > 1) {
-        if (encode)
-            deinterleave_hadamard(X, N_B >> recombine, _B0 << recombine, longBlocks);
         if (lowband)
             deinterleave_hadamard(lowband, N_B >> recombine, _B0 << recombine, longBlocks);
     }
@@ -1757,9 +1685,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
     int32_t qalloc;
     struct split_ctx sctx;
     int32_t orig_fill;
-    int32_t encode;
 
-    encode = s_band_ctx.encode;
     /* Special case for one sample */
     if (N == 1){
         return quant_band_n1(X, Y, b, lowband_out);
@@ -1797,12 +1723,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
         x2 = c ? Y : X;
         y2 = c ? X : Y;
         if (sbits) {
-            if (encode) {
-                ;
-            }
-            else {
-                sign = ec_dec_bits(1);
-            }
+            sign = ec_dec_bits(1);
         }
         sign = 1 - 2 * sign;
         /* We use orig_fill here because we want to fold the side, but if

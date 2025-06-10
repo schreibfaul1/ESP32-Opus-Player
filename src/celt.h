@@ -125,7 +125,6 @@ typedef struct _CELTMode {
 extern CELTMode_t const m_CELTMode;
 
 typedef struct _band_ctx{
-    int32_t encode;
     int32_t resynth;
     const CELTMode_t *m;
     int32_t i;
