@@ -132,7 +132,7 @@ typedef struct _CELTMode {
 }CELTMode_t;
 
 
-struct band_ctx{
+typedef struct _band_ctx{
     int32_t encode;
     int32_t resynth;
     const CELTMode_t *m;
@@ -146,7 +146,7 @@ struct band_ctx{
     int32_t theta_round;
     int32_t disable_inv;
     int32_t avoid_split_noise;
-};
+} band_ctx_t;
 
 struct split_ctx{
     int32_t inv;
@@ -695,14 +695,14 @@ void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadam
 void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void haar1(int16_t *X, int32_t N0, int32_t stride);
 int32_t compute_qn(int32_t N, int32_t b, int32_t offset, int32_t pulse_cap, int32_t stereo);
-void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
+void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
                    int32_t __B0, int32_t LM, int32_t stereo, int32_t *fill);
-unsigned quant_band_n1(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t b, int16_t *lowband_out);
-unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+unsigned quant_band_n1( int16_t *X, int16_t *Y, int32_t b, int16_t *lowband_out);
+unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                          int16_t gain, int32_t fill);
-unsigned quant_band(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
+unsigned quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                     int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill);
-unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
+unsigned quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                            int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill);
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo);
 void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
