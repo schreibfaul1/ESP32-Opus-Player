@@ -1199,7 +1199,7 @@ void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C) {
     for (i = 0; i < m->nbEBands; i++)
     {
         int32_t N;
-        N = (m->eBands[i + 1] - m->eBands[i]) << LM;
+        N = (eband5ms[i + 1] - eband5ms[i]) << LM;
         cap[i] = (m->cache.caps[m->nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
     }
 }
@@ -1266,7 +1266,7 @@ int32_t bitexact_log2tan(int32_t isin, int32_t icos) {
 /* Compute the amplitude (sqrt energy) in each of the bands */
 void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM) {
     int32_t i, c, N;
-    const int16_t *eBands = m->eBands;
+    const int16_t *eBands = eband5ms;
     N = m->shortMdctSize << LM;
     c = 0;
     do {
@@ -1308,7 +1308,7 @@ void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE
 void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE, int32_t end, int32_t C, int32_t M)
 {
     int32_t i, c, N;
-    const int16_t *eBands = m->eBands;
+    const int16_t *eBands = eband5ms;
     N = M * m->shortMdctSize;
     c = 0;
     do
@@ -1339,7 +1339,7 @@ void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32
     int32_t bound;
     int32_t *__restrict__ f;
     const int16_t *__restrict__ x;
-    const int16_t *eBands = m->eBands;
+    const int16_t *eBands = eband5ms;
     N = M * m->shortMdctSize;
     bound = M * eBands[end];
     if (downsample != 1) bound = min(bound, N / downsample);
@@ -1410,10 +1410,10 @@ void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, in
         int32_t shift;
         int32_t thresh32;
 
-        N0 = m->eBands[i + 1] - m->eBands[i];
+        N0 = eband5ms[i + 1] - eband5ms[i];
         /* depth in 1/8 bits */
         assert(pulses[i] >= 0);
-        depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i])) >> LM;
+        depth = celt_udiv(1 + pulses[i], (eband5ms[i + 1] - eband5ms[i])) >> LM;
 
         thresh32 = SHR32(celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
         thresh = MULT16_32_Q15(QCONST16(0.5f, 15), min((int32_t)32767, thresh32)); {
@@ -1453,7 +1453,7 @@ void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, in
             r = SHR16(min(thresh, r), 1);
             r = SHR32(MULT16_16_Q15(sqrt_1, r), shift);
 
-            X = X_ + c * size + (m->eBands[i] << LM);
+            X = X_ + c * size + (eband5ms[i] << LM);
             for (k = 0; k < 1 << LM; k++) {
                 /* Detect collapse */
                 if (!(collapse_masks[i * C + c] & 1 << k)) {
@@ -1581,7 +1581,7 @@ int32_t spreading_decision(const CELTMode_t *m, const int16_t *X, int32_t *avera
                        int32_t *tapset_decision, int32_t update_hf, int32_t end, int32_t C, int32_t M, const int32_t *spread_weight) {
     int32_t i, c, N0;
     int32_t sum = 0, nbBands = 0;
-    const int16_t *__restrict__ eBands = m->eBands;
+    const int16_t *__restrict__ eBands = eband5ms;
     int32_t decision;
     int32_t hf_sum = 0;
 
@@ -2413,7 +2413,7 @@ unsigned quant_band_stereo(struct band_ctx *ctx, int16_t *X, int16_t *Y, int32_t
 
 void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
     int32_t n1, n2;
-    const int16_t *__restrict__ eBands = m->eBands;
+    const int16_t *__restrict__ eBands = eband5ms;
     n1 = M * (eBands[start + 1] - eBands[start]);
     n2 = M * (eBands[start + 2] - eBands[start + 1]);
     /* Duplicate enough of the first band folding data to be able to fold the second band.
@@ -2430,7 +2430,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
     int32_t remaining_bits;
-    const int16_t *__restrict__ eBands = m->eBands;
+    const int16_t *__restrict__ eBands = eband5ms;
     int16_t *__restrict__ norm, *__restrict__ norm2;
 
     int32_t resynth_alloc;
@@ -5223,10 +5223,10 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
         /*Figure out how many left-over bits we would be adding to this band.
           This can include bits we've stolen back from higher, skipped bands.*/
         left = total - psum;
-        percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
-        left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
-        rem = max(left - (m->eBands[j] - m->eBands[start]), (int32_t)0);
-        band_width = m->eBands[codedBands] - m->eBands[j];
+        percoeff = celt_udiv(left, eband5ms[codedBands] - eband5ms[start]);
+        left -= (eband5ms[codedBands] - eband5ms[start]) * percoeff;
+        rem = max(left - (eband5ms[j] - eband5ms[start]), (int32_t)0);
+        band_width = eband5ms[codedBands] - eband5ms[j];
         band_bits = (int32_t)(bits[j] + percoeff * band_width + rem);
         /*Only code a skip decision if we're above the threshold for this band.
           Otherwise it is force-skipped.
@@ -5278,11 +5278,11 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
 
     /* Allocate the remaining bits */
     left = total - psum;
-    percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
-    left -= (m->eBands[codedBands] - m->eBands[start]) * percoeff;
-    for (j = start; j < codedBands; j++) bits[j] += ((int32_t)percoeff * (m->eBands[j + 1] - m->eBands[j]));
+    percoeff = celt_udiv(left, eband5ms[codedBands] - eband5ms[start]);
+    left -= (eband5ms[codedBands] - eband5ms[start]) * percoeff;
+    for (j = start; j < codedBands; j++) bits[j] += ((int32_t)percoeff * (eband5ms[j + 1] - eband5ms[j]));
     for (j = start; j < codedBands; j++) {
-        int32_t tmp = (int32_t)min(left, (int32_t)(m->eBands[j + 1] - m->eBands[j]));
+        int32_t tmp = (int32_t)min(left, (int32_t)(eband5ms[j + 1] - eband5ms[j]));
         bits[j] += tmp;
         left -= tmp;
     }
@@ -5296,7 +5296,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
         int32_t excess, bit;
 
         assert(bits[j] >= 0);
-        N0 = m->eBands[j + 1] - m->eBands[j];
+        N0 = eband5ms[j + 1] - eband5ms[j];
         N = N0 << LM;
         bit = (int32_t)bits[j] + balance;
 
@@ -5416,13 +5416,13 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
 
     for (j = start; j < end; j++) {
         /* Below this threshold, we're sure not to allocate any PVQ bits */
-        thresh[j] = max((int32_t)((C) << BITRES), (int32_t)((3 * (m->eBands[j + 1] - m->eBands[j]) << LM << BITRES) >> 4));
+        thresh[j] = max((int32_t)((C) << BITRES), (int32_t)((3 * (eband5ms[j + 1] - eband5ms[j]) << LM << BITRES) >> 4));
         /* Tilt of the allocation curve */
         trim_offset[j] =
-            C * (m->eBands[j + 1] - m->eBands[j]) * (alloc_trim - 5 - LM) * (end - j - 1) * (1 << (LM + BITRES)) >> 6;
+            C * (eband5ms[j + 1] - eband5ms[j]) * (alloc_trim - 5 - LM) * (end - j - 1) * (1 << (LM + BITRES)) >> 6;
         /* Giving less resolution to single-coefficient bands because they get
            more benefit from having one coarse value per coefficient*/
-        if ((m->eBands[j + 1] - m->eBands[j]) << LM == 1) trim_offset[j] -= C << BITRES;
+        if ((eband5ms[j + 1] - eband5ms[j]) << LM == 1) trim_offset[j] -= C << BITRES;
     }
     lo = 1;
     hi = m->nbAllocVectors - 1;
@@ -5432,7 +5432,7 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
         int32_t mid = (lo + hi) >> 1;
         for (j = end; j-- > start;) {
             int32_t bitsj;
-            int32_t N = m->eBands[j + 1] - m->eBands[j];
+            int32_t N = eband5ms[j + 1] - eband5ms[j];
             bitsj = C * N * m->allocVectors[mid * len + j] << LM >> 2;
             if (bitsj > 0) bitsj = max((int32_t)0, bitsj + trim_offset[j]);
             bitsj += offsets[j];
@@ -5454,7 +5454,7 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
     /*printf ("interp between %d and %d\n", lo, hi);*/
     for (j = start; j < end; j++) {
         int32_t bits1j, bits2j;
-        int32_t N = m->eBands[j + 1] - m->eBands[j];
+        int32_t N = eband5ms[j + 1] - eband5ms[j];
         bits1j = C * N * m->allocVectors[lo * len + j] << LM >> 2;
         bits2j = hi >= m->nbAllocVectors ? cap[j] : C * N * m->allocVectors[hi * len + j] << LM >> 2;
         if (bits1j > 0) bits1j = max((int32_t)0, bits1j + trim_offset[j]);
