@@ -99,7 +99,7 @@ typedef struct {
    int32_t n;
    int32_t maxshift;
    const kiss_fft_state *kfft[4];
-   const int16_t * __restrict__ trig;
+   const int16_t *  trig;
 } mdct_lookup_t;
 
 typedef struct {
@@ -651,7 +651,7 @@ bool CELTDecoder_AllocateBuffers();
 void CELTDecoder_FreeBuffers();
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
-void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
+void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
@@ -663,13 +663,13 @@ uint32_t celt_lcg_rand(uint32_t seed);
 int16_t bitexact_cos(int16_t x);
 int32_t bitexact_log2tan(int32_t isin, int32_t icos);
 void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM);
-void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
+void denormalise_bands(const int16_t * X, int32_t * freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
-void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
+void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses, uint32_t seed);
 void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]);
-void stereo_split(int16_t *__restrict__ X, int16_t *__restrict__ Y, int32_t N);
-void stereo_merge(int16_t *__restrict__ X, int16_t *__restrict__ Y, int16_t mid, int32_t N);
+void stereo_split(int16_t * X, int16_t * Y, int32_t N);
+void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N);
 void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard);
 void haar1(int16_t *X, int32_t N0, int32_t stride);
@@ -695,12 +695,12 @@ int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t chan
 void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
                 int32_t *mem, int32_t accum);
-void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
+void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                     int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence);
 void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM);
-int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
+int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len, int16_t * pcm,
                         int32_t frame_size, int32_t accum);
-int32_t celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int32_t request, ...);
+int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...);
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y);
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k);
 uint32_t ec_tell_frac();
@@ -731,7 +731,7 @@ void     clt_mdct_backward(int32_t *in, int32_t *out, int32_t overlap, int32_t s
 CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
-void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
+void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
@@ -745,5 +745,5 @@ int32_t clt_compute_allocation(const CELTMode_t *m, int32_t start, int32_t end, 
 void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, int32_t C,
                            int32_t LM);
 void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, int32_t C);
-void unquant_energy_finalise(const CELTMode_t *m, int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
+void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, int32_t C);
