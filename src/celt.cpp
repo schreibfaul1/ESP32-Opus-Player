@@ -1876,7 +1876,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
+void special_hybrid_folding(int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
     int32_t n1, n2;
     const int16_t *__restrict__ eBands = eband5ms;
     n1 = M * (eBands[start + 1] - eBands[start]);
@@ -1889,7 +1889,7 @@ void special_hybrid_folding(const CELTMode_t *m, int16_t *norm, int16_t *norm2, 
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
+void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
                      int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
@@ -1906,32 +1906,25 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
     int32_t update_lowband = 1;
     int32_t C = Y_ != NULL ? 2 : 1;
     int32_t norm_offset;
-    int32_t theta_rdo = encode && Y_ != NULL && !dual_stereo && complexity >= 8;
+    int32_t resynth = 1;
 
-    int32_t resynth = !encode || theta_rdo;
-
-     M = 1 << LM;
+    M = 1 << LM;
     B = shortBlocks ? M : 1;
     norm_offset = M * eBands[start];
     /* No need to allocate norm for the last band because we don't need an
        output in that band. */
-    auto _norm = celt_malloc_arr<int16_t>(C * (M * eBands[m->nbEBands - 1] - norm_offset) * sizeof(int16_t));
+    auto _norm = celt_malloc_arr<int16_t>(C * (M * eBands[m_CELTMode.nbEBands - 1] - norm_offset) * sizeof(int16_t));
     norm = _norm.get();
-    norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
+    norm2 = norm + M * eBands[m_CELTMode.nbEBands - 1] - norm_offset;
 
     /* For decoding, we can use the last band as scratch space because we don't need that
        scratch space for the last band and we don't care about the data there until we're
        decoding the last band. */
-    if (encode && resynth)
-        resynth_alloc = M * (eBands[m->nbEBands] - eBands[m->nbEBands - 1]);
-    else
-        resynth_alloc = ALLOC_NONE;
+    resynth_alloc = ALLOC_NONE;
 
     auto _lowband_scratch = celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
-    if (encode && resynth)
-        lowband_scratch = _lowband_scratch.get();
-    else
-        lowband_scratch = X_ + M * eBands[m->nbEBands - 1];
+    lowband_scratch = X_ + M * eBands[m_CELTMode.nbEBands - 1];
+
     auto X_save =     celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
     auto Y_save =     celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
     auto X_save2 =    celt_malloc_arr<int16_t>(resynth_alloc * sizeof(int16_t));
@@ -1940,9 +1933,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
 
     lowband_offset = 0;
     s_band_ctx.bandE = bandE;
-    s_band_ctx.encode = encode;
     s_band_ctx.intensity = intensity;
-    s_band_ctx.m = m;
     s_band_ctx.seed = *seed;
     s_band_ctx.spread = spread;
     s_band_ctx.disable_inv = disable_inv;
@@ -1990,17 +1981,17 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
         if (resynth && (M * eBands[i] - N >= M * eBands[start] || i == start + 1) && (update_lowband || lowband_offset == 0))
             lowband_offset = i;
         if (i == start + 1)
-            special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
+            special_hybrid_folding(norm, norm2, start, M, dual_stereo);
 
         tf_change = tf_res[i];
         s_band_ctx.tf_change = tf_change;
-        if (i >= m->effEBands) {
+        if (i >= m_CELTMode.effEBands) {
             X = norm;
             if (Y_ != NULL)
                 Y = norm;
             lowband_scratch = NULL;
         }
-        if (last && !theta_rdo)
+        if (last)
             lowband_scratch = NULL;
 
         /* Get a conservative estimate of the collapse_mask's for the bands we're
@@ -2541,7 +2532,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
 
     auto X = celt_malloc_arr<int16_t>(C * N * sizeof(int16_t)); /**< Interleaved normalised MDCTs */
 
-    quant_all_bands(0, st->mode, start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
+    quant_all_bands(start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
                     NULL, pulses.get(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.get(),
                     len * (8 << BITRES) - anti_collapse_rsv, balance, LM, codedBands, &st->rng, 0,
                     st->disable_inv);
