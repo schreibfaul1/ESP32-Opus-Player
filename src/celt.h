@@ -731,8 +731,8 @@ int32_t _celt_autocorr(const int16_t *x, int32_t *ac, const int16_t *window, int
 uint32_t icwrs(int32_t _n, const int32_t *_y);
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y);
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_ctx_t *_dec);
-uint32_t ec_tell_frac(ec_ctx_t *_this);
-int32_t ec_read_byte(ec_ctx_t *_this);
+uint32_t ec_tell_frac();
+int32_t ec_read_byte();
 int32_t ec_read_byte_from_end(ec_ctx_t *_this);
 void ec_dec_normalize(ec_ctx_t *_this);
 void ec_dec_init(ec_ctx_t *_this, uint8_t *_buf, uint32_t _storage);

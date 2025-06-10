@@ -1782,14 +1782,12 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     const CELTMode_t *m;
     int32_t i;
     int32_t intensity;
-    ec_ctx_t *ec;
     const int32_t *bandE;
 
     encode = s_band_ctx.encode;
     m = s_band_ctx.m;
     i = s_band_ctx.i;
     intensity = s_band_ctx.intensity;
-    ec = s_ec_ptr;
     bandE = s_band_ctx.bandE;
 
     /* Decide on the resolution to give to the split parameter theta */
@@ -1803,7 +1801,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
            we can re-scale both mid and side because we know that 1) they have unit norm and 2) they are orthogonal. */
         itheta = stereo_itheta(X, Y, stereo, N);
     }
-    tell = ec_tell_frac(ec);
+    tell = ec_tell_frac();
     if (qn != 1) {
         if (encode) {
             if (!stereo || s_band_ctx.theta_round == 0) {
@@ -1845,12 +1843,12 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             }
             else {
                 int32_t fs;
-                fs = ec_decode(ec, ft);
+                fs = ec_decode(&s_ec, ft);
                 if (fs < (x0 + 1) * p0)
                     x = fs / p0;
                 else
                     x = x0 + 1 + (fs - (x0 + 1) * p0);
-                ec_dec_update(ec, x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
+                ec_dec_update(&s_ec, x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
                 itheta = x;
             }
         }
@@ -1859,7 +1857,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             if (encode)
                 ;
             else
-                itheta = ec_dec_uint(ec, qn + 1);
+                itheta = ec_dec_uint(&s_ec, qn + 1);
         }
         else {
             int32_t fs = 1, ft;
@@ -1871,7 +1869,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
                 /* Triangular pdf */
                 int32_t fl = 0;
                 int32_t fm;
-                fm = ec_decode(ec, ft);
+                fm = ec_decode(&s_ec, ft);
 
                 if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                 {
@@ -1886,7 +1884,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
                     fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                 }
 
-                ec_dec_update(ec, fl, fl + fs, ft);
+                ec_dec_update(&s_ec, fl, fl + fs, ft);
             }
         }
         assert(itheta >= 0);
@@ -1923,7 +1921,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             inv = 0;
         itheta = 0;
     }
-    qalloc = ec_tell_frac(ec) - tell;
+    qalloc = ec_tell_frac() - tell;
     *b -= qalloc;
 
     if (itheta == 0) {
@@ -2491,7 +2489,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
             Y = NULL;
         N = M * eBands[i + 1] - M * eBands[i];
         assert(N > 0);
-        tell = ec_tell_frac(ec);
+        tell = ec_tell_frac();
 
         /* Compute how many bits we want to allocate to this band */
         if (i != start)
@@ -3314,7 +3312,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
 
     dynalloc_logp = 6;
     total_bits <<= BITRES;
-    tell = ec_tell_frac(dec);
+    tell = ec_tell_frac();
     for (i = start; i < end; i++) {
         int32_t width, quanta;
         int32_t dynalloc_loop_logp;
@@ -3329,7 +3327,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
         {
             int32_t flag;
             flag = ec_dec_bit_logp(dynalloc_loop_logp);
-            tell = ec_tell_frac(dec);
+            tell = ec_tell_frac();
             if (!flag)
                 break;
             boost += quanta;
@@ -3346,7 +3344,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
 
     alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
-    bits = (((int32_t)len * 8) << BITRES) - ec_tell_frac(dec) - 1;
+    bits = (((int32_t)len * 8) << BITRES) - ec_tell_frac() - 1;
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
     bits -= anti_collapse_rsv;
 
@@ -3824,15 +3822,15 @@ int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_ctx_t *_dec) {
 
 /* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear
    function followed by a lookup to determine the exact transition thresholds. */
-uint32_t ec_tell_frac(ec_ctx_t *_this) {
+uint32_t ec_tell_frac() {
     const unsigned correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
     uint32_t nbits;
     uint32_t r;
     int32_t l;
     unsigned b;
-    nbits = _this->nbits_total << BITRES;
-    l = EC_ILOG(_this->rng);
-    r = _this->rng >> (l - 16);
+    nbits = s_ec.nbits_total << BITRES;
+    l = EC_ILOG(s_ec.rng);
+    r = s_ec.rng >> (l - 16);
     b = (r >> 12) - 8;
     b += r > correction[b];
     l = (l << 3) + b;
@@ -3840,7 +3838,7 @@ uint32_t ec_tell_frac(ec_ctx_t *_this) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_read_byte(ec_ctx_t *_this) { return _this->offs < _this->storage ? _this->buf[_this->offs++] : 0; }
+int32_t ec_read_byte() { return s_ec.offs < s_ec.storage ? s_ec.buf[s_ec.offs++] : 0; }
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3859,7 +3857,7 @@ void ec_dec_normalize(ec_ctx_t *_this) {
         /*Use up the remaining bits from our last symbol.*/
         sym = _this->rem;
         /*Read the next value from the input.*/
-        _this->rem = ec_read_byte(_this);
+        _this->rem = ec_read_byte();
         /*Take the rest of the bits we need from this new symbol.*/
         sym = (sym << EC_SYM_BITS | _this->rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
         /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
@@ -3878,7 +3876,7 @@ void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
     s_ec.nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
     s_ec.offs = 0;
     s_ec.rng = 1U << EC_CODE_EXTRA;
-    s_ec.rem = ec_read_byte(&s_ec);
+    s_ec.rem = ec_read_byte();
     s_ec.val = s_ec.rng - 1 - (s_ec.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
     s_ec.error = 0;
     /*Normalize the interval.*/
