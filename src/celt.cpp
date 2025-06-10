@@ -832,34 +832,6 @@ void renormalise_vector(int16_t *X, int32_t N, int16_t gain) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N) {
-    int32_t i;
-    int32_t itheta;
-    int16_t mid, side;
-    int32_t Emid, Eside;
-
-    Emid = Eside = EPSILON;
-    if (stereo) {
-        for (i = 0; i < N; i++) {
-            int16_t m, s;
-            m = ADD16(SHR16(X[i], 1), SHR16(Y[i], 1));
-            s = SUB16(SHR16(X[i], 1), SHR16(Y[i], 1));
-            Emid = MAC16_16(Emid, m, m);
-            Eside = MAC16_16(Eside, s, s);
-        }
-    } else {
-        Emid += celt_inner_prod(X, X, N);
-        Eside += celt_inner_prod(Y, Y, N);
-    }
-    mid = celt_sqrt(Emid);
-    side = celt_sqrt(Eside);
-    /* 0.63662 = 2/pi */
-    itheta = MULT16_16_Q15(QCONST16(0.63662f, 15), celt_atan2p(side, mid));
-
-    return itheta;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t resampling_factor(int32_t rate){
     int32_t ret;
     switch (rate){
@@ -1509,11 +1481,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     qn = compute_qn(N, *b, offset, pulse_cap, stereo);
     if (stereo && i >= intensity)
         qn = 1;
-    if (encode) {
-        /* theta is the atan() of the ratio between the (normalized) side and mid. With just that parameter,
-           we can re-scale both mid and side because we know that 1) they have unit norm and 2) they are orthogonal. */
-        itheta = stereo_itheta(X, Y, stereo, N);
-    }
+
     tell = ec_tell_frac();
     if (qn != 1) {
         if (encode) {
