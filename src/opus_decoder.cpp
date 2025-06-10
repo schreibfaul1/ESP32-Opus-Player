@@ -123,7 +123,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static void smooth_fade(const int16_t *in1, const int16_t *in2, int16_t *out, int overlap, int channels,
+void smooth_fade(const int16_t *in1, const int16_t *in2, int16_t *out, int overlap, int channels,
                         const int16_t *window, int32_t Fs) {
     int i, c;
     int inc = 48000 / Fs;
@@ -181,10 +181,6 @@ if(!inbuf)log_e("Inbuf is null");
     silk_dec = (char *)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder_t *)((char *)st + st->celt_dec_offset);
 
-
-//____________________________________________________________________________________________________________________________--
-    extern ec_ctx_t      s_ec;
-   // ec_ctx_t dec;
     ec_dec_init(inbuf, packetLen);
 
     /* Don't allocate any memory when in CELT-only mode */
@@ -193,7 +189,7 @@ if(!inbuf)log_e("Inbuf is null");
 
     /* SILK processing */
     if (mode != MODE_CELT_ONLY) {
-        int lost_flag, decoded_samples;
+        int decoded_samples;
         int16_t *pcm_ptr;
         pcm_ptr = pcm_silk;
 
