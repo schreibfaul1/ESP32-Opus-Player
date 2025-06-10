@@ -3842,26 +3842,26 @@ int32_t ec_read_byte() { return s_ec.offs < s_ec.storage ? s_ec.buf[s_ec.offs++]
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t ec_read_byte_from_end(ec_ctx_t *_this) {
-    return _this->end_offs < _this->storage ? _this->buf[_this->storage - ++(_this->end_offs)] : 0;
+int32_t ec_read_byte_from_end() {
+    return s_ec.end_offs < s_ec.storage ? s_ec.buf[s_ec.storage - ++(s_ec.end_offs)] : 0;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 /*Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.*/
-void ec_dec_normalize(ec_ctx_t *_this) {
+void ec_dec_normalize() {
     /*If the range is too small, rescale it and input some bits.*/
-    while (_this->rng <= EC_CODE_BOT) {
+    while (s_ec.rng <= EC_CODE_BOT) {
         int32_t sym;
-        _this->nbits_total += EC_SYM_BITS;
-        _this->rng <<= EC_SYM_BITS;
+        s_ec.nbits_total += EC_SYM_BITS;
+        s_ec.rng <<= EC_SYM_BITS;
         /*Use up the remaining bits from our last symbol.*/
-        sym = _this->rem;
+        sym = s_ec.rem;
         /*Read the next value from the input.*/
-        _this->rem = ec_read_byte();
+        s_ec.rem = ec_read_byte();
         /*Take the rest of the bits we need from this new symbol.*/
-        sym = (sym << EC_SYM_BITS | _this->rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
+        sym = (sym << EC_SYM_BITS | s_ec.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
         /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
-        _this->val = ((_this->val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
+        s_ec.val = ((s_ec.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3880,7 +3880,7 @@ void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
     s_ec.val = s_ec.rng - 1 - (s_ec.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
     s_ec.error = 0;
     /*Normalize the interval.*/
-    ec_dec_normalize(&s_ec);
+    ec_dec_normalize();
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3911,7 +3911,7 @@ void ec_dec_update(ec_ctx_t *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     else{
         _this->rng = _this->rng - s;
     }
-    ec_dec_normalize(_this);
+    ec_dec_normalize();
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3927,7 +3927,7 @@ int32_t ec_dec_bit_logp( unsigned _logp) {
     ret = d < s;
     if (!ret) s_ec.val = d - s;
     s_ec.rng = ret ? s : r - s;
-    ec_dec_normalize(&s_ec);
+    ec_dec_normalize();
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3948,7 +3948,7 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
     } while (d < s);
     s_ec.val = d - s;
     s_ec.rng = t - s;
-    ec_dec_normalize(&s_ec);
+    ec_dec_normalize();
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3988,7 +3988,7 @@ uint32_t ec_dec_bits(ec_ctx_t *_this, unsigned _bits) {
     available = _this->nend_bits;
     if ((unsigned)available < _bits) {
         do {
-            window |= (uint32_t)ec_read_byte_from_end(_this) << available;
+            window |= (uint32_t)ec_read_byte_from_end() << available;
             available += EC_SYM_BITS;
         } while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
     }
