@@ -1848,7 +1848,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
                     x = fs / p0;
                 else
                     x = x0 + 1 + (fs - (x0 + 1) * p0);
-                ec_dec_update(&s_ec, x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
+                ec_dec_update( x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0, x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0, ft);
                 itheta = x;
             }
         }
@@ -1884,7 +1884,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
                     fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                 }
 
-                ec_dec_update(&s_ec, fl, fl + fs, ft);
+                ec_dec_update(fl, fl + fs, ft);
             }
         }
         assert(itheta >= 0);
@@ -3892,24 +3892,24 @@ uint32_t ec_decode(uint32_t _ft) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_decode_bin(ec_ctx_t *_this, uint32_t _bits) {
+uint32_t ec_decode_bin(uint32_t _bits) {
     uint32_t s;
-    _this->ext = _this->rng >> _bits;
-    s = (uint32_t)(_this->val / _this->ext);
+    s_ec.ext = s_ec.rng >> _bits;
+    s = (uint32_t)(s_ec.val / s_ec.ext);
     return (1U << _bits) - EC_MINI(s + 1U, 1U << _bits);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_update(ec_ctx_t *_this, uint32_t _fl, uint32_t _fh, uint32_t _ft) {
+void ec_dec_update(uint32_t _fl, uint32_t _fh, uint32_t _ft) {
     uint32_t s;
-    s = _this->ext *  (_ft - _fh);
-    _this->val -= s;
+    s = s_ec.ext *  (_ft - _fh);
+    s_ec.val -= s;
 
     if(_fl > 0){
-        _this->rng = _this->ext * (_fh - _fl);
+        s_ec.rng = s_ec.ext * (_fh - _fl);
     }
     else{
-        _this->rng = _this->rng - s;
+        s_ec.rng = s_ec.rng - s;
     }
     ec_dec_normalize();
 }
@@ -3966,7 +3966,7 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
         ftb -= EC_UINT_BITS;
         ft = (uint32_t)(_ft >> ftb) + 1;
         s = ec_decode(ft);
-        ec_dec_update(_this, s, s + 1, ft);
+        ec_dec_update(s, s + 1, ft);
         t = (uint32_t)s << ftb | ec_dec_bits(_this, ftb);
         if (t <= _ft) return t;
         _this->error = 1;
@@ -3974,7 +3974,7 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
     } else {
         _ft++;
         s = ec_decode((uint32_t)_ft);
-        ec_dec_update(_this, s, s + 1, (uint32_t)_ft);
+        ec_dec_update(s, s + 1, (uint32_t)_ft);
         return s;
     }
 }
@@ -4265,7 +4265,7 @@ int32_t ec_laplace_decode(ec_ctx_t *dec, uint32_t fs, int32_t decay) {
     int32_t val = 0;
     uint32_t fl;
     uint32_t fm;
-    fm = ec_decode_bin(dec, 15);
+    fm = ec_decode_bin(15);
     fl = 0;
     if (fm >= fs) {
         val++;
@@ -4295,7 +4295,7 @@ int32_t ec_laplace_decode(ec_ctx_t *dec, uint32_t fs, int32_t decay) {
     assert(fs > 0);
     assert(fl <= fm);
     assert(fm < min((uint32_t)(fl + fs), (uint32_t)32768));
-    ec_dec_update(dec, fl, min((uint32_t)(fl + fs), (uint32_t)32768), (uint32_t)32768);
+    ec_dec_update(fl, min((uint32_t)(fl + fs), (uint32_t)32768), (uint32_t)32768);
     return val;
 }
 //----------------------------------------------------------------------------------------------------------------------
