@@ -117,18 +117,10 @@ typedef struct _CELTMode {
     int32_t nbEBands;
     int32_t effEBands;
     int16_t preemph[4];
-    const int16_t *eBands; /**< Definition for each "pseudo-critical band" */
-
-    int32_t maxLM;
+     int32_t maxLM;
     int32_t nbShortMdcts;
     int32_t shortMdctSize;
-
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
-    const uint8_t *allocVectors; /**< Number of bits in each band for several rates */
-    const int16_t *logN;
-
-    const int16_t *window;
-  //  PulseCache cache;
 }CELTMode_t;
 
 
@@ -672,8 +664,7 @@ void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
 int32_t resampling_factor(int32_t rate);
 void comb_filter_const_c(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12);
-void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1,
-                 const int16_t *window, int32_t overlap);
+void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1);
 void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C);
 const char *opus_strerror(int32_t error);
 int32_t hysteresis_decision(int16_t val, const int16_t *thresholds, const int16_t *hysteresis, int32_t N, int32_t prev);
@@ -721,7 +712,6 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
                     int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence);
 void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM);
 int32_t celt_plc_pitch_search(int32_t *decode_mem[2], int32_t C);
-void celt_decode_lost(CELTDecoder_t *__restrict__ st, int32_t N, int32_t LM);
 int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data, int32_t len, int16_t *__restrict__ pcm,
                         int32_t frame_size, int32_t accum);
 int32_t celt_decoder_ctl(CELTDecoder_t *__restrict__ st, int32_t request, ...);
