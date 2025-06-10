@@ -34,10 +34,11 @@
 
 celt_raw_ptr<CELTDecoder_t> s_celtDec;
 band_ctx_t    s_band_ctx;
-
+ec_ctx_t     *s_ec_ptr;
+ec_ctx_t      s_ec;
 
 ec_ctx_t* s_ec_dec = NULL;
-ec_ctx_t *s_ec;
+
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
 const uint32_t CELT_SET_CHANNELS_REQUEST        = 10008;
@@ -1789,7 +1790,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     m = s_band_ctx.m;
     i = s_band_ctx.i;
     intensity = s_band_ctx.intensity;
-    ec = s_ec;
+    ec = s_ec_ptr;
     bandE = s_band_ctx.bandE;
 
     /* Decide on the resolution to give to the split parameter theta */
@@ -1963,7 +1964,7 @@ unsigned quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
     ec_ctx_t *ec;
 
     encode = s_band_ctx.encode;
-    ec = s_ec;
+    ec = s_ec_ptr;
 
     stereo = Y != NULL;
     c = 0;
@@ -2012,7 +2013,7 @@ unsigned quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     m = s_band_ctx.m;
     i = s_band_ctx.i;
     spread = s_band_ctx.spread;
-    ec = s_ec;
+    ec = s_ec_ptr;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
     cache = cache_bits50 + cache_index50[(LM + 1) * m->nbEBands + i];
@@ -2276,7 +2277,7 @@ unsigned quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
     ec_ctx_t *ec;
 
     encode = s_band_ctx.encode;
-    ec = s_ec;
+    ec = s_ec_ptr;
 
     /* Special case for one sample */
     if (N == 1){
@@ -2458,7 +2459,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
 
     lowband_offset = 0;
     s_band_ctx.bandE = bandE;
-    s_ec = ec;
+    s_ec_ptr = ec;
     s_band_ctx.encode = encode;
     s_band_ctx.intensity = intensity;
     s_band_ctx.m = m;
