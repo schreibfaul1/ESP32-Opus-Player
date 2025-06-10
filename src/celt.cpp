@@ -37,7 +37,6 @@ band_ctx_t    s_band_ctx;
 ec_ctx_t     *s_ec_ptr;
 ec_ctx_t      s_ec;
 
-ec_ctx_t* s_ec_dec = NULL;
 
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
@@ -3871,22 +3870,19 @@ void ec_dec_normalize(ec_ctx_t *_this) {
 
 void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
 
-    s_ec_dec = &s_ec;
-
-
-    s_ec_dec->buf = _buf;
-    s_ec_dec->storage = _storage;
-    s_ec_dec->end_offs = 0;
-    s_ec_dec->end_window = 0;
-    s_ec_dec->nend_bits = 0;
-    s_ec_dec->nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
-    s_ec_dec->offs = 0;
-    s_ec_dec->rng = 1U << EC_CODE_EXTRA;
-    s_ec_dec->rem = ec_read_byte(s_ec_dec);
-    s_ec_dec->val = s_ec_dec->rng - 1 - (s_ec_dec->rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
-    s_ec_dec->error = 0;
+    s_ec.buf = _buf;
+    s_ec.storage = _storage;
+    s_ec.end_offs = 0;
+    s_ec.end_window = 0;
+    s_ec.nend_bits = 0;
+    s_ec.nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
+    s_ec.offs = 0;
+    s_ec.rng = 1U << EC_CODE_EXTRA;
+    s_ec.rem = ec_read_byte(&s_ec);
+    s_ec.val = s_ec.rng - 1 - (s_ec.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+    s_ec.error = 0;
     /*Normalize the interval.*/
-    ec_dec_normalize(s_ec_dec);
+    ec_dec_normalize(&s_ec);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3927,13 +3923,13 @@ int32_t ec_dec_bit_logp( unsigned _logp) {
     uint32_t d;
     uint32_t s;
     int32_t ret;
-    r = s_ec_dec->rng;
-    d = s_ec_dec->val;
+    r = s_ec.rng;
+    d = s_ec.val;
     s = r >> _logp;
     ret = d < s;
-    if (!ret) s_ec_dec->val = d - s;
-    s_ec_dec->rng = ret ? s : r - s;
-    ec_dec_normalize(s_ec_dec);
+    if (!ret) s_ec.val = d - s;
+    s_ec.rng = ret ? s : r - s;
+    ec_dec_normalize(&s_ec);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3944,17 +3940,17 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, unsigned _ftb) {
     uint32_t s;
     uint32_t t;
     int32_t ret;
-    s = s_ec_dec->rng;
-    d = s_ec_dec->val;
+    s = s_ec.rng;
+    d = s_ec.val;
     r = s >> _ftb;
     ret = -1;
     do {
         t = s;
         s = r * _icdf[++ret];
     } while (d < s);
-    s_ec_dec->val = d - s;
-    s_ec_dec->rng = t - s;
-    ec_dec_normalize(s_ec_dec);
+    s_ec.val = d - s;
+    s_ec.rng = t - s;
+    ec_dec_normalize(&s_ec);
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
