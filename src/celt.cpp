@@ -57,7 +57,6 @@ const uint32_t PLC_PITCH_LAG_MIN = 100;
 const uint32_t EC_SYM_BITS       = 8;
 const uint32_t EC_CODE_BITS      = 32;
 const uint32_t EC_SYM_MAX        = (1U << EC_SYM_BITS) - 1;
-const uint32_t EC_CODE_SHIFT     = EC_CODE_BITS - EC_SYM_BITS -1;
 const uint32_t EC_CODE_TOP       = 1U << (EC_CODE_BITS - 1);
 const uint32_t EC_CODE_BOT       = EC_CODE_TOP >> EC_SYM_BITS;
 const uint32_t EC_CODE_EXTRA     = (EC_CODE_BITS-2) % EC_SYM_BITS + 1;
@@ -573,12 +572,6 @@ const uint8_t e_prob_model[4][2][42] = {
      {22, 178, 63, 114, 74, 82,  84, 83,  92, 82,  103, 62,  96, 72,  96, 67,  101, 73, 107, 72, 113,
       55, 118, 52, 125, 52, 118, 52, 117, 55, 135, 49,  137, 39, 157, 32, 145, 29,  97, 33,  77, 40}}};
 
-const uint32_t mask[] = {0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f,
-                                     0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff,
-                                     0x00003fff, 0x00007fff, 0x0000ffff, 0x0001ffff, 0x0003ffff, 0x0007ffff, 0x000fffff,
-                                     0x001fffff, 0x003fffff, 0x007fffff, 0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
-                                     0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff, 0xffffffff};
-
 const uint8_t small_energy_icdf[3]={2,1,0};
 
 const int32_t second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
@@ -594,24 +587,7 @@ const kiss_fft_state fft_state48000_960_0 = {
     17476, /* scale */
     8,     /* scale_shift */
     -1,    /* shift */
-    {
-        5,
-        96,
-        3,
-        32,
-        4,
-        8,
-        2,
-        4,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    },                     /* factors */
+    { 5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0,},                     /* factors */
     fft_bitrev480,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
 };
@@ -621,24 +597,7 @@ const kiss_fft_state fft_state48000_960_1 = {
     17476, /* scale */
     7,     /* scale_shift */
     1,     /* shift */
-    {
-        5,
-        48,
-        3,
-        16,
-        4,
-        4,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    },                     /* factors */
+    { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0,},                     /* factors */
     fft_bitrev240,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
 };
@@ -648,24 +607,7 @@ const kiss_fft_state fft_state48000_960_2 = {
     17476, /* scale */
     6,     /* scale_shift */
     2,     /* shift */
-    {
-        5,
-        24,
-        3,
-        8,
-        2,
-        4,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    },                     /* factors */
+    { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0,},                     /* factors */
     fft_bitrev120,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
 };
@@ -674,24 +616,7 @@ const kiss_fft_state fft_state48000_960_3 = {
     17476, /* scale */
     5,     /* scale_shift */
     3,     /* shift */
-    {
-        5,
-        12,
-        3,
-        4,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    },                     /* factors */
+    { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},                     /* factors */
     fft_bitrev60,          /* bitrev */
     fft_twiddles48000_960, /* bitrev */
 };
@@ -701,12 +626,7 @@ const CELTMode_t mode48000_960_120 = {
     120,   /* overlap */
     21,    /* nbEBands */
     21,    /* effEBands */
-    {
-        27853,
-        0,
-        4096,
-        8192,
-    },               /* preemph */
+    { 27853, 0, 4096, 8192,},               /* preemph */
     3,               /* maxLM */
     8,               /* nbShortMdcts */
     120,             /* shortMdctSize */
@@ -869,169 +789,6 @@ uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
         } while (++j < N0);
         collapse_mask |= (tmp != 0) << i;
     } while (++i < B);
-    return collapse_mask;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N) {
-
-    int32_t i, j;
-    int32_t pulsesLeft;
-    int32_t sum;
-    int32_t xy;
-    int16_t yy;
-    auto y     = celt_malloc_arr<int16_t>(N * sizeof(int16_t));
-    auto signx = celt_malloc_arr<int32_t>(N * sizeof(int32_t));
-
-    /* Get rid of the sign */
-    sum = 0;
-    j = 0;
-    do {
-        signx[j] = X[j] < 0;
-        X[j] = abs(X[j]);
-        iy[j] = 0;
-        y[j] = 0;
-    } while (++j < N);
-
-    xy = yy = 0;
-
-    pulsesLeft = K;
-
-    /* Do a pre-search by projecting on the pyramid */
-    if (K > (N >> 1)) {
-        int16_t rcp;
-        j = 0;
-        do {
-            sum += X[j];
-        } while (++j < N);
-
-        /* If X is too small, just replace it with a pulse at 0 */
-        if (sum <= K) {
-            X[0] = QCONST16(1.f, 14);
-            j = 1;
-            do X[j] = 0;
-            while (++j < N);
-            sum = QCONST16(1.f, 14);
-        }
-        rcp = EXTRACT16(MULT16_32_Q16(K, celt_rcp(sum)));
-        j = 0;
-        do {
-            /* It's really important to round *towards zero* here */
-            iy[j] = MULT16_16_Q15(X[j], rcp);
-            y[j] = (int16_t)iy[j];
-            yy = MAC16_16(yy, y[j], y[j]);
-            xy = MAC16_16(xy, X[j], y[j]);
-            y[j] *= 2;
-            pulsesLeft -= iy[j];
-        } while (++j < N);
-    }
-    assert(pulsesLeft >= 0);
-
-    /* This should never happen, but just in case it does (e.g. on silence)
-       we fill the first bin with pulses. */
-    if (pulsesLeft > N + 3) {
-        int16_t tmp = (int16_t)pulsesLeft;
-        yy = MAC16_16(yy, tmp, tmp);
-        yy = MAC16_16(yy, tmp, y[0]);
-        iy[0] += pulsesLeft;
-        pulsesLeft = 0;
-    }
-
-    for (i = 0; i < pulsesLeft; i++) {
-        int16_t Rxy, Ryy;
-        int32_t best_id;
-        int32_t best_num;
-        int16_t best_den;
-        int32_t rshift;
-        rshift = 1 + celt_ilog2(K - pulsesLeft + i + 1);
-        best_id = 0;
-        /* The squared magnitude term gets added anyway, so we might as well
-           add it outside the loop */
-        yy = ADD16(yy, 1);
-
-        /* Calculations for position 0 are out of the loop, in part to reduce
-           mispredicted branches (since the if condition is usually false)
-           in the loop. */
-        /* Temporary sums of the new pulse(s) */
-        Rxy = EXTRACT16(SHR32(ADD32(xy, EXTEND32(X[0])), rshift));
-        /* We're multiplying y[j] by two so we don't have to do it here */
-        Ryy = ADD16(yy, y[0]);
-
-        /* Approximate score: we maximise Rxy/sqrt(Ryy) (we're guaranteed that
-           Rxy is positive because the sign is pre-computed) */
-        Rxy = MULT16_16_Q15(Rxy, Rxy);
-        best_den = Ryy;
-        best_num = Rxy;
-        j = 1;
-        do {
-            /* Temporary sums of the new pulse(s) */
-            Rxy = EXTRACT16(SHR32(ADD32(xy, EXTEND32(X[j])), rshift));
-            /* We're multiplying y[j] by two so we don't have to do it here */
-            Ryy = ADD16(yy, y[j]);
-
-            /* Approximate score: we maximise Rxy/sqrt(Ryy) (we're guaranteed that
-               Rxy is positive because the sign is pre-computed) */
-            Rxy = MULT16_16_Q15(Rxy, Rxy);
-            /* The idea is to check for num/den >= best_num/best_den, but that way
-               we can do it without any division */
-            /* OPT: It's not clear whether a cmov is faster than a branch here
-               since the condition is more often false than true and using
-               a cmov introduces data dependencies across iterations. The optimal
-               choice may be architecture-dependent. */
-            if (opus_unlikely(MULT16_16(best_den, Rxy) > MULT16_16(Ryy, best_num))) {
-                best_den = Ryy;
-                best_num = Rxy;
-                best_id = j;
-            }
-        } while (++j < N);
-
-        /* Updating the sums of the new pulse(s) */
-        xy = ADD32(xy, EXTEND32(X[best_id]));
-        /* We're multiplying y[j] by two so we don't have to do it here */
-        yy = ADD16(yy, y[best_id]);
-
-        /* Only now that we've made the final choice, update y/iy */
-        /* Multiplying y[j] by 2 so we don't have to do it everywhere else */
-        y[best_id] += 2;
-        iy[best_id]++;
-    }
-
-    /* Put the original sign back */
-    j = 0;
-    do {
-        /*iy[j] = signx[j] ? -iy[j] : iy[j];*/
-        /* OPT: The is more likely to be compiled without a branch than the code above
-           but has the same performance otherwise. */
-        iy[j] = (iy[j] ^ -signx[j]) + signx[j];
-    } while (++j < N);
-
-    return yy;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain, int32_t resynth) {
-
-    int16_t yy;
-    uint32_t collapse_mask;
-
-    assert2(K > 0, "alg_quant() needs at least one pulse");
-    assert2(N > 1, "alg_quant() needs at least two dimensions");
-
-    /* Covers vectorization by up to 4. */
-    auto iy = celt_malloc_arr<int32_t>(N + 3 * sizeof(int32_t));
-
-    exp_rotation(X, N, 1, B, K, spread);
-
-    yy = op_pvq_search(X, iy.get(), K, N);
-
-    //encode_pulses(iy.get(), N, K, enc);
-
-    if (resynth) {
-        normalise_residual(iy.get(), X, N, yy, gain);
-        exp_rotation(X, N, -1, B, K, spread);
-    }
-
-    collapse_mask = extract_collapse_mask(iy.get(), N, B);
     return collapse_mask;
 }
 //----------------------------------------------------------------------------------------------------------------------

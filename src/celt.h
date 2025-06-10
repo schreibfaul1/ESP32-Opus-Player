@@ -417,8 +417,6 @@ int32_t celt_rcp(int32_t x);
 //#define OPUS_PRINT_INT(value) do{}while(0)
 #define OPUS_FPRINTF (void)
 
-#define op_pvq_search(x, iy, K, N) (op_pvq_search_c(x, iy, K, N))
-
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
 extern const uint8_t LOG2_FRAC_TABLE[24];
@@ -657,8 +655,6 @@ void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
-int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain, int32_t resynth);
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
@@ -757,7 +753,6 @@ void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
-int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);
 void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max_pitch, int32_t *best_pitch, int32_t yshift,
