@@ -232,7 +232,7 @@ if(!inbuf)log_e("Inbuf is null");
     }
 
     start_band = 0;
-    if (mode != MODE_CELT_ONLY && ec_tell(&s_ec) + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
+    if (mode != MODE_CELT_ONLY && ec_tell() + 17 + 20 * (st->mode == MODE_HYBRID) <= 8 * packetLen) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID) ec_dec_bit_logp(12);
     }

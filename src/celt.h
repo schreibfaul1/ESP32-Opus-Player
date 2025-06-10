@@ -430,6 +430,7 @@ int32_t celt_rcp(int32_t x);
 extern const signed char tf_select_table[4][8];
 extern const uint32_t SMALL_DIV_TABLE[129];
 extern const uint8_t LOG2_FRAC_TABLE[24];
+extern ec_ctx_t s_ec;
 
 /* Prototypes and inlines*/
 
@@ -452,8 +453,8 @@ static inline int16_t sig2word16(int32_t x){
    return EXTRACT16(x);
 }
 
-static inline int32_t ec_tell(ec_ctx_t *_this){
-  return _this->nbits_total-EC_ILOG(_this->rng);
+static inline int32_t ec_tell(){
+  return s_ec.nbits_total-EC_ILOG(s_ec.rng);
 }
 
 /* Atan approximation using a 4th order polynomial. Input is in Q15 format and normalized by pi/4. Output is in
@@ -665,7 +666,7 @@ void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t 
 void normalise_residual(int32_t *__restrict__ iy, int16_t *__restrict__ X, int32_t N, int32_t Ryy, int16_t gain);
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B);
 int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N);
-uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth);
+uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain, int32_t resynth);
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain);
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain);
 int32_t stereo_itheta(const int16_t *X, const int16_t *Y, int32_t stereo, int32_t N);

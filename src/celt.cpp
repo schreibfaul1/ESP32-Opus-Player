@@ -1011,7 +1011,7 @@ int16_t op_pvq_search_c(int16_t *X, int32_t *iy, int32_t K, int32_t N) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, ec_ctx_t *enc, int16_t gain, int32_t resynth) {
+uint32_t alg_quant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain, int32_t resynth) {
 
     int16_t yy;
     uint32_t collapse_mask;
@@ -1958,10 +1958,8 @@ uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
     int32_t stereo;
     int16_t *x = X;
     int32_t encode;
-    ec_ctx_t *ec;
 
     encode = s_band_ctx.encode;
-    ec = s_ec_ptr;
 
     stereo = Y != NULL;
     c = 0;
@@ -2004,13 +2002,11 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     const CELTMode_t *m;
     int32_t i;
     int32_t spread;
-    ec_ctx_t *ec;
 
     encode = s_band_ctx.encode;
     m = s_band_ctx.m;
     i = s_band_ctx.i;
     spread = s_band_ctx.spread;
-    ec = s_ec_ptr;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
     cache = cache_bits50 + cache_index50[(LM + 1) * m->nbEBands + i];
@@ -2271,11 +2267,8 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
     struct split_ctx sctx;
     int32_t orig_fill;
     int32_t encode;
-    ec_ctx_t *ec;
 
     encode = s_band_ctx.encode;
-    ec = s_ec_ptr;
-
     /* Special case for one sample */
     if (N == 1){
         return quant_band_n1(X, Y, b, lowband_out);
@@ -2820,7 +2813,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
     uint32_t tell;
 
     budget = s_ec.storage * 8;
-    tell = ec_tell(&s_ec);
+    tell = ec_tell();
     logp = isTransient ? 2 : 4;
     tf_select_rsv = LM > 0 && tell + logp + 1 <= budget;
     budget -= tf_select_rsv;
@@ -2828,7 +2821,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
             curr ^= ec_dec_bit_logp(logp);
-            tell = ec_tell(&s_ec);
+            tell = ec_tell();
             tf_changed |= curr;
         }
         tf_res[i] = curr;
@@ -3239,7 +3232,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
     }
 
     total_bits = len * 8;
-    tell = ec_tell(&s_ec);
+    tell = ec_tell();
 
     if (tell >= total_bits)
         silence = 1;
@@ -3250,7 +3243,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
     if (silence)  {
         /* Pretend we've read all the remaining bits */
         tell = len * 8;
-        s_ec.nbits_total += tell - ec_tell(&s_ec);
+        s_ec.nbits_total += tell - ec_tell();
     }
 
     postfilter_gain = 0;
@@ -3263,16 +3256,16 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
             octave = ec_dec_uint(6);
             postfilter_pitch = (16 << octave) + ec_dec_bits(4 + octave) - 1;
             qg = ec_dec_bits(3);
-            if (ec_tell(&s_ec) + 2 <= total_bits)
+            if (ec_tell() + 2 <= total_bits)
                 postfilter_tapset = ec_dec_icdf(tapset_icdf, 2);
             postfilter_gain = QCONST16(.09375f, 15) * (qg + 1);
         }
-        tell = ec_tell(&s_ec);
+        tell = ec_tell();
     }
 
     if (LM > 0 && tell + 3 <= total_bits) {
         isTransient = ec_dec_bit_logp( 3);
-        tell = ec_tell(&s_ec);
+        tell = ec_tell();
     }
     else
         isTransient = 0;
@@ -3291,7 +3284,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
     auto tf_res = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
     tf_decode(start, end, isTransient, tf_res.get(), LM);
 
-    tell = ec_tell(&s_ec);
+    tell = ec_tell();
     spread_decision = SPREAD_NORMAL;
     if (tell + 4 <= total_bits)
         spread_decision = ec_dec_icdf(spread_icdf, 5);
@@ -3369,7 +3362,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
     }
 
     unquant_energy_finalise(mode, start, end, oldBandE,
-                            fine_quant.get(), fine_priority.get(), len * 8 - ec_tell(&s_ec), C);
+                            fine_quant.get(), fine_priority.get(), len * 8 - ec_tell(), C);
 
     if (anti_collapse_on)
         anti_collapse(mode, X.get(), collapse_masks.get(), LM, C, N,
@@ -3447,7 +3440,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
 
     deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
     st->loss_count = 0;
-    if (ec_tell(&s_ec) > 8 * len)
+    if (ec_tell() > 8 * len)
         return OPUS_INTERNAL_ERROR;
     if (s_ec.error)
         st->error = 1;
@@ -5264,7 +5257,7 @@ void unquant_coarse_energy(const CELTMode_t *m, int32_t start, int32_t end, int1
                test on C at function entry, but that isn't enough
                to make the static analyzer happy. */
             assert(c < 2);
-            tell = ec_tell(&s_ec);
+            tell = ec_tell();
             if (budget - tell >= 15) {
                 int32_t pi;
                 pi = 2 * min(i, (int32_t)20);
