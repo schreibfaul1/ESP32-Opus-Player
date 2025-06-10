@@ -667,7 +667,6 @@ const kiss_fft_state fft_state48000_960_2 = {
     fft_bitrev120,         /* bitrev */
     fft_twiddles48000_960, /* bitrev */
 };
-
 const kiss_fft_state fft_state48000_960_3 = {
     60,    /* nfft */
     17476, /* scale */
@@ -713,21 +712,31 @@ const CELTMode_t mode48000_960_120 = {
     11,              /* nbAllocVectors */
     band_allocation, /* allocVectors */
     logN400,         /* logN */
-    window120,       /* window */
-    {1920,
-     3,
-     {
+    window120       /* window */
+    //{1920,
+    // 3,
+    //  {
+    //      &fft_state48000_960_0,
+    //      &fft_state48000_960_1,
+    //      &fft_state48000_960_2,
+    //      &fft_state48000_960_3,
+    //  },
+    // mdct_twiddles960},                               /* mdct */
+    //{392, cache_index50, cache_bits50, cache_caps50}, /* cache */
+};
+
+const CELTMode_t *const static_mode_list[TOTAL_MODES] = {
+    &mode48000_960_120,
+};
+
+const mdct_lookup_t m_mdct_lookup = {
+    1920,3, {
          &fft_state48000_960_0,
          &fft_state48000_960_1,
          &fft_state48000_960_2,
          &fft_state48000_960_3,
      },
-     mdct_twiddles960},                               /* mdct */
-    {392, cache_index50, cache_bits50, cache_caps50}, /* cache */
-};
-
-const CELTMode_t *const static_mode_list[TOTAL_MODES] = {
-    &mode48000_960_120,
+     mdct_twiddles960,                               /* mdct */
 };
 
 const uint32_t row_idx[15] = {0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257};
@@ -1200,7 +1209,7 @@ void init_caps(const CELTMode_t *m, int32_t *cap, int32_t LM, int32_t C) {
     {
         int32_t N;
         N = (eband5ms[i + 1] - eband5ms[i]) << LM;
-        cap[i] = (m->cache.caps[m->nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
+        cap[i] = (cache_caps50[m->nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -2004,7 +2013,7 @@ unsigned quant_partition(struct band_ctx *ctx, int16_t *X, int32_t N, int32_t b,
     ec = s_ec;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
-    cache = m->cache.bits + m->cache.index[(LM + 1) * m->nbEBands + i];
+    cache = cache_bits50 + cache_index50[(LM + 1) * m->nbEBands + i];
     if (LM != -1 && b > cache[cache[0]] + 12 && N > 2) {
         int32_t mbits, sbits, delta;
         int32_t itheta;
@@ -2836,10 +2845,8 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
         /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
         freq2 = out_syn[1] + overlap / 2;
         memcpy(freq2, freq.get(), N * sizeof(*freq2));
-        for (b = 0; b < B; b++)
-            clt_mdct_backward(&mode->mdct, &freq2[b], out_syn[0] + NB * b, mode->window, overlap, shift, B);
-        for (b = 0; b < B; b++)
-            clt_mdct_backward(&mode->mdct, &freq[b], out_syn[1] + NB * b, mode->window, overlap, shift, B);
+        for(b = 0; b < B; b++) clt_mdct_backward(&freq2[b], out_syn[0] + NB * b, overlap, shift, B);
+        for(b = 0; b < B; b++) clt_mdct_backward(&freq[b], out_syn[1] + NB * b, overlap, shift, B);
     }
     else if (CC == 1 && C == 2) {
         /* Downmixing a stereo stream to mono */
@@ -2853,7 +2860,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
         for (i = 0; i < N; i++)
             freq[i] = ADD32(HALF32(freq[i]), HALF32(freq2[i]));
         for (b = 0; b < B; b++)
-            clt_mdct_backward(&mode->mdct, &freq[b], out_syn[0] + NB * b, mode->window, overlap, shift, B);
+            for(b = 0; b < B; b++) clt_mdct_backward(&freq[b], out_syn[0] + NB * b, overlap, shift, B);
     }
     else {
         /* Normal case (mono or stereo) */
@@ -2862,7 +2869,7 @@ void celt_synthesis(const CELTMode_t *mode, int16_t *X, int32_t *out_syn[], int1
             denormalise_bands(mode, X + c * N, freq.get(), oldBandE + c * nbEBands, start, effEnd, M,
                               downsample, silence);
             for (b = 0; b < B; b++)
-                clt_mdct_backward(&mode->mdct, &freq[b], out_syn[c] + NB * b, mode->window, overlap, shift, B);
+                for(b = 0; b < B; b++) clt_mdct_backward(&freq[b], out_syn[c] + NB * b, overlap, shift, B);
         } while (++c < CC);
     }
     /* Saturate IMDCT output so that we can't overflow in the pitch postfilter
@@ -4510,14 +4517,13 @@ int32_t celt_rcp(int32_t x) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
-                         const int16_t *__restrict__ window, int32_t overlap, int32_t shift, int32_t stride) {
+void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shift, int32_t stride) {
     int32_t i;
     int32_t N, N2, N4;
     const int16_t *trig;
 
-    N = l->n;
-    trig = l->trig;
+    N = m_mdct_lookup.n;
+    trig = m_mdct_lookup.trig;
     for (i = 0; i < shift; i++) {
         N >>= 1;
         trig += N;
@@ -4528,11 +4534,11 @@ void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict_
     /* Pre-rotate */
     {
         /* Temp pointers to make it really clear to the compiler what we're doing */
-        const int32_t *__restrict__ xp1 = in;
-        const int32_t *__restrict__ xp2 = in + stride * (N2 - 1);
-        int32_t *__restrict__ yp = out + (overlap >> 1);
-        const int16_t *__restrict__ t = &trig[0];
-        const int16_t *__restrict__ bitrev = l->kfft[shift]->bitrev;
+        const int32_t * xp1 = in;
+        const int32_t * xp2 = in + stride * (N2 - 1);
+        int32_t * yp = out + (overlap >> 1);
+        const int16_t * t = &trig[0];
+        const int16_t * bitrev = m_mdct_lookup.kfft[shift]->bitrev;
         for (i = 0; i < N4; i++) {
             int32_t rev;
             int32_t yr, yi;
@@ -4548,7 +4554,7 @@ void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict_
         }
     }
 
-    opus_fft_impl(l->kfft[shift], (kiss_fft_cpx *)(out + (overlap >> 1)));
+    opus_fft_impl(m_mdct_lookup.kfft[shift], (kiss_fft_cpx *)(out + (overlap >> 1)));
 
     /* Post-rotate and de-shuffle from both ends of the buffer at once to make
        it in-place. */
@@ -4589,10 +4595,10 @@ void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict_
 
     /* Mirror on both sides for TDAC */
     {
-        int32_t *__restrict__ xp1 = out + overlap - 1;
-        int32_t *__restrict__ yp1 = out;
-        const int16_t *__restrict__ wp1 = window;
-        const int16_t *__restrict__ wp2 = window + overlap - 1;
+        int32_t * xp1 = out + overlap - 1;
+        int32_t * yp1 = out;
+        const int16_t * wp1 = window120;
+        const int16_t * wp2 = window120 + overlap - 1;
 
         for (i = 0; i < overlap / 2; i++) {
             int32_t x1, x2;
@@ -4612,8 +4618,7 @@ CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *err
     for (i = 0; i < TOTAL_MODES; i++) {
         int32_t j;
         for (j = 0; j < 4; j++) {
-            if (Fs == static_mode_list[i]->Fs &&
-                (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts) {
+            if (  (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts) {
                 if (error) *error = OPUS_OK;
                 return (CELTMode_t *)static_mode_list[i];
             }

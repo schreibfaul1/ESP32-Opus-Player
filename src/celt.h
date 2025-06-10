@@ -56,6 +56,9 @@
 #define LEAK_BANDS 19
 #define MAXFACTORS 8
 
+extern const uint8_t cache_bits50[392];
+extern const int16_t cache_index50[105];
+
 
 typedef struct {
     int32_t r;
@@ -97,7 +100,7 @@ typedef struct {
    int32_t maxshift;
    const kiss_fft_state *kfft[4];
    const int16_t * __restrict__ trig;
-} mdct_lookup;
+} mdct_lookup_t;
 
 typedef struct {
     int32_t size;
@@ -111,7 +114,6 @@ typedef struct {
 typedef struct _CELTMode {
     int32_t Fs;
     int32_t overlap;
-
     int32_t nbEBands;
     int32_t effEBands;
     int16_t preemph[4];
@@ -126,8 +128,7 @@ typedef struct _CELTMode {
     const int16_t *logN;
 
     const int16_t *window;
-    mdct_lookup mdct;
-    PulseCache cache;
+  //  PulseCache cache;
 }CELTMode_t;
 
 
@@ -261,10 +262,6 @@ extern CELTDecoder_t CELTDecoder;
 
 # define comb_filter_const(y, x, T, N, g10, g11, g12) \
     (comb_filter_const_c(y, x, T, N, g10, g11, g12))
-
-
-#define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride) \
-   clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride)
 
 #define SIG_SAT (300000000)
 #define NORM_SCALING 16384
@@ -578,7 +575,7 @@ static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM,
    const uint8_t *cache;
 
    LM++;
-   cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM*m->nbEBands+band];
 
    lo = 0;
    hi = cache[0];
@@ -602,7 +599,7 @@ static inline int32_t pulses2bits(const CELTMode_t *m, int32_t band, int32_t LM,
    const uint8_t *cache;
 
    LM++;
-   cache = m->cache.bits + m->cache.index[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM*m->nbEBands+band];
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 
@@ -759,8 +756,7 @@ int16_t celt_rsqrt_norm(int32_t x);
 int32_t celt_sqrt(int32_t x);
 int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
-void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
-                         const int16_t *__restrict__ window, int32_t overlap, int32_t shift, int32_t stride);
+void     clt_mdct_backward(int32_t *in, int32_t *out, int32_t overlap, int32_t shift, int32_t stride);
 CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 void find_best_pitch(int32_t *xcorr, int16_t *y, int32_t len, int32_t max_pitch, int32_t *best_pitch, int32_t yshift, int32_t maxcorr);
 void celt_fir5(int16_t *x, const int16_t *num, int32_t N);
