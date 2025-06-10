@@ -122,7 +122,7 @@ typedef struct _CELTMode {
     int32_t shortMdctSize;
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
 }CELTMode_t;
-
+extern CELTMode_t const m_CELTMode;
 
 typedef struct _band_ctx{
     int32_t encode;
@@ -558,13 +558,13 @@ static inline int32_t get_pulses(int32_t i){
    return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
 }
 
-static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM, int32_t bits){
+static inline int32_t bits2pulses(int32_t band, int32_t LM, int32_t bits){
    int32_t i;
    int32_t lo, hi;
    const uint8_t *cache;
 
    LM++;
-   cache = cache_bits50 + cache_index50[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM*m_CELTMode.nbEBands+band];
 
    lo = 0;
    hi = cache[0];
@@ -584,11 +584,11 @@ static inline int32_t bits2pulses(const CELTMode_t *m, int32_t band, int32_t LM,
       return hi;
 }
 
-static inline int32_t pulses2bits(const CELTMode_t *m, int32_t band, int32_t LM, int32_t pulses){
+static inline int32_t pulses2bits(int32_t band, int32_t LM, int32_t pulses){
    const uint8_t *cache;
 
    LM++;
-   cache = cache_bits50 + cache_index50[LM*m->nbEBands+band];
+   cache = cache_bits50 + cache_index50[LM*m_CELTMode.nbEBands+band];
    return pulses == 0 ? 0 : cache[pulses]+1;
 }
 

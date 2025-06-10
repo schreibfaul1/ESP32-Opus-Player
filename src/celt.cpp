@@ -1292,16 +1292,13 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     int32_t tell;
     int32_t inv = 0;
     int32_t encode;
-    const CELTMode_t *m;
     int32_t i;
     int32_t intensity;
-    const int32_t *bandE;
+
 
     encode = s_band_ctx.encode;
-    m = s_band_ctx.m;
     i = s_band_ctx.i;
     intensity = s_band_ctx.intensity;
-    bandE = s_band_ctx.bandE;
 
     /* Decide on the resolution to give to the split parameter theta */
     pulse_cap = logN400[i] + LM * (1 << BITRES);
@@ -1495,17 +1492,15 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     uint32_t cm = 0;
     int16_t *Y = NULL;
     int32_t encode;
-    const CELTMode_t *m;
     int32_t i;
     int32_t spread;
 
     encode = s_band_ctx.encode;
-    m = s_band_ctx.m;
     i = s_band_ctx.i;
     spread = s_band_ctx.spread;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
-    cache = cache_bits50 + cache_index50[(LM + 1) * m->nbEBands + i];
+    cache = cache_bits50 + cache_index50[(LM + 1) * m_CELTMode.nbEBands + i];
     if (LM != -1 && b > cache[cache[0]] + 12 && N > 2) {
         int32_t mbits, sbits, delta;
         int32_t itheta;
@@ -1571,15 +1566,15 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
     }
     else {
         /* This is the basic no-split case */
-        q = bits2pulses(m, i, LM, b);
-        curr_bits = pulses2bits(m, i, LM, q);
+        q = bits2pulses(i, LM, b);
+        curr_bits = pulses2bits(i, LM, q);
         s_band_ctx.remaining_bits -= curr_bits;
 
         /* Ensures we can never bust the budget */
         while (s_band_ctx.remaining_bits < 0 && q > 0) {
             s_band_ctx.remaining_bits += curr_bits;
             q--;
-            curr_bits = pulses2bits(m, i, LM, q);
+            curr_bits = pulses2bits(i, LM, q);
             s_band_ctx.remaining_bits -= curr_bits;
         }
 
@@ -2083,7 +2078,7 @@ void quant_all_bands(int32_t encode, const CELTMode_t *m, int32_t start, int32_t
 
 int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels){
     int32_t size;
-    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + mode->overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
+    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
     return size;
 }
 //----------------------------------------------------------------------------------------------------------------------
