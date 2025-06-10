@@ -1857,7 +1857,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             if (encode)
                 ;
             else
-                itheta = ec_dec_uint(&s_ec, qn + 1);
+                itheta = ec_dec_uint(qn + 1);
         }
         else {
             int32_t fs = 1, ft;
@@ -1972,7 +1972,7 @@ uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
                 ;
             }
             else {
-                sign = ec_dec_bits(ec, 1);
+                sign = ec_dec_bits(1);
             }
             s_band_ctx.remaining_bits -= 1 << BITRES;
             b -= 1 << BITRES;
@@ -2317,7 +2317,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
                 ;
             }
             else {
-                sign = ec_dec_bits(ec, 1);
+                sign = ec_dec_bits(1);
             }
         }
         sign = 1 - 2 * sign;
@@ -3268,9 +3268,9 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
         if (ec_dec_bit_logp(1))
         {
             int32_t qg, octave;
-            octave = ec_dec_uint(dec, 6);
-            postfilter_pitch = (16 << octave) + ec_dec_bits(dec, 4 + octave) - 1;
-            qg = ec_dec_bits(dec, 3);
+            octave = ec_dec_uint(6);
+            postfilter_pitch = (16 << octave) + ec_dec_bits(4 + octave) - 1;
+            qg = ec_dec_bits(3);
             if (ec_tell(dec) + 2 <= total_bits)
                 postfilter_tapset = ec_dec_icdf(tapset_icdf, 2);
             postfilter_gain = QCONST16(.09375f, 15) * (qg + 1);
@@ -3373,7 +3373,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
                     st->disable_inv);
 
     if (anti_collapse_rsv > 0) {
-        anti_collapse_on = ec_dec_bits(dec, 1);
+        anti_collapse_on = ec_dec_bits(1);
     }
 
     unquant_energy_finalise(mode, start, end, oldBandE,
@@ -3816,7 +3816,7 @@ int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k, ec_ctx_t *_dec) {
-    return cwrsi(_n, _k, ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
+    return cwrsi(_n, _k, ec_dec_uint(CELT_PVQ_V(_n, _k)), _y);
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3953,7 +3953,7 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, uint32_t _ftb) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
+uint32_t ec_dec_uint(uint32_t _ft) {
     uint32_t ft;
     uint32_t s;
     int32_t ftb;
@@ -3967,9 +3967,9 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
         ft = (uint32_t)(_ft >> ftb) + 1;
         s = ec_decode(ft);
         ec_dec_update(s, s + 1, ft);
-        t = (uint32_t)s << ftb | ec_dec_bits(_this, ftb);
+        t = (uint32_t)s << ftb | ec_dec_bits(ftb);
         if (t <= _ft) return t;
-        _this->error = 1;
+        s_ec.error = 1;
         return _ft;
     } else {
         _ft++;
@@ -3980,12 +3980,12 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-uint32_t ec_dec_bits(ec_ctx_t *_this, uint32_t _bits) {
+uint32_t ec_dec_bits(uint32_t _bits) {
     uint32_t window;
     int32_t available;
     uint32_t ret;
-    window = _this->end_window;
-    available = _this->nend_bits;
+    window = s_ec.end_window;
+    available = s_ec.nend_bits;
     if ((uint32_t)available < _bits) {
         do {
             window |= (uint32_t)ec_read_byte_from_end() << available;
@@ -3995,9 +3995,9 @@ uint32_t ec_dec_bits(ec_ctx_t *_this, uint32_t _bits) {
     ret = (uint32_t)window & (((uint32_t)1 << _bits) - 1U);
     window >>= _bits;
     available -= _bits;
-    _this->end_window = window;
-    _this->nend_bits = available;
-    _this->nbits_total += _bits;
+    s_ec.end_window = window;
+    s_ec.nend_bits = available;
+    s_ec.nbits_total += _bits;
     return ret;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -5028,7 +5028,7 @@ int32_t interp_bits2pulses(const CELTMode_t *m, int32_t start, int32_t end, int3
         if (encode) {
             ;
         } else
-            *intensity = start + ec_dec_uint(ec, codedBands + 1 - start);
+            *intensity = start + ec_dec_uint(codedBands + 1 - start);
     } else
         *intensity = 0;
     if (*intensity <= start) {
@@ -5306,7 +5306,7 @@ void unquant_fine_energy(const CELTMode_t *m, int32_t start, int32_t end, int16_
         do {
             int32_t q2;
             int16_t offset;
-            q2 = ec_dec_bits(dec, fine_quant[i]);
+            q2 = ec_dec_bits(fine_quant[i]);
             offset = SUB16(SHR32(SHL32(EXTEND32(q2), DB_SHIFT) + QCONST16(.5f, DB_SHIFT), fine_quant[i]),
                            QCONST16(.5f, DB_SHIFT));
             oldEBands[i + c * m->nbEBands] += offset;
@@ -5327,7 +5327,7 @@ void unquant_energy_finalise(const CELTMode_t *m, int32_t start, int32_t end, in
             do {
                 int32_t q2;
                 int16_t offset;
-                q2 = ec_dec_bits(dec, 1);
+                q2 = ec_dec_bits(1);
                 offset = SHR16(SHL16(q2, DB_SHIFT) - QCONST16(.5f, DB_SHIFT), fine_quant[i] + 1);
                 oldEBands[i + c * m->nbEBands] += offset;
                 bits_left--;
