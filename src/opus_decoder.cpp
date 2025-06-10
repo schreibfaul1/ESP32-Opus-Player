@@ -185,7 +185,7 @@ if(!inbuf)log_e("Inbuf is null");
 //____________________________________________________________________________________________________________________________--
     extern ec_ctx_t      s_ec;
    // ec_ctx_t dec;
-    ec_dec_init(&s_ec, inbuf, packetLen);
+    ec_dec_init(inbuf, packetLen);
 
     /* Don't allocate any memory when in CELT-only mode */
     pcm_silk_size = (mode != MODE_CELT_ONLY) ? max(F10, audiosize) * channels : ALLOC_NONE;

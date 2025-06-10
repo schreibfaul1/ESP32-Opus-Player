@@ -1843,7 +1843,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
             }
             else {
                 int32_t fs;
-                fs = ec_decode(&s_ec, ft);
+                fs = ec_decode(ft);
                 if (fs < (x0 + 1) * p0)
                     x = fs / p0;
                 else
@@ -1869,7 +1869,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
                 /* Triangular pdf */
                 int32_t fl = 0;
                 int32_t fm;
-                fm = ec_decode(&s_ec, ft);
+                fm = ec_decode(ft);
 
                 if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                 {
@@ -3237,7 +3237,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t *__restrict__ st, const uint8_t *data,
     st->skip_plc = st->loss_count != 0;
 
     if (dec == NULL) {
-        ec_dec_init(&_dec, (uint8_t *)data, len);
+        ec_dec_init((uint8_t *)data, len);
         dec = &_dec;
     }
 
@@ -3866,7 +3866,7 @@ void ec_dec_normalize() {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
+void ec_dec_init(uint8_t *_buf, uint32_t _storage) {
 
     s_ec.buf = _buf;
     s_ec.storage = _storage;
@@ -3884,10 +3884,10 @@ void ec_dec_init(ec_ctx_t *ec, uint8_t *_buf, uint32_t _storage) {
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-unsigned ec_decode(ec_ctx_t *_this, unsigned _ft) {
+unsigned ec_decode(unsigned _ft) {
     unsigned s;
-    _this->ext = celt_udiv(_this->rng, _ft);
-    s = (unsigned)(_this->val / _this->ext);
+    s_ec.ext = celt_udiv(s_ec.rng, _ft);
+    s = (unsigned)(s_ec.val / s_ec.ext);
     return _ft - EC_MINI(s + 1, _ft);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -3965,7 +3965,7 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
         uint32_t t;
         ftb -= EC_UINT_BITS;
         ft = (unsigned)(_ft >> ftb) + 1;
-        s = ec_decode(_this, ft);
+        s = ec_decode(ft);
         ec_dec_update(_this, s, s + 1, ft);
         t = (uint32_t)s << ftb | ec_dec_bits(_this, ftb);
         if (t <= _ft) return t;
@@ -3973,7 +3973,7 @@ uint32_t ec_dec_uint(ec_ctx_t *_this, uint32_t _ft) {
         return _ft;
     } else {
         _ft++;
-        s = ec_decode(_this, (unsigned)_ft);
+        s = ec_decode((unsigned)_ft);
         ec_dec_update(_this, s, s + 1, (unsigned)_ft);
         return s;
     }

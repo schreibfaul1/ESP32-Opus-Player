@@ -36,7 +36,7 @@ i2s_std_config_t      m_i2s_std_cfg = {};  // stores I2S driver values
 uint8_t             m_i2s_num = I2S_NUM_0;          // I2S_NUM_0 or I2S_NUM_1
 uint32_t            m_sampleRate=16000;
 uint8_t             m_bitsPerSample = 16;           // bitsPerSample
-uint8_t             m_vol=64;                       // volume
+uint8_t             m_vol=255;                      // volume
 size_t              m_i2s_bytesWritten = 0;         // set in i2s_write() but not used
 uint8_t             m_channels=2;
 int16_t             m_outBuff[2048*2];              // Interleaved L/R
@@ -230,9 +230,9 @@ bool playChunk() {
 //---------------------------------------------------------------------------------------------------------------------
 bool playSample(int16_t sample[2]) {
 
-    int16_t sample1[2]; int16_t* s1;
-    int16_t sample2[2]; int16_t* s2 = sample2;
-    int16_t sample3[2]; int16_t* s3 = sample3;
+    // int16_t sample1[2]; int16_t* s1;
+    // int16_t sample2[2]; int16_t* s2 = sample2;
+    // int16_t sample3[2]; int16_t* s3 = sample3;
 
     if (getBitsPerSample() == 8) { // Upsample from unsigned 8 bits to signed 16 bits
         sample[LEFTCHANNEL]  = ((sample[LEFTCHANNEL]  & 0xff) -128) << 8;
