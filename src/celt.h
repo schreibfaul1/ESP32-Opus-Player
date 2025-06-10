@@ -263,9 +263,6 @@ extern CELTDecoder_t CELTDecoder;
     (comb_filter_const_c(y, x, T, N, g10, g11, g12))
 
 
-#define clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride) \
-   clt_mdct_forward_c(_l, _in, _out, _window, _overlap, _shift, _stride)
-
 #define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride) \
    clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride)
 
@@ -762,8 +759,6 @@ int16_t celt_rsqrt_norm(int32_t x);
 int32_t celt_sqrt(int32_t x);
 int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
-void clt_mdct_forward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
-                        const int16_t *window, int32_t overlap, int32_t shift, int32_t stride);
 void clt_mdct_backward_c(const mdct_lookup *l, int32_t *in, int32_t *__restrict__ out,
                          const int16_t *__restrict__ window, int32_t overlap, int32_t shift, int32_t stride);
 CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
