@@ -1304,34 +1304,6 @@ void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-/* Normalise each band such that the energy is one. */
-void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE, int32_t end, int32_t C, int32_t M)
-{
-    int32_t i, c, N;
-    const int16_t *eBands = eband5ms;
-    N = M * m->shortMdctSize;
-    c = 0;
-    do
-    {
-        i = 0;
-        do
-        {
-            int16_t g;
-            int32_t j, shift;
-            int16_t E;
-            shift = celt_zlog2(bandE[i + c * m->nbEBands]) - 13;
-            E = VSHR32(bandE[i + c * m->nbEBands], shift);
-            g = EXTRACT16(celt_rcp(SHL32(E, 3)));
-            j = M * eBands[i];
-            do
-            {
-                X[j + c * N] = MULT16_16_Q15(VSHR32(freq[j + c * N], shift - 1), g);
-            } while (++j < M * eBands[i + 1]);
-        } while (++i < end);
-    } while (++c < C);
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 /* De-normalise the energy to produce the synthesis from the unit-energy bands */
 void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence) {

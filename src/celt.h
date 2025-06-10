@@ -686,8 +686,6 @@ uint32_t celt_lcg_rand(uint32_t seed);
 int16_t bitexact_cos(int16_t x);
 int32_t bitexact_log2tan(int32_t isin, int32_t icos);
 void compute_band_energies(const CELTMode_t *m, const int32_t *X, int32_t *bandE, int32_t end, int32_t C, int32_t LM);
-void normalise_bands(const CELTMode_t *m, const int32_t *__restrict__ freq, int16_t *__restrict__ X, const int32_t *bandE,
-                     int32_t end, int32_t C, int32_t M);
 void denormalise_bands(const CELTMode_t *m, const int16_t *__restrict__ X, int32_t *__restrict__ freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence);
 void anti_collapse(const CELTMode_t *m, int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
