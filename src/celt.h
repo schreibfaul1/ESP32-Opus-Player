@@ -659,6 +659,8 @@ public:
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 bool CELTDecoder_AllocateBuffers(void);
+void CELTDecoder_ClearBuffer(void);
+void CELTDecoder_FreeBuffers();
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);
