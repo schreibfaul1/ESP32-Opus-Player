@@ -1,0 +1,308 @@
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;3��[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;3�m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281603[0m
+[0;33m[  1082][W][celt.cpp:676] CELTDecoder_AllocateBuffers(): Allocate[0m
+[0;33m[  1088][W][celt.cpp:679] CELTDecoder_AllocateBuffers(): s_celtDec 17856 bytes allokiert[0m
+[0;32m[  1103][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1108][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1108][W][opus_decoder.cpp:816] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1128][I][opus_decoder.cpp:759] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400d37c2  PS      : 0x00060330  A0      : 0x800d945f  A1      : 0x3ffc4d10  
+A2      : 0x00000000  A3      : 0x0000bb80  A4      : 0x00000002  A5      : 0x3f8145f8  
+A6      : 0x3ffb7e44  A7      : 0x3ffb28bc  A8      : 0x00000000  A9      : 0x3ffc4d00  
+A10     : 0x3ffb28bc  A11     : 0x00000000  A12     : 0x000045c0  A13     : 0x3ffb6e7c  
+A14     : 0x00000f78  A15     : 0x0000045c  SAR     : 0x00000002  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x00000004  LBEG    : 0x4008898a  LEND    : 0x40088995  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x400d37bf:0x3ffc4d10 0x400d945c:0x3ffc4d30 0x400d9dd6:0x3ffc4d60 0x400d9ecd:0x3ffc4d80 0x400dabb5:0x3ffc4db0 0x400daccc:0x3ffc4de0 0x400db274:0x3ffc4e00 0x400d885e:0x3ffc4e20 0x400e9e56:0x3ffc4e70 0x4008d3d1:0x3ffc4e90
+  #0  0x400d37bf in celt_decoder_init(_CELTDecoder*, long, long) at src/celt.cpp:2040
+  #1  0x400d945c in opus_decoder_init(OpusDecoder*, long, int) at src/opus_decoder.cpp:114
+  #2  0x400d9dd6 in opus_multistream_decoder_init(OpusMSDecoder*, long, int, int, int, unsigned char const*) at src/opus_decoder.cpp:794
+  #3  0x400d9ecd in opus_multistream_decoder_create(long, int, int, int, unsigned char const*, int*) at src/opus_decoder.cpp:822
+  #4  0x400dabb5 in op_make_decode_ready() at src/opusfile.cpp:693
+  #5  0x400daccc in op_open2() at src/opusfile.cpp:777
+  #6  0x400db274 in opus_init_decoder() at src/opusfile.cpp:795
+  #7  0x400d885e in setup() at src/main.cpp:308
+  #8  0x400e9e56 in loopTask(void*) at /home/wolle/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:59
+  #9  0x4008d3d1 in vPortTaskWrapper at /home/wolle/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;3�

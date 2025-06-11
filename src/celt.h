@@ -147,7 +147,7 @@ struct split_ctx{
     int32_t itheta;
     int32_t qalloc;
 };
-
+#define DECODER_RESET_START rng
 typedef struct _CELTDecoder {
     int32_t overlap;
     int32_t channels;
@@ -156,10 +156,6 @@ typedef struct _CELTDecoder {
     int32_t start, end;
     int32_t signalling;
     int32_t disable_inv;
-
-    /* Everything beyond this point gets cleared on a reset */
-#define DECODER_RESET_START rng
-
     uint32_t rng;
     int32_t error;
     int32_t last_pitch_index;
@@ -171,9 +167,7 @@ typedef struct _CELTDecoder {
     int16_t postfilter_gain_old;
     int32_t postfilter_tapset;
     int32_t postfilter_tapset_old;
-
     int32_t preemph_memD[2];
-
     int32_t _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
                             /* int16_t lpc[],  Size = channels*LPC_ORDER */
                             /* int16_t oldEBands[], Size = 2*mode->nbEBands */

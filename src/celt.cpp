@@ -2034,8 +2034,31 @@ int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t chan
     st->downsample = resampling_factor(sampling_rate);
     if (st->downsample == 0)
         return OPUS_BAD_ARG;
-    else
+    else{
+
+        int32_t n = celt_decoder_get_size(channels);
+    //    memset(&s_celtDec, 0, n * sizeof(char));
+
+        s_celtDec->channels = channels;
+        if(channels == 1) s_celtDec->disable_inv = 1; else s_celtDec->disable_inv = 0; // 1 mono ,  0 stereo
+        s_celtDec->end = m_CELTMode.nbEBands; // 21
+        s_celtDec->error = 0;
+        s_celtDec->overlap = m_CELTMode.overlap;
+        s_celtDec->postfilter_gain = 0;
+        s_celtDec->postfilter_gain_old = 0;
+        s_celtDec->postfilter_period = 0;
+        s_celtDec->postfilter_tapset = 0;
+        s_celtDec->postfilter_tapset_old = 0;
+        s_celtDec->preemph_memD[0] = 0;
+        s_celtDec->preemph_memD[1] = 0;
+        s_celtDec->rng = 0;
+        s_celtDec->signalling = 1;
+        s_celtDec->start = 0;
+        s_celtDec->stream_channels = channels;
+        s_celtDec->_decode_mem[0] = 0;
+
         return OPUS_OK;
+    }
 }
 //----------------------------------------------------------------------------------------------------------------------
 
