@@ -1925,11 +1925,11 @@ int32_t celt_decoder_get_size(int32_t channels){
     return size;
 }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-int32_t celt_decoder_init(int32_t Fs, int32_t channels){
+int32_t celt_decoder_init(int32_t channels){
 
     s_celtDec.clear();
 
-    s_celtDec->downsample = resampling_factor(Fs);
+    s_celtDec->downsample = 1; //resampling_factor(Fs);
     s_celtDec->channels = channels;
     if(channels == 1) s_celtDec->disable_inv = 1; else s_celtDec->disable_inv = 0; // 1 mono ,  0 stereo
     s_celtDec->end = m_CELTMode.nbEBands; // 21

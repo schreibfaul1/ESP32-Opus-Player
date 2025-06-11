@@ -103,7 +103,7 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    ret = silk_InitDecoder();
    if(ret)return OPUS_INTERNAL_ERROR;
 
-   ret = celt_decoder_init(Fs, channels);
+   ret = celt_decoder_init(channels);
 
 
 
