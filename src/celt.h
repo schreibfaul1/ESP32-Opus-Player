@@ -117,7 +117,7 @@ typedef struct _CELTMode {
     int32_t nbEBands;
     int32_t effEBands;
     int16_t preemph[4];
-     int32_t maxLM;
+    int32_t maxLM;
     int32_t nbShortMdcts;
     int32_t shortMdctSize;
     int32_t nbAllocVectors;                /**< Number of lines in the matrix below */
@@ -688,7 +688,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                      int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv);
 int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels);
 int32_t celt_decoder_get_size(int32_t channels);
-int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int32_t channels);
+int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels);
 int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t channels);
 void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem);
 void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
@@ -726,7 +726,6 @@ int32_t celt_sqrt(int32_t x);
 int16_t celt_cos_norm(int32_t x);
 int32_t celt_rcp(int32_t x);
 void     clt_mdct_backward(int32_t *in, int32_t *out, int32_t overlap, int32_t shift, int32_t stride);
-CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error);
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);

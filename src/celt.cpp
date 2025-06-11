@@ -1988,29 +1988,31 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_get_size(const CELTMode_t *mode, int32_t channels){
+int32_t opus_custom_decoder_get_size(int32_t channels){
     int32_t size;
-    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * mode->nbEBands * sizeof(int16_t);
+    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * m_CELTMode.nbEBands * sizeof(int16_t);
     return size;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
 int32_t celt_decoder_get_size(int32_t channels){
-    const CELTMode_t *mode = opus_custom_mode_create(48000, 960, NULL);
-    return opus_custom_decoder_get_size(mode, channels);
+    static int32_t size;
+    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t)
+           + channels * 24 * sizeof(int16_t) + 4 * 2 * m_CELTMode.nbEBands * sizeof(int16_t);
+    return size;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int32_t channels){
+int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels){
     if (channels < 0 || channels > 2)
         return OPUS_BAD_ARG;
 
     //CELTDecoder_t *st = s_celtDec.get();
 
-    OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(mode, channels));
+    OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(channels));
 
-    st->mode = mode;
-    st->overlap = mode->overlap;
+    st->mode = &m_CELTMode;
+    st->overlap = m_CELTMode.overlap;
     st->stream_channels = st->channels = channels;
 
     st->downsample = 1;
@@ -2027,7 +2029,7 @@ int32_t opus_custom_decoder_init(CELTDecoder_t *st, const CELTMode_t *mode, int3
 
 int32_t celt_decoder_init(CELTDecoder_t *st, int32_t sampling_rate, int32_t channels){
     int32_t ret;
-    ret = opus_custom_decoder_init(st, opus_custom_mode_create(48000, 960, NULL), channels);
+    ret = opus_custom_decoder_init(st, channels);
     if (ret != OPUS_OK)
         return ret;
     st->downsample = resampling_factor(sampling_rate);
@@ -2584,7 +2586,7 @@ int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...) {
             oldBandE = lpc + st->channels * LPC_ORDER;
             oldLogE = oldBandE + 2 * m_CELTMode.nbEBands;
             oldLogE2 = oldLogE + 2 * m_CELTMode.nbEBands;
-            OPUS_CLEAR((char *)&st->DECODER_RESET_START, opus_custom_decoder_get_size(st->mode, st->channels) -
+            OPUS_CLEAR((char *)&st->DECODER_RESET_START, opus_custom_decoder_get_size(st->channels) -
                                                              ((char *)&st->DECODER_RESET_START - (char *)st));
             for (i = 0; i < 2 * m_CELTMode.nbEBands; i++) oldLogE[i] = oldLogE2[i] = -QCONST16(28.f, DB_SHIFT);
             st->skip_plc = 1;
@@ -3417,23 +3419,6 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
             wp2--;
         }
     }
-}
-//----------------------------------------------------------------------------------------------------------------------
-
-CELTMode_t *opus_custom_mode_create(int32_t Fs, int32_t frame_size, int32_t *error) {
-    int32_t i;
-    for (i = 0; i < TOTAL_MODES; i++) {
-        int32_t j;
-        for (j = 0; j < 4; j++) {
-            if (  (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts) {
-                if (error) *error = OPUS_OK;
-                return (CELTMode_t *)static_mode_list[i];
-            }
-        }
-    }
-
-    if (error) *error = OPUS_BAD_ARG;
-    return NULL;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
