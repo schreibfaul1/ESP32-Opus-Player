@@ -59,7 +59,6 @@
 extern const uint8_t cache_bits50[392];
 extern const int16_t cache_index50[105];
 
-
 typedef struct {
     int32_t r;
     int32_t i;
@@ -109,8 +108,6 @@ typedef struct {
     const uint8_t *caps;
 } PulseCache;
 
-
-
 typedef struct _CELTMode {
     int32_t Fs;
     int32_t overlap;
@@ -148,6 +145,7 @@ struct split_ctx{
     int32_t qalloc;
 };
 #define DECODER_RESET_START rng
+
 typedef struct _CELTDecoder {
     int32_t overlap;
     int32_t channels;
@@ -170,15 +168,6 @@ typedef struct _CELTDecoder {
     int32_t preemph_memD[2];
     int32_t _decode_mem[1];
 }CELTDecoder_t;
-
-extern CELTDecoder_t *CELTDecoder;
-
-
-
-
-
-
-
 
 /* List of all the available modes */
 #define TOTAL_MODES 1
@@ -599,6 +588,74 @@ using celt_ptr_arr = std::unique_ptr<T[], Celt_PsramDeleter>;
         }
         return std::unique_ptr<T[], Celt_PsramDeleter>(raw);
     }
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+template <typename T>
+class celt_raw_ptr {
+    std::unique_ptr<void, Celt_PsramDeleter> mem;
+    std::size_t allocated_size = 0;
+
+public:
+    celt_raw_ptr() = default;
+
+    // Newly allocate memory (use this when the first assignment)
+    void alloc(std::size_t size, const char* name = nullptr) {
+        mem.reset(ps_malloc(size));
+        allocated_size = size;
+
+        if (!mem) {
+            if (name) {
+                printf("OOM: failed to allocate %zu bytes for %s\n", size, name);
+            } else {
+                printf("OOM: failed to allocate %zu bytes\n", size);
+            }
+        }
+    }
+
+    // Change memory size, existing content (up to the smaller size) are copied
+    void realloc(std::size_t new_size, const char* name = nullptr) {
+        void* new_mem = ps_malloc(new_size);
+        if (!new_mem) {
+            if (name) {
+                printf("OOM: failed to realloc %zu bytes for %s\n", new_size, name);
+            } else {
+                printf("OOM: failed to realloc %zu bytes\n", new_size);
+            }
+            return;
+        }
+
+        // Copy old content if necessary
+        if (mem && allocated_size > 0) {
+            memcpy(new_mem, mem.get(), std::min(allocated_size, new_size));
+        }
+
+        mem.reset(new_mem);
+        allocated_size = new_size;
+    }
+
+    // access
+    T* get() const { return static_cast<T*>(mem.get()); }
+    T* operator->() const { return get(); }
+    T& operator*() const { return *get(); }
+
+    // Set memory to 0
+    void clear() {
+        if (mem && allocated_size > 0) {
+            memset(mem.get(), 0, allocated_size);
+        }
+    }
+
+    // Return currently allocated size
+    std::size_t size() const {
+        return allocated_size;
+    }
+
+    // Value check and manual release
+    bool valid() const { return mem != nullptr; }
+    void reset() {
+        mem.reset();
+        allocated_size = 0;
+    }
+};
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 bool CELTDecoder_AllocateBuffers(void);

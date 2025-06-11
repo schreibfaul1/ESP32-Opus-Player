@@ -32,18 +32,10 @@
 #include <Arduino.h>
 #include "celt.h"
 
-CELTDecoder_t *s_celtDec;
+celt_raw_ptr<CELTDecoder_t> s_celtDec; // unique pointer
 band_ctx_t     s_band_ctx;
 ec_ctx_t      *s_ec_ptr;
 ec_ctx_t       s_ec;
-
-
-bool CELTDecoder_AllocateBuffers(void) {
-    size_t omd = celt_decoder_get_size(2);
-    s_celtDec = (CELTDecoder_t*)ps_malloc(omd);
-    if(s_celtDec) {log_w("%i bytes allokiert", omd); return true;}
-    return false;
-}
 
 
 const uint32_t CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
@@ -662,8 +654,28 @@ uint32_t celt_pvq_u_row(uint32_t row, uint32_t data){
 #define CELT_PVQ_U(_n, _k) (celt_pvq_u_row(min(_n, _k), max(_n, _k)))
 #define CELT_PVQ_V(_n, _k) (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1))
 
-//----------------------------------------------------------------------------------------------------------------------
 
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+bool CELTDecoder_AllocateBuffers(void) {
+    size_t omd = celt_decoder_get_size(2);
+    s_celtDec.alloc(omd, "CELTDecoder");
+    if (s_celtDec.valid()) {
+        log_w("Allocated %zu bytes", s_celtDec.size());
+        s_celtDec.clear();  // mem zero
+        return true;
+    }
+    log_e("oom for %i bytes", omd);
+    return false;
+}
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+void CELTDecoder_ClearBuffer(void){
+    s_celtDec.clear();  // mem zero
+}
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+void CELTDecoder_FreeBuffers(){
+    s_celtDec.reset();
+}
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s) {
     int32_t i;
     int16_t ms;
@@ -686,8 +698,7 @@ void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s
         *Xptr-- = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x1), ms, x2), 15));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread) {
     const int32_t SPREAD_FACTOR[3] = {15, 10, 5};
     int32_t i;
@@ -724,10 +735,8 @@ void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t 
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/** Takes the pitch vector and the decoded residual vector, computes the gain
-    that will give ||p+g*y||=1 and mixes the residual with the pitch. */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/** Takes the pitch vector and the decoded residual vector, computes the gain that will give ||p+g*y||=1 and mixes the residual with the pitch. */
 void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain) {
     int32_t i;
     int32_t k;
@@ -742,15 +751,13 @@ void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16
     do X[i] = EXTRACT16(PSHR32(MULT16_16(g, iy[i]), k + 1));
     while (++i < N);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
     uint32_t collapse_mask;
     int32_t N0;
     int32_t i;
     if (B <= 1) return 1;
-    /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
-       exp_rotation().*/
+    /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for exp_rotation().*/
     N0 = celt_udiv(N, B);
     collapse_mask = 0;
     i = 0;
@@ -765,10 +772,8 @@ uint32_t extract_collapse_mask(int32_t *iy, int32_t N, int32_t B) {
     } while (++i < B);
     return collapse_mask;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/** Decode pulse vector and combine the result with the pitch vector to produce
-    the final normalised signal in the current band. */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/** Decode pulse vector and combine the result with the pitch vector to produce the final normalised signal in the current band. */
 uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B, int16_t gain) {
     int32_t Ryy;
     uint32_t collapse_mask;
@@ -783,8 +788,7 @@ uint32_t alg_unquant(int16_t *X, int32_t N, int32_t K, int32_t spread, int32_t B
     collapse_mask = extract_collapse_mask(iy.get(), N, B);
     return collapse_mask;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void renormalise_vector(int16_t *X, int32_t N, int16_t gain) {
     int32_t i;
     int32_t k;
@@ -804,8 +808,7 @@ void renormalise_vector(int16_t *X, int32_t N, int16_t gain) {
     }
     /*return celt_sqrt(E);*/
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t resampling_factor(int32_t rate){
     int32_t ret;
     switch (rate){
@@ -818,8 +821,7 @@ int32_t resampling_factor(int32_t rate){
     }
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void comb_filter_const_c(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g10, int16_t g11, int16_t g12) {
     int32_t x0, x1, x2, x3, x4;
     int32_t i;
@@ -837,8 +839,7 @@ void comb_filter_const_c(int32_t *y, int32_t *x, int32_t T, int32_t N, int16_t g
         x1 = x0;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int16_t g0, int16_t g1, int32_t tapset0, int32_t tapset1){
     int32_t i;
     /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
@@ -891,11 +892,9 @@ void comb_filter(int32_t *y, int32_t *x, int32_t T0, int32_t T1, int32_t N, int1
     /* Compute the part with the constant filter. */
     comb_filter_const(y + i, x + i, T1, N - i, g10, g11, g12);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* TF change table. Positive values mean better frequency resolution (longer effective window), whereas negative values
-   mean better time resolution (shorter effective window). The second index is computed as:
-   4*isTransient + 2*tf_select + per_band_flag */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* TF change table. Positive values mean better frequency resolution (longer effective window), whereas negative values mean better time resolution (shorter effective window).
+   The second index is computed as: 4*isTransient + 2*tf_select + per_band_flag */
 const signed char tf_select_table[4][8] = {
     /*isTransient=0     isTransient=1 */
     {0, -1, 0, -1, 0, -1, 0, -1}, /* 2.5 ms */
@@ -903,8 +902,7 @@ const signed char tf_select_table[4][8] = {
     {0, -2, 0, -3, 2, 0, 1, -1},  /* 10 ms */
     {0, -2, 0, -3, 3, 0, 1, -1},  /* 20 ms */
 };
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void init_caps(int32_t *cap, int32_t LM, int32_t C) {
     int32_t i;
     for (i = 0; i < m_CELTMode.nbEBands; i++)
@@ -914,15 +912,12 @@ void init_caps(int32_t *cap, int32_t LM, int32_t C) {
         cap[i] = (cache_caps50[m_CELTMode.nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t celt_lcg_rand(uint32_t seed) {
     return 1664525 * seed + 1013904223;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* This is a cos() approximation designed to be bit-exact on any platform. Bit exactness
-   with this approximation is important because it has an impact on the bit allocation */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* This is a cos() approximation designed to be bit-exact on any platform. Bit exactness with this approximation is important because it has an impact on the bit allocation */
 int16_t bitexact_cos(int16_t x) {
     int32_t tmp;
     int16_t x2;
@@ -933,8 +928,7 @@ int16_t bitexact_cos(int16_t x) {
     assert(x2 <= 32766);
     return 1 + x2;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t bitexact_log2tan(int32_t isin, int32_t icos) {
     int32_t lc;
     int32_t ls;
@@ -944,8 +938,7 @@ int32_t bitexact_log2tan(int32_t isin, int32_t icos) {
     isin <<= 15 - ls;
     return (ls - lc) * (1 << 11) + FRAC_MUL16(isin, FRAC_MUL16(isin, -2597) + 7932) - FRAC_MUL16(icos, FRAC_MUL16(icos, -2597) + 7932);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* De-normalise the energy to produce the synthesis from the unit-energy bands */
 void denormalise_bands(const int16_t * X, int32_t * freq,
                        const int16_t *bandLogE, int32_t start, int32_t end, int32_t M, int32_t downsample, int32_t silence) {
@@ -988,8 +981,7 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
         }
         /* Handle extreme gains with negative shift. */
         if (shift < 0) {
-            /* For shift <= -2 and g > 16384 we'd be likely to overflow, so we're
-               capping the gain here, which is equivalent to a cap of 18 on lg.
+            /* For shift <= -2 and g > 16384 we'd be likely to overflow, so we're capping the gain here, which is equivalent to a cap of 18 on lg.
                This shouldn't trigger unless the bitstream is already corrupted. */
             if (shift <= -2) {
                 g = 16384;
@@ -1000,7 +992,6 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
             } while (++j < band_end);
         }
         else
-
             /* Be careful of the fixed-point "else" just above when changing this code */
             do {
                 *f++ = SHR32(MULT16_16(*x++, g), shift);
@@ -1009,8 +1000,7 @@ void denormalise_bands(const int16_t * X, int32_t * freq,
     assert(start <= end);
     OPUS_CLEAR(&freq[bound], N - bound);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* This prevents energy collapse for transients with multiple short MDCTs */
 void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, int32_t size, int32_t start,
                    int32_t end, const int16_t *logE, const int16_t *prev1logE, const int16_t *prev2logE, const int32_t *pulses,
@@ -1085,15 +1075,12 @@ void anti_collapse(int16_t *X_, uint8_t *collapse_masks, int32_t LM, int32_t C, 
         } while (++c < C);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* Compute the weights to use for optimizing normalized distortion across channels. We use the amplitude to weight
-   square distortion, which means that we use the square root of the value we would have been using if we wanted to
-   minimize the MSE in the non-normalized domain. This roughly corresponds to some quick-and-dirty perceptual
-   experiments I ran to measure inter-aural masking (there doesn't seem to be any published data on the topic). */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* Compute the weights to use for optimizing normalized distortion across channels. We use the amplitude to weight   square distortion, which means that we use the square root of the value we would
+   have been using if we wanted to minimize the MSE in the non-normalized domain. This roughly corresponds to some quick-and-dirty perceptual experiments I ran to measure inter-aural masking
+   (there doesn't seem to be any published data on the topic). */
 void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
     int32_t minE;
-
     int32_t shift;
 
     minE = min(Ex, Ey);
@@ -1106,8 +1093,7 @@ void compute_channel_weights(int32_t Ex, int32_t Ey, int16_t w[2]) {
     w[0] = VSHR32(Ex, shift);
     w[1] = VSHR32(Ey, shift);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
     int32_t j;
     for (j = 0; j < N; j++) {
@@ -1118,8 +1104,7 @@ void stereo_split(int16_t * X, int16_t * Y, int32_t N) {
         Y[j] = EXTRACT16(SHR32(SUB32(r, l), 15));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
     int32_t j;
     int32_t xp = 0, side = 0;
@@ -1163,14 +1148,12 @@ void stereo_merge(int16_t * X, int16_t * Y, int16_t mid, int32_t N){
         Y[j] = EXTRACT16(PSHR32(MULT16_16(rgain, ADD16(l, r)), kr + 1));
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* Indexing table for converting from natural Hadamard to ordery Hadamard. This is essentially a bit-reversed Gray,
    on top of which we've added an inversion of the order because we want the DC at the end rather than the beginning.
    The lines are for N=2, 4, 8, 16 */
 const int32_t ordery_table[] = { 1, 0, 3, 0, 2, 1, 7, 0, 4, 3, 6, 1, 5, 2, 15, 0, 8, 7, 12, 3, 11, 4, 14, 1, 9, 6, 13, 2, 10, 5,};
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard){
     int32_t i, j;
     int32_t N;
@@ -1191,8 +1174,7 @@ void deinterleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadam
     }
     memcpy(X, tmp.get(), N * sizeof(*X));
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamard){
     int32_t i, j;
     int32_t N;
@@ -1211,8 +1193,7 @@ void interleave_hadamard(int16_t *X, int32_t N0, int32_t stride, int32_t hadamar
     }
     memcpy(X, tmp.get(), N * sizeof(*X));
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void haar1(int16_t *X, int32_t N0, int32_t stride) {
     int32_t i, j;
     N0 >>= 1;
@@ -1225,8 +1206,7 @@ void haar1(int16_t *X, int32_t N0, int32_t stride) {
             X[stride * (2 * j + 1) + i] = EXTRACT16(PSHR32(SUB32(tmp1, tmp2), 15));
         }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t compute_qn(int32_t N, int32_t b, int32_t offset, int32_t pulse_cap, int32_t stereo) {
     const int16_t exp2_table8[8] =
         {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
@@ -1252,8 +1232,7 @@ int32_t compute_qn(int32_t N, int32_t b, int32_t offset, int32_t pulse_cap, int3
     assert(qn <= 256);
     return qn;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, int32_t *b, int32_t B,
                           int32_t __B0, int32_t LM, int32_t stereo, int32_t *fill) {
     int32_t qn;
@@ -1280,8 +1259,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
 
     tell = ec_tell_frac();
     if (qn != 1) {
-        /* Entropy coding of the angle. We use a uniform pdf for the time split, a step for stereo,
-           and a triangular one for the rest. */
+        /* Entropy coding of the angle. We use a uniform pdf for the time split, a step for stereo, and a triangular one for the rest. */
         if (stereo && N > 2) {
             int32_t p0 = 3;
             int32_t x = itheta;
@@ -1370,8 +1348,7 @@ void compute_theta(struct split_ctx *sctx, int16_t *X, int16_t *Y, int32_t N, in
     sctx->itheta = itheta;
     sctx->qalloc = qalloc;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out) {
     int32_t c;
     int32_t stereo;
@@ -1394,11 +1371,9 @@ uint32_t quant_band_n1(int16_t *X, int16_t *Y, int32_t b,  int16_t *lowband_out)
         lowband_out[0] = SHR16(X[0], 4);
     return 1;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* This function is responsible for encoding and decoding a mono partition. It can split the band in two and transmit
-   the energy difference with the two half-bands. It can be called recursively so bands can end up being
-   split in 8 parts. */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* This function is responsible for encoding and decoding a mono partition. It can split the band in two and transmit  the energy difference with the two half-bands.
+   It can be called recursively so bands can end up being split in 8 parts. */
 uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                                 int16_t gain, int32_t fill){
     const uint8_t *cache;
@@ -1506,8 +1481,7 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
             if (s_band_ctx.resynth)
             {
                 uint32_t cm_mask;
-                /* B can be as large as 16, so this shift might overflow an int32_t on a
-                   16-bit platform; use a long to get defined behavior.*/
+                /* B can be as large as 16, so this shift might overflow an int32_t on a 16-bit platform; use a long to get defined behavior.*/
                 cm_mask = (uint32_t)(1UL << B) - 1;
                 fill &= cm_mask;
                 if (!fill) {
@@ -1542,8 +1516,7 @@ uint32_t quant_partition(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *l
 
     return cm;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* This function is responsible for encoding and decoding a band for the mono case. */
 uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowband, int32_t LM,
                            int16_t *lowband_out, int16_t gain, int16_t *lowband_scratch, int32_t fill) {
@@ -1645,8 +1618,7 @@ uint32_t quant_band(int16_t *X, int32_t N, int32_t b, int32_t B, int16_t *lowban
     }
     return cm;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* This function is responsible for encoding and decoding a band for the stereo case. */
 uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t B, int16_t *lowband,
                                   int32_t LM, int16_t *lowband_out, int16_t *lowband_scratch, int32_t fill) {
@@ -1678,9 +1650,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
     mid = imid;
     side = iside;
 
-    /* This is a special case for N=2 that only works for stereo and takes
-       advantage of the fact that mid and side are orthogonal to encode
-       the side with just one bit. */
+    /* This is a special case for N=2 that only works for stereo and takes advantage of the fact that mid and side are orthogonal to encode the side with just one bit. */
     if (N == 2) {
         int32_t c;
         int32_t sign = 0;
@@ -1700,12 +1670,10 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
             sign = ec_dec_bits(1);
         }
         sign = 1 - 2 * sign;
-        /* We use orig_fill here because we want to fold the side, but if
-           itheta==16384, we'll have cleared the low bits of fill. */
+        /* We use orig_fill here because we want to fold the side, but if itheta==16384, we'll have cleared the low bits of fill. */
         cm = quant_band(x2, N, mbits, B, lowband, LM, lowband_out, 32767,
                         lowband_scratch, orig_fill);
-        /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse),
-           and there's no need to worry about mixing with the other channel. */
+        /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse), and there's no need to worry about mixing with the other channel. */
         y2[0] = -sign * x2[1];
         y2[1] = sign * x2[0];
         if (s_band_ctx.resynth) {
@@ -1732,8 +1700,7 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
 
         rebalance = s_band_ctx.remaining_bits;
         if (mbits >= sbits) {
-            /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
-               mid for folding later. */
+            /* In stereo mode, we do not apply a scaling to the mid because we need the normalized mid for folding later. */
             cm = quant_band(X, N, mbits, B, lowband, LM, lowband_out, 32767,
                             lowband_scratch, fill);
             rebalance = mbits - (rebalance - s_band_ctx.remaining_bits);
@@ -1745,14 +1712,12 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
             cm |= quant_band(Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill >> B);
         }
         else {
-            /* For a stereo split, the high bits of fill are always zero, so no
-               folding will be done to the side. */
+            /* For a stereo split, the high bits of fill are always zero, so no folding will be done to the side. */
             cm = quant_band(Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill >> B);
             rebalance = sbits - (rebalance - s_band_ctx.remaining_bits);
             if (rebalance > 3 << BITRES && itheta != 16384)
                 mbits += rebalance - (3 << BITRES);
-            /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
-               mid for folding later. */
+            /* In stereo mode, we do not apply a scaling to the mid because we need the normalized mid for folding later. */
             cm |= quant_band(X, N, mbits, B, lowband, LM, lowband_out, 32767,
                              lowband_scratch, fill);
         }
@@ -1769,25 +1734,20 @@ uint32_t quant_band_stereo(int16_t *X, int16_t *Y, int32_t N, int32_t b, int32_t
     }
     return cm;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void special_hybrid_folding(int16_t *norm, int16_t *norm2, int32_t start, int32_t M, int32_t dual_stereo){
     int32_t n1, n2;
     const int16_t * eBands = eband5ms;
     n1 = M * (eBands[start + 1] - eBands[start]);
     n2 = M * (eBands[start + 2] - eBands[start + 1]);
-    /* Duplicate enough of the first band folding data to be able to fold the second band.
-       Copies no data for CELT-only mode. */
+    /* Duplicate enough of the first band folding data to be able to fold the second band. Copies no data for CELT-only mode. */
     memcpy(&norm[n1], &norm[2 * n1 - n2], (n2 - n1) * sizeof(*norm));
     if (dual_stereo)
         memcpy(&norm2[n1], &norm2[2 * n1 - n2], (n2 - n1) * sizeof(*norm2));
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
-                     uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread,
-                     int32_t dual_stereo, int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance,
-                     int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_, uint8_t *collapse_masks, const int32_t *bandE, int32_t *pulses, int32_t shortBlocks, int32_t spread, int32_t dual_stereo,
+                     int32_t intensity, int32_t *tf_res, int32_t total_bits, int32_t balance,  int32_t LM, int32_t codedBands, uint32_t *seed, int32_t complexity, int32_t disable_inv){
     int32_t i;
     int32_t remaining_bits;
     const int16_t * eBands = eband5ms;
@@ -1812,8 +1772,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
     norm = _norm.get();
     norm2 = norm + M * eBands[m_CELTMode.nbEBands - 1] - norm_offset;
 
-    /* For decoding, we can use the last band as scratch space because we don't need that
-       scratch space for the last band and we don't care about the data there until we're
+    /* For decoding, we can use the last band as scratch space because we don't need that scratch space for the last band and we don't care about the data there until we're
        decoding the last band. */
     resynth_alloc = ALLOC_NONE;
 
@@ -1889,8 +1848,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
         if (last)
             lowband_scratch = NULL;
 
-        /* Get a conservative estimate of the collapse_mask's for the bands we're
-           going to be folding from. */
+        /* Get a conservative estimate of the collapse_mask's for the bands we're going to be folding from. */
         if (lowband_offset != 0 && (spread != SPREAD_AGGRESSIVE || B > 1 || tf_change < 0)) {
             int32_t fold_start;
             int32_t fold_end;
@@ -1912,8 +1870,7 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
                 y_cm |= collapse_masks[fold_i * C + C - 1];
             } while (++fold_i < fold_end);
         }
-        /* Otherwise, we'll be using the LCG to fold, so all blocks will (almost
-           always) be non-zero. */
+        /* Otherwise, we'll be using the LCG to fold, so all blocks will (almost always) be non-zero. */
         else
             x_cm = y_cm = (1 << B) - 1;
 
@@ -1960,20 +1917,17 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
     }
     *seed = s_band_ctx.seed;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t celt_decoder_get_size(int32_t channels){
     static int32_t size;
     size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t)
            + channels * 24 * sizeof(int16_t) + 4 * 2 * m_CELTMode.nbEBands * sizeof(int16_t);
     return size;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t celt_decoder_init(int32_t Fs, int32_t channels){
 
-    int32_t n = celt_decoder_get_size(channels);
-    memset(s_celtDec, 0, n * sizeof(char));
+    s_celtDec.clear();
 
     s_celtDec->downsample = resampling_factor(Fs);
     s_celtDec->channels = channels;
@@ -2000,10 +1954,9 @@ int32_t celt_decoder_init(int32_t Fs, int32_t channels){
 
     return OPUS_OK;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* Special case for stereo with no downsampling and no accumulation. This is quite common and we can make it faster by
-   processing both channels in the same loop, reducing overhead due to the dependency loop in the IIR filter. */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* Special case for stereo with no downsampling and no accumulation. This is quite common and we can make it faster by  processing both channels in the same loop, reducing overhead due to the
+   dependency loop in the IIR filter. */
 void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int16_t coef0, int32_t *mem) {
     int32_t * x0;
     int32_t * x1;
@@ -2026,8 +1979,7 @@ void deemphasis_stereo_simple(int32_t *in[], int16_t *pcm, int32_t N, const int1
     mem[0] = m0;
     mem[1] = m1;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downsample, const int16_t *coef,
                int32_t *mem, int32_t accum) {
     int32_t c;
@@ -2096,8 +2048,7 @@ void deemphasis(int32_t *in[], int16_t *pcm, int32_t N, int32_t C, int32_t downs
         }
     } while (++c < C);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t start,
                            int32_t effEnd, int32_t C, int32_t CC, int32_t isTransient, int32_t LM, int32_t downsample, int32_t silence){
     int32_t c, i;
@@ -2161,16 +2112,14 @@ void celt_synthesis(int16_t *X, int32_t *out_syn[], int16_t *oldBandE, int32_t s
                 for(b = 0; b < B; b++) clt_mdct_backward(&freq[b], out_syn[c] + NB * b, overlap, shift, B);
         } while (++c < CC);
     }
-    /* Saturate IMDCT output so that we can't overflow in the pitch postfilter
-       or in the */
+    /* Saturate IMDCT output so that we can't overflow in the pitch postfilter or in the */
     c = 0;
     do {
         for (i = 0; i < N; i++)
             out_syn[c][i] = SATURATE(out_syn[c][i], SIG_SAT);
     } while (++c < CC);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res, int32_t LM){
     int32_t i, curr, tf_select;
     int32_t tf_select_rsv;
@@ -2204,8 +2153,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
         tf_res[i] = tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
                         int32_t frame_size, int32_t accum) {
     int32_t c, i, N;
@@ -2277,8 +2225,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     if (effEnd > m_CELTMode.effEBands)
         effEnd = m_CELTMode.effEBands;
 
-    /* Check if there are at least two packets received consecutively before
-     * turning on the pitch-based PLC */
+    /* Check if there are at least two packets received consecutively before turning on the pitch-based PLC */
     s_celtDec->skip_plc = s_celtDec->loss_count != 0;
 
     if (C == 1) {
@@ -2357,8 +2304,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
         int32_t dynalloc_loop_logp;
         int32_t boost;
         width = C * (eBands[i + 1] - eBands[i]) << LM;
-        /* quanta is 6 bits, but no more than 1 bit/sample
-           and no less than 1/8 bit/sample */
+        /* quanta is 6 bits, but no more than 1 bit/sample and no less than 1/8 bit/sample */
         quanta = min(width << BITRES, max((int32_t)(6 << BITRES), width));
         dynalloc_loop_logp = dynalloc_logp;
         boost = 0;
@@ -2461,9 +2407,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
         int16_t max_background_increase;
         memcpy(oldLogE2, oldLogE, 2 * nbEBands * sizeof(*oldLogE2));
         memcpy(oldLogE, oldBandE, 2 * nbEBands * sizeof(*oldLogE));
-        /* In normal circumstances, we only allow the noise floor to increase by
-           up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
-           increase for each update.*/
+        /* In normal circumstances, we only allow the noise floor to increase by up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB increase for each update.*/
         if (s_celtDec->loss_count < 10)
             max_background_increase = M * QCONST16(0.001f, DB_SHIFT);
         else
@@ -2498,8 +2442,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
         s_celtDec->error = 1;
     return frame_size / s_celtDec->downsample;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t celt_decoder_ctl(int32_t request, ...) {
     va_list ap;
 
@@ -2596,8 +2539,7 @@ bad_request:
     va_end(ap);
     return OPUS_UNIMPLEMENTED;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
     uint32_t p;
     int32_t s;
@@ -2674,15 +2616,12 @@ int32_t cwrsi(int32_t _n, int32_t _k, uint32_t _i, int32_t *_y) {
     yy = MAC16_16(yy, val, val);
     return yy;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t decode_pulses(int32_t *_y, int32_t _n, int32_t _k) {
     return cwrsi(_n, _k, ec_dec_uint(CELT_PVQ_V(_n, _k)), _y);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear
-   function followed by a lookup to determine the exact transition thresholds. */
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/* This is a faster version of ec_tell_frac() that takes advantage of the low (1/8 bit) resolution to use just a linear function followed by a lookup to determine the exact transition thresholds. */
 uint32_t ec_tell_frac() {
     const uint32_t correction[8] = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
     uint32_t nbits;
@@ -2697,17 +2636,13 @@ uint32_t ec_tell_frac() {
     l = (l << 3) + b;
     return nbits - l;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t ec_read_byte() { return s_ec.offs < s_ec.storage ? s_ec.buf[s_ec.offs++] : 0; }
-
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t ec_read_byte_from_end() {
     return s_ec.end_offs < s_ec.storage ? s_ec.buf[s_ec.storage - ++(s_ec.end_offs)] : 0;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /*Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.*/
 void ec_dec_normalize() {
     /*If the range is too small, rescale it and input some bits.*/
@@ -2725,8 +2660,7 @@ void ec_dec_normalize() {
         s_ec.val = ((s_ec.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void ec_dec_init(uint8_t *_buf, uint32_t _storage) {
 
     s_ec.buf = _buf;
@@ -2743,24 +2677,21 @@ void ec_dec_init(uint8_t *_buf, uint32_t _storage) {
     /*Normalize the interval.*/
     ec_dec_normalize();
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t ec_decode(uint32_t _ft) {
     uint32_t s;
     s_ec.ext = celt_udiv(s_ec.rng, _ft);
     s = (uint32_t)(s_ec.val / s_ec.ext);
     return _ft - EC_MINI(s + 1, _ft);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t ec_decode_bin(uint32_t _bits) {
     uint32_t s;
     s_ec.ext = s_ec.rng >> _bits;
     s = (uint32_t)(s_ec.val / s_ec.ext);
     return (1U << _bits) - EC_MINI(s + 1U, 1U << _bits);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void ec_dec_update(uint32_t _fl, uint32_t _fh, uint32_t _ft) {
     uint32_t s;
     s = s_ec.ext *  (_ft - _fh);
@@ -2774,8 +2705,7 @@ void ec_dec_update(uint32_t _fl, uint32_t _fh, uint32_t _ft) {
     }
     ec_dec_normalize();
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /*The probability of having a "one" is 1/(1<<_logp).*/
 int32_t ec_dec_bit_logp( uint32_t _logp) {
     uint32_t r;
@@ -2791,8 +2721,7 @@ int32_t ec_dec_bit_logp( uint32_t _logp) {
     ec_dec_normalize();
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t ec_dec_icdf(const uint8_t *_icdf, uint32_t _ftb) {
     uint32_t r;
     uint32_t d;
@@ -2812,8 +2741,7 @@ int32_t ec_dec_icdf(const uint8_t *_icdf, uint32_t _ftb) {
     ec_dec_normalize();
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t ec_dec_uint(uint32_t _ft) {
     uint32_t ft;
     uint32_t s;
@@ -2839,8 +2767,7 @@ uint32_t ec_dec_uint(uint32_t _ft) {
         return s;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 uint32_t ec_dec_bits(uint32_t _bits) {
     uint32_t window;
     int32_t available;
@@ -2861,8 +2788,7 @@ uint32_t ec_dec_bits(uint32_t _bits) {
     s_ec.nbits_total += _bits;
     return ret;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N) {
     kiss_fft_cpx *Fout2;
     int32_t i;
@@ -2898,8 +2824,7 @@ void kf_bfly2(kiss_fft_cpx *Fout, int32_t m, int32_t N) {
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw, int32_t m, int32_t N, int32_t mm) {
     int32_t i;
 
@@ -2956,8 +2881,7 @@ void kf_bfly4(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw, int32_t m, int32_t N, int32_t mm) {
     int32_t i;
     size_t k;
@@ -3000,8 +2924,7 @@ void kf_bfly3(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tw
         } while (--k);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tff, int32_t m, int32_t N, int32_t mm) {
     kiss_fft_cpx *Fout0, *Fout1, *Fout2, *Fout3, *Fout4;
     int32_t i, u;
@@ -3068,8 +2991,7 @@ void kf_bfly5(kiss_fft_cpx *Fout, const size_t fstride, const kiss_fft_state *tf
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void opus_fft_impl(const kiss_fft_state *tff, kiss_fft_cpx *fout) {
     int32_t m2, m;
     int32_t p;
@@ -3112,16 +3034,14 @@ void opus_fft_impl(const kiss_fft_state *tff, kiss_fft_cpx *fout) {
         m = m2;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /* When called, decay is positive and at most 11456. */
 uint32_t ec_laplace_get_freq1(uint32_t fs0, int32_t decay) {
     uint32_t ft;
     ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
     return ft * (int32_t)(16384 - decay) >> 15;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 int32_t ec_laplace_decode(uint32_t fs, int32_t decay) {
     int32_t val = 0;
     uint32_t fl;
@@ -3159,10 +3079,8 @@ int32_t ec_laplace_decode(uint32_t fs, int32_t decay) {
     ec_dec_update(fl, min((uint32_t)(fl + fs), (uint32_t)32768), (uint32_t)32768);
     return val;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-/*Compute floor(sqrt(_val)) with exact arithmetic. _val must be greater than 0. This has been tested on all
- possible 32-bit inputs greater than 0.*/
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+/*Compute floor(sqrt(_val)) with exact arithmetic. _val must be greater than 0. This has been tested on all possible 32-bit inputs greater than 0.*/
 uint32_t isqrt32(uint32_t _val) {
     uint32_t b;
     uint32_t g;
@@ -3184,8 +3102,7 @@ uint32_t isqrt32(uint32_t _val) {
     } while (bshift >= 0);
     return g;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
 int16_t celt_rsqrt_norm(int32_t x) {
     int16_t n;
@@ -3207,8 +3124,7 @@ int16_t celt_rsqrt_norm(int32_t x) {
        error of 2.26591/16384. */
     return ADD16(r, MULT16_16_Q15(r, MULT16_16_Q15(y, SUB16(MULT16_16_Q15(y, 12288), 16384))));
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /** Sqrt approximation (QX input, QX/2 output) */
 int32_t celt_sqrt(int32_t x) {
     int32_t k;
@@ -3229,8 +3145,7 @@ int32_t celt_sqrt(int32_t x) {
     rt = VSHR32(rt, 7 - k);
     return rt;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 inline int16_t _celt_cos_pi_2(int16_t x) {
     int16_t x2;
 
@@ -3259,8 +3174,7 @@ int16_t celt_cos_norm(int32_t x) {
             return 32767;
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 /** Reciprocal approximation (Q15 input, Q16 output) */
 int32_t celt_rcp(int32_t x) {
     int32_t i;
@@ -3284,8 +3198,7 @@ int32_t celt_rcp(int32_t x) {
         of 7.05346E-5, a (relative) RMSE of 2.14418E-5, and a peak absolute error of 1.24665/32768. */
     return VSHR32(EXTEND32(r), i - 16);
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shift, int32_t stride) {
     int32_t i;
     int32_t N, N2, N4;
@@ -3325,8 +3238,7 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
 
     opus_fft_impl(m_mdct_lookup.kfft[shift], (kiss_fft_cpx *)(out + (overlap >> 1)));
 
-    /* Post-rotate and de-shuffle from both ends of the buffer at once to make
-       it in-place. */
+    /* Post-rotate and de-shuffle from both ends of the buffer at once to make it in-place. */
     {
         int32_t *yp0 = out + (overlap >> 1);
         int32_t *yp1 = out + (overlap >> 1) + N2 - 2;
@@ -3380,13 +3292,10 @@ void clt_mdct_backward(int32_t *in, int32_t * out, int32_t overlap, int32_t shif
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2,
-                              const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance, int32_t skip_rsv,
-                              int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits,
-                              int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, int32_t encode, int32_t prev,
-                              int32_t signalBandwidth) {
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, const int32_t *bits1, const int32_t *bits2, const int32_t *thresh, const int32_t *cap, int32_t total, int32_t *_balance,
+                            int32_t skip_rsv, int32_t *intensity, int32_t intensity_rsv, int32_t *dual_stereo, int32_t dual_stereo_rsv, int32_t *bits, int32_t *ebits, int32_t *fine_priority,
+                            int32_t C, int32_t LM, int32_t encode, int32_t prev, int32_t signalBandwidth) {
     int32_t psum;
     int32_t lo, hi;
     int32_t i, j;
@@ -3447,28 +3356,22 @@ int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, cons
         int32_t band_bits;
         int32_t rem;
         j = codedBands - 1;
-        /* Never skip the first band, nor a band that has been boosted by
-            dynalloc.
-           In the first case, we'd be coding a bit to signal we're going to waste
-            all the other bits.
-           In the second case, we'd be coding a bit to redistribute all the bits
-            we just signaled should be cocentrated in this band. */
+        /* Never skip the first band, nor a band that has been boosted by dynalloc.
+           In the first case, we'd be coding a bit to signal we're going to waste all the other bits.
+           In the second case, we'd be coding a bit to redistribute all the bits we just signaled should be cocentrated in this band. */
         if (j <= skip_start) {
             /* Give the bit we reserved to end skipping back. */
             total += skip_rsv;
             break;
         }
-        /*Figure out how many left-over bits we would be adding to this band.
-          This can include bits we've stolen back from higher, skipped bands.*/
+        /*Figure out how many left-over bits we would be adding to this band. This can include bits we've stolen back from higher, skipped bands.*/
         left = total - psum;
         percoeff = celt_udiv(left, eband5ms[codedBands] - eband5ms[start]);
         left -= (eband5ms[codedBands] - eband5ms[start]) * percoeff;
         rem = max(left - (eband5ms[j] - eband5ms[start]), (int32_t)0);
         band_width = eband5ms[codedBands] - eband5ms[j];
         band_bits = (int32_t)(bits[j] + percoeff * band_width + rem);
-        /*Only code a skip decision if we're above the threshold for this band.
-          Otherwise it is force-skipped.
-          This ensures that we have enough bits to code the skip flag.*/
+        /*Only code a skip decision if we're above the threshold for this band. Otherwise it is force-skipped. This ensures that we have enough bits to code the skip flag.*/
         if (band_bits >= max(thresh[j], alloc_floor + (1 << BITRES))) {
             if (encode) {
                 ;
@@ -3547,8 +3450,7 @@ int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, cons
 
             NClogN = den * (logN400[j] + logM);
 
-            /* Offset for the number of fine bits by log2(N)/2 + FINE_OFFSET
-               compared to their "fair share" of total/N */
+            /* Offset for the number of fine bits by log2(N)/2 + FINE_OFFSET compared to their "fair share" of total/N */
             offset = (NClogN >> 1) - den * FINE_OFFSET;
 
             /* N=2 is the only point that doesn't match the curve */
@@ -3586,8 +3488,7 @@ int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, cons
             fine_priority[j] = 1;
         }
 
-        /* Fine energy can't take advantage of the re-balancing in
-            quant_all_bands().
+        /* Fine energy can't take advantage of the re-balancing in quant_all_bands().
            Instead, do the re-balancing here.*/
         if (excess > 0) {
             int32_t extra_fine;
@@ -3603,8 +3504,7 @@ int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, cons
         assert(bits[j] >= 0);
         assert(ebits[j] >= 0);
     }
-    /* Save any remaining bits over the cap for the rebalancing in
-        quant_all_bands(). */
+    /* Save any remaining bits over the cap for the rebalancing in quant_all_bands(). */
     *_balance = balance;
 
     /* The skipped bands use all their bits for fine energy. */
@@ -3617,11 +3517,9 @@ int32_t interp_bits2pulses( int32_t start, int32_t end, int32_t skip_start, cons
 
     return codedBands;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
-int32_t clt_compute_allocation(int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim,
-                           int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance, int32_t *pulses, int32_t *ebits,
-                           int32_t *fine_priority, int32_t C, int32_t LM, int32_t encode, int32_t prev, int32_t signalBandwidth) {
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+int32_t clt_compute_allocation(int32_t start, int32_t end, const int32_t *offsets, const int32_t *cap, int32_t alloc_trim, int32_t *intensity, int32_t *dual_stereo, int32_t total, int32_t *balance,
+                               int32_t *pulses, int32_t *ebits, int32_t *fine_priority, int32_t C, int32_t LM, int32_t encode, int32_t prev, int32_t signalBandwidth) {
     int32_t lo, hi, len, j;
     int32_t codedBands;
     int32_t skip_start;
@@ -3658,8 +3556,7 @@ int32_t clt_compute_allocation(int32_t start, int32_t end, const int32_t *offset
         /* Tilt of the allocation curve */
         trim_offset[j] =
             C * (eband5ms[j + 1] - eband5ms[j]) * (alloc_trim - 5 - LM) * (end - j - 1) * (1 << (LM + BITRES)) >> 6;
-        /* Giving less resolution to single-coefficient bands because they get
-           more benefit from having one coarse value per coefficient*/
+        /* Giving less resolution to single-coefficient bands because they get  more benefit from having one coarse value per coefficient*/
         if ((eband5ms[j + 1] - eband5ms[j]) << LM == 1) trim_offset[j] -= C << BITRES;
     }
     lo = 1;
@@ -3710,8 +3607,7 @@ int32_t clt_compute_allocation(int32_t start, int32_t end, const int32_t *offset
 
     return codedBands;
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void unquant_coarse_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t intra, int32_t C, int32_t LM) {
     const uint8_t *prob_model = e_prob_model[LM][intra];
     int32_t i, c;
@@ -3738,9 +3634,7 @@ void unquant_coarse_energy(int32_t start, int32_t end, int16_t *oldEBands, int32
             int32_t qi;
             int32_t q;
             int32_t tmp;
-            /* It would be better to express this invariant as a
-               test on C at function entry, but that isn't enough
-               to make the static analyzer happy. */
+            /* It would be better to express this invariant as a test on C at function entry, but that isn't enough to make the static analyzer happy. */
             assert(c < 2);
             tell = ec_tell();
             if (budget - tell >= 15) {
@@ -3764,8 +3658,7 @@ void unquant_coarse_energy(int32_t start, int32_t end, int16_t *oldEBands, int32
         } while (++c < C);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void unquant_fine_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant, int32_t C) {
     int32_t i, c;
     /* Decode finer resolution */
@@ -3782,8 +3675,7 @@ void unquant_fine_energy(int32_t start, int32_t end, int16_t *oldEBands, int32_t
         } while (++c < C);
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
-
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int32_t *fine_quant,
                              int32_t *fine_priority, int32_t bits_left, int32_t C) {
     int32_t i, prio, c;
@@ -3804,4 +3696,5 @@ void unquant_energy_finalise(int32_t start, int32_t end, int16_t *oldEBands, int
         }
     }
 }
-//----------------------------------------------------------------------------------------------------------------------
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
