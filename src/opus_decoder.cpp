@@ -395,11 +395,6 @@ int opus_decode(OpusDecoder *st, uint8_t *data, int32_t len, int16_t *pcm, int f
 int opus_decoder_ctl(OpusDecoder *st, int request, ...) {
     int ret = OPUS_OK;
     va_list ap;
-    void *silk_dec;
-    CELTDecoder_t *celt_dec;
-
-    silk_dec = (char *)st + st->silk_dec_offset;
-    celt_dec = (CELTDecoder_t *)((char *)st + st->celt_dec_offset);
 
     va_start(ap, request);
 
