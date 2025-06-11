@@ -1,0 +1,309 @@
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (IllegalInstruction). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x00000000  PS      : 0x00000000  A0      : 0x00000000  A1      : 0x00000000  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0x00000000  A11     : 0x00000000  A12     : 0x00000000  A13     : 0x00000000  
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x00000000  EXCCAUSE: 0x00000000  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0xfffffffd:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (IllegalInstruction). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x00000000  PS      : 0x00000000  A0      : 0x00000000  A1      : 0x00000000  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0x00000000  A11     : 0x00000000  A12     : 0x00000000  A13     : 0x00000000  
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x00000000  EXCCAUSE: 0x00000000  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0xfffffffd:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (IllegalInstruction). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x00000000  PS      : 0x00000000  A0      : 0x00000000  A1      : 0x00000000  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0x00000000  A11     : 0x00000000  A12     : 0x00000000  A13     : 0x00000000  
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x00000000  EXCCAUSE: 0x00000000  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0xfffffffd:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (LoadProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4008e9b3  PS      : 0x00060033  A0      : 0x8008db66  A1      : 0x3ffb12e0  
+A2      : 0x00000000  A3      : 0x3ffb8400  A4      : 0x8008d76d  A5      : 0x00060123  
+A6      : 0x00000000  A7      : 0x00000001  A8      : 0x00000000  A9      : 0x3ffb12b0  
+A10     : 0x00000001  A11     : 0xffffffff  A12     : 0x00060120  A13     : 0x00060023  
+A14     : 0x00000000  A15     : 0x0000cdcd  SAR     : 0x0000001d  EXCCAUSE: 0x0000001c  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x4008e9b0:0x3ffb12e0 0x4008db63:0x3ffb1300 0x4008d891:0x3ffb1320 0x40087096:0x3ffb1330 0x4008a393:0x3ffb8430 0x400fadce:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (InstrFetchProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x00000000  PS      : 0x00050033  A0      : 0x00000000  A1      : 0x3ffb1330  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0x00000000  A11     : 0x00000000  A12     : 0x00000000  A13     : 0x00000000  
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x00000000  EXCCAUSE: 0x00000014  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0xfffffffd:0x3ffb1330
+  #0  0x3ffb1330 in _xt_exception_table at ??:?
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (InstrFetchProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x00000000  PS      : 0x00050033  A0      : 0x00000000  A1      : 0x3ffb1330  
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x00000000  A9      : 0x00000000  
+A10     : 0x00000000  A11     : 0x00000000  A12     : 0x00000000  A13     : 0x00000000  
+A14     : 0x00000000  A15     : 0x00000000  SAR     : 0x00000000  EXCCAUSE: 0x00000014  
+EXCVADDR: 0x00000000  LBEG    : 0x00000000  LEND    : 0x00000000  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0xfffffffd:0x3ffb1330
+  #0  0x3ffb1330 in _xt_exception_table at ??:?
+
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (LoadProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4008946d  PS      : 0x00060033  A0      : 0x8009307f  A1      : 0x3ffb8200  
+A2      : 0x00000000  A3      : 0xfffffffc  A4      : 0x000000ff  A5      : 0x0000ff00  
+A6      : 0x00ff0000  A7      : 0xff000000  A8      : 0x00000000  A9      : 0x72507473  
+A10     : 0x00000001  A11     : 0x00000002  A12     : 0x0000000a  A13     : 0x003fffff  
+A14     : 0x3ffb03f8  A15     : 0x00000000  SAR     : 0x00000010  EXCCAUSE: 0x0000001c  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xffffffff  
+
+
+Backtrace: 0x4008946a:0x3ffb8200 0x4009307c:0x3ffb8210 0x4008e3a6:0x3ffb8330 0x4008ec96:0x3ffb8350 0x4008d8c0:0x3ffb8370 0x4008d872:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m[0;32m[  1075][I][main.cpp:307] setup(): free heap before 281523[0m
+[0;32m[  1087][I][opusfile.cpp:769] op_open2(): op_open2[0m
+[0;32m[  1093][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+[0;33m[  1093][W][opus_decoder.cpp:825] opus_multistream_decoder_create(): decoder get size 22164[0m
+[0;32m[  1112][I][opus_decoder.cpp:768] opus_multistream_decoder_get_size(): opus_multistream_decoder_get_size 1, 1[0m
+Guru Meditation Error: Core  0 panic'ed (LoadProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x4008946d  PS      : 0x00060033  A0      : 0x8009307f  A1      : 0x3ffb8200  
+A2      : 0x00000000  A3      : 0xfffffffc  A4      : 0x000000ff  A5      : 0x0000ff00  
+A6      : 0x00ff0000  A7      : 0xff000000  A8      : 0x00000000  A9      : 0x72507473  
+A10     : 0x00000001  A11     : 0x00000002  A12     : 0x0000000a  A13     : 0x003fffff  
+A14     : 0x3ffb03f8  A15     : 0x00000000  SAR     : 0x00000010  EXCCAUSE: 0x0000001c  
+EXCVADDR: 0x00000000  LBEG    : 0x4008946d  LEND    : 0x4008947d  LCOUNT  : 0xffffffff  
+
+
+Backtrace: 0x4008946a:0x3ffb8200 0x4009307c:0x3ffb8210 0x4008e3a6:0x3ffb8330 0x4008ec96:0x3ffb8350 0x4008d8c0:0x3ffb8370 0x4008d872:0x00000000 |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 
+
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4844
+ho 0 tail 12 room 4
+load:0x40078000,len:16168
+ho 0 tail 12 room 4
+load:0x40080400,len:4
+load:0x40080404,len:3472
+entry 0x400805b4
+[0;33mW (186) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;31m

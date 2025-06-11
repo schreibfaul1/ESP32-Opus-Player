@@ -2001,7 +2001,20 @@ int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels){
     st->end = m_CELTMode.effEBands;
     st->signalling = 1;
 
-    st->disable_inv = channels == 1;
+
+
+    s_celtDec.disable_inv = channels == 1;
+    s_celtDec.overlap = m_CELTMode.overlap;
+    s_celtDec.stream_channels = s_celtDec.channels = channels;
+    s_celtDec.downsample = 1;
+    s_celtDec.start = 0;
+    s_celtDec.end = m_CELTMode.effEBands;
+    s_celtDec.signalling = 1;
+    s_celtDec.disable_inv = channels == 1;
+
+
+
+
     celt_decoder_ctl(st, (int32_t)OPUS_RESET_STATE);
 
     return OPUS_OK;
@@ -2031,7 +2044,6 @@ int32_t celt_decoder_init(int32_t channels){
     s_celtDec._decode_mem[0] = 0;
 
     return OPUS_OK;
-
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2252,7 +2264,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     int32_t shortBlocks;
     int32_t isTransient;
     int32_t intra_ener;
-    const int32_t CC = st->channels;
+    const int32_t CC = s_celtDec.channels;
     int32_t LM, M;
     int32_t start;
     int32_t end;
@@ -2551,45 +2563,53 @@ int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...) {
         case CELT_SET_START_BAND_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
             if (value < 0 || value >= m_CELTMode.nbEBands) goto bad_arg;
-            st->start = value;
+            s_celtDec.start = value;
         } break;
         case CELT_SET_END_BAND_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
             if (value < 1 || value > m_CELTMode.nbEBands) goto bad_arg;
-            st->end = value;
+            s_celtDec.end = value;
         } break;
         case CELT_SET_CHANNELS_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
             if (value < 1 || value > 2) goto bad_arg;
-            st->stream_channels = value;
+            s_celtDec.stream_channels = value;
         } break;
         case CELT_GET_AND_CLEAR_ERROR_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
             if (value == NULL) goto bad_arg;
-            *value = st->error;
-            st->error = 0;
+            *value = s_celtDec.error;
+            s_celtDec.error = 0;
         } break;
         case OPUS_GET_LOOKAHEAD_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
             if (value == NULL) goto bad_arg;
-            *value = st->overlap / st->downsample;
+            *value = s_celtDec.overlap / s_celtDec.downsample;
         } break;
         case OPUS_RESET_STATE: {
             int32_t i;
             int16_t *lpc, *oldBandE, *oldLogE, *oldLogE2;
-            lpc = (int16_t *)(st->_decode_mem + (DECODE_BUFFER_SIZE + st->overlap) * st->channels);
-            oldBandE = lpc + st->channels * LPC_ORDER;
+            lpc = (int16_t *)(s_celtDec._decode_mem + (DECODE_BUFFER_SIZE + s_celtDec.overlap) * s_celtDec.channels);
+            oldBandE = lpc + s_celtDec.channels * LPC_ORDER;
             oldLogE = oldBandE + 2 * m_CELTMode.nbEBands;
             oldLogE2 = oldLogE + 2 * m_CELTMode.nbEBands;
-            OPUS_CLEAR((char *)&st->DECODER_RESET_START, opus_custom_decoder_get_size(st->channels) -
-                                                             ((char *)&st->DECODER_RESET_START - (char *)st));
+
+            s_celtDec.rng = 0;
+            s_celtDec.error = 0;
+            s_celtDec.postfilter_period = 0;
+            s_celtDec.postfilter_period_old = 0;
+            s_celtDec.postfilter_gain = 0;
+            s_celtDec.postfilter_gain_old = 0;
+            s_celtDec.postfilter_tapset = 0;
+            s_celtDec.postfilter_tapset_old = 0;
+
             for (i = 0; i < 2 * m_CELTMode.nbEBands; i++) oldLogE[i] = oldLogE2[i] = -QCONST16(28.f, DB_SHIFT);
-            st->skip_plc = 1;
+            s_celtDec.skip_plc = 1;
         } break;
         case OPUS_GET_PITCH_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
             if (value == NULL) goto bad_arg;
-            *value = st->postfilter_period;
+            *value = s_celtDec.postfilter_period;
         } break;
         case CELT_GET_MODE_REQUEST: {
             const CELTMode_t **value = va_arg(ap, const CELTMode_t **);
@@ -2598,26 +2618,26 @@ int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...) {
         } break;
         case CELT_SET_SIGNALLING_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
-            st->signalling = value;
+            s_celtDec.signalling = value;
         } break;
         case OPUS_GET_FINAL_RANGE_REQUEST: {
             uint32_t *value = va_arg(ap, uint32_t *);
             if (value == 0) goto bad_arg;
-            *value = st->rng;
+            *value = s_celtDec.rng;
         } break;
         case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
             if (value < 0 || value > 1) {
                 goto bad_arg;
             }
-            st->disable_inv = value;
+            s_celtDec.disable_inv = value;
         } break;
         case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST: {
             int32_t *value = va_arg(ap, int32_t *);
             if (!value) {
                 goto bad_arg;
             }
-            *value = st->disable_inv;
+            *value = s_celtDec.disable_inv;
         } break;
         default:
             goto bad_request;
