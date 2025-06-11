@@ -111,7 +111,16 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    if(ret)return OPUS_INTERNAL_ERROR;
 
    /* Initialize CELT decoder */
-   ret = celt_decoder_init(celt_dec, Fs, channels);
+    ret = opus_custom_decoder_init(celt_dec, channels);
+    if (ret != OPUS_OK)
+        return ret;
+    celt_dec->downsample = resampling_factor(Fs);
+
+   ret = celt_decoder_init(channels);
+
+
+
+
    if(ret!=OPUS_OK)return OPUS_INTERNAL_ERROR;
 
    celt_decoder_ctl(celt_dec, (int32_t)CELT_SET_SIGNALLING_REQUEST, 0);
