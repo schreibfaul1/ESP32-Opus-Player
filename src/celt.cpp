@@ -2154,8 +2154,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
     }
 }
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
-                        int32_t frame_size, int32_t accum) {
+int32_t celt_decode_with_ec(int16_t * outbuf, int32_t frame_size) {
     int32_t c, i, N;
     int32_t spread_decision;
     int32_t bits;
@@ -2203,16 +2202,13 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
 
     {
         for (LM = 0; LM <= m_CELTMode.maxLM; LM++)
-            if (m_CELTMode.shortMdctSize << LM == frame_size)
-                break;
-        if (LM > m_CELTMode.maxLM)
-            return OPUS_BAD_ARG;
+            if (m_CELTMode.shortMdctSize << LM == frame_size) break;
+        if (LM > m_CELTMode.maxLM) {log_e("OPUS_BAD_ARG"); return ERR_OPUS_CELT_BAD_ARG;}
     }
 
     M = 1 << LM;
 
-    if (len < 0 || len > 1275 || pcm == NULL)
-        return OPUS_BAD_ARG;
+    if(s_ec.storage > 1275 || outbuf == NULL) {log_e("OPUS_BAD_ARG"); return ERR_OPUS_CELT_BAD_ARG;}
 
     N = M * m_CELTMode.shortMdctSize;
     c = 0;
@@ -2220,6 +2216,8 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
         decode_mem[c] = s_celtDec->_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);  // todo
         out_syn[c] = decode_mem[c] + DECODE_BUFFER_SIZE - N;
     } while (++c < CC);
+
+    if(s_ec.storage <= 1) {log_e("OPUS_BAD_ARG"); return ERR_OPUS_CELT_BAD_ARG;}
 
     effEnd = end;
     if (effEnd > m_CELTMode.effEBands)
@@ -2233,7 +2231,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
             oldBandE[i] = max(oldBandE[i], oldBandE[nbEBands + i]);
     }
 
-    total_bits = len * 8;
+    total_bits = s_ec.storage * 8;
     tell = ec_tell();
 
     if (tell >= total_bits)
@@ -2244,7 +2242,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
         silence = 0;
     if (silence)  {
         /* Pretend we've read all the remaining bits */
-        tell = len * 8;
+        tell = s_ec.storage * 8;
         s_ec.nbits_total += tell - ec_tell();
     }
 
@@ -2287,8 +2285,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
 
     tell = ec_tell();
     spread_decision = SPREAD_NORMAL;
-    if (tell + 4 <= total_bits)
-        spread_decision = ec_dec_icdf(spread_icdf, 5);
+    if (tell + 4 <= total_bits) spread_decision = ec_dec_icdf(spread_icdf, 5);
 
     auto cap = celt_malloc_arr<int32_t>(nbEBands * sizeof(int32_t));
 
@@ -2329,7 +2326,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
 
     alloc_trim = tell + (6 << BITRES) <= total_bits ? ec_dec_icdf(trim_icdf, 7) : 5;
 
-    bits = (((int32_t)len * 8) << BITRES) - ec_tell_frac() - 1;
+    bits = (((int32_t)s_ec.storage * 8) << BITRES) - ec_tell_frac() - 1;
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
     bits -= anti_collapse_rsv;
 
@@ -2354,7 +2351,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
 
     quant_all_bands(start, end, X.get(), C == 2 ? X.get() + N : NULL, collapse_masks.get(),
                     NULL, pulses.get(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.get(),
-                    len * (8 << BITRES) - anti_collapse_rsv, balance, LM, codedBands, &s_celtDec->rng, 0,
+                    s_ec.storage * (8 << BITRES) - anti_collapse_rsv, balance, LM, codedBands, &s_celtDec->rng, 0,
                     s_celtDec->disable_inv);
 
     if (anti_collapse_rsv > 0) {
@@ -2362,7 +2359,7 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     }
 
     unquant_energy_finalise(start, end, oldBandE,
-                            fine_quant.get(), fine_priority.get(), len * 8 - ec_tell(), C);
+                            fine_quant.get(), fine_priority.get(), s_ec.storage * 8 - ec_tell(), C);
 
     if (anti_collapse_on)
         anti_collapse(X.get(), collapse_masks.get(), LM, C, N,
@@ -2434,9 +2431,9 @@ int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
     } while (++c < 2);
     s_celtDec->rng = s_ec.rng;
 
-    deemphasis(out_syn, pcm, N, CC, s_celtDec->downsample, m_CELTMode.preemph, s_celtDec->preemph_memD, accum);
+    deemphasis(out_syn, outbuf, N, CC, s_celtDec->downsample, m_CELTMode.preemph, s_celtDec->preemph_memD, 0);
     s_celtDec->loss_count = 0;
-    if (ec_tell() > 8 * len)
+    if (ec_tell() > 8 * s_ec.storage)
         return OPUS_INTERNAL_ERROR;
     if (s_ec.error)
         s_celtDec->error = 1;

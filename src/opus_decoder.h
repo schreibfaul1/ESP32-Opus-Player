@@ -37,8 +37,6 @@
 #include "celt.h"
 #include "silk.h"
 
-
-
 #define VARDECL(type, var)
 #define ALLOC(var, size, type) type var[size]
 #define OPUS_OK                0
