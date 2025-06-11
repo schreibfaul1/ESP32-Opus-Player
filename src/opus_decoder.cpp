@@ -81,8 +81,6 @@ int opus_decoder_get_size(int channels)
 //----------------------------------------------------------------------------------------------------------------------
 int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
 {
-   void *silk_dec;
-   CELTDecoder_t *celt_dec;
    int32_t ret, silkDecSizeBytes;
 
    if ((Fs!=48000&&Fs!=24000&&Fs!=16000&&Fs!=12000&&Fs!=8000)
@@ -95,11 +93,6 @@ int opus_decoder_init(OpusDecoder *st, int32_t Fs, int channels)
    if (ret)
       return OPUS_INTERNAL_ERROR;
 
-   silkDecSizeBytes = align(silkDecSizeBytes);
-   st->silk_dec_offset = align(sizeof(OpusDecoder));
-   st->celt_dec_offset = st->silk_dec_offset+silkDecSizeBytes;
-   silk_dec = (char*)st+st->silk_dec_offset;
-   celt_dec = (CELTDecoder_t*)((char*)st+st->celt_dec_offset);
    st->stream_channels = st->channels = channels;
 
    st->Fs = Fs;
@@ -160,10 +153,8 @@ static int opus_packet_get_mode(uint8_t *data) {
 //----------------------------------------------------------------------------------------------------------------------
 static int opus_decode_frame(OpusDecoder *st, uint8_t *inbuf, int32_t packetLen, int16_t *outbuf, int16_t samplesPerFrame) {
 if(!inbuf)log_e("Inbuf is null");
-    void *silk_dec;
-    CELTDecoder_t *celt_dec;
+
     int i, silk_ret = 0, celt_ret = 0;
-    
     int32_t silk_frame_size;
     int pcm_silk_size;
     VARDECL(int16_t, pcm_silk);
@@ -180,9 +171,6 @@ if(!inbuf)log_e("Inbuf is null");
     uint16_t F10 = F20 >> 1;    // 480
     uint16_t F5 = F10 >> 1;     // 240
     uint16_t F2_5 = F5 >> 1;    // 120
-
-    silk_dec = (char *)st + st->silk_dec_offset;
-    celt_dec = (CELTDecoder_t *)((char *)st + st->celt_dec_offset);
 
     ec_dec_init(inbuf, packetLen);
 
@@ -272,7 +260,7 @@ if(!inbuf)log_e("Inbuf is null");
         if (mode != st->prev_mode && st->prev_mode > 0  /*&& !st->prev_redundancy */)
             celt_decoder_ctl((int32_t)OPUS_RESET_STATE);
         /* Decode CELT */
-        celt_ret = celt_decode_with_ec(celt_dec, inbuf, packetLen, outbuf, celt_frame_size, 0);
+        celt_ret = celt_decode_with_ec(inbuf, packetLen, outbuf, celt_frame_size, 0);
     } else {
         unsigned char silence[2] = {0xFF, 0xFF};
         for (i = 0; i < audiosize * channels; i++) outbuf[i] = 0;
@@ -280,7 +268,7 @@ if(!inbuf)log_e("Inbuf is null");
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID) {
             celt_decoder_ctl((int32_t)CELT_SET_START_BAND_REQUEST, 0);
-            celt_decode_with_ec(celt_dec, silence, 2, outbuf, F2_5, NULL);
+            celt_decode_with_ec(silence, 2, outbuf, F2_5, NULL);
         }
     }
 

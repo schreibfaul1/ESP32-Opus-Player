@@ -2206,7 +2206,7 @@ void tf_decode(int32_t start, int32_t end, int32_t isTransient, int32_t *tf_res,
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len, int16_t * pcm,
+int32_t celt_decode_with_ec(const uint8_t *data, int32_t len, int16_t * pcm,
                         int32_t frame_size, int32_t accum) {
     int32_t c, i, N;
     int32_t spread_decision;
