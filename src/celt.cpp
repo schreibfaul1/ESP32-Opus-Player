@@ -621,21 +621,6 @@ const kiss_fft_state fft_state48000_960_3 = {
     fft_twiddles48000_960, /* bitrev */
 };
 
-const CELTMode_t mode48000_960_120 = {
-    48000, /* Fs */
-    120,   /* overlap */
-    21,    /* nbEBands */
-    21,    /* effEBands */
-    { 27853, 0, 4096, 8192,},               /* preemph */
-    3,               /* maxLM */
-    8,               /* nbShortMdcts */
-    120,             /* shortMdctSize */
-    11,              /* nbAllocVectors */
-};
-
-const CELTMode_t *const static_mode_list[TOTAL_MODES] = {
-    &mode48000_960_120,
-};
 
 const CELTMode_t m_CELTMode = {
     48000,                  /* Fs */
@@ -1970,13 +1955,6 @@ void quant_all_bands(int32_t start, int32_t end, int16_t *X_, int16_t *Y_,
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_get_size(int32_t channels){
-    int32_t size;
-    size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t) + channels * LPC_ORDER * sizeof(int16_t) + 4 * 2 * m_CELTMode.nbEBands * sizeof(int16_t);
-    return size;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t celt_decoder_get_size(int32_t channels){
     static int32_t size;
     size = sizeof(CELTDecoder_t) + (channels * (DECODE_BUFFER_SIZE + m_CELTMode.overlap) - 1) * sizeof(int32_t)
@@ -2008,6 +1986,7 @@ int32_t celt_decoder_init(int32_t Fs, int32_t channels){
     s_celtDec.end = m_CELTMode.effEBands;
     s_celtDec.stream_channels = channels;
     s_celtDec._decode_mem[0] = 0;
+    s_celtDec._decode_mem[1] = 0;
 
     int32_t ret = celt_decoder_ctl(OPUS_RESET_STATE);
     if(ret < 0) return ret;
@@ -2252,19 +2231,16 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     int32_t anti_collapse_rsv;
     int32_t anti_collapse_on = 0;
     int32_t silence;
-    int32_t C = s_celtDec.stream_channels;
-    int32_t overlap;
+    const uint8_t  C = s_celtDec.stream_channels; // =channels=2
+    const uint8_t  nbEBands = m_CELTMode.nbEBands; // =21
+    const uint8_t  overlap = m_CELTMode.overlap; // =120
     const int16_t *eBands = eband5ms;
-    const uint8_t  nbEBands = m_CELTMode.nbEBands;
-
-
-    overlap = m_CELTMode.overlap;
 
     start = s_celtDec.start;
     end = m_CELTMode.effEBands;
     frame_size *= s_celtDec.downsample;
 
-    lpc = (int16_t *)(st->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * CC);
+    lpc = (int16_t *)(s_celtDec._decode_mem + (DECODE_BUFFER_SIZE + overlap) * CC);
     oldBandE = lpc + CC * LPC_ORDER;
     oldLogE = oldBandE + 2 * nbEBands;
     oldLogE2 = oldLogE + 2 * nbEBands;

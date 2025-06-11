@@ -1723,7 +1723,7 @@ int32_t silk_Decode(                                   /* O    Returns error cod
     auto samplesOut1_tmp_storage2 = silk_malloc_arr<int16_t>(samplesOut1_tmp_storage2_len * sizeof(int16_t));
 
     if (delay_stack_alloc) {
-        size_t val1 = s_silk_DecControlStruct->nChannelsInternal * (s_channel_state[0].frame_length + 2);
+    //    size_t val1 = s_silk_DecControlStruct->nChannelsInternal * (s_channel_state[0].frame_length + 2);
         size_t val2 = samplesOut1_tmp_storage2_len *sizeof(int16_t);
         //size_t n = val1 * val2;
         memcpy(samplesOut1_tmp_storage2.get(), samplesOut, val2);
