@@ -2015,16 +2015,17 @@ int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels){
 
 
 
-    celt_decoder_ctl(st, (int32_t)OPUS_RESET_STATE);
+    celt_decoder_ctl((int32_t)OPUS_RESET_STATE);
 
     return OPUS_OK;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decoder_init(int32_t channels){
+int32_t celt_decoder_init(int32_t Fs, int32_t channels){
 
     memset(&s_celtDec, 0, sizeof(CELTDecoder_t));
 
+    s_celtDec.downsample = resampling_factor(Fs);
     s_celtDec.channels = channels;
     if(channels == 1) s_celtDec.disable_inv = 1; else s_celtDec.disable_inv = 0; // 1 mono ,  0 stereo
     s_celtDec.end = m_CELTMode.nbEBands; // 21
@@ -2042,6 +2043,9 @@ int32_t celt_decoder_init(int32_t channels){
     s_celtDec.start = 0;
     s_celtDec.stream_channels = channels;
     s_celtDec._decode_mem[0] = 0;
+
+    int32_t ret = celt_decoder_ctl(OPUS_RESET_STATE);
+    if(ret < 0) return ret;
 
     return OPUS_OK;
 }
@@ -2555,7 +2559,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...) {
+int32_t celt_decoder_ctl(int32_t request, ...) {
     va_list ap;
 
     va_start(ap, request);
