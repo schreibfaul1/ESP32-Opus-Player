@@ -149,11 +149,9 @@ struct split_ctx{
 };
 
 typedef struct _CELTDecoder {
-    const CELTMode_t *mode;
     int32_t overlap;
     int32_t channels;
     int32_t stream_channels;
-
     int32_t downsample;
     int32_t start, end;
     int32_t signalling;

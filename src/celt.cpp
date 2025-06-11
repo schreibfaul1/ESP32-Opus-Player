@@ -2011,13 +2011,12 @@ int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels){
 
     OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(channels));
 
-    st->mode = &m_CELTMode;
     st->overlap = m_CELTMode.overlap;
     st->stream_channels = st->channels = channels;
 
     st->downsample = 1;
     st->start = 0;
-    st->end = st->mode->effEBands;
+    st->end = m_CELTMode.effEBands;
     st->signalling = 1;
 
     st->disable_inv = channels == 1;
@@ -2599,7 +2598,7 @@ int32_t celt_decoder_ctl(CELTDecoder_t * st, int32_t request, ...) {
         case CELT_GET_MODE_REQUEST: {
             const CELTMode_t **value = va_arg(ap, const CELTMode_t **);
             if (value == 0) goto bad_arg;
-            *value = st->mode;
+            *value = &m_CELTMode;
         } break;
         case CELT_SET_SIGNALLING_REQUEST: {
             int32_t value = va_arg(ap, int32_t);
