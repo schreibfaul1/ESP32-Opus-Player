@@ -262,7 +262,7 @@ if(!inbuf)log_e("Inbuf is null");
         /* Decode CELT */
         celt_ret = celt_decode_with_ec(outbuf, celt_frame_size);
     } else {
-        unsigned char silence[2] = {0xFF, 0xFF};
+        // unsigned char silence[2] = {0xFF, 0xFF};
         for (i = 0; i < audiosize * channels; i++) outbuf[i] = 0;
         /* For hybrid -> SILK transitions, we let the CELT MDCT
            do a fade-out by decoding a silence frame */
