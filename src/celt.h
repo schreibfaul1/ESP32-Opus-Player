@@ -168,12 +168,7 @@ typedef struct _CELTDecoder {
     int32_t postfilter_tapset;
     int32_t postfilter_tapset_old;
     int32_t preemph_memD[2];
-    int32_t _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
-                            /* int16_t lpc[],  Size = channels*LPC_ORDER */
-                            /* int16_t oldEBands[], Size = 2*mode->nbEBands */
-                            /* int16_t oldLogE[], Size = 2*mode->nbEBands */
-                            /* int16_t oldLogE2[], Size = 2*mode->nbEBands */
-                            /* int16_t backgroundLogE[], Size = 2*mode->nbEBands */
+    int32_t _decode_mem[1];
 }CELTDecoder_t;
 
 extern CELTDecoder_t CELTDecoder;
@@ -595,36 +590,6 @@ struct Celt_PsramDeleter { // PSRAM deleter for Unique_PTR
 template<typename T>
 using celt_ptr_arr = std::unique_ptr<T[], Celt_PsramDeleter>;
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-// Typical smart pointer for any types with dynamic allocation size
-template <typename T>
-class celt_raw_ptr {
-    std::unique_ptr<void, Celt_PsramDeleter> mem;
-
-public:
-    celt_raw_ptr() = default;
-
-    // Speicher zuweisen mit benutzerdefinierter Größe (z. B. celt_decoder_get_size)
-    void alloc(std::size_t size, const char* name = nullptr) {
-        mem.reset(ps_malloc(size));
-        if (!mem) {
-            if (name) {
-                printf("OOM: failed to allocate %zu bytes for %s\n", size, name);
-            } else {
-                printf("OOM: failed to allocate %zu bytes\n", size);
-            }
-        }
-    }
-
-    // Zugriff
-    T* get() const { return static_cast<T*>(mem.get()); }
-    T* operator->() const { return get(); }
-    T& operator*() const { return *get(); }
-
-    // Gültigkeitsprüfung und manuelles Freigeben
-    bool valid() const { return mem != nullptr; }
-    void reset() { mem.reset(); }
-};
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
     // Request memory for an array of T
     template <typename T>
     std::unique_ptr<T[], Celt_PsramDeleter> celt_malloc_arr(std::size_t count) {
@@ -637,9 +602,6 @@ public:
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 
-
-bool CELTDecoder_AllocateBuffers();
-void CELTDecoder_FreeBuffers();
 void exp_rotation1(int16_t *X, int32_t len, int32_t stride, int16_t c, int16_t s);
 void exp_rotation(int16_t *X, int32_t len, int32_t dir, int32_t stride, int32_t K, int32_t spread);
 void normalise_residual(int32_t * iy, int16_t * X, int32_t N, int32_t Ryy, int16_t gain);

@@ -136,7 +136,7 @@ uint8_t getChannels(){
 //---------------------------------------------------------------------------------------------------------------------
 int32_t Gain(int16_t s[2]) {
     int32_t v[2];
-    float step = (float)m_vol /64;
+    // float step = (float)m_vol /64;
     uint8_t l = 0, r = 0;
 
     v[LEFTCHANNEL] = (s[LEFTCHANNEL]  * (m_vol - l)) >> 6;
@@ -299,11 +299,11 @@ void setup() {
         while(true){;}
     }
 
-    file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
+ //   file = SD_MMC.open("/opus/Symphony No.6 (1st movement).opus");
  //   file = SD_MMC.open("/opus/hybrid.opus");
  //   file = SD_MMC.open("/opus/celt_8000Hz.opus");
  //   file = SD_MMC.open("/opus/silk_8000Hz.opus");
- //     file = SD_MMC.open("/opus/dlf24.opus");
+      file = SD_MMC.open("/opus/dlf24.opus");
     log_i("free heap before %d", ESP.getFreeHeap());
     opus_init_decoder();
     log_i("free heap after %d", ESP.getFreeHeap());
