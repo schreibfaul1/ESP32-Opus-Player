@@ -1985,42 +1985,6 @@ int32_t celt_decoder_get_size(int32_t channels){
 }
 //----------------------------------------------------------------------------------------------------------------------
 
-int32_t opus_custom_decoder_init(CELTDecoder_t *st, int32_t channels){
-    if (channels < 0 || channels > 2)
-        return OPUS_BAD_ARG;
-
-    //CELTDecoder_t *st = s_celtDec.get();
-
-    OPUS_CLEAR((char *)st, opus_custom_decoder_get_size(channels));
-
-    st->overlap = m_CELTMode.overlap;
-    st->stream_channels = st->channels = channels;
-
-    st->downsample = 1;
-    st->start = 0;
-    st->end = m_CELTMode.effEBands;
-    st->signalling = 1;
-
-
-
-    s_celtDec.disable_inv = channels == 1;
-    s_celtDec.overlap = m_CELTMode.overlap;
-    s_celtDec.stream_channels = s_celtDec.channels = channels;
-    s_celtDec.downsample = 1;
-    s_celtDec.start = 0;
-    s_celtDec.end = m_CELTMode.effEBands;
-    s_celtDec.signalling = 1;
-    s_celtDec.disable_inv = channels == 1;
-
-
-
-
-    celt_decoder_ctl((int32_t)OPUS_RESET_STATE);
-
-    return OPUS_OK;
-}
-//----------------------------------------------------------------------------------------------------------------------
-
 int32_t celt_decoder_init(int32_t Fs, int32_t channels){
 
     memset(&s_celtDec, 0, sizeof(CELTDecoder_t));
@@ -2041,6 +2005,7 @@ int32_t celt_decoder_init(int32_t Fs, int32_t channels){
     s_celtDec.rng = 0;
     s_celtDec.signalling = 1;
     s_celtDec.start = 0;
+    s_celtDec.end = m_CELTMode.effEBands;
     s_celtDec.stream_channels = channels;
     s_celtDec._decode_mem[0] = 0;
 
@@ -2287,7 +2252,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     int32_t anti_collapse_rsv;
     int32_t anti_collapse_on = 0;
     int32_t silence;
-    int32_t C = st->stream_channels;
+    int32_t C = s_celtDec.stream_channels;
     int32_t overlap;
     const int16_t *eBands = eband5ms;
     const uint8_t  nbEBands = m_CELTMode.nbEBands;
@@ -2295,9 +2260,9 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
 
     overlap = m_CELTMode.overlap;
 
-    start = st->start;
-    end = st->end;
-    frame_size *= st->downsample;
+    start = s_celtDec.start;
+    end = m_CELTMode.effEBands;
+    frame_size *= s_celtDec.downsample;
 
     lpc = (int16_t *)(st->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * CC);
     oldBandE = lpc + CC * LPC_ORDER;
@@ -2328,13 +2293,6 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     effEnd = end;
     if (effEnd > m_CELTMode.effEBands)
         effEnd = m_CELTMode.effEBands;
-
-    // if (data == NULL || len <= 1) {
-    //     celt_decode_lost(st, N, LM);
-    //     deemphasis(out_syn, pcm, N, CC, st->downsample, m_CELTMode.preemph, st->preemph_memD, accum);
-
-    //     return frame_size / st->downsample;
-    // }
 
     /* Check if there are at least two packets received consecutively before
      * turning on the pitch-based PLC */
@@ -2487,7 +2445,7 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     }
 
     celt_synthesis(X.get(), out_syn, oldBandE, start, effEnd,
-                   C, CC, isTransient, LM, st->downsample, silence);
+                   C, CC, isTransient, LM, s_celtDec.downsample, silence);
 
     c = 0;
     do  {
@@ -2549,13 +2507,13 @@ int32_t celt_decode_with_ec(CELTDecoder_t * st, const uint8_t *data, int32_t len
     } while (++c < 2);
     st->rng = s_ec.rng;
 
-    deemphasis(out_syn, pcm, N, CC, st->downsample, m_CELTMode.preemph, st->preemph_memD, accum);
+    deemphasis(out_syn, pcm, N, CC, s_celtDec.downsample, m_CELTMode.preemph, st->preemph_memD, accum);
     st->loss_count = 0;
     if (ec_tell() > 8 * len)
         return OPUS_INTERNAL_ERROR;
     if (s_ec.error)
         st->error = 1;
-    return frame_size / st->downsample;
+    return frame_size / s_celtDec.downsample;
 }
 //----------------------------------------------------------------------------------------------------------------------
 
