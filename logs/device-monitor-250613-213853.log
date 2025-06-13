@@ -1,0 +1,1666 @@
+e 16000[0m
+[0;33m[  6142][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6185][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6197][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6211][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6224][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6238][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6250][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6293][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6305][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6319][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6332][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6346][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6358][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6401][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6414][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6428][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6441][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6456][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6468][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6511][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6524][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6538][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6551][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6565][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6578][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6621][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6634][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6649][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6661][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6675][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6688][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6732][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6744][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6759][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6771][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6785][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6798][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6842][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6854][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6869][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6881][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6896][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6908][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6951][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6964][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  6978][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  6991][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7005][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7018][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7062][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7075][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7090][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7102][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7116][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7129][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7172][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7184][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7198][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7211][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7224][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7237][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7280][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7292][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7307][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7319][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7334][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7347][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7390][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7403][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7417][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7430][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7444][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7457][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7500][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7513][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7527][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7540][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7554][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7567][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7610][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7623][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7637][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7650][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7664][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7677][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7721][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7733][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7747][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7760][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7773][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7786][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7829][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7841][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7855][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7868][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7882][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7895][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7938][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7951][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7965][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  7978][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  7992][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8005][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8051][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8064][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8078][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8091][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8106][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8118][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8161][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8174][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8188][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8201][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8215][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8228][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8271][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8284][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8298][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8311][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8325][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8338][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8381][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8394][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8409][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8421][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8435][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8448][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8491][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8504][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8518][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8531][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8545][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8558][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8601][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8614][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8629][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8641][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8655][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8668][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8711][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8724][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8738][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8751][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8765][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8778][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8821][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8834][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8848][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8861][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8876][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8888][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8931][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8943][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8957][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8970][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  8983][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  8996][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9039][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9052][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9066][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9079][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9093][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9105][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9148][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9160][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9175][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9187][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9202][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9214][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9259][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9271][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9285][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9298][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9312][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9324][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9367][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9379][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9394][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9406][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9421][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9433][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9476][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9489][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9503][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9516][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9530][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9543][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9586][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9599][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9613][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9626][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9640][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9653][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9696][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9708][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9722][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9735][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9748][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9761][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9804][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9816][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9830][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9843][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9857][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9870][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9913][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9926][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9941][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9953][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[  9968][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[  9980][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10026][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10039][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10053][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10066][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10080][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10093][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10136][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10149][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10163][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10175][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10189][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10202][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10245][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10257][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10271][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10284][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10298][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10310][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10354][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10366][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10380][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10393][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10407][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10419][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10462][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10474][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10488][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10501][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10514][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10527][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10570][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10582][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10597][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10610][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10624][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10637][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10680][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10693][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10707][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10719][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10733][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10746][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10789][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10801][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10815][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10828][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10841][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10854][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10897][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10909][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10923][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10936][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 10949][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 10962][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11005][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11018][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11032][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11045][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11059][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11072][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11115][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11128][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11143][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11155][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11170][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11182][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11225][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11238][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11252][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11264][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11278][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11291][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11334][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11346][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11360][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11373][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11387][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11399][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11442][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11454][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11468][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11481][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11495][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11507][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11550][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11562][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11576][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11589][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11602][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11615][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11658][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11670][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11684][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11697][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11710][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11723][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11766][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11778][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11792][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11805][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11818][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11831][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11874][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11886][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11900][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11913][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11926][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11939][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 11982][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 11995][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12009][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12021][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12035][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12048][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12091][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12103][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12117][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12130][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12143][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12156][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12199][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12211][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12225][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12238][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12252][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12264][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12307][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12319][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12333][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12346][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12360][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12372][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12415][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12427][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12442][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12454][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12468][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12481][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12524][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12537][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12552][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12564][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12579][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12591][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12635][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12648][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12662][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12675][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12689][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12702][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12745][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12758][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12772][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12785][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12799][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12812][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12855][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12868][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12882][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12894][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12908][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12920][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12966][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 12978][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 12992][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13005][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13018][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13031][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13074][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13086][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13100][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13113][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13126][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13139][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13182][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13194][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13208][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13221][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13234][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13247][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13290][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13302][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13317][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13329][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13344][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13356][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13400][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13413][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13427][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13440][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13454][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13466][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13509][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13521][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13535][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13548][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13561][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13574][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13617][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13629][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13644][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13657][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13671][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13684][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13727][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13740][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13754][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13767][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13781][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13794][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13837][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13850][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13865][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13877][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13891][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13903][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13947][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13960][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 13974][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 13986][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14000][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14013][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14056][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14068][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14082][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14095][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14108][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14121][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14164][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14176][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14191][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14204][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14218][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14231][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14274][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14287][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14301][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14314][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14328][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14341][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14384][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14397][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14412][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14424][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14438][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14450][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14494][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14506][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14520][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14533][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14547][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14559][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14602][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14614][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14629][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14641][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14656][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14669][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14712][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14725][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14739][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14752][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14766][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14779][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14822][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14835][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14849][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14862][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14876][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14888][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14935][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14948][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14963][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 14975][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 14990][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15002][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15045][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15058][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15072][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15085][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15099][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15112][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15156][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15168][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15183][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15195][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15210][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15222][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15265][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15278][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15292][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15305][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15320][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15332][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15375][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15388][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15402][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15415][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15429][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15442][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15485][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15498][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15512][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15525][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15539][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15552][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15595][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15608][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15622][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15635][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15649][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15662][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15705][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15718][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15732][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15745][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15759][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15771][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15814][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15826][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15840][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15853][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15866][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15879][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15922][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15935][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15949][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15962][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 15976][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 15989][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16032][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16045][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16059][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16072][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16086][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16099][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16142][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16155][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16169][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16182][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16196][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16209][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16252][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16265][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16279][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16292][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16306][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16319][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16362][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16375][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16389][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16402][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16416][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16429][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16471][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16484][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16498][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16511][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16526][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16538][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16581][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16593][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16608][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16620][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16634][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16647][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16690][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16702][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16716][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16729][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16742][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16755][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16798][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16810][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16824][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16837][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16850][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16863][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16906][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16919][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16933][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16946][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 16960][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 16972][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17016][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17029][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17044][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17057][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17071][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17084][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17127][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17140][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17154][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17167][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17181][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17194][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17237][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17250][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17265][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17277][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17292][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17304][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17349][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17361][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17376][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17388][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17402][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17415][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17458][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17470][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17485][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17497][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17511][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17524][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17567][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17580][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17595][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17607][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17622][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17634][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17677][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17690][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17704][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17717][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17731][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17744][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17788][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17800][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17815][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17827][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17842][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17854][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17901][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17913][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17928][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17941][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 17955][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 17968][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18011][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18024][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18038][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18051][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18065][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18078][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18122][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18134][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18149][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18161][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18176][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18188][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18231][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18243][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18258][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18270][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18284][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18297][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18340][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18353][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18367][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18379][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18393][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18406][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18449][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18461][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18475][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18488][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18501][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18514][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18557][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18569][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18583][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18596][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18610][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18622][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18665][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18677][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18691][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18704][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18718][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18731][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18774][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18787][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18802][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18814][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18829][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18841][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18885][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18898][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18912][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18924][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18938][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 18950][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 18994][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19006][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19021][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19034][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19048][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19061][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19104][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19117][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19131][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19144][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19158][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19171][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19214][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19227][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19241][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19254][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19268][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19281][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19324][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19336][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19350][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19363][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19376][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19389][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19432][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19444][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19458][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19471][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19485][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19498][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19541][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19554][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19569][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19582][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19595][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19608][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19651][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19663][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19677][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19690][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19703][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19716][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19759][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19771][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19785][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19798][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19812][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19825][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19872][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19884][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19899][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19911][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19926][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19939][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 19982][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 19995][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20010][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20022][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20037][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20049][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20093][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20105][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20120][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20132][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20147][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20159][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20202][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20215][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20229][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20242][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20256][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20269][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20313][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20325][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20340][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20352][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20367][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20379][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20424][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20436][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20450][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20463][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20477][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20490][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20534][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20546][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20561][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20573][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20587][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20600][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20643][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20655][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20669][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20682][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20696][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20708][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20751][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20763][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20777][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20790][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20805][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20817][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20861][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20874][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20888][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20901][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20915][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20928][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20971][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 20984][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 20999][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21011][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21025][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21038][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21082][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21094][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21108][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21121][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21135][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21147][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21190][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21202][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21216][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21229][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21243][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21255][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21298][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21311][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21326][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21338][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21353][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21366][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21409][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21422][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21436][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21449][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21463][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21476][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21519][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21532][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21546][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21559][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21574][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21587][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21630][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21643][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21657][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21669][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21683][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21696][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21739][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21751][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21765][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21778][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21792][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21804][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21847][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21860][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21874][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21886][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21900][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21913][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21956][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21968][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 21982][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 21995][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22008][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22021][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22064][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22076][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22090][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22103][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22117][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22129][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22172][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22184][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22198][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22211][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22225][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22237][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22280][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22292][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22306][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22319][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22333][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22345][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22389][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22401][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22415][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22428][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22442][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22454][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22497][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22509][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22523][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22536][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22550][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22562][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22605][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22617][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22631][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22644][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22658][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22670][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22713][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22726][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22739][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22752][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22766][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22778][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22823][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22836][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22850][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22863][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22876][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22889][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22932][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22944][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22958][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22971][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 22985][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 22997][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23040][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23052][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23066][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23079][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23093][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23105][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23148][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23160][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23174][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23187][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23201][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23213][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23256][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23268][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23282][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23295][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23309][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23321][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23364][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23376][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23390][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23403][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23417][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23429][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23472][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23484][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23498][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23511][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23525][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23537][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23581][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23593][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23607][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23620][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23634][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23646][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23689][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23701][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23715][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23728][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23742][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23754][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23797][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23810][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23824][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23837][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23850][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23863][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23906][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23918][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23932][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23945][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 23959][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 23971][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24014][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24026][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24040][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24053][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24067][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24079][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24122][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24134][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24148][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24161][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24175][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24187][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24230][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24242][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24256][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24269][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24283][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24296][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24339][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24351][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24365][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24378][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24392][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24404][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24447][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24459][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24474][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24486][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24500][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24513][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24556][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24569][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24583][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24595][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24609][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24622][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24665][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24677][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24691][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24704][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24718][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24730][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24775][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24788][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24802][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24815][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24829][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24841][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24884][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24896][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24911][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24923][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24937][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 24950][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 24993][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25005][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25019][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25032][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25046][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25058][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25101][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25113][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25127][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25140][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25154][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25166][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25209][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25221][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25235][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25248][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25262][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25274][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25317][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25329][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25343][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25356][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25370][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25382][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25425][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25437][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25451][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25464][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25477][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25490][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25533][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25545][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25559][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25572][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25585][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25598][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25641][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25653][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25667][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25680][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25693][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25706][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25749][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25762][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25776][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25789][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25802][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25815][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25858][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25870][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25884][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25897][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25910][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25923][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25966][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 25978][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 25992][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26005][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26018][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26031][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26074][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26086][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26100][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26113][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26126][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26139][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26182][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26194][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26208][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26221][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26234][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26247][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26290][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26302][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26316][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26329][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26342][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26355][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26398][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26410][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26424][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26437][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26450][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26463][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26506][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26518][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26532][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26545][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26559][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26571][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26614][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26627][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26640][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26653][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26667][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26679][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26722][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26735][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26750][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26762][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26777][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26789][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26833][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26845][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26859][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26872][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26886][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26898][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26941][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26953][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26967][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 26980][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 26994][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27006][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27049][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27061][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27076][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27088][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27103][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27115][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27159][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27172][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27186][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27199][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27213][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27226][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27269][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27282][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27296][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27309][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27324][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27336][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27379][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27392][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27406][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27419][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27433][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27446][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27489][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27502][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27516][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27529][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27543][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27556][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27600][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27612][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27626][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27639][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27652][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27665][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27711][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27723][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27737][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27750][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27763][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27776][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27819][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27831][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27845][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27858][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27872][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27884][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27928][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27941][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27955][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27968][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 27982][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 27994][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28038][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28051][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28065][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28078][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28093][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28105][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28148][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28161][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28175][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28188][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28202][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28215][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28258][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28271][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28286][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28298][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28312][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28325][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28368][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28381][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28395][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28408][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28422][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28435][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28479][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28491][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28506][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28518][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28533][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28545][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28588][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28601][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28616][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28628][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28642][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28655][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28699][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28712][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28726][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28738][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28753][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28765][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28810][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28822][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28836][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28849][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28863][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28875][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28918][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28930][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28944][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28957][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 28971][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 28983][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29026][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29038][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29052][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29065][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29079][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29091][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29134][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29146][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29161][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29174][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29189][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29201][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29245][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29257][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29272][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29284][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29299][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29311][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29354][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29367][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29381][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29394][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29408][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29421][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29464][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29477][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29491][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29503][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29517][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29530][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29573][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29585][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29599][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29612][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29625][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29638][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29683][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29696][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29710][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29723][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29736][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29749][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29792][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29804][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29818][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29831][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29844][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29857][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29900][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29912][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29926][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29939][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 29954][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 29966][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30010][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30023][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30037][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30050][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30064][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30077][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30120][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30133][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30148][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30160][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30174][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30187][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30230][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30243][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30257][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30270][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30284][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30297][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30340][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30353][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30367][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30380][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30394][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30407][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30450][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30463][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30478][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30490][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30505][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30517][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30561][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30573][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30588][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30601][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30615][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30628][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30672][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30685][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30699][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30712][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30726][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30739][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30782][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30795][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30809][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30822][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30836][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30849][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30892][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30905][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30919][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30932][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 30946][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 30959][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31002][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31015][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31029][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31042][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31057][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31069][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31112][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31125][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31139][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31152][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31166][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31179][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31222][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31235][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31249][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31262][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31276][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31289][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31332][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31345][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31359][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31372][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31387][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31399][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31442][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31455][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31469][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31482][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31496][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31509][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31552][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31565][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31579][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31592][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31606][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31619][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31663][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31676][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31690][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31703][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31717][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31730][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31773][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31786][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31800][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31813][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31827][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31839][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31882][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31894][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31908][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31921][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31934][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 31947][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 31990][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32002][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32016][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32029][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32043][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32056][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32099][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32112][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32127][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32139][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32153][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32166][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32209][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32222][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32237][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32249][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32263][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32276][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32319][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32332][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32346][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32359][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32373][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32386][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32429][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32442][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32456][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32469][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32484][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32496][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32539][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32552][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32566][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32579][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32593][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32605][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32650][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32663][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32677][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32690][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32703][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32716][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32759][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32771][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32785][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32798][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32811][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32824][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32867][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32879][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32894][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32907][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32922][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32935][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 32979][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 32991][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33006][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33018][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33033][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33045][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33088][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33101][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33115][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33128][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33143][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33155][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33199][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33212][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33227][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33239][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33253][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33266][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33308][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33320][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33334][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33347][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33360][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33373][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33416][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33428][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33443][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33455][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33470][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33482][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33526][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33539][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33554][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33566][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33580][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33592][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33635][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33648][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33662][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33675][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33688][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33701][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33744][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33756][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33770][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33783][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33797][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33809][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33854][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33866][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33881][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33893][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33908][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33920][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33964][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 33977][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 33991][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34004][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34018][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34031][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34074][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34087][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34102][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34114][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34129][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34141][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34184][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34197][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34211][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34224][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34238][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34251][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34294][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34307][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34321][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34334][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34348][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34361][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34404][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34417][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34432][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34444][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34458][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34471][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34514][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34526][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34540][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34553][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34566][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34579][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34624][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34637][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34651][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34663][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34677][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34690][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34733][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34745][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34759][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34772][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34785][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34798][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34841][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34853][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34867][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34880][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34894][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34906][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34949][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34962][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 34977][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 34989][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35004][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35016][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35059][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35072][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35086][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35099][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35113][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35126][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35169][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35182][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35196][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35209][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35223][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35236][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35279][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35292][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35306][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35318][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35332][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35344][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35387][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35399][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35413][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35426][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35439][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35452][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35495][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35507][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35521][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35534][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35548][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35560][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35604][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35617][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35631][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35644][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35657][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35670][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35713][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35725][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35739][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35752][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35766][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35779][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35822][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35835][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35850][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35862][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35877][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35889][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35933][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35946][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35961][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 35973][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 35988][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36000][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36043][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36056][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36070][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36083][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36097][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36110][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36154][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36166][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36181][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36193][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36208][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36220][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36265][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36277][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36292][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36304][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36319][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36331][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36375][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36388][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36402][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36415][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36430][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36442][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
+[0;33m[ 36485][W][opus_decoder.cpp:218] opus_decode_frame(): decoded_samples 960, channels 1 payloadSize_ms 20, internalSampleRate 16000[0m
+[0;33m[ 36498][W][opus_decoder.cpp:253] opus_decode_frame(): start_band 17, endband 21[0m
